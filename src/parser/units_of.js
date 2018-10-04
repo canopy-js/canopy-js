@@ -1,3 +1,5 @@
+// Copyright Greenhouse Software 2017
+
 function unitsOf(string) {
   var units = [];
   var stops = ['.', '!', '?', ',', ';', ':'];

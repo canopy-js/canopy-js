@@ -1,3 +1,5 @@
+// Copyright Greenhouse Software 2017
+
 function clausesWithPunctuationOf(string, icOnly) {
   if (!string) {
     return [];
