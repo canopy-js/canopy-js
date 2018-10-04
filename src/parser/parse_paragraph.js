@@ -1,10 +1,20 @@
-function parseParagraph(textWithoutKey, namespaceObject) {
+var clausesWithPunctutionOf = require('./clauses_with_punctuation_of.js');
+var parseClause = require('./parse_clause.js');
+
+function parseParagraph(textWithoutKey, namespaceObject, currentTopic) {
 // - Parse each paragraph for instances of items in the global and local namespaces
 // - if a global reference is used, rescan line for local references (?)
 // - check for largest prefix suffix match
+  var clausesOfParagraph = clausesWithPunctutionOf(textWithoutKey);
+  var importedNamespaces = [];
 
+  var tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
+    return parseClause(clause, namespaceObject, currentTopic, importedNamespaces);
+  });
 
-  return ['a', 'b', 'c'];
+  var tokensOfParagraph = [].concat.apply([], tokensOfParagraphByClause);
+
+  return tokensOfParagraph;
 }
 
 module.exports = parseParagraph;

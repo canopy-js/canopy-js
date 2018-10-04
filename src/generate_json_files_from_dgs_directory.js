@@ -1,13 +1,14 @@
 var fs = require('fs');
-var findRecursiveDgsFilesOfDirectory = require('./file_system/find_recursive_dgs_files_of_directory');
-var buildNamespaceObject = require('./namespace_generation/build_namespace_object.js');
+var listDgsFilesRecursive = require('./helpers/list_dgs_files_recursive.js');
+var buildNamespaceObject = require('./parser/build_namespace_object.js');
 var generateJsonForDgsFile = require('./parser/generate_json_for_dgs_file.js');
 
 function generateJsonFilesFromDgsDirectory(sourceDirectory, destinationDirectory) {
-  var dgsFilePaths = findRecursiveDgsFilesOfDirectory(sourceDirectory);
-  var namespaceObject =  buildNamespaceObject(dgsFilePaths);
+  var dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
+  var namespaceObject = buildNamespaceObject(dgsFilePaths);
+
   dgsFilePaths.forEach(function(path) {
-    var json = generateJsonForDgsFile(path);
+    var json = generateJsonForDgsFile(path, namespaceObject);
     var dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
 
     if (!fs.existsSync(destinationDirectory)){

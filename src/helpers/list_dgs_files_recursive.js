@@ -1,7 +1,7 @@
 var recursiveReadSync = require('recursive-readdir-sync');
 var fs = require('fs');
 
-function findRecursiveDgsFilesOfDirectory(rootDirectory) {
+function listDgsfilesRecursive(rootDirectory) {
   var filePaths = recursiveReadSync(rootDirectory);
 
   filePaths = filePaths.filter(function(path){
@@ -11,4 +11,4 @@ function findRecursiveDgsFilesOfDirectory(rootDirectory) {
   return filePaths;
 }
 
-module.exports = findRecursiveDgsFilesOfDirectory;
+module.exports = listDgsfilesRecursive;
