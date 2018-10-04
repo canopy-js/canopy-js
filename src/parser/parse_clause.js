@@ -22,7 +22,10 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
         break;
       }
 
-      var avaliableNamespaces = Array.prototype.concat(importedNamespaces, currentTopic.toLowerCase());
+      var avaliableNamespaces = Array.prototype.concat(
+        importedNamespaces, currentTopic.toLowerCase()
+        );
+
       var breakFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
         var namespaceName = avaliableNamespaces[j];
