@@ -8,7 +8,9 @@ function generateJsonForDgsFile(path, namespaceObject) {
   var topicOfFile = paragraphsWithKeys[0].split(':')[0];
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
-    var match = paragraphWithKey.match(/([^:]+):\s*(.*)/);
+    var match = paragraphWithKey.match(/([^:.,;]+):\s*(.*)/);
+    if(!match){ return; }
+
     var currentTopic = match[1];
     var textWithoutKey = match[2];
 
