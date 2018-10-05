@@ -1,0 +1,19 @@
+{
+  "name": "canopy.js",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "main": "src/frontend/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "CanopyJS",
+  "license": "Apache",
+  "devDependencies": {
+    "webpack": "^4.0.1",
+    "webpack-cli": "^2.0.9",
+    "recursive-readdir-sync": "1.0.6"
+  },
+  "dependencies": {}
+}
