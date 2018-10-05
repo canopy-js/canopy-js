@@ -18,7 +18,7 @@ function generateJsonForDgsFile(path, namespaceObject) {
     tokenizedParagraphsByKey[currentTopic] = tokensOfParagraph;
   });
 
-  return JSON.stringify(tokenizedParagraphsByKey);
+  return JSON.stringify(tokenizedParagraphsByKey, null, 1);
 }
 
 module.exports = generateJsonForDgsFile;
