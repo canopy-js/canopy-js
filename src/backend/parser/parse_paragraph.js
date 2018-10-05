@@ -1,5 +1,5 @@
-var clausesWithPunctutionOf = require('./clauses_with_punctuation_of.js');
-var parseClause = require('./parse_clause.js');
+var clausesWithPunctutionOf = require('../helpers/clauses_with_punctuation_of');
+var parseClause = require('./parse_clause');
 
 function parseParagraph(textWithoutKey, namespaceObject, currentTopic) {
   var clausesOfParagraph = clausesWithPunctutionOf(textWithoutKey);

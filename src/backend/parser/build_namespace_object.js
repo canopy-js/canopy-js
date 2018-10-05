@@ -1,4 +1,4 @@
-var paragraphsOfFile = require('../helpers/paragraphs_of_file.js');
+var paragraphsOfFile = require('../helpers/paragraphs_of_file');
 
 function buildNamespaceObject(pathList) {
   var namespacesObject = {};

@@ -1,4 +1,4 @@
-var generateJsonFilesFromDgsDirectory = require('./generate_json_files_from_dgs_directory.js');
+var generateJsonFilesFromDgsDirectory = require('./generate_json_files_from_dgs_directory');
 
 if (process.argv.length < 4) {
   console.log('Example Usage:')

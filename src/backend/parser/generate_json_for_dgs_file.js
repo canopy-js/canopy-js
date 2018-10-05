@@ -1,6 +1,6 @@
 var fs = require('fs');
 var parseParagraph = require('./parse_paragraph');
-var paragraphsOfFile = require('../helpers/paragraphs_of_file.js');
+var paragraphsOfFile = require('../helpers/paragraphs_of_file');
 
 function generateJsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);

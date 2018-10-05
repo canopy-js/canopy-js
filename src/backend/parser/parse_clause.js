@@ -1,4 +1,4 @@
-var unitsOf = require('./units_of.js');
+var unitsOf = require('../helpers/units_of');
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, importedNamespaces) {
   var tokens = [];
