@@ -38,13 +38,15 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
         // TODO: see if you can do this without side effects
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
-        // TODO: differentiate between local and imported references by type
         if (currentNamespace.hasOwnProperty(substring)) {
           var token = new TextToken(textTokenBuffer);
           tokens.push(token);
           textTokenBuffer = '';
 
-          var token = new LocalReferenceToken(substringLowercase, namespaceName);
+          var tokenType = currentTopic.toLowerCase() === namespaceName ?
+            LocalReferenceToken : ImportReferenceToken;
+
+          var token = new tokenType(substringLowercase, namespaceName);
           tokens.push(token);
           units = units.slice(i + 1, units.length);
           continueFlag = true;
@@ -75,6 +77,12 @@ function LocalReferenceToken(text, contextName) {
   this.text = text;
   this.context = contextName;
   this.type = 'local';
+}
+
+function ImportReferenceToken(text, contextName) {
+  this.text = text;
+  this.context = contextName;
+  this.type = 'import';
 }
 
 function GlobalReferenceToken(text) {
