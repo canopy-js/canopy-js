@@ -4,6 +4,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
   var tokens = [];
   var units = unitsOf(clauseWithPunctuation);
   var globalNamespace = namespaceObject;
+  var textTokenBuffer = '';
 
   // Find greatest suffix-prefix match
   // TODO: understand why the opposite doesn't work
@@ -13,42 +14,53 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
       if (units[i] === ' ') { continue; }
       if (i === 0) { continue; }
 
-      var substring = units.slice(0, i + 1).join('').toLowerCase();
+      var substring = units.slice(0, i + 1).join('');
+      var substringLowercase = substring.toLowerCase();
 
-      if (globalNamespace.hasOwnProperty(substring)) {
-        var token = new GlobalReferenceToken(substring);
+      if (globalNamespace.hasOwnProperty(substringLowercase)) {
+        var token = new TextToken(textTokenBuffer);
         tokens.push(token);
-        importedNamespaces.push(substring);
-        units = units.slice(i, units.length);
-        break;
+        textTokenBuffer = '';
+
+        var token = new GlobalReferenceToken(substringLowercase);
+        tokens.push(token);
+        importedNamespaces.push(substringLowercase);
+        units = units.slice(i + 1, units.length);
+        continue;
       }
 
       var avaliableNamespaces = Array.prototype.concat(
         importedNamespaces, currentTopic.toLowerCase()
         );
 
-      var breakFlag = false;
+      var continueFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
         // TODO: see if you can do this without side effects
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
         // TODO: differentiate between local and imported references by type
         if (currentNamespace.hasOwnProperty(substring)) {
-          var token = new LocalReferenceToken(substring, namespaceName);
+          var token = new TextToken(textTokenBuffer);
+          tokens.push(token);
+          textTokenBuffer = '';
+
+          var token = new LocalReferenceToken(substringLowercase, namespaceName);
           tokens.push(token);
           units = units.slice(i + 1, units.length);
-          breakFlag = true;
+          continueFlag = true;
         }
       }
-      if(breakFlag){break;}
+      if(continueFlag){continue;}
     }
 
-    // TODO: rewrite this to add text tokens to an open buffer
-    // that gets cleared when a reference token is created
     var firstUnit = units.slice(0, 1);
-    var token = new TextToken(firstUnit);
-    tokens.push(token);
+    textTokenBuffer += firstUnit;
     units = units.slice(1);
+  }
+
+  if(textTokenBuffer) {
+    var token = new TextToken(textTokenBuffer);
+    tokens.push(token);
   }
 
   return tokens
