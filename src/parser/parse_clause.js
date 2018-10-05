@@ -6,6 +6,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
   var globalNamespace = namespaceObject;
 
   // Find greatest suffix-prefix match
+  // TODO: understand why the opposite doesn't work
   while (units.length > 0) {
     for(var i = units.length - 1; i >= 0; i--) {
       if (units[0] === ' ') { break; }
@@ -28,8 +29,10 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
 
       var breakFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
+        // TODO: see if you can do this without side effects
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
+        // TODO: differentiate between local and imported references by type
         if (currentNamespace.hasOwnProperty(substring)) {
           var token = new LocalReferenceToken(substring, namespaceName);
           tokens.push(token);
