@@ -1,4 +1,4 @@
-var generateJsonFilesFromDgsDirectory = require('./parser/generate_json_files_from_dgs_directory');
+var generateJsonFilesFromDgsDirectory = require('./components/generate_json_files_from_dgs_directory');
 
 if (process.argv.length < 3) {
   console.log('Project directory argument required');
