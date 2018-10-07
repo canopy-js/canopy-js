@@ -1,16 +1,17 @@
 var paragraphsOfFile = require('../helpers/paragraphs_of_file');
+var extractKeyAndParagraph = require('../helpers/extract_key_and_paragraph');
 
 function buildNamespaceObject(pathList) {
   var namespacesObject = {};
 
   pathList.forEach(function(path){
     var paragraphsWithKeys = paragraphsOfFile(path);
-    var currentTopic = paragraphsWithKeys[0].split(':')[0];
-    namespacesObject[currentTopic.toLowerCase()] = {};
+    var currentTopic = extractKeyAndParagraph(paragraphsWithKeys[0]).key
+    namespacesObject[currentTopic] = {};
 
     paragraphsWithKeys.forEach(function(paragraphWithKey){
       var key = paragraphWithKey.split(':')[0];
-      namespacesObject[currentTopic.toLowerCase()][key.toLowerCase()] = true;
+      namespacesObject[currentTopic][key] = true;
     });
   });
 

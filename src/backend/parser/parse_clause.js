@@ -1,4 +1,5 @@
 var unitsOf = require('../helpers/units_of');
+var capitalize = require('../helpers/capitalize');
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, importedNamespaces) {
   var tokens = [];
@@ -7,7 +8,6 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
   var textTokenBuffer = '';
 
   // Find greatest suffix-prefix match
-  // TODO: understand why the opposite doesn't work
   while (units.length > 0) {
     for(var i = units.length - 1; i >= 0; i--) {
       if (units[0] === ' ') { break; }
@@ -15,38 +15,39 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
       if (i === 0) { continue; }
 
       var substring = units.slice(0, i + 1).join('');
-      var substringLowercase = substring.toLowerCase();
+      var substringCapitalized = capitalize(substring);
 
-      if (globalNamespace.hasOwnProperty(substringLowercase)) {
+      if (globalNamespace.hasOwnProperty(substringCapitalized)) {
         var token = new TextToken(textTokenBuffer);
         tokens.push(token);
         textTokenBuffer = '';
 
-        var token = new GlobalReferenceToken(substringLowercase);
+        var token = new GlobalReferenceToken(substringCapitalized, substring);
         tokens.push(token);
-        importedNamespaces.push(substringLowercase);
+        importedNamespaces.push(substringCapitalized);
         units = units.slice(i + 1, units.length);
         continue;
       }
 
       var avaliableNamespaces = Array.prototype.concat(
-        importedNamespaces, currentTopic.toLowerCase()
+        importedNamespaces,
+        currentTopic
         );
 
       var continueFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
-        // TODO: see if you can do this without side effects
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
-        if (currentNamespace.hasOwnProperty(substring)) {
+
+        if (currentNamespace.hasOwnProperty(substringCapitalized)) {
           var token = new TextToken(textTokenBuffer);
           tokens.push(token);
           textTokenBuffer = '';
 
-          var tokenType = currentTopic.toLowerCase() === namespaceName ?
+          var tokenType = currentTopic === namespaceName ?
             LocalReferenceToken : ImportReferenceToken;
 
-          var token = new tokenType(substringLowercase, namespaceName);
+          var token = new tokenType(substringCapitalized, substring, namespaceName);
           tokens.push(token);
           units = units.slice(i + 1, units.length);
           continueFlag = true;
@@ -73,20 +74,23 @@ function TextToken(text) {
   this.type = 'text';
 }
 
-function LocalReferenceToken(text, contextName) {
+function LocalReferenceToken(key, text, contextName) {
   this.text = text;
+  this.key = key
   this.context = contextName;
   this.type = 'local';
 }
 
-function ImportReferenceToken(text, contextName) {
+function ImportReferenceToken(key, text, contextName) {
   this.text = text;
+  this.key = key;
   this.context = contextName;
   this.type = 'import';
 }
 
-function GlobalReferenceToken(text) {
+function GlobalReferenceToken(key, text) {
   this.text = text;
+  this.key = key;
   this.type = 'global';
 }
 
