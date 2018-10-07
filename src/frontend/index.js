@@ -1,8 +1,12 @@
-import canopyContainer from 'helpers/getters';
-import { validateClientHtml } from 'initializers/validate_client_html';
+import { canopyContainer, defaultTopic } from 'display/getters';
+import displayTopic from 'display/display_topic';
 
-validateClientHtml();
+// if no url
+displayTopic(defaultTopic);
 
-var defaultTopic = document.getElementById('_canopy').dataset.defaultTopic;
-console.log(defaultTopic);
-console.log(canopyContainer);
+// if url
+displayTopic(window.location);
+
+window.addEventListener('hashchange', (e) => {
+
+});

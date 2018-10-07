@@ -86,17 +86,49 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/frontend/helpers/getters.js":
-/*!*****************************************!*\
-  !*** ./src/frontend/helpers/getters.js ***!
-  \*****************************************/
+/***/ "./src/frontend/display/display_topic.js":
+/*!***********************************************!*\
+  !*** ./src/frontend/display/display_topic.js ***!
+  \***********************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+var displayTopic = function displayTopic(topicName) {// Check cache
+  // Request json
+  // Render tree & eager load
+  // Display selected path or root
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (displayTopic);
+
+/***/ }),
+
+/***/ "./src/frontend/display/getters.js":
+/*!*****************************************!*\
+  !*** ./src/frontend/display/getters.js ***!
+  \*****************************************/
+/*! exports provided: canopyContainer, defaultTopic */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "canopyContainer", function() { return canopyContainer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "defaultTopic", function() { return defaultTopic; });
 var canopyContainer = document.getElementById('_canopy');
-/* harmony default export */ __webpack_exports__["default"] = (canopyContainer);
+
+if (!canopyContainer) {
+  throw new Error('Page must have an html element with id "_canopy"');
+}
+
+var defaultTopic = document.getElementById('_canopy').dataset.defaultTopic;
+
+if (!defaultTopic) {
+  throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
+}
+
+
 
 /***/ }),
 
@@ -109,37 +141,15 @@ var canopyContainer = document.getElementById('_canopy');
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/frontend/helpers/getters.js");
-/* harmony import */ var initializers_validate_client_html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! initializers/validate_client_html */ "./src/frontend/initializers/validate_client_html.js");
+/* harmony import */ var display_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! display/getters */ "./src/frontend/display/getters.js");
+/* harmony import */ var display_display_topic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_topic */ "./src/frontend/display/display_topic.js");
 
+ // if no url
 
-Object(initializers_validate_client_html__WEBPACK_IMPORTED_MODULE_1__["validateClientHtml"])();
-var defaultTopic = document.getElementById('_canopy').dataset.defaultTopic;
-console.log(defaultTopic);
-console.log(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["default"]);
+Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(display_getters__WEBPACK_IMPORTED_MODULE_0__["defaultTopic"]); // if url
 
-/***/ }),
-
-/***/ "./src/frontend/initializers/validate_client_html.js":
-/*!***********************************************************!*\
-  !*** ./src/frontend/initializers/validate_client_html.js ***!
-  \***********************************************************/
-/*! exports provided: validateClientHtml */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "validateClientHtml", function() { return validateClientHtml; });
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/frontend/helpers/getters.js");
-
-
-var validateClientHtml = function validateClientHtml() {
-  if (!helpers_getters__WEBPACK_IMPORTED_MODULE_0__["default"]) {
-    throw new Error('Page must have an html element with id "_canopy"');
-  }
-};
-
-
+Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(window.location);
+window.addEventListener('hashchange', function (e) {});
 
 /***/ })
 
