@@ -16,6 +16,7 @@ function generateJsonFilesFromDgsDirectory(sourceDirectory, destinationDirectory
     }
 
     var destinationPath = destinationDirectory + '/' + dgsFileNameWithoutExtension + '.json';
+    console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);
   });
