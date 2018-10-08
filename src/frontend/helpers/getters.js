@@ -8,7 +8,12 @@ if(!defaultTopic) {
   throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
 }
 
+const domElementOfTopic = (topicName) => {
+  return null;
+}
+
 export {
   canopyContainer,
-  defaultTopic
+  defaultTopic,
+  domElementOfTopic
 };
