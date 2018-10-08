@@ -86,36 +86,6 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/recursive-readdir-sync/index.js":
-/*!******************************************************!*\
-  !*** ./node_modules/recursive-readdir-sync/index.js ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var fs = __webpack_require__(/*! fs */ "fs"),
-    p = __webpack_require__(/*! path */ "path");
-
-function recursiveReaddirSync(path) {
-  var list = [],
-      files = fs.readdirSync(path),
-      stats;
-  files.forEach(function (file) {
-    stats = fs.lstatSync(p.join(path, file));
-
-    if (stats.isDirectory()) {
-      list = list.concat(recursiveReaddirSync(p.join(path, file)));
-    } else {
-      list.push(p.join(path, file));
-    }
-  });
-  return list;
-}
-
-module.exports = recursiveReaddirSync;
-
-/***/ }),
-
 /***/ "./src/backend/parser/components/build_namespace_object.js":
 /*!*****************************************************************!*\
   !*** ./src/backend/parser/components/build_namespace_object.js ***!
@@ -507,7 +477,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-var recursiveReadSync = __webpack_require__(/*! recursive-readdir-sync */ "./node_modules/recursive-readdir-sync/index.js");
+var recursiveReadSync = __webpack_require__(/*! recursive-readdir-sync */ "recursive-readdir-sync");
 
 var fs = __webpack_require__(/*! fs */ "fs");
 
@@ -633,14 +603,14 @@ module.exports = require("fs");
 
 /***/ }),
 
-/***/ "path":
-/*!***********************!*\
-  !*** external "path" ***!
-  \***********************/
+/***/ "recursive-readdir-sync":
+/*!*****************************************!*\
+  !*** external "recursive-readdir-sync" ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("path");
+module.exports = require("recursive-readdir-sync");
 
 /***/ })
 
