@@ -162,6 +162,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/list_dgs_files_recursive.js */ "./src/backend/parser/helpers/list_dgs_files_recursive.js");
 /* harmony import */ var _build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./build_namespace_object.js */ "./src/backend/parser/components/build_namespace_object.js");
 /* harmony import */ var _generate_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./generate_json_for_dgs_file.js */ "./src/backend/parser/components/generate_json_for_dgs_file.js");
+/* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/backend/parser/helpers/extract_key_and_paragraph.js");
+
 
 
 
@@ -204,7 +206,7 @@ function generateJsonFilesFromDgsDirectory(sourceDirectory, destinationDirectory
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ "fs");
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _parse_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_paragraph */ "./src/backend/parser/components/parse_paragraph.js");
+/* harmony import */ var _parse_block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_block */ "./src/backend/parser/components/parse_block.js");
 /* harmony import */ var _helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers/paragraphs_of_file */ "./src/backend/parser/helpers/paragraphs_of_file.js");
 /* harmony import */ var _helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../helpers/extract_key_and_paragraph */ "./src/backend/parser/helpers/extract_key_and_paragraph.js");
 
@@ -215,6 +217,12 @@ __webpack_require__.r(__webpack_exports__);
 function generateJsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = Object(_helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__["default"])(path);
   var tokenizedParagraphsByKey = {};
+  var topicOfFile = Object(_helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphsWithKeys[0]).key;
+
+  if (!topicOfFile) {
+    return '';
+  }
+
   paragraphsWithKeys.forEach(function (paragraphWithKey) {
     var paragraphData = Object(_helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphWithKey);
 
@@ -223,14 +231,47 @@ function generateJsonForDgsFile(path, namespaceObject) {
     }
 
     var currentTopic = paragraphData.key;
-    var textWithoutKey = paragraphData.paragraph;
-    var tokensOfParagraph = Object(_parse_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, topicOfFile);
+    var textWithoutKey = paragraphData.block;
+    var tokensOfParagraph = Object(_parse_block__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, topicOfFile);
     tokenizedParagraphsByKey[currentTopic] = tokensOfParagraph;
   });
   return JSON.stringify(tokenizedParagraphsByKey, null, process.env.CANOPY_DEBUG ? 1 : 0);
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (generateJsonForDgsFile);
+
+/***/ }),
+
+/***/ "./src/backend/parser/components/parse_block.js":
+/*!******************************************************!*\
+  !*** ./src/backend/parser/components/parse_block.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers/clauses_with_punctuation_of */ "./src/backend/parser/helpers/clauses_with_punctuation_of.js");
+/* harmony import */ var _parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_clause */ "./src/backend/parser/components/parse_clause.js");
+
+
+
+function parseBlock(textWithoutKey, namespaceObject, currentTopic) {
+  var lines = textWithoutKey.split(/\n/);
+  var tokensOfBlock = [];
+  lines.forEach(function (line) {
+    var clausesOfParagraph = Object(_helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
+    var importedNamespaces = [];
+    var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
+      return Object(_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, importedNamespaces);
+    });
+    var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
+    tokensOfBlock.push(tokensOfLine);
+  });
+  return tokensOfBlock;
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (parseBlock);
 
 /***/ }),
 
@@ -348,34 +389,6 @@ function GlobalReferenceToken(key, text) {
 
 /***/ }),
 
-/***/ "./src/backend/parser/components/parse_paragraph.js":
-/*!**********************************************************!*\
-  !*** ./src/backend/parser/components/parse_paragraph.js ***!
-  \**********************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers/clauses_with_punctuation_of */ "./src/backend/parser/helpers/clauses_with_punctuation_of.js");
-/* harmony import */ var _parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_clause */ "./src/backend/parser/components/parse_clause.js");
-
-
-
-function parseParagraph(textWithoutKey, namespaceObject, currentTopic) {
-  var clausesOfParagraph = Object(_helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(textWithoutKey);
-  var importedNamespaces = [];
-  var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
-    return Object(_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, importedNamespaces);
-  });
-  var tokensOfParagraph = [].concat.apply([], tokensOfParagraphByClause);
-  return tokensOfParagraph;
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (parseParagraph);
-
-/***/ }),
-
 /***/ "./src/backend/parser/helpers/capitalize.js":
 /*!**************************************************!*\
   !*** ./src/backend/parser/helpers/capitalize.js ***!
@@ -402,13 +415,9 @@ function capitalize(text) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-function clausesWithPunctuationOf(string, icOnly) {
+function clausesWithPunctuationOf(string) {
   if (!string) {
     return [];
-  }
-
-  if (string.indexOf('\n') !== -1) {
-    string = string.slice(0, string.indexOf('\n'));
   }
 
   var clausesWithPunctuation = [];
@@ -427,12 +436,7 @@ function clausesWithPunctuationOf(string, icOnly) {
     }
 
     if (indexOfNextStop === -1) {
-      if (icOnly) {
-        return [buffer + string];
-      } else {
-        clausesWithPunctuation.push(buffer + string);
-      }
-
+      clausesWithPunctuation.push(buffer + string);
       break;
     }
 
@@ -440,10 +444,6 @@ function clausesWithPunctuationOf(string, icOnly) {
     var validClauseBreak = charactersThatFollowClauseBreaks.indexOf(string[indexOfNextStop + 1]) !== -1;
 
     if (validClauseBreak) {
-      if (icOnly) {
-        return [buffer + string.slice(0, indexOfNextStop) + closingPunctuationOf(string.slice(indexOfNextStop + 1))];
-      }
-
       var clauseString = buffer + string.slice(0, indexOfNextStop + 1);
       var closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
       clauseString += closingPunctuation;
@@ -477,18 +477,20 @@ function closingPunctuationOf(string) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function extractKeyAndParagraph(paragraphWithKey) {
-  var match = paragraphWithKey.match(/([^:.,;]+):\s*(.*)/);
+  var match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
   if (!match) {
     return {
       key: null,
-      paragraph: paragraphWithKey
+      block: paragraphWithKey
     };
   }
 
+  var key = match[1];
+  var paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
   return {
-    key: match[1],
-    paragraph: match[2]
+    key: key,
+    block: paragraphWithoutKey
   };
 }
 

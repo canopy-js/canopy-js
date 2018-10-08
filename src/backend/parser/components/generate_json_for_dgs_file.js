@@ -1,20 +1,22 @@
 import fs from 'fs';
-import parseParagraph from './parse_paragraph';
+import parseBlock from './parse_block';
 import paragraphsOfFile from '../helpers/paragraphs_of_file';
 import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
 
 function generateJsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);
   var tokenizedParagraphsByKey = {};
+  var topicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
+  if (!topicOfFile) { return ''; }
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
     var paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if(!paragraphData.key){ return; }
 
     var currentTopic = paragraphData.key;
-    var textWithoutKey = paragraphData.paragraph;
+    var textWithoutKey = paragraphData.block;
 
-    var tokensOfParagraph = parseParagraph(textWithoutKey, namespaceObject, topicOfFile);
+    var tokensOfParagraph = parseBlock(textWithoutKey, namespaceObject, topicOfFile);
     tokenizedParagraphsByKey[currentTopic] = tokensOfParagraph;
   });
 

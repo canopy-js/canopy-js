@@ -1,16 +1,19 @@
 function extractKeyAndParagraph(paragraphWithKey) {
-  var match = paragraphWithKey.match(/([^:.,;]+):\s*(.*)/);
+  var match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
   if(!match) {
     return {
       key: null,
-      paragraph: paragraphWithKey
+      block: paragraphWithKey
     }
   }
 
+  var key = match[1];
+  var paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
+
   return {
-    key: match[1],
-    paragraph: match[2]
+    key: key,
+    block: paragraphWithoutKey
   };
 }
 

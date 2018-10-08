@@ -277,11 +277,19 @@ var subtopicNameFromUrl = function subtopicNameFromUrl() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 var renderDomTree = function renderDomTree(topicName, paragraphTokensBySubtopic, onExternalReference) {
-  var section = document.createElement('section');
-  var paragraph = document.createElement('p');
-  section.appendChild(paragraph);
-  section.style.display = 'none';
-  return section;
+  var sectionElement = document.createElement('sectionElement');
+  var paragraphElement = document.createElement('p');
+  sectionElement.appendChild(paragraphElement); // sectionElement.style.display = 'none';
+
+  var linesOfFirstBlock = paragraphTokensBySubtopic[topicName];
+  linesOfFirstBlock.forEach(function (tokensOfLine) {
+    tokensOfLine.forEach(function (token) {
+      var textNode = document.createTextNode(token.text);
+      paragraphElement.appendChild(textNode);
+    });
+    paragraphElement.appendChild(document.createElement('br'));
+  });
+  return sectionElement;
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (renderDomTree);

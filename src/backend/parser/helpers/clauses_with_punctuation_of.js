@@ -1,10 +1,6 @@
-function clausesWithPunctuationOf(string, icOnly) {
+function clausesWithPunctuationOf(string) {
   if (!string) {
     return [];
-  }
-
-  if (string.indexOf('\n') !== -1) {
-    string = string.slice(0, string.indexOf('\n'));
   }
 
   var clausesWithPunctuation = [];
@@ -21,11 +17,7 @@ function clausesWithPunctuationOf(string, icOnly) {
     }
 
     if (indexOfNextStop === -1) {
-      if (icOnly) {
-        return [buffer + string];
-      } else {
-        clausesWithPunctuation.push(buffer + string);
-      }
+      clausesWithPunctuation.push(buffer + string);
       break;
     }
 
@@ -35,14 +27,6 @@ function clausesWithPunctuationOf(string, icOnly) {
       indexOf(string[indexOfNextStop + 1]) !== -1;
 
     if (validClauseBreak) {
-      if (icOnly) {
-        return [
-          buffer +
-          string.slice(0, indexOfNextStop) +
-          closingPunctuationOf(string.slice(indexOfNextStop + 1))
-        ];
-      }
-
       var clauseString = buffer + string.slice(0, indexOfNextStop + 1);
       var closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
       clauseString += closingPunctuation;
