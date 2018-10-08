@@ -15,6 +15,10 @@ function generateJsonFilesFromDgsDirectory(sourceDirectory, destinationDirectory
         fs.mkdirSync(destinationDirectory);
     }
 
+    if(dgsFileNameWithoutExtension.includes(' ')){
+      throw 'Data filenames may not contain spaces: ' + path;
+    }
+
     var destinationPath = destinationDirectory + '/' + dgsFileNameWithoutExtension + '.json';
     console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);

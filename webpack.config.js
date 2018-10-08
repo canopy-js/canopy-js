@@ -4,8 +4,9 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     canopy: './src/frontend/canopy.js',
-    parser: './src/backend/parser/parser.js'
+    parser: './src/backend/parser/parser.js',
   },
+  target: 'node',
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist')

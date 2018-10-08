@@ -6,7 +6,6 @@ import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
 function generateJsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);
   var tokenizedParagraphsByKey = {};
-  var topicOfFile = paragraphsWithKeys[0].split(':')[0];
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
     var paragraphData = extractKeyAndParagraph(paragraphWithKey);
