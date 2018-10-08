@@ -1,4 +1,6 @@
 const toSlug = (string) => {
+  if (!string) {return string}
+
   return string.replace(' ', '_');
 }
 
