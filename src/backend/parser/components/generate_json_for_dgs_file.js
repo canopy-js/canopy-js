@@ -1,7 +1,7 @@
-var fs = require('fs');
-var parseParagraph = require('./parse_paragraph');
-var paragraphsOfFile = require('../helpers/paragraphs_of_file');
-var extractKeyAndParagraph = require('../helpers/extract_key_and_paragraph');
+import fs from 'fs';
+import parseParagraph from './parse_paragraph';
+import paragraphsOfFile from '../helpers/paragraphs_of_file';
+import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
 
 function generateJsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);
@@ -26,4 +26,4 @@ function generateJsonForDgsFile(path, namespaceObject) {
     );
 }
 
-module.exports = generateJsonForDgsFile;
+export default generateJsonForDgsFile;

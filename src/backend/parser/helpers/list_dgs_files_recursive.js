@@ -11,4 +11,4 @@ function listDgsfilesRecursive(rootDirectory) {
   return filePaths;
 }
 
-module.exports = listDgsfilesRecursive;
+export default listDgsfilesRecursive;

@@ -1,5 +1,5 @@
-var paragraphsOfFile = require('../helpers/paragraphs_of_file');
-var extractKeyAndParagraph = require('../helpers/extract_key_and_paragraph');
+import paragraphsOfFile from '../helpers/paragraphs_of_file';
+import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
 
 function buildNamespaceObject(pathList) {
   var namespacesObject = {};
@@ -18,4 +18,4 @@ function buildNamespaceObject(pathList) {
   return namespacesObject;
 }
 
-module.exports = buildNamespaceObject;
+export default buildNamespaceObject;

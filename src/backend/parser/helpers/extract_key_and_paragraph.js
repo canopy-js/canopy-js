@@ -14,4 +14,4 @@ function extractKeyAndParagraph(paragraphWithKey) {
   };
 }
 
-module.exports = extractKeyAndParagraph;
+export default extractKeyAndParagraph;

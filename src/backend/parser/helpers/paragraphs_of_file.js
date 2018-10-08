@@ -1,8 +1,8 @@
-var fs = require('fs');
+import fs from 'fs';
 
 function paragraphsOfFile(path) {
   var fileContents = fs.readFileSync(path, 'utf8');
   return fileContents.trim().split(/\n\n+/);
 }
 
-module.exports = paragraphsOfFile;
+export default paragraphsOfFile;

@@ -62,4 +62,4 @@ function closingPunctuationOf(string) {
   return (string.match(/^['")\]}]+/) || {})[0] || '';
 }
 
-module.exports = clausesWithPunctuationOf;
+export default clausesWithPunctuationOf;

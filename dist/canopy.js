@@ -81,10 +81,31 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/frontend/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/frontend/canopy.js");
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./src/frontend/canopy.js":
+/*!********************************!*\
+  !*** ./src/frontend/canopy.js ***!
+  \********************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var display_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! display/getters */ "./src/frontend/display/getters.js");
+/* harmony import */ var display_display_topic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_topic */ "./src/frontend/display/display_topic.js");
+
+ // if no url
+
+Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(display_getters__WEBPACK_IMPORTED_MODULE_0__["defaultTopic"]); // if url
+
+Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(window.location);
+window.addEventListener('hashchange', function (e) {});
+
+/***/ }),
 
 /***/ "./src/frontend/display/display_topic.js":
 /*!***********************************************!*\
@@ -129,27 +150,6 @@ if (!defaultTopic) {
 }
 
 
-
-/***/ }),
-
-/***/ "./src/frontend/index.js":
-/*!*******************************!*\
-  !*** ./src/frontend/index.js ***!
-  \*******************************/
-/*! no exports provided */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var display_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! display/getters */ "./src/frontend/display/getters.js");
-/* harmony import */ var display_display_topic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_topic */ "./src/frontend/display/display_topic.js");
-
- // if no url
-
-Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(display_getters__WEBPACK_IMPORTED_MODULE_0__["defaultTopic"]); // if url
-
-Object(display_display_topic__WEBPACK_IMPORTED_MODULE_1__["default"])(window.location);
-window.addEventListener('hashchange', function (e) {});
 
 /***/ })
 

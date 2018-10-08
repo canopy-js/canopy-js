@@ -1,5 +1,5 @@
-var unitsOf = require('../helpers/units_of');
-var capitalize = require('../helpers/capitalize');
+import unitsOf from '../helpers/units_of';
+import capitalize from '../helpers/capitalize';
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, importedNamespaces) {
   var tokens = [];
@@ -94,4 +94,4 @@ function GlobalReferenceToken(key, text) {
   this.type = 'global';
 }
 
-module.exports = parseClause;
+export default parseClause;

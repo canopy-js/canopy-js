@@ -41,5 +41,5 @@ function unitsOf(string) {
   return units;
 }
 
-module.exports = unitsOf;
+export default unitsOf;
 

@@ -1,16 +1,19 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
-  entry: './src/frontend/index.js',
+  entry: {
+    canopy: './src/frontend/canopy.js',
+    parser: './src/backend/parser/parser.js'
+  },
   output: {
-    filename: 'canopy.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist')
   },
   resolve: {
     modules: [
       path.resolve(__dirname, 'src/frontend/'),
+      path.resolve(__dirname, 'src/backend/parser/'),
       'node_modules'
     ],
     extensions: [ '.js' ]
@@ -27,6 +30,15 @@ module.exports = {
     ]
   },
 
-  devtool: 'source-map',
-  stats: { colors: true }
+  stats: { colors: true },
+  node: {
+   fs: "empty"
+  },
+  devtool: false,
+  plugins: [
+    new webpack.SourceMapDevToolPlugin({
+      filename: "[file].map",
+      exclude: ["parser.js"]
+    })
+  ]
 }
