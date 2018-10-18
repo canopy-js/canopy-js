@@ -27,6 +27,8 @@
   "dependencies": {
     "@babel/core": "^7.1.2",
     "babel-preset-env": "^1.7.0",
-    "express": "^4.16.3"
+    "css-loader": "^1.0.0",
+    "express": "^4.16.3",
+    "style-loader": "^0.23.1"
   }
 }
