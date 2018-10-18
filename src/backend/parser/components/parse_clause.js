@@ -1,7 +1,7 @@
 import unitsOf from '../helpers/units_of';
 import capitalize from '../helpers/capitalize';
 
-function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, importedNamespaces) {
+function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, importedNamespaces) {
   var tokens = [];
   var units = unitsOf(clauseWithPunctuation);
   var globalNamespace = namespaceObject;
@@ -22,6 +22,11 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
           textTokenBuffer = '';
         }
 
+        console.log([substringCapitalized, currentTopic]);
+        if (substringCapitalized === currentTopic) {
+          break; //Reject self-match
+        }
+
         var token = new GlobalReferenceToken(substringCapitalized, substring);
         tokens.push(token);
         importedNamespaces.push(substringCapitalized);
@@ -35,6 +40,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
         );
 
       var continueFlag = false;
+      var breakFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
@@ -44,6 +50,11 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
             var token = new TextToken(textTokenBuffer);
             tokens.push(token);
             textTokenBuffer = '';
+          }
+
+          if (substringCapitalized === currentSubtopic) {
+            //TODO: test this
+            breakFlag = true; //Reject self-match
           }
 
           var tokenType = currentTopic === namespaceName ?
@@ -56,6 +67,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
         }
       }
       if(continueFlag){continue;}
+      if(breakFlag){break;}
     }
 
     var firstUnit = units.slice(0, 1);

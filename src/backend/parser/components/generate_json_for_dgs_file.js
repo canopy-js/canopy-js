@@ -13,11 +13,17 @@ function generateJsonForDgsFile(path, namespaceObject) {
     var paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if(!paragraphData.key){ return; }
 
-    var currentTopic = paragraphData.key;
+    var currentSubtopic = paragraphData.key;
     var textWithoutKey = paragraphData.block;
 
-    var tokensOfParagraph = parseBlock(textWithoutKey, namespaceObject, topicOfFile);
-    tokenizedParagraphsByKey[currentTopic] = tokensOfParagraph;
+    var tokensOfParagraph = parseBlock(
+      textWithoutKey,
+      namespaceObject,
+      currentSubtopic,
+      topicOfFile
+    );
+
+    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
 
   return JSON.stringify(
