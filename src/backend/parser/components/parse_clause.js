@@ -12,15 +12,15 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
     for(var i = units.length - 1; i >= 0; i--) {
       if (units[0] === ' ') { break; }
       if (units[i] === ' ') { continue; }
-      if (i === 0) { continue; }
 
       var substring = units.slice(0, i + 1).join('');
       var substringCapitalized = capitalize(substring);
-
       if (globalNamespace.hasOwnProperty(substringCapitalized)) {
-        var token = new TextToken(textTokenBuffer);
-        tokens.push(token);
-        textTokenBuffer = '';
+        if (textTokenBuffer){
+          var token = new TextToken(textTokenBuffer);
+          tokens.push(token);
+          textTokenBuffer = '';
+        }
 
         var token = new GlobalReferenceToken(substringCapitalized, substring);
         tokens.push(token);
@@ -40,9 +40,11 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, impor
         var currentNamespace = namespaceObject[namespaceName];
 
         if (currentNamespace.hasOwnProperty(substringCapitalized)) {
-          var token = new TextToken(textTokenBuffer);
-          tokens.push(token);
-          textTokenBuffer = '';
+          if (textTokenBuffer){
+            var token = new TextToken(textTokenBuffer);
+            tokens.push(token);
+            textTokenBuffer = '';
+          }
 
           var tokenType = currentTopic === namespaceName ?
             LocalReferenceToken : ImportReferenceToken;
