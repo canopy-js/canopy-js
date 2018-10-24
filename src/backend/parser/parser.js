@@ -1,4 +1,4 @@
-import generateJsonFilesFromDgsDirectory from './components/generate_json_files_from_dgs_directory';
+import jsonForDgsDirectory from './components/json_for_dgs_directory';
 
 if (process.argv.length < 3) {
   console.log('Project directory argument required');
@@ -9,7 +9,7 @@ if (process.argv.length < 3) {
 
 var projectDir = process.argv[2].replace(/\/$/, '');
 
-generateJsonFilesFromDgsDirectory(
+jsonForDgsDirectory(
   projectDir + '/topics',
   projectDir + '/build/data'
 );

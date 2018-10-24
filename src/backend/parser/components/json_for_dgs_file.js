@@ -3,7 +3,7 @@ import parseBlock from './parse_block';
 import paragraphsOfFile from '../helpers/paragraphs_of_file';
 import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
 
-function generateJsonForDgsFile(path, namespaceObject) {
+function jsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);
   var tokenizedParagraphsByKey = {};
   var topicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
@@ -33,4 +33,4 @@ function generateJsonForDgsFile(path, namespaceObject) {
     );
 }
 
-export default generateJsonForDgsFile;
+export default jsonForDgsFile;
