@@ -10,7 +10,7 @@ const displayTopic = (topicName, subtopicName) => {
   // Check network cache (and render cache?)
   setPathAndFragment(topicName, subtopicName);
   requestJson(topicName, function(dataObject) {
-    const paragraphTokensBySubtopic = dataObject;
+    var remainingTokenizedParagraphsBySubtopic = dataObject;
 
     var headerTextNode = document.createTextNode(topicName)
     var headerDomElement = document.createElement('h1');
@@ -19,8 +19,9 @@ const displayTopic = (topicName, subtopicName) => {
 
     const domTree = renderDomTree(
       topicName,
-      paragraphTokensBySubtopic,
-      eagerLoadOnGlobalReference
+      remainingTokenizedParagraphsBySubtopic,
+      eagerLoadOnGlobalReference,
+      []
     );
     canopyContainer.appendChild(domTree);
     const selectedElement = domElementOfBlock(topicName, subtopicName);
