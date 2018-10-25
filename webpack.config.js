@@ -15,7 +15,7 @@ fs.readdirSync('node_modules')
 module.exports = {
   entry: {
     canopy: './src/frontend/canopy.js',
-    compiler: './src/backend/compiler/compiler.js',
+    parser: './src/backend/parser/parser.js',
     server: './src/backend/server/server.js'
   },
   target: 'node',
@@ -27,7 +27,7 @@ module.exports = {
   resolve: {
     modules: [
       path.resolve(__dirname, 'src/frontend/'),
-      path.resolve(__dirname, 'src/backend/compiler/'),
+      path.resolve(__dirname, 'src/backend/parser/'),
       'node_modules'
     ],
     extensions: [ '.js' ]
@@ -56,7 +56,7 @@ module.exports = {
   plugins: [
     new webpack.SourceMapDevToolPlugin({
       filename: "[file].map",
-      exclude: ["compiler.js", "server.js"]
+      exclude: ["parser.js", "server.js"]
     })
   ]
 }
