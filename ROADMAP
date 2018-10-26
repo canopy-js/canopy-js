@@ -1,4 +1,0 @@
-BACKEND
-
-- Try to make source subdirectories that don't need to import from other subdirectories.
-– Consolidate termology in code -- eg topic/context/namespace, key/topic

@@ -29,16 +29,10 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
       } else if (token.type === 'local') {
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
-        // Check if referee has already been rendered
-        // If no, go render and make this a parent link
-        // If yes, make this a local redirect
-        // Should be the same if you go through fragment url
 
+
+        // TODO: add to this if statment that we aren't in a parenthetical remark
         if (!renderedSubtopics.hasOwnProperty(token.key)) {
-          // If the subtopic referenced here hasn't already been rendered it,
-          // render it and append the section element here
-          // Otherwise, just create the link but don't render the section element
-          //
           var subtree = renderDomTree(
             topicName,
             token.key,
