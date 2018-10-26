@@ -1,7 +1,7 @@
-import { toSlug } from 'helpers/id_generators';
+import { slugFor } from 'helpers/identifiers';
 
 const requestJson = (topicName, success) => {
-  fetch('data/' + toSlug(topicName.toLowerCase()) + '.json').
+  fetch('data/' + slugFor(topicName.toLowerCase()) + '.json').
     then(res => res.json()).
     then(json => {success(json)});
 }
