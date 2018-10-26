@@ -31,6 +31,7 @@
 #_canopy a {
   text-decoration: none;
   color: black;
+  cursor: pointer;
 }
 
 #_canopy a:hover {
