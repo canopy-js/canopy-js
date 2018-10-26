@@ -6,10 +6,10 @@ import css from 'style/canopy.css';
 
 if (!topicNameFromUrl()) {
   setPathAndFragment(defaultTopic, null);
+} else {
+  renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
 }
 
-renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
-
-// window.addEventListener('hashchange', (e) => {
-//   renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
-// });
+window.addEventListener('popstate', (e) => {
+  renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
+});

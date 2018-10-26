@@ -8,7 +8,7 @@ const setPathAndFragment = (topicName, subtopicName) => {
   }
 
   if (!subtopicName) {
-    history.pushState("", document.title, window.location.pathname + window.location.search);
+    history.pushState("", document.title, '/' + slugFor(topicName) + window.location.search);
   } else if (subtopicName && topicName !== subtopicName) {
     history.pushState(
       "", document.title,
@@ -17,6 +17,9 @@ const setPathAndFragment = (topicName, subtopicName) => {
   } else {
     history.pushState("", document.title, '/' + slugFor(topicName) + window.location.search);
   }
+
+  var popStateEvent = new PopStateEvent('popstate');
+  dispatchEvent(popStateEvent);
 }
 
 export default setPathAndFragment;

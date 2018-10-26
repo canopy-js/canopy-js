@@ -4,7 +4,6 @@ import setPathAndFragment from 'helpers/set_path_and_fragment';
 import { sectionElementOfTopic } from 'helpers/getters';
 
 const displaySubtopic = (topicName, subtopicName) => {
-  setPathAndFragment(topicName, subtopicName);
   const sectionElement = sectionElementOfTopic(topicName, subtopicName);
   moveSelectedSectionClass(sectionElement);
 

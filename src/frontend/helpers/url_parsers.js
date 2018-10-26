@@ -1,5 +1,5 @@
 const topicNameFromUrl = () => {
-  return window.location.pathname.replace('/', '');
+  return window.location.pathname.replace('/', '').replace(/_/g, ' ');
 };
 
 const subtopicNameFromUrl = () => {

@@ -1,6 +1,6 @@
 import { htmlIdFor } from 'helpers/identifiers';
 import displaySubtopic from 'display/display_subtopic';
-import renderTopic from 'render/render_topic';
+import setPathAndFragment from 'helpers/set_path_and_fragment';
 
 const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalReference, currentTopicStack, renderedSubtopics) => {
   var sectionElement = document.createElement('section');
@@ -51,12 +51,12 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
           tokenElement.addEventListener('click', () => {
             // If the link's child is already selected, display the link's section
             if (document.querySelector('._canopy_selected_section') === subtree) {
-              displaySubtopic(
+              setPathAndFragment(
                 sectionElement.dataset.topicName,
                 sectionElement.dataset.subtopicName
               );
             } else {
-              displaySubtopic(topicName, token.key);
+              setPathAndFragment(topicName, token.key);
             }
           });
 
@@ -72,7 +72,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.appendChild(textElement);
         tokenElement.classList.add('canopy-alias-link');
         tokenElement.addEventListener('click', () => {
-          renderTopic(token.context, token.key);
+          setPathAndFragment(token.context, token.key);
         });
 
       } else if (token.type === 'global') {
@@ -81,7 +81,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.appendChild(textElement);
         tokenElement.classList.add('canopy-alias-link');
         tokenElement.addEventListener('click', () => {
-          renderTopic(token.key, token.key);
+          setPathAndFragment(token.key, token.key);
         });
 
         onGlobalReference(token.key); // TODO: rename .key to .topic or something

@@ -1,0 +1,6 @@
+- Try to make source subdirectories that don't need to import from other subdirectories.
+– Consolidate termology in code -- eg topic/context/namespace, key/topic
+– Create linter that checks eg if there is a parenthetical reference that isn't followed by another local reference to the same, & checks for orphan subtopics generally.
+– Pressing up on root should return to referrer
+– Consider adding key without paragraph concept
+– Refactor import reference code by constructing mixed namespace
