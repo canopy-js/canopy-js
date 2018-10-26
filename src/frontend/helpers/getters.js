@@ -11,7 +11,7 @@ if(!defaultTopic) {
 }
 
 const sectionElementOfTopic = (topicName, subtopicName) => {
-  return document.querySelector('#_canopy #_canopy_' + topicName + '_' + subtopicName );
+  return document.querySelector('#_canopy #_canopy_' + slugFor(topicName) + '_' + slugFor(subtopicName));
 }
 
 export {

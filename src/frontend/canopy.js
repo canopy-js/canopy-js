@@ -10,6 +10,6 @@ if (!topicNameFromUrl()) {
 
 renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
 
-window.addEventListener('hashchange', (e) => {
-  renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
-});
+// window.addEventListener('hashchange', (e) => {
+//   renderTopic(topicNameFromUrl(), subtopicNameFromUrl() || topicNameFromUrl());
+// });

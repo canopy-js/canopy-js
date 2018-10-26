@@ -7,9 +7,15 @@ const setPathAndFragment = (topicName, subtopicName) => {
     return;
   }
 
-  window.location.pathname = '/' + slugFor(topicName);
-  if (subtopicName) {
-    window.location.href = '#' + slugFor(subtopicName);
+  if (!subtopicName) {
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  } else if (subtopicName && topicName !== subtopicName) {
+    history.pushState(
+      "", document.title,
+      '/' + slugFor(topicName) + '#' + slugFor(subtopicName) + window.location.search
+    );
+  } else {
+    history.pushState("", document.title, '/' + slugFor(topicName) + window.location.search);
   }
 }
 

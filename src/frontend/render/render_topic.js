@@ -2,20 +2,21 @@ import requestJson from 'requests/request_json';
 import { canopyContainer } from 'helpers/getters';
 import renderDomTree from 'render/render_dom_tree';
 import eagerLoadOnGlobalReference from 'display/eager_load_on_external_reference';
-import displayPathTo from 'display/display_path_to';
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import displaySubtopic from 'display/display_subtopic'
 import { sectionElementOfTopic } from 'helpers/getters';
 
 const renderTopic = (topicName, subtopicName) => {
   if(!topicName){ throw 'Topic name required'; }
+  if(sectionElementOfTopic(topicName, subtopicName)) {
+    createOrReplaceHeader(topicName);
+    displaySubtopic(topicName, subtopicName);
+    return;
+  }
   // Check network cache (and render cache?)
   requestJson(topicName, function(dataObject) {
     var paragraphsBySubtopic = dataObject;
 
-    var headerTextNode = document.createTextNode(topicName)
-    var headerDomElement = document.createElement('h1');
-    headerDomElement.appendChild(headerTextNode);
-    canopyContainer.appendChild(headerDomElement);
+    createOrReplaceHeader(topicName);
 
     const domTree = renderDomTree(
       topicName,
@@ -28,10 +29,18 @@ const renderTopic = (topicName, subtopicName) => {
 
     canopyContainer.appendChild(domTree);
 
-    setPathAndFragment(topicName, subtopicName);
-    const selectedElement = sectionElementOfTopic(topicName, subtopicName);
-    displayPathTo(selectedElement);
+    displaySubtopic(topicName, subtopicName);
   });
 }
+
+function createOrReplaceHeader(topicName) {
+  var existingHeader = document.querySelector('#_canopy h1')
+  if (existingHeader) { existingHeader.remove(); }
+
+  var headerTextNode = document.createTextNode(topicName)
+  var headerDomElement = document.createElement('h1');
+  headerDomElement.appendChild(headerTextNode);
+  canopyContainer.prepend(headerDomElement);
+};
 
 export default renderTopic;

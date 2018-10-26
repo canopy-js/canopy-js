@@ -1,28 +1,40 @@
 import { canopyContainer, rootSectionElement } from 'helpers/getters';
 import { htmlIdFor } from 'helpers/identifiers';
+import setPathAndFragment from 'helpers/set_path_and_fragment';
+import { sectionElementOfTopic } from 'helpers/getters';
 
-const displayPathTo = (sectionElement) => {
+const displaySubtopic = (topicName, subtopicName) => {
+  setPathAndFragment(topicName, subtopicName);
+  const sectionElement = sectionElementOfTopic(topicName, subtopicName);
+  moveSelectedSectionClass(sectionElement);
+
   hideAllSectionElements();
   deselectAllLinks();
-
-  displayPathSegmentTo(sectionElement);
-
+  displayPathTo(sectionElement);
   window.scrollTo(0, canopyContainer.scrollHeight);
-}
 
-const displayPathSegmentTo = (sectionElement) => {
+};
+
+const displayPathTo = (sectionElement) => {
   sectionElement.style.display = 'block';
   if (sectionElement.parentNode === canopyContainer) { return; }
   var parentLink = document.querySelector('#_canopy a.' + sectionElement.id);
   parentLink.classList.add('canopy-open-link');
   var parentSectionElement = parentLink.parentNode.parentNode;
-  displayPathSegmentTo(parentSectionElement);
+  displayPathTo(parentSectionElement);
 }
 
 function forEach(list, callback) {
   for (var i = 0; i < list.length; i++) {
     callback(list[i]);
   }
+}
+
+function moveSelectedSectionClass(sectionElement) {
+  forEach(document.getElementsByTagName("section"), function(sectionElement) {
+    sectionElement.classList.remove('_canopy_selected_section');
+  });
+  sectionElement.classList.add('_canopy_selected_section');
 }
 
 function hideAllSectionElements() {
@@ -33,8 +45,8 @@ function hideAllSectionElements() {
 
 function deselectAllLinks() {
   forEach(document.getElementsByTagName("a"), function(linkElement) {
-    linkElement.classList.remove('moss-selected-link');
-    linkElement.classList.remove('moss-open-link');
+    linkElement.classList.remove('canopy-selected-link');
+    linkElement.classList.remove('canopy-open-link');
   });
 }
 
@@ -58,7 +70,7 @@ function underlineLink(linkElement) {
 //   showPathToRecursive(linkElement);
 
 //   showPreviewIfParentLink(linkElement);
-//   linkElement.classList.add('moss-selected-link');
+//   linkElement.classList.add('canopy-selected-link');
 
 //   function showPathToRecursive(linkElement) {
 //     showSectionElementOfLink(linkElement);
@@ -72,4 +84,4 @@ function underlineLink(linkElement) {
 //   }
 // }
 
-export default displayPathTo;
+export default displaySubtopic;
