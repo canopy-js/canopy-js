@@ -22,7 +22,6 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           textTokenBuffer = '';
         }
 
-        console.log([substringCapitalized, currentTopic]);
         if (substringCapitalized === currentTopic) {
           break; //Reject self-match
         }
@@ -40,21 +39,18 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
         );
 
       var continueFlag = false;
-      var breakFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
         var namespaceName = avaliableNamespaces[j];
         var currentNamespace = namespaceObject[namespaceName];
-
         if (currentNamespace.hasOwnProperty(substringCapitalized)) {
+          if (substringCapitalized === currentSubtopic) {
+            break;
+          }
+
           if (textTokenBuffer){
             var token = new TextToken(textTokenBuffer);
             tokens.push(token);
             textTokenBuffer = '';
-          }
-
-          if (substringCapitalized === currentSubtopic) {
-            //TODO: test this
-            breakFlag = true; //Reject self-match
           }
 
           var tokenType = currentTopic === namespaceName ?
@@ -67,7 +63,6 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
         }
       }
       if(continueFlag){continue;}
-      if(breakFlag){break;}
     }
 
     var firstUnit = units.slice(0, 1);
