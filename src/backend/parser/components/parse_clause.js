@@ -15,23 +15,6 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
       var substring = units.slice(0, i + 1).join('');
       var substringCapitalized = capitalize(substring);
-      if (globalNamespace.hasOwnProperty(substringCapitalized)) {
-        if (textTokenBuffer){
-          var token = new TextToken(textTokenBuffer);
-          tokens.push(token);
-          textTokenBuffer = '';
-        }
-
-        if (substringCapitalized === currentTopic) {
-          break; //Reject self-match
-        }
-
-        var token = new GlobalReferenceToken(substringCapitalized, substring);
-        tokens.push(token);
-        importedNamespaces.push(substringCapitalized);
-        units = units.slice(i + 1, units.length);
-        continue;
-      }
 
       var avaliableNamespaces = Array.prototype.concat(
         importedNamespaces,
@@ -63,6 +46,24 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
         }
       }
       if(continueFlag){continue;}
+
+      if (globalNamespace.hasOwnProperty(substringCapitalized)) {
+        if (textTokenBuffer){
+          var token = new TextToken(textTokenBuffer);
+          tokens.push(token);
+          textTokenBuffer = '';
+        }
+
+        if (substringCapitalized === currentTopic) {
+          break; //Reject self-match
+        }
+
+        var token = new GlobalReferenceToken(substringCapitalized, substring);
+        tokens.push(token);
+        importedNamespaces.push(substringCapitalized);
+        units = units.slice(i + 1, units.length);
+        continue;
+      }
     }
 
     var firstUnit = units.slice(0, 1);
