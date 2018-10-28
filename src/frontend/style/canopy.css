@@ -29,7 +29,7 @@
 }
 
 #_canopy a {
-  text-decoration: none;
+  text-decoration: underline #DCDCDC;
   color: black;
   cursor: pointer;
 }
@@ -37,6 +37,10 @@
 #_canopy a:hover {
   text-decoration: underline;
 }
+
+/*#_canopy .canopy-alias-link {
+  text-decoration: underline #a8c3da;
+}*/
 
 #_canopy .canopy-alias-link:hover {
   color: #4078c0;

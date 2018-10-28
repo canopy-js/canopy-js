@@ -30,8 +30,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
 
-
-        // TODO: add to this if statment that we aren't in a parenthetical remark
+        // TODO: and if we aren't in a parenthetical remark
         if (!renderedSubtopics.hasOwnProperty(token.key)) {
           var subtree = renderDomTree(
             topicName,
@@ -44,7 +43,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
 
           tokenElement.addEventListener('click', () => {
             // If the link's child is already selected, display the link's section
-            if (document.querySelector('._canopy_selected_section') === subtree) {
+            if (document.querySelector('.canopy-selected-section') === subtree) {
               setPathAndFragment(
                 sectionElement.dataset.topicName,
                 sectionElement.dataset.subtopicName
@@ -54,7 +53,10 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
             }
           });
 
-          tokenElement.classList.add(htmlIdFor(topicName, token.key));
+          var id = htmlIdFor(topicName, token.key);
+          tokenElement.classList.add(id);
+          tokenElement.classList.add('canopy-parent-link');
+          tokenElement.dataset.id = id;
 
           sectionElement.appendChild(subtree);
         } else {
