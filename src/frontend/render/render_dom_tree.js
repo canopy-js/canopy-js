@@ -67,6 +67,8 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
         tokenElement.classList.add('canopy-alias-link');
+        tokenElement.dataset.topicName = token.context;
+        tokenElement.dataset.subtopicName = token.key;
         tokenElement.addEventListener('click', () => {
           setPathAndFragment(token.context, token.key);
         });
@@ -76,6 +78,8 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
         tokenElement.classList.add('canopy-alias-link');
+        tokenElement.dataset.topicName = token.key;
+        tokenElement.dataset.subtopicName = token.key;
         tokenElement.addEventListener('click', () => {
           setPathAndFragment(token.key, token.key);
         });

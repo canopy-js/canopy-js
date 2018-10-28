@@ -4,12 +4,15 @@ import renderDomTree from 'render/render_dom_tree';
 import eagerLoadOnGlobalReference from 'display/eager_load_on_external_reference';
 import displaySubtopic from 'display/display_subtopic'
 import { sectionElementOfTopic } from 'helpers/getters';
+import { firstLinkOfSection } from 'keys/relationships';
 
-const renderTopic = (topicName, subtopicName) => {
+const renderTopic = (topicName, subtopicName, selectFirstLink) => {
   if(!topicName){ throw 'Topic name required'; }
-  if(sectionElementOfTopic(topicName, subtopicName)) {
+
+  var existingSectionElement = sectionElementOfTopic(topicName, subtopicName)
+  if(existingSectionElement) {
     createOrReplaceHeader(topicName);
-    displaySubtopic(topicName, subtopicName);
+    displaySubtopic(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(existingSectionElement) : null);
     return;
   }
   // Check network cache (and render cache?)
@@ -29,7 +32,7 @@ const renderTopic = (topicName, subtopicName) => {
 
     canopyContainer.appendChild(domTree);
 
-    displaySubtopic(topicName, subtopicName);
+    displaySubtopic(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(domTree) : null);
   });
 }
 

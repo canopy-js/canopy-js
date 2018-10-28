@@ -1,19 +1,16 @@
 import { currentSection, selectedLink } from 'helpers/getters';
 import {
-  firstSiblingOf,
-  lastSiblingOf,
-  leftwardLink,
-  rightwardLink,
-  linkAfter,
-  linkBefore,
-  upwardLink,
-  downwardLink
-} from 'keys/relationships';
-
+  moveUpward,
+  moveDownward,
+  moveLeftward,
+  moveRightward,
+  moveDownOrRedirect
+} from 'keys/handlers';
+import { firstLinkOfSection } from 'keys/relationships';
 import displaySelectedLink from 'display/display_selected_link';
 
 // Copyright Greenhouse Software 2017
-const registerKeyListeners = () => {
+const registerKeyListener = () => {
   window.addEventListener('keydown', function(e) {
     var modifiers =
       (e.metaKey ? 'command-' : '') +
@@ -29,35 +26,28 @@ const registerKeyListeners = () => {
       e.preventDefault();
     }
 
-    var newTab = false;
-
-    var linkElement = (shortcutRelationships[shortcutName]||function(){})() ||
-      selectedLink();
-
-    displaySelectedLink(linkElement);
+    if (selectedLink()) {
+      (shortcutRelationships[shortcutName]||function(){})()
+    } else if (shortcutRelationships[shortcutName]) {
+      displaySelectedLink(firstLinkOfSection(currentSection()));
+    }
   });
 }
 
 // Pressing down on alias link should cause redirect
 
 const shortcutRelationships = {
-  'left': leftwardLink,
-  'up': upwardLink,
-  'down': downwardLink,
-  'right': rightwardLink,
+  'left': moveLeftward,
+  'up': moveUpward,
+  'down': moveDownward,
+  'right': moveRightward,
 
-  'h': leftwardLink,
-  'j': upwardLink,
-  'k': downwardLink,
-  'l': rightwardLink
-}
+  'h': moveLeftward,
+  'j': moveUpward,
+  'k': moveDownward,
+  'l': moveRightward,
 
-function openLink(link, newTab) {
-  if (newTab) {
-    openInNewTab(link);
-  } else {
-    setFragmentToHashOfLink(link);
-  }
+  'return': moveDownOrRedirect
 }
 
 const keyNames = {
@@ -132,4 +122,4 @@ const keyNames = {
   187: '='
 }
 
-export default registerKeyListeners;
+export default registerKeyListener;

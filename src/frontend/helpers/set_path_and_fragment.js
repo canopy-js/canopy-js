@@ -2,8 +2,10 @@ import { slugFor } from 'helpers/identifiers';
 import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers';
 
 const setPathAndFragment = (topicName, subtopicName) => {
-  if (topicNameFromUrl() === slugFor(topicName) &&
-    subtopicNameFromUrl() === slugFor(subtopicName)) {
+  // Do nothing if
+  if (topicNameFromUrl() === topicName && // the topic is already set correctly
+    (subtopicNameFromUrl() === subtopicName || // and either the subtopic is already set in the fragment id
+      (topicName === subtopicName && subtopicNameFromUrl() === ''))) { // or there is no fragment id because there is no subtopic
     return;
   }
 

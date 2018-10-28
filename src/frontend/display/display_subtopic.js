@@ -9,16 +9,17 @@ import {
 } from 'display/reset_page';
 import { parentLinkOfSectionElement } from 'helpers/getters';
 
-
-const displaySubtopic = (topicName, subtopicName) => {
-  const sectionElement = sectionElementOfTopic(topicName, subtopicName);
+const displaySubtopic = (topicName, subtopicName, selectedLink) => {
+  setPathAndFragment(topicName, subtopicName);
+  const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
   moveSelectedSectionClass(sectionElement);
 
   hideAllSectionElements();
   deselectAllLinks();
 
-  var parentLink = parentLinkOfSectionElement(sectionElement);
-  if (parentLink) { parentLink.classList.add('canopy-selected-link'); }
+  var linkToSelect = selectedLink ||
+    parentLinkOfSectionElement(sectionElement);
+  if (linkToSelect) { linkToSelect.classList.add('canopy-selected-link'); }
 
   displayPathTo(sectionElement);
   window.scrollTo(0, canopyContainer.scrollHeight);

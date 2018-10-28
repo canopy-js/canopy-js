@@ -4,3 +4,4 @@
 – Pressing up on root should return to referrer
 – Consider adding key without paragraph concept
 – Refactor import reference code by constructing mixed namespace
+– Come up with better name for alias links

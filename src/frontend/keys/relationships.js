@@ -5,26 +5,6 @@ import {
   sectionElementOfLink
 } from 'helpers/getters';
 
-function upwardLink() {
-  return parentLinkOf(selectedLink()) ||
-    firstLinkOfSection(currentRootSection());
-}
-
-function downwardLink() {
-  return firstChildLinkOf(selectedLink()) ||
-    linkAfter(selectedLink()) ||
-    selectedLink();
-}
-
-function leftwardLink() {
-  return linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
-}
-
-function rightwardLink() {
-  return linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
-}
-
-
 function firstSiblingOf(linkElement) {
   if (linkElement === null){
     return null;
@@ -119,5 +99,8 @@ export {
   linkAfter,
   linkBefore,
   upwardLink,
-  downwardLink
+  downwardLink,
+  parentLinkOf,
+  firstLinkOfSection,
+  firstChildLinkOf
 };
