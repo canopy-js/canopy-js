@@ -43,8 +43,8 @@ const shortcutRelationships = {
   'right': moveRightward,
 
   'h': moveLeftward,
-  'j': moveUpward,
-  'k': moveDownward,
+  'j': moveDownward,
+  'k': moveUpward,
   'l': moveRightward,
 
   'return': moveDownOrRedirect
