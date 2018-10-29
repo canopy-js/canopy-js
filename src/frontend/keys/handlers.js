@@ -42,7 +42,10 @@ function moveRightward() {
 function moveDownOrRedirect() {
   if (selectedLink().classList.contains('canopy-parent-link')) {
     moveDownward(false);
-  } else if (selectedLink().classList.contains('canopy-alias-link')) {
+  } else if (
+    selectedLink().classList.contains('canopy-global-link') ||
+    selectedLink().classList.contains('canopy-redundant-parent-link')
+    ) {
     renderTopic(
       selectedLink().dataset.topicName,
       selectedLink().dataset.subtopicName,

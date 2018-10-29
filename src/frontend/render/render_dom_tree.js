@@ -14,7 +14,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
 
   var linesOfBlock = paragraphsBySubtopic[subtopicName];
   currentTopicStack.push(topicName);
-  renderedSubtopics[topicName] = true;
+  renderedSubtopics[subtopicName] = true;
 
   linesOfBlock.forEach((tokensOfLine, lineNumber) => {
     if (lineNumber > 0) {
@@ -30,7 +30,6 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
 
-        // TODO: and if we aren't in a parenthetical remark
         if (!renderedSubtopics.hasOwnProperty(token.key)) {
           var subtree = renderDomTree(
             topicName,
@@ -60,13 +59,17 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
 
           sectionElement.appendChild(subtree);
         } else {
-
+          tokenElement.classList.add('canopy-redundant-parent-link');
+          tokenElement.dataset.topicName = token.context;
+          tokenElement.dataset.subtopicName = token.key;
+          tokenElement.addEventListener('click', () => {
+            setPathAndFragment(topicName, token.key);
+          });
         }
       } else if (token.type === 'import') {
-        // Trigger eager load of that page
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
-        tokenElement.classList.add('canopy-alias-link');
+        tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.topicName = token.context;
         tokenElement.dataset.subtopicName = token.key;
         tokenElement.addEventListener('click', () => {
@@ -77,7 +80,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         // Trigger eager load of that page
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
-        tokenElement.classList.add('canopy-alias-link');
+        tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.topicName = token.key;
         tokenElement.dataset.subtopicName = token.key;
         tokenElement.addEventListener('click', () => {

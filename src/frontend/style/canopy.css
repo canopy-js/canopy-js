@@ -38,11 +38,11 @@
   text-decoration: underline;
 }
 
-/*#_canopy .canopy-alias-link {
+/*#_canopy .canopy-global-link {
   text-decoration: underline #a8c3da;
 }*/
 
-#_canopy .canopy-alias-link:hover {
+#_canopy .canopy-global-link:hover {
   color: #4078c0;
 }
 
@@ -55,7 +55,7 @@
   color: #4078c0;
 }
 
-#_canopy .canopy-selected-link.canopy-alias-link {
+#_canopy .canopy-selected-link.canopy-global-link {
   color: #4078c0;
 }
 
