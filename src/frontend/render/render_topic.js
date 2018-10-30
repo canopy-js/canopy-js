@@ -5,10 +5,10 @@ import eagerLoadOnGlobalReference from 'display/eager_load_on_external_reference
 import displaySubtopic from 'display/display_subtopic'
 import { sectionElementOfTopic } from 'helpers/getters';
 import { firstLinkOfSection } from 'keys/relationships';
+import { defaultTopic } from 'helpers/getters';
+import setPathAndFragment from 'helpers/set_path_and_fragment';
 
 const renderTopic = (topicName, subtopicName, selectFirstLink) => {
-  if(!topicName){ throw 'Topic name required'; }
-
   var existingSectionElement = sectionElementOfTopic(topicName, subtopicName)
   if(existingSectionElement) {
     createOrReplaceHeader(topicName);
@@ -33,6 +33,8 @@ const renderTopic = (topicName, subtopicName, selectFirstLink) => {
     canopyContainer.appendChild(domTree);
 
     displaySubtopic(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(domTree) : null);
+  }, (e) => {
+    setPathAndFragment(defaultTopic, null);
   });
 }
 

@@ -12,6 +12,7 @@ import { parentLinkOfSectionElement } from 'helpers/getters';
 const displaySubtopic = (topicName, subtopicName, selectedLink) => {
   setPathAndFragment(topicName, subtopicName);
   const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
+  if (!sectionElement) { return setPathAndFragment(topicName, topicName); }
   moveSelectedSectionClass(sectionElement);
 
   hideAllSectionElements();

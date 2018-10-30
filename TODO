@@ -5,3 +5,6 @@
 – Consider adding key without paragraph concept
 – Refactor import reference code by constructing mixed namespace
 – Come up with better name for alias links
+– Audit all defaulting in code eg null subtopic name – maybe its desirable to guarentee subtopic always exists
+– Audit every code path happens
+– Make sure all calls to render go through setFragmentId - list code paths
