@@ -31,7 +31,7 @@ const parentLinkOfSectionElement = (sectionElement) => {
 }
 
 const childSectionElementOfParentLink = (linkElement) => {
-  return document.querySelector('#' + linkElement.dataset.id);
+  return document.querySelector('#' + linkElement.dataset.childSectionId);
 }
 
 function sectionElementOfLink(linkElement) {

@@ -1,6 +1,7 @@
 import { htmlIdFor } from 'helpers/identifiers';
 import displaySubtopic from 'display/display_subtopic';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
+import { slugFor } from 'helpers/identifiers';
 
 const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalReference, currentTopicStack, renderedSubtopics) => {
   var sectionElement = document.createElement('section');
@@ -29,6 +30,7 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
       } else if (token.type === 'local') {
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
+        tokenElement.href = `/${slugFor(topicName)}#${slugFor(token.key)}`;
 
         if (!renderedSubtopics.hasOwnProperty(token.key)) {
           var subtree = renderDomTree(
@@ -40,7 +42,8 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
             renderedSubtopics
           );
 
-          tokenElement.addEventListener('click', () => {
+          tokenElement.addEventListener('click', (e) => {
+            e.preventDefault();
             // If the link's child is already selected, display the link's section
             if (document.querySelector('.canopy-selected-section') === subtree) {
               setPathAndFragment(
@@ -55,14 +58,15 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
           var id = htmlIdFor(topicName, token.key);
           tokenElement.classList.add(id);
           tokenElement.classList.add('canopy-parent-link');
-          tokenElement.dataset.id = id;
+          tokenElement.dataset.childSectionId = id;
 
           sectionElement.appendChild(subtree);
         } else {
           tokenElement.classList.add('canopy-redundant-parent-link');
           tokenElement.dataset.topicName = token.context;
           tokenElement.dataset.subtopicName = token.key;
-          tokenElement.addEventListener('click', () => {
+          tokenElement.addEventListener('click', (e) => {
+            e.preventDefault();
             setPathAndFragment(topicName, token.key);
           });
         }
@@ -72,7 +76,9 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.topicName = token.context;
         tokenElement.dataset.subtopicName = token.key;
-        tokenElement.addEventListener('click', () => {
+        tokenElement.href = `/${slugFor(token.context)}#${slugFor(token.key)}`;
+        tokenElement.addEventListener('click', (e) => {
+          e.preventDefault();
           setPathAndFragment(token.context, token.key);
         });
 
@@ -83,7 +89,9 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.topicName = token.key;
         tokenElement.dataset.subtopicName = token.key;
-        tokenElement.addEventListener('click', () => {
+        tokenElement.href = `/${slugFor(token.key)}#${slugFor(token.key)}`;
+        tokenElement.addEventListener('click', (e) => {
+          e.preventDefault();
           setPathAndFragment(token.key, token.key);
         });
 
