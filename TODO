@@ -1,10 +1,17 @@
 - Try to make source subdirectories that don't need to import from other subdirectories.
 – Consolidate termology in code -- eg topic/context/namespace, key/topic
-– Create linter that checks eg if there is a parenthetical reference that isn't followed by another local reference to the same, & checks for orphan subtopics generally.
-– Pressing up on root should return to referrer
+– Create linter that checks eg for orphan subtopics
 – Consider adding key without paragraph concept
-– Refactor import reference code by constructing mixed namespace
-– Come up with better name for alias links
 – Audit all defaulting in code eg null subtopic name – maybe its desirable to guarentee subtopic always exists
-– Audit every code path happens
+– Audit every code path actually happens
 – Make sure all calls to render go through setFragmentId - list code paths
+– Purple links?
+– Add comments
+– Create URL generation helper?
+– Why not just check server.js into the dist folder and not put it in src ?
+– Sort out relationships vs getters – relationships should have arguments
+– Make docs html endpoint in canopy
+– Tests
+– Check all functions are used.
+– Eslint
+– URL encode and decode URLs
