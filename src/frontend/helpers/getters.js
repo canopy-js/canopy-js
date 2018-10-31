@@ -42,6 +42,11 @@ function sectionElementOfLink(linkElement) {
   return linkElement.parentNode.parentNode;
 }
 
+function mostRecentlySelectedLinkOfSection(sectionElement) {
+  return sectionElement.
+    getElementsByClassName('canopy-most-recently-selected-link-of-section')[0];
+}
+
 export {
   canopyContainer,
   defaultTopic,
@@ -52,4 +57,5 @@ export {
   parentLinkOfSectionElement,
   childSectionElementOfParentLink,
   sectionElementOfLink,
+  mostRecentlySelectedLinkOfSection
 };

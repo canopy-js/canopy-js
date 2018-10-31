@@ -52,6 +52,7 @@
 }
 
 #_canopy .canopy-selected-link.canopy-global-link {
+  text-decoration: underline #4078c0;
   color: #4078c0;
 }
 

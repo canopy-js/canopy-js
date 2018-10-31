@@ -7,9 +7,9 @@ import {
   hideAllSectionElements,
   deselectAllLinks
 } from 'display/reset_page';
-import { parentLinkOfSectionElement } from 'helpers/getters';
+import { parentLinkOfSectionElement, mostRecentlySelectedLinkOfSection } from 'helpers/getters';
 
-const displaySubtopic = (topicName, subtopicName, selectedLink) => {
+const displayPath = (topicName, subtopicName, selectedLink) => {
   setPathAndFragment(topicName, subtopicName);
   const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
   if (!sectionElement) { return setPathAndFragment(topicName, topicName); }
@@ -19,6 +19,7 @@ const displaySubtopic = (topicName, subtopicName, selectedLink) => {
   deselectAllLinks();
 
   var linkToSelect = selectedLink ||
+    mostRecentlySelectedLinkOfSection(sectionElement) ||
     parentLinkOfSectionElement(sectionElement);
   if (linkToSelect) { linkToSelect.classList.add('canopy-selected-link'); }
 
@@ -38,4 +39,4 @@ const displayPathTo = (sectionElement) => {
   displayPathTo(parentSectionElement);
 }
 
-export default displaySubtopic;
+export default displayPath;

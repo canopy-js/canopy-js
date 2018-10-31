@@ -2,7 +2,7 @@ import requestJson from 'requests/request_json';
 import { canopyContainer } from 'helpers/getters';
 import renderDomTree from 'render/render_dom_tree';
 import eagerLoadOnGlobalReference from 'display/eager_load_on_external_reference';
-import displaySubtopic from 'display/display_subtopic'
+import displayPath from 'display/display_path'
 import { sectionElementOfTopic } from 'helpers/getters';
 import { firstLinkOfSection } from 'keys/relationships';
 import { defaultTopic } from 'helpers/getters';
@@ -12,10 +12,10 @@ const renderTopic = (topicName, subtopicName, selectFirstLink) => {
   var existingSectionElement = sectionElementOfTopic(topicName, subtopicName)
   if(existingSectionElement) {
     createOrReplaceHeader(topicName);
-    displaySubtopic(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(existingSectionElement) : null);
+    displayPath(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(existingSectionElement) : null);
     return;
   }
-  // Check network cache (and render cache?)
+
   requestJson(topicName, function(dataObject) {
     var paragraphsBySubtopic = dataObject;
 
@@ -32,7 +32,7 @@ const renderTopic = (topicName, subtopicName, selectFirstLink) => {
 
     canopyContainer.appendChild(domTree);
 
-    displaySubtopic(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(domTree) : null);
+    displayPath(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(domTree) : null);
   }, (e) => {
     setPathAndFragment(defaultTopic, null);
   });

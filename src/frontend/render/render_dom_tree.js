@@ -1,5 +1,5 @@
 import { htmlIdFor } from 'helpers/identifiers';
-import displaySubtopic from 'display/display_subtopic';
+import displayPath from 'display/display_path';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
 import { slugFor } from 'helpers/identifiers';
 
