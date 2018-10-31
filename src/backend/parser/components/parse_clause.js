@@ -1,7 +1,7 @@
 import unitsOf from '../helpers/units_of';
 import capitalize from '../helpers/capitalize';
 
-function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, importedNamespaces) {
+function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces) {
   var tokens = [];
   var units = unitsOf(clauseWithPunctuation);
   var globalNamespace = namespaceObject;
@@ -15,11 +15,6 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
       var substring = units.slice(0, i + 1).join('');
       var substringCapitalized = capitalize(substring);
-
-      var avaliableNamespaces = Array.prototype.concat(
-        importedNamespaces,
-        currentTopic
-        );
 
       var continueFlag = false;
       for(var j = 0; j < avaliableNamespaces.length; j++){
@@ -60,7 +55,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
         var token = new GlobalReferenceToken(substringCapitalized, substring, substringCapitalized);
         tokens.push(token);
-        importedNamespaces.push(substringCapitalized);
+        avaliableNamespaces.push(substringCapitalized);
         units = units.slice(i + 1, units.length);
         continue;
       }

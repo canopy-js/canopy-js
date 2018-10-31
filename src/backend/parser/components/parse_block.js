@@ -7,7 +7,7 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
   var tokensOfBlock = [];
   lines.forEach(function(line){
     var clausesOfParagraph = clausesWithPunctutionOf(line);
-    var importedNamespaces = [];
+    var avaliableNamespaces = [currentTopic];
 
     var tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
       return parseClause(
@@ -15,7 +15,7 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
         namespaceObject,
         currentTopic,
         currentSubtopic,
-        importedNamespaces
+        avaliableNamespaces
       );
     });
 
