@@ -70,7 +70,8 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
             setPathAndFragment(topicName, token.key);
           });
         }
-      } else if (token.type === 'import') {
+      } else if (token.type === 'global') {
+        // Trigger eager load of that page
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
         tokenElement.classList.add('canopy-global-link');
@@ -80,19 +81,6 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.addEventListener('click', (e) => {
           e.preventDefault();
           setPathAndFragment(token.context, token.key);
-        });
-
-      } else if (token.type === 'global') {
-        // Trigger eager load of that page
-        tokenElement = document.createElement('a');
-        tokenElement.appendChild(textElement);
-        tokenElement.classList.add('canopy-global-link');
-        tokenElement.dataset.topicName = token.key;
-        tokenElement.dataset.subtopicName = token.key;
-        tokenElement.href = `/${slugFor(token.key)}#${slugFor(token.key)}`;
-        tokenElement.addEventListener('click', (e) => {
-          e.preventDefault();
-          setPathAndFragment(token.key, token.key);
         });
 
         onGlobalReference(token.key); // TODO: rename .key to .topic or something

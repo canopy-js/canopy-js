@@ -37,7 +37,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           }
 
           var tokenType = currentTopic === namespaceName ?
-            LocalReferenceToken : ImportReferenceToken;
+            LocalReferenceToken : GlobalReferenceToken;
 
           var token = new tokenType(substringCapitalized, substring, namespaceName);
           tokens.push(token);
@@ -58,7 +58,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           break; //Reject self-match
         }
 
-        var token = new GlobalReferenceToken(substringCapitalized, substring);
+        var token = new GlobalReferenceToken(substringCapitalized, substring, substringCapitalized);
         tokens.push(token);
         importedNamespaces.push(substringCapitalized);
         units = units.slice(i + 1, units.length);
@@ -91,16 +91,10 @@ function LocalReferenceToken(key, text, contextName) {
   this.type = 'local';
 }
 
-function ImportReferenceToken(key, text, contextName) {
+function GlobalReferenceToken(key, text, contextName) {
   this.text = text;
   this.key = key;
   this.context = contextName;
-  this.type = 'import';
-}
-
-function GlobalReferenceToken(key, text) {
-  this.text = text;
-  this.key = key;
   this.type = 'global';
 }
 
