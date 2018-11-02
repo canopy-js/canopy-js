@@ -1,4 +1,4 @@
-import { currentSection, selectedLink, currentRootSection } from 'helpers/getters';
+import { currentSection, selectedLink, currentRootSection, linkNumberOf, sectionElementOfLink } from 'helpers/getters';
 import {
   parentLinkOf,
   firstLinkOfSection,
@@ -6,37 +6,95 @@ import {
   linkBefore,
   firstSiblingOf,
   lastSiblingOf,
-  firstChildLinkOf,
+  firstChildLinkOf
 } from 'keys/relationships';
 import displaySelectedLink from 'display/display_selected_link';
 import renderTopic from 'render/render_topic';
+import setPathAndFragment from 'helpers/set_path_and_fragment';
 
 function moveUpward() {
-  var link = parentLinkOf(selectedLink()) ||
+  var linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
 
-  displaySelectedLink(link);
+  if (linkElement.dataset.type === "parent") {
+    setPathAndFragment(
+      linkElement.dataset.childTopicName,
+      linkElement.dataset.childSubtopicName,
+      true,
+      linkNumberOf(linkElement)
+    );
+  } else {
+    setPathAndFragment(
+      sectionElementOfLink(linkElement,).dataset.topicName,
+      sectionElementOfLink(linkElement).dataset.subtopicName,
+      false,
+      linkNumberOf(linkElement)
+    );
+  }
 }
 
 function moveDownward(cycle) {
-  var link =
+  var linkElement =
     firstChildLinkOf(selectedLink()) ||
     linkAfter(selectedLink()) ||
     (cycle ? firstSiblingOf(selectedLink()) : null) ||
     selectedLink();
 
-  displaySelectedLink(link);
+  if (linkElement.dataset.type === "parent") {
+    setPathAndFragment(
+      linkElement.dataset.childTopicName,
+      linkElement.dataset.childSubtopicName,
+      true,
+      linkNumberOf(linkElement)
+    );
+  } else {
+    setPathAndFragment(
+      sectionElementOfLink(linkElement).dataset.topicName,
+      sectionElementOfLink(linkElement).dataset.subtopicName,
+      false,
+      linkNumberOf(linkElement)
+    );
+  }
 }
 
 function moveLeftward() {
-  var link = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
+  var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
 
-  displaySelectedLink(link);
+  if (linkElement.dataset.type === "parent") {
+    setPathAndFragment(
+      linkElement.dataset.childTopicName,
+      linkElement.dataset.childSubtopicName,
+      true,
+      linkNumberOf(linkElement)
+    );
+  } else {
+    setPathAndFragment(
+      sectionElementOfLink(linkElement).dataset.topicName,
+      sectionElementOfLink(linkElement).dataset.subtopicName,
+      false,
+      linkNumberOf(linkElement)
+    );
+  }
 }
 
 function moveRightward() {
-  var link = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
-  displaySelectedLink(link);
+  var linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
+
+  if (linkElement.dataset.type === "parent") {
+    setPathAndFragment(
+      linkElement.dataset.childTopicName,
+      linkElement.dataset.childSubtopicName,
+      true,
+      linkNumberOf(linkElement)
+    );
+  } else {
+    setPathAndFragment(
+      sectionElementOfLink(linkElement).dataset.topicName,
+      sectionElementOfLink(linkElement).dataset.subtopicName,
+      false,
+      linkNumberOf(linkElement)
+    );
+  }
 }
 
 function moveDownOrRedirect() {
@@ -46,10 +104,11 @@ function moveDownOrRedirect() {
     selectedLink().classList.contains('canopy-global-link') ||
     selectedLink().classList.contains('canopy-redundant-parent-link')
     ) {
-    renderTopic(
+    setPathAndFragment(
       selectedLink().dataset.topicName,
       selectedLink().dataset.subtopicName,
-      true
+      false,
+      0
     );
   }
 }

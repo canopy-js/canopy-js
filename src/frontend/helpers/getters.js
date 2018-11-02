@@ -15,18 +15,18 @@ const sectionElementOfTopic = (topicName, subtopicName) => {
 }
 
 const currentSection = () => {
-  return document.querySelector('.canopy-selected-section')
+  return document.querySelector('.canopy-selected-section');
 }
 
 const selectedLink = () => {
-  return document.querySelector('.canopy-selected-link')
+  return document.querySelector('.canopy-selected-link');
 }
 
 const currentRootSection = () => {
   return document.querySelector('.canopy-current-root-section');
 }
 
-const parentLinkOfSectionElement = (sectionElement) => {
+const parentLinkOfSection = (sectionElement) => {
   return document.querySelector('#_canopy a.' + sectionElement.id);
 }
 
@@ -42,9 +42,31 @@ function sectionElementOfLink(linkElement) {
   return linkElement.parentNode.parentNode;
 }
 
-function mostRecentlySelectedLinkOfSection(sectionElement) {
-  return sectionElement.
-    getElementsByClassName('canopy-most-recently-selected-link-of-section')[0];
+function linkNumberOf(linkElement) {
+  if (!linkElement) { return null; }
+
+  var linkNumber = Array.from(
+    linkElement.parentNode.querySelectorAll('a')
+  ).indexOf(linkElement);
+
+  if (linkNumber === -1) {
+    return null;
+  } else {
+    return linkNumber;
+  }
+}
+
+function linkOfNumber(number, sectionElement) {
+  if (typeof number !== 'number' || !sectionElement) { return null; }
+
+  return sectionElement.querySelectorAll('a')[number];
+}
+
+function currentLinkNumberAndLinkTypeAsObject() {
+  return {
+    selectedLinkNumber: linkNumberOf(selectedLink()),
+    selectedLinkInParentSection: selectedLink() && selectedLink().dataset.type === 'parent'
+  };
 }
 
 export {
@@ -54,8 +76,10 @@ export {
   currentSection,
   currentRootSection,
   selectedLink,
-  parentLinkOfSectionElement,
+  parentLinkOfSection,
   childSectionElementOfParentLink,
   sectionElementOfLink,
-  mostRecentlySelectedLinkOfSection
+  linkNumberOf,
+  linkOfNumber,
+  currentLinkNumberAndLinkTypeAsObject
 };

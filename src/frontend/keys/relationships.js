@@ -1,7 +1,7 @@
 import { selectedLink, currentRootSection} from 'helpers/getters';
 import {
   childSectionElementOfParentLink,
-  parentLinkOfSectionElement,
+  parentLinkOfSection,
   sectionElementOfLink
 } from 'helpers/getters';
 
@@ -32,7 +32,7 @@ function parentLinkOf(linkElement) {
     return null;
   }
 
-  return parentLinkOfSectionElement(sectionElementOfLink(linkElement));
+  return parentLinkOfSection(sectionElementOfLink(linkElement));
 }
 
 function isInRootSection(linkElement) {

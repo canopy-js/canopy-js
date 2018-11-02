@@ -2,8 +2,9 @@ import { htmlIdFor } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
 import { slugFor } from 'helpers/identifiers';
+import { linkNumberOf } from 'helpers/getters';
 
-const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalReference, currentTopicStack, renderedSubtopics) => {
+const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, currentTopicStack, renderedSubtopics) => {
   var sectionElement = document.createElement('section');
   var paragraphElement = document.createElement('p');
 
@@ -37,7 +38,6 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
             topicName,
             token.key,
             paragraphsBySubtopic,
-            onGlobalReference,
             currentTopicStack,
             renderedSubtopics
           );
@@ -48,10 +48,11 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
             if (document.querySelector('.canopy-selected-section') === subtree) {
               setPathAndFragment(
                 sectionElement.dataset.topicName,
-                sectionElement.dataset.subtopicName
+                sectionElement.dataset.subtopicName,
+                linkNumberOf(tokenElement)
               );
             } else {
-              setPathAndFragment(topicName, token.key);
+              setPathAndFragment(topicName, token.key, linkNumberOf(tokenElement));
             }
           });
 
@@ -59,12 +60,16 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
           tokenElement.classList.add(id);
           tokenElement.classList.add('canopy-parent-link');
           tokenElement.dataset.childSectionId = id;
+          tokenElement.dataset.type = 'parent';
+          tokenElement.dataset.childTopicName = topicName;
+          tokenElement.dataset.childSubtopicName = token.key;
 
           sectionElement.appendChild(subtree);
         } else {
           tokenElement.classList.add('canopy-redundant-parent-link');
           tokenElement.dataset.topicName = token.context;
           tokenElement.dataset.subtopicName = token.key;
+          tokenElement.dataset.type = 'redundant-parent';
           tokenElement.addEventListener('click', (e) => {
             e.preventDefault();
             setPathAndFragment(topicName, token.key);
@@ -77,13 +82,12 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, onGlobalRe
         tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.topicName = token.context;
         tokenElement.dataset.subtopicName = token.key;
+        tokenElement.dataset.type = 'global';
         tokenElement.href = `/${slugFor(token.context)}#${slugFor(token.key)}`;
         tokenElement.addEventListener('click', (e) => {
           e.preventDefault();
-          setPathAndFragment(token.context, token.key);
+          setPathAndFragment(token.context, token.key, linkNumberOf(tokenElement));
         });
-
-        onGlobalReference(token.key); // TODO: rename .key to .topic or something
       }
       paragraphElement.appendChild(tokenElement);
     });

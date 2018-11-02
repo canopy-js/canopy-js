@@ -1,18 +1,23 @@
 import requestJson from 'requests/request_json';
 import { canopyContainer } from 'helpers/getters';
 import renderDomTree from 'render/render_dom_tree';
-import eagerLoadOnGlobalReference from 'display/eager_load_on_external_reference';
 import displayPath from 'display/display_path'
 import { sectionElementOfTopic } from 'helpers/getters';
 import { firstLinkOfSection } from 'keys/relationships';
-import { defaultTopic } from 'helpers/getters';
+import { defaultTopic, linkOfNumber } from 'helpers/getters';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
 
-const renderTopic = (topicName, subtopicName, selectFirstLink) => {
+const renderTopic = (topicName, subtopicName, selectLinkFromParent, selectLinkNumber) => {
   var existingSectionElement = sectionElementOfTopic(topicName, subtopicName)
+  var linkElement = linkIfProvided(selectLinkFromParent, selectLinkNumber, existingSectionElement);
+
   if(existingSectionElement) {
     createOrReplaceHeader(topicName);
-    displayPath(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(existingSectionElement) : null);
+    displayPath(
+      topicName,
+      subtopicName,
+      linkElement
+    );
     return;
   }
 
@@ -25,17 +30,34 @@ const renderTopic = (topicName, subtopicName, selectFirstLink) => {
       topicName,
       topicName,
       paragraphsBySubtopic,
-      eagerLoadOnGlobalReference,
       [],
       {}
     );
 
     canopyContainer.appendChild(domTree);
 
-    displayPath(topicName, subtopicName, selectFirstLink ? firstLinkOfSection(domTree) : null);
+    displayPath(
+      topicName,
+      subtopicName,
+      linkIfProvided(selectLinkFromParent, selectLinkNumber, domTree)
+    );
   }, (e) => {
     setPathAndFragment(defaultTopic, null);
   });
+}
+
+function linkIfProvided(selectLinkFromParent, selectLinkNumber, existingSectionElement) {
+  if (typeof selectLinkNumber === 'number') {
+    var sectionOfLink = selectLinkFromParent ?
+      existingSectionElement.parentNode :
+      existingSectionElement;
+
+    var link = linkOfNumber(selectLinkNumber, sectionOfLink);
+
+    return link;
+  } else {
+    return null;
+  }
 }
 
 function createOrReplaceHeader(topicName) {
