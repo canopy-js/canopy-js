@@ -36,7 +36,7 @@ function moveUpward() {
 function moveDownward(cycle) {
   var linkElement =
     firstChildLinkOf(selectedLink()) ||
-    linkAfter(selectedLink()) ||
+    (cycle ? linkAfter(selectedLink()) : null) ||
     (cycle ? firstSiblingOf(selectedLink()) : null) ||
     selectedLink();
 
