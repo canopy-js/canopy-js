@@ -7,8 +7,6 @@
 – Make sure all calls to render go through setFragmentId - list code paths
 – Purple links?
 – Add comments
-– Create URL generation helper?
-– Why not just check server.js into the dist folder and not put it in src ?
 – Sort out relationships vs getters – relationships should have arguments
 – Make docs html endpoint in canopy
 – Tests
@@ -19,3 +17,4 @@
 – How should redundant parent links work with browser history collapsing? Maybe only collapse history on contiguous streches, but that retracings reset.
 – Remove call to prepend
 – Try to remove classes eg current root section
+– Can history API state be used to store other session information? Eg previous visits?
