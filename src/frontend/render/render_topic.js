@@ -2,23 +2,22 @@ import requestJson from 'requests/request_json';
 import { canopyContainer } from 'helpers/getters';
 import renderDomTree from 'render/render_dom_tree';
 import displayPath from 'display/display_path'
-import { sectionElementOfTopic } from 'helpers/getters';
-import { firstLinkOfSection } from 'keys/relationships';
-import { defaultTopic, linkOfNumber } from 'helpers/getters';
+import { sectionElementOfTopic, findLinkFromMetadata } from 'helpers/getters';
+import { firstLinkOfSection } from 'helpers/relationships';
+import { defaultTopic } from 'helpers/getters';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
 
-const renderTopic = (topicName, subtopicName, selectLinkFromParent, selectLinkNumber) => {
-  var existingSectionElement = sectionElementOfTopic(topicName, subtopicName)
-  var linkElement = linkIfProvided(selectLinkFromParent, selectLinkNumber, existingSectionElement);
+const renderTopic = (topicName, selectedSubtopicName, selectedLinkData, selectFirstLink) => {
+  var existingSectionElement = sectionElementOfTopic(topicName, selectedSubtopicName)
 
-  if(existingSectionElement) {
+  if (existingSectionElement) {
     createOrReplaceHeader(topicName);
-    displayPath(
+    return displayPath(
       topicName,
-      subtopicName,
-      linkElement
+      selectedSubtopicName,
+      selectedLinkData && findLinkFromMetadata(selectedLinkData),
+      selectFirstLink
     );
-    return;
   }
 
   requestJson(topicName, function(dataObject) {
@@ -38,26 +37,13 @@ const renderTopic = (topicName, subtopicName, selectLinkFromParent, selectLinkNu
 
     displayPath(
       topicName,
-      subtopicName,
-      linkIfProvided(selectLinkFromParent, selectLinkNumber, domTree)
+      selectedSubtopicName,
+      selectedLinkData && findLinkFromMetadata(selectedLinkData),
+      selectFirstLink
     );
   }, (e) => {
     setPathAndFragment(defaultTopic, null);
   });
-}
-
-function linkIfProvided(selectLinkFromParent, selectLinkNumber, existingSectionElement) {
-  if (typeof selectLinkNumber === 'number') {
-    var sectionOfLink = selectLinkFromParent ?
-      existingSectionElement.parentNode :
-      existingSectionElement;
-
-    var link = linkOfNumber(selectLinkNumber, sectionOfLink);
-
-    return link;
-  } else {
-    return null;
-  }
 }
 
 function createOrReplaceHeader(topicName) {

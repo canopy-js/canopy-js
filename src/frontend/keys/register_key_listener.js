@@ -6,8 +6,8 @@ import {
   moveRightward,
   moveDownOrRedirect
 } from 'keys/handlers';
-import { firstLinkOfSection } from 'keys/relationships';
-import displaySelectedLink from 'display/display_selected_link';
+import { firstLinkOfSection } from 'helpers/relationships';
+import displayPath from 'display/display_path';
 
 // Copyright Greenhouse Software 2017
 const registerKeyListener = () => {
@@ -29,7 +29,13 @@ const registerKeyListener = () => {
     if (selectedLink()) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
-      displaySelectedLink(firstLinkOfSection(currentSection()));
+      displayPath(
+        currentSection().dataset.topicName,
+        currentSection().dataset.subtopicName,
+        null,
+        true
+      );
+      // displaySelectedLink(firstLinkOfSection(currentSection()));
     }
   });
 }

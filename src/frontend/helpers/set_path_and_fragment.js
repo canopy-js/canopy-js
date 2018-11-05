@@ -1,46 +1,51 @@
 import { slugFor } from 'helpers/identifiers';
-import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers';
-import { selectedLink, linkNumberOf, currentLinkNumberAndLinkTypeAsObject } from 'helpers/getters';
+import {
+  topicNameFromUrl,
+  subtopicNameFromUrl
+} from 'helpers/url_parsers';
+import {
+  selectedLink,
+  documentTitleFor,
+  uniqueSubtopic,
+  metadataFromLink
+} from 'helpers/getters';
 
-const setPathAndFragment = (topicName, subtopicName, selectedLinkInParentSection, selectedLinkNumber) => {
+const setPathAndFragment = (topicName, subtopicName) => {
   var replaceState = (a, b, c) => { history.replaceState(a, b, c) };
   var pushState = (a, b, c) => {
     history.pushState(a, b, c);
   };
   var historyApiFunction = topicNameFromUrl() === topicName ? replaceState : pushState;
 
-  var subtopicTitleString = uniqueSubtopic() ? (': ' + subtopicName) : '';
-  var titleString = topicName + subtopicTitleString
-  var fragmentIdString = uniqueSubtopic() ? '#' + slugFor(subtopicName) : '';
-
   historyApiFunction(
-    {},
-    topicName + ': ' + subtopicName,
-    '/' + slugFor(topicName) + fragmentIdString
+    metadataFromLink(selectedLink()),
+    documentTitleFor(topicName, subtopicName),
+    pathFor(topicName, subtopicName)
   );
 
-  var popStateEvent = new PopStateEvent(
-    'popstate',
-    {
-      state: nextLinkNumberAndLinkTypeAsObject(
-        selectedLinkInParentSection,
-        selectedLinkNumber
-      )
-    }
-  );
-
-  dispatchEvent(popStateEvent);
-
-  function uniqueSubtopic() {
-    return subtopicName && subtopicName !== topicName;
+  function pathFor(topicName, subtopicName) {
+    return '/' + slugFor(topicName) +
+      (uniqueSubtopic(topicName, subtopicName) ?
+        `#${slugFor(subtopicName)}` : '')
   }
-}
 
-function nextLinkNumberAndLinkTypeAsObject(selectedLinkInParentSection, selectedLinkNumber) {
-  return {
-    selectedLinkNumber,
-    selectedLinkInParentSection
-  };
+  // var popStateEvent = new PopStateEvent(
+  //   'popstate',
+  //   {
+  //     state: nextLinkNumberAndLinkTypeAsObject(
+  //       selectedLinkInParentSection,
+  //       selectedLinkNumber
+  //     )
+  //   }
+  // );
+
+  // dispatchEvent(popStateEvent);
 }
+// function nextLinkNumberAndLinkTypeAsObject(selectedLinkInParentSection, selectedLinkNumber) {
+//   return {
+//     selectedLinkNumber,
+//     selectedLinkInParentSection
+//   };
+// }
 
 export default setPathAndFragment;

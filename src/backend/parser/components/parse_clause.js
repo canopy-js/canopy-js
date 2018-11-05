@@ -34,7 +34,14 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           var tokenType = currentTopic === namespaceName ?
             LocalReferenceToken : GlobalReferenceToken;
 
-          var token = new tokenType(substringCapitalized, substring, namespaceName);
+          var token = new tokenType(
+            namespaceName,
+            substringCapitalized,
+            currentTopic,
+            currentSubtopic,
+            substring,
+            clauseWithPunctuation
+          );
           tokens.push(token);
           units = units.slice(i + 1, units.length);
           continueFlag = true;
@@ -53,7 +60,14 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           break; //Reject self-match
         }
 
-        var token = new GlobalReferenceToken(substringCapitalized, substring, substringCapitalized);
+        var token = new GlobalReferenceToken(
+          substringCapitalized,
+          substringCapitalized,
+          currentTopic,
+          currentSubtopic,
+          substring,
+          clauseWithPunctuation
+        );
         tokens.push(token);
         avaliableNamespaces.push(substringCapitalized);
         units = units.slice(i + 1, units.length);
@@ -79,18 +93,34 @@ function TextToken(text) {
   this.type = 'text';
 }
 
-function LocalReferenceToken(key, text, contextName) {
-  this.text = text;
-  this.key = key
-  this.context = contextName;
+function LocalReferenceToken(
+    targetTopic,
+    targetSubtopic,
+    enclosingTopic,
+    enclosingSubtopic,
+    text
+  ) {
   this.type = 'local';
+  this.text = text;
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
-function GlobalReferenceToken(key, text, contextName) {
-  this.text = text;
-  this.key = key;
-  this.context = contextName;
+function GlobalReferenceToken(
+    targetTopic,
+    targetSubtopic,
+    enclosingTopic,
+    enclosingSubtopic,
+    text
+  ) {
   this.type = 'global';
+  this.targetTopic = targetTopic;
+  this.targetSubtopic = targetSubtopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
+  this.text = text;
 }
 
 export default parseClause;

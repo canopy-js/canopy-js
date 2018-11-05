@@ -6,109 +6,73 @@ import {
   linkBefore,
   firstSiblingOf,
   lastSiblingOf,
-  firstChildLinkOf
-} from 'keys/relationships';
-import displaySelectedLink from 'display/display_selected_link';
+  firstChildLinkOfParentLink
+} from 'helpers/relationships';
 import renderTopic from 'render/render_topic';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
+import displayPath from 'display/display_path';
 
 function moveUpward() {
+  // TODO: If root, unselect link
   var linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
 
-  if (linkElement.dataset.type === "parent") {
-    setPathAndFragment(
-      linkElement.dataset.childTopicName,
-      linkElement.dataset.childSubtopicName,
-      true,
-      linkNumberOf(linkElement)
+    displayPath(
+      linkElement.dataset.enclosingTopic,
+      linkElement.dataset.urlSubtopic,
+      linkElement
     );
-  } else {
-    setPathAndFragment(
-      sectionElementOfLink(linkElement,).dataset.topicName,
-      sectionElementOfLink(linkElement).dataset.subtopicName,
-      false,
-      linkNumberOf(linkElement)
-    );
-  }
 }
 
 function moveDownward(cycle) {
+  // TODO handle redundant parent links
   var linkElement =
-    firstChildLinkOf(selectedLink()) ||
+    firstChildLinkOfParentLink(selectedLink()) ||
     (cycle ? linkAfter(selectedLink()) : null) ||
     (cycle ? firstSiblingOf(selectedLink()) : null) ||
     selectedLink();
 
-  if (linkElement.dataset.type === "parent") {
-    setPathAndFragment(
-      linkElement.dataset.childTopicName,
-      linkElement.dataset.childSubtopicName,
-      true,
-      linkNumberOf(linkElement)
-    );
-  } else {
-    setPathAndFragment(
-      sectionElementOfLink(linkElement).dataset.topicName,
-      sectionElementOfLink(linkElement).dataset.subtopicName,
-      false,
-      linkNumberOf(linkElement)
-    );
-  }
+  displayPath(
+    linkElement.dataset.enclosingTopic,
+    linkElement.dataset.urlSubtopic,
+    linkElement
+  );
 }
 
 function moveLeftward() {
   var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
 
-  if (linkElement.dataset.type === "parent") {
-    setPathAndFragment(
-      linkElement.dataset.childTopicName,
-      linkElement.dataset.childSubtopicName,
-      true,
-      linkNumberOf(linkElement)
-    );
-  } else {
-    setPathAndFragment(
-      sectionElementOfLink(linkElement).dataset.topicName,
-      sectionElementOfLink(linkElement).dataset.subtopicName,
-      false,
-      linkNumberOf(linkElement)
-    );
-  }
+  displayPath(
+    linkElement.dataset.enclosingTopic,
+    linkElement.dataset.urlSubtopic,
+    linkElement
+  );
 }
 
 function moveRightward() {
   var linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
 
-  if (linkElement.dataset.type === "parent") {
-    setPathAndFragment(
-      linkElement.dataset.childTopicName,
-      linkElement.dataset.childSubtopicName,
-      true,
-      linkNumberOf(linkElement)
-    );
-  } else {
-    setPathAndFragment(
-      sectionElementOfLink(linkElement).dataset.topicName,
-      sectionElementOfLink(linkElement).dataset.subtopicName,
-      false,
-      linkNumberOf(linkElement)
-    );
-  }
+  displayPath(
+    linkElement.dataset.enclosingTopic,
+    linkElement.dataset.urlSubtopic,
+    linkElement
+  );
 }
 
 function moveDownOrRedirect() {
   if (selectedLink().classList.contains('canopy-parent-link')) {
     moveDownward(false);
-  } else if (
-    selectedLink().classList.contains('canopy-global-link') ||
-    selectedLink().classList.contains('canopy-redundant-parent-link')
-    ) {
-    setPathAndFragment(
-      selectedLink().dataset.topicName,
-      selectedLink().dataset.subtopicName,
-      false,
-      0
+  } else if (selectedLink().classList.contains('canopy-global-link')) {
+    renderTopic(
+      selectedLink().dataset.targetTopic,
+      selectedLink().dataset.targetSubtopic,
+      null,
+      true
+    );
+  } else if (selectedLink().classList.contains('canopy-redundant-parent-link')) {
+    renderTopic(
+      selectedLink().dataset.targetTopic,
+      selectedLink().dataset.targetSubtopic
     );
   }
 }

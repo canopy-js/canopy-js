@@ -1,4 +1,10 @@
-import { canopyContainer, defaultTopic, currentLinkNumberAndLinkTypeAsObject } from 'helpers/getters';
+import {
+  canopyContainer,
+  defaultTopic,
+  metadataFromLink,
+  selectedLink
+} from 'helpers/getters';
+
 import renderTopic from 'render/render_topic';
 import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers'
 import setPathAndFragment from 'helpers/set_path_and_fragment';
@@ -10,7 +16,8 @@ if (!topicNameFromUrl()) {
 } else {
   renderTopic(
     topicNameFromUrl(),
-    subtopicNameFromUrl() || topicNameFromUrl()
+    subtopicNameFromUrl() || topicNameFromUrl(),
+    history.state
   );
 }
 
@@ -18,7 +25,7 @@ registerKeyListener();
 
 window.addEventListener('popstate', (e) => {
   var oldState = Object.assign(
-    history.state || {}, currentLinkNumberAndLinkTypeAsObject()
+    history.state || {}, metadataFromLink(selectedLink())
   );
 
   history.replaceState(
@@ -27,11 +34,11 @@ window.addEventListener('popstate', (e) => {
     window.location.href
   );
 
+  var selectedLinkData = e.state && e.state.targetTopic ? e.state : null;
+
   renderTopic(
     topicNameFromUrl(),
     subtopicNameFromUrl() || topicNameFromUrl(),
-    e.state && e.state.selectedLinkInParentSection,
-    e.state && e.state.selectedLinkNumber
+    selectedLinkData
   );
 });
-

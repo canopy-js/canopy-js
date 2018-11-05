@@ -1,36 +1,45 @@
-import { canopyContainer, rootSectionElement, selectedLink } from 'helpers/getters';
 import { htmlIdFor } from 'helpers/identifiers';
 import setPathAndFragment from 'helpers/set_path_and_fragment';
-import { sectionElementOfTopic, linkNumberOf, parentLinkOfSection } from 'helpers/getters';
+import {
+  canopyContainer,
+  rootSectionElement,
+  selectedLink,
+  sectionElementOfTopic,
+  linkNumberOf,
+  parentLinkOfSection,
+  metadataFromLink,
+  findLinkFromMetadata,
+  documentTitleFor
+} from 'helpers/getters';
 import {
   moveSelectedSectionClass,
   hideAllSectionElements,
   deselectAllLinks
 } from 'display/reset_page';
-import { currentLinkNumberAndLinkTypeAsObject } from 'helpers/getters';
 
-const displayPath = (topicName, subtopicName, linkToSelect) => {
-  // setPathAndFragment(topicName, subtopicName, linkNumberOf(selectedLink())); //TODO: make unidirectional
+import { firstLinkOfSection } from 'helpers/relationships';
+
+const displayPath = (topicName, subtopicName, linkToSelect, selectFirstLink) => {
   const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
-  if (!sectionElement) { return setPathAndFragment(topicName, topicName); }
+  if (!sectionElement) { return setPathAndFragment(topicName, topicName); } // Does this ever happen?
   moveSelectedSectionClass(sectionElement);
 
   hideAllSectionElements();
   deselectAllLinks();
 
-  var linkToSelect = linkToSelect ||
-    parentLinkOfSection(sectionElement);
+  if (!linkToSelect && selectFirstLink) {
+    linkToSelect = firstLinkOfSection(sectionElement);
+  } else if (!linkToSelect) {
+    linkToSelect = parentLinkOfSection(sectionElement) || null;
+  }
+
   if (linkToSelect) { linkToSelect.classList.add('canopy-selected-link'); }
   if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
     linkToSelect.classList.add('canopy-open-link');
   }
 
-  history.replaceState(
-    currentLinkNumberAndLinkTypeAsObject(),
-    document.title,
-    window.location.href
-  );
-
+  document.title = documentTitleFor(topicName, subtopicName);
+  setPathAndFragment(topicName, subtopicName);
   displayPathTo(sectionElement);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };

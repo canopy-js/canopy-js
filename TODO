@@ -16,3 +16,6 @@
 – Eslint
 – URL encode and decode URLs
 – DFS tab key
+– How should redundant parent links work with browser history collapsing? Maybe only collapse history on contiguous streches, but that retracings reset.
+– Remove call to prepend
+– Try to remove classes eg current root section

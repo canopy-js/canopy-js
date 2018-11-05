@@ -69,7 +69,7 @@ function linkBefore(linkElement) {
   }
 }
 
-function firstChildLinkOf(linkElement) {
+function firstChildLinkOfParentLink(linkElement) {
   if (linkElement === null){
     return null;
   }
@@ -102,5 +102,5 @@ export {
   downwardLink,
   parentLinkOf,
   firstLinkOfSection,
-  firstChildLinkOf
+  firstChildLinkOfParentLink,
 };

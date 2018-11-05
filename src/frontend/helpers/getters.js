@@ -42,31 +42,37 @@ function sectionElementOfLink(linkElement) {
   return linkElement.parentNode.parentNode;
 }
 
-function linkNumberOf(linkElement) {
-  if (!linkElement) { return null; }
-
-  var linkNumber = Array.from(
-    linkElement.parentNode.querySelectorAll('a')
-  ).indexOf(linkElement);
-
-  if (linkNumber === -1) {
-    return null;
-  } else {
-    return linkNumber;
-  }
+function uniqueSubtopic(topicName, subtopicName) {
+  return subtopicName && subtopicName !== topicName;
 }
 
-function linkOfNumber(number, sectionElement) {
-  if (typeof number !== 'number' || !sectionElement) { return null; }
-
-  return sectionElement.querySelectorAll('a')[number];
+function documentTitleFor(topicName, subtopicName) {
+  return topicName + ((subtopicName && subtopicName !== topicName) ? `: ${subtopicName}` : '');
 }
 
-function currentLinkNumberAndLinkTypeAsObject() {
+function metadataFromLink(linkElement) {
+  if (!linkElement) { return {}; }
+
+  var relativeLinkNumber = Array.from(document.querySelectorAll(
+    '#' + sectionElementOfLink(linkElement).id +
+    ` a[data-target-topic="${linkElement.dataset.targetTopic}"]` +
+    `[data-target-subtopic="${linkElement.dataset.targetSubtopic}"]`
+  )).indexOf(linkElement);
+
   return {
-    selectedLinkNumber: linkNumberOf(selectedLink()),
-    selectedLinkInParentSection: selectedLink() && selectedLink().dataset.type === 'parent'
+    sectionElementid: sectionElementOfLink(linkElement).id,
+    targetTopic: linkElement.dataset.targetTopic,
+    targetSubtopic: linkElement.dataset.targetSubtopic,
+    relativeLinkNumber: relativeLinkNumber
   };
+}
+
+function findLinkFromMetadata(linkSelectionData) {
+  return document.querySelectorAll(
+    '#' + linkSelectionData.sectionElementid +
+    ` a[data-target-topic="${linkSelectionData.targetTopic}"]` +
+    `[data-target-subtopic="${linkSelectionData.targetSubtopic}"]`
+  )[linkSelectionData.relativeLinkNumber];
 }
 
 export {
@@ -81,5 +87,8 @@ export {
   sectionElementOfLink,
   linkNumberOf,
   linkOfNumber,
-  currentLinkNumberAndLinkTypeAsObject
+  metadataFromLink,
+  uniqueSubtopic,
+  documentTitleFor,
+  findLinkFromMetadata
 };
