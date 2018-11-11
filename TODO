@@ -18,3 +18,9 @@
 – Remove call to prepend
 – Try to remove classes eg current root section
 – Can history API state be used to store other session information? Eg previous visits?
+– Inline-mode to import another topic under a parent link
+– Ignore merge conflicts for dist directory
+– Try using real links without event handlers
+– CLI
+– Add license
+– Markdown support

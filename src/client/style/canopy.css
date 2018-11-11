@@ -42,23 +42,38 @@
   color: #4078c0;
 }
 
-#_canopy .canopy-url-link {
+#_canopy .canopy-global-link.canopy-painted-global-link {
+  text-decoration: underline #E0E0E0;
+  color: black;
+}
+
+#_canopy .canopy-global-link.canopy-painted-global-link:hover {
+  text-decoration: underline black;
+  color: black;
+}
+
+#_canopy .canopy-selected-link.canopy-global-link.canopy-painted-global-link {
+  text-decoration: underline #E0E0E0;
+  color: black;
+}
+
+/*#_canopy .canopy-url-link {
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
 
 #_canopy .canopy-url-link:hover {
   color: #4078c0;
-}
+}*/
 
 #_canopy .canopy-selected-link.canopy-global-link {
   text-decoration: underline #4078c0;
   color: #4078c0;
 }
-
+/*
 #_canopy .canopy-selected-link.canopy-url-link {
   color: #4078c0;
-}
+}*/
 
 #_canopy .canopy-open-link {
   text-decoration: underline;

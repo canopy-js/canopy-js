@@ -98,7 +98,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "// Copyright Greenhouse Software 2017\n\n#_canopy {\n  padding-top: 25px;\n}\n\n#_canopy > h1 {\n  text-align: center;\n  margin-top: 10px;\n}\n\n#_canopy > section:first-child {\n  padding-top: 5px;\n}\n\n#_canopy > section {\n  padding-top: 5px;\n}\n\n#_canopy p {\n  padding-bottom: 24px;\n  font-size: 23px;\n  width: 700px;\n  margin: auto;\n\n  line-height: 1.3;\n  letter-spacing: -.003em;\n  font-weight: 400;\n}\n\n#_canopy a {\n  text-decoration: underline #E0E0E0;\n  color: black;\n  cursor: pointer;\n}\n\n#_canopy a:hover {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-global-link:hover {\n  color: #4078c0;\n}\n\n#_canopy .canopy-url-link {\n  overflow-wrap: break-word;\n  word-wrap: break-word;\n}\n\n#_canopy .canopy-url-link:hover {\n  color: #4078c0;\n}\n\n#_canopy .canopy-selected-link.canopy-global-link {\n  text-decoration: underline #4078c0;\n  color: #4078c0;\n}\n\n#_canopy .canopy-selected-link.canopy-url-link {\n  color: #4078c0;\n}\n\n#_canopy .canopy-open-link {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-selected-link {\n  text-shadow: .8px 0px 0px black;\n}\n\na:focus {\n  outline:0;\n}\n", ""]);
+exports.push([module.i, "// Copyright Greenhouse Software 2017\n\n#_canopy {\n  padding-top: 25px;\n}\n\n#_canopy > h1 {\n  text-align: center;\n  margin-top: 10px;\n}\n\n#_canopy > section:first-child {\n  padding-top: 5px;\n}\n\n#_canopy > section {\n  padding-top: 5px;\n}\n\n#_canopy p {\n  padding-bottom: 24px;\n  font-size: 23px;\n  width: 700px;\n  margin: auto;\n\n  line-height: 1.3;\n  letter-spacing: -.003em;\n  font-weight: 400;\n}\n\n#_canopy a {\n  text-decoration: underline #E0E0E0;\n  color: black;\n  cursor: pointer;\n}\n\n#_canopy a:hover {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-global-link:hover {\n  color: #4078c0;\n}\n\n#_canopy .canopy-global-link.canopy-painted-global-link {\n  text-decoration: underline #E0E0E0;\n  color: black;\n}\n\n#_canopy .canopy-global-link.canopy-painted-global-link:hover {\n  text-decoration: underline black;\n  color: black;\n}\n\n#_canopy .canopy-selected-link.canopy-global-link.canopy-painted-global-link {\n  text-decoration: underline #E0E0E0;\n  color: black;\n}\n\n/*#_canopy .canopy-url-link {\n  overflow-wrap: break-word;\n  word-wrap: break-word;\n}\n\n#_canopy .canopy-url-link:hover {\n  color: #4078c0;\n}*/\n\n#_canopy .canopy-selected-link.canopy-global-link {\n  text-decoration: underline #4078c0;\n  color: #4078c0;\n}\n/*\n#_canopy .canopy-selected-link.canopy-url-link {\n  color: #4078c0;\n}*/\n\n#_canopy .canopy-open-link {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-selected-link {\n  text-shadow: .8px 0px 0px black;\n}\n\na:focus {\n  outline:0;\n}\n", ""]);
 
 // exports
 
@@ -711,6 +711,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var style_canopy_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! style/canopy.css */ "./src/client/style/canopy.css");
 /* harmony import */ var style_canopy_css__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(style_canopy_css__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var keys_register_key_listener__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! keys/register_key_listener */ "./src/client/keys/register_key_listener.js");
+/* harmony import */ var keys_register_alt_key_listener__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! keys/register_alt_key_listener */ "./src/client/keys/register_alt_key_listener.js");
+
 
 
 
@@ -725,6 +727,7 @@ if (!Object(helpers_url_parsers__WEBPACK_IMPORTED_MODULE_2__["topicNameFromUrl"]
 }
 
 Object(keys_register_key_listener__WEBPACK_IMPORTED_MODULE_5__["default"])();
+Object(keys_register_alt_key_listener__WEBPACK_IMPORTED_MODULE_6__["default"])();
 window.addEventListener('popstate', function (e) {
   var oldState = Object.assign(history.state || {}, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
   history.replaceState(Object.assign(history.state || {}, oldState), document.title, window.location.href);
@@ -1181,7 +1184,7 @@ var subtopicNameFromUrl = function subtopicNameFromUrl() {
 /*!*************************************!*\
   !*** ./src/client/keys/handlers.js ***!
   \*************************************/
-/*! exports provided: moveUpward, moveDownward, moveLeftward, moveRightward, moveDownOrRedirect */
+/*! exports provided: moveUpward, moveDownward, moveLeftward, moveRightward, moveDownOrRedirect, paintGlobalLinks, unpaintGlobalLinks */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1191,6 +1194,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveLeftward", function() { return moveLeftward; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveRightward", function() { return moveRightward; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveDownOrRedirect", function() { return moveDownOrRedirect; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "paintGlobalLinks", function() { return paintGlobalLinks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "unpaintGlobalLinks", function() { return unpaintGlobalLinks; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 /* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
 /* harmony import */ var render_render_topic__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! render/render_topic */ "./src/client/render/render_topic.js");
@@ -1234,7 +1239,48 @@ function moveDownOrRedirect() {
   }
 }
 
+function paintGlobalLinks() {
+  Array.from(document.getElementsByClassName('canopy-global-link')).forEach(function (el) {
+    el.classList.add('canopy-painted-global-link');
+  });
+}
 
+function unpaintGlobalLinks() {
+  Array.from(document.getElementsByClassName('canopy-global-link')).forEach(function (el) {
+    el.classList.remove('canopy-painted-global-link');
+  });
+}
+
+
+
+/***/ }),
+
+/***/ "./src/client/keys/register_alt_key_listener.js":
+/*!******************************************************!*\
+  !*** ./src/client/keys/register_alt_key_listener.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var keys_handlers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! keys/handlers */ "./src/client/keys/handlers.js");
+
+
+function registerAltKeyListeners() {
+  window.addEventListener('keydown', function (e) {
+    if (e.altKey) {
+      Object(keys_handlers__WEBPACK_IMPORTED_MODULE_0__["paintGlobalLinks"])();
+    }
+  });
+  window.addEventListener('keyup', function (e) {
+    if (e.key === 'Alt') {
+      Object(keys_handlers__WEBPACK_IMPORTED_MODULE_0__["unpaintGlobalLinks"])();
+    }
+  });
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (registerAltKeyListeners);
 
 /***/ }),
 

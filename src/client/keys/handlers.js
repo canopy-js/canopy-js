@@ -77,10 +77,24 @@ function moveDownOrRedirect() {
   }
 }
 
+function paintGlobalLinks() {
+  Array.from(document.getElementsByClassName('canopy-global-link')).forEach((el) => {
+    el.classList.add('canopy-painted-global-link');
+  });
+}
+
+function unpaintGlobalLinks() {
+  Array.from(document.getElementsByClassName('canopy-global-link')).forEach((el) => {
+    el.classList.remove('canopy-painted-global-link');
+  });
+}
+
 export {
   moveUpward,
   moveDownward,
   moveLeftward,
   moveRightward,
-  moveDownOrRedirect
+  moveDownOrRedirect,
+  paintGlobalLinks,
+  unpaintGlobalLinks
 };

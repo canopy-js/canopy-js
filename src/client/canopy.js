@@ -10,6 +10,7 @@ import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers'
 import setPathAndFragment from 'helpers/set_path_and_fragment';
 import css from 'style/canopy.css';
 import registerKeyListener from 'keys/register_key_listener';
+import registerAltKeyListener from 'keys/register_alt_key_listener';
 
 if (!topicNameFromUrl()) {
   setPathAndFragment(defaultTopic, null);
@@ -22,6 +23,7 @@ if (!topicNameFromUrl()) {
 }
 
 registerKeyListener();
+registerAltKeyListener();
 
 window.addEventListener('popstate', (e) => {
   var oldState = Object.assign(

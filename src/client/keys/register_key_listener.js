@@ -4,7 +4,7 @@ import {
   moveDownward,
   moveLeftward,
   moveRightward,
-  moveDownOrRedirect
+  moveDownOrRedirect,
 } from 'keys/handlers';
 import { firstLinkOfSection } from 'helpers/relationships';
 import displayPath from 'display/display_path';
