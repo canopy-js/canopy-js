@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/css-loader/index.js!./src/client/style/canopy.css":
-/*!***************************************************************!*\
-  !*** ./node_modules/css-loader!./src/client/style/canopy.css ***!
-  \***************************************************************/
+/***/ "./node_modules/css-loader/index.js!./node_modules/sass-loader/lib/loader.js!./src/client/style/canopy.scss":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/css-loader!./node_modules/sass-loader/lib/loader.js!./src/client/style/canopy.scss ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -98,7 +98,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "// Copyright Greenhouse Software 2017\n\n#_canopy {\n  padding-top: 25px;\n}\n\n#_canopy > h1 {\n  text-align: center;\n  margin-top: 10px;\n}\n\n#_canopy > section:first-child {\n  padding-top: 5px;\n}\n\n#_canopy > section {\n  padding-top: 5px;\n}\n\n#_canopy p {\n  padding-bottom: 24px;\n  font-size: 23px;\n  width: 700px;\n  margin: auto;\n\n  line-height: 1.3;\n  letter-spacing: -.003em;\n  font-weight: 400;\n}\n\n#_canopy a {\n  text-decoration: underline #E0E0E0;\n  color: black;\n  cursor: pointer;\n}\n\n#_canopy a:hover {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-global-link:hover {\n  color: #4078c0;\n}\n\n#_canopy .canopy-global-link.canopy-painted-global-link {\n  text-decoration: underline #E0E0E0;\n  color: black;\n}\n\n#_canopy .canopy-global-link.canopy-painted-global-link:hover {\n  text-decoration: underline black;\n  color: black;\n}\n\n#_canopy .canopy-selected-link.canopy-global-link.canopy-painted-global-link {\n  text-decoration: underline #E0E0E0;\n  color: black;\n}\n\n/*#_canopy .canopy-url-link {\n  overflow-wrap: break-word;\n  word-wrap: break-word;\n}\n\n#_canopy .canopy-url-link:hover {\n  color: #4078c0;\n}*/\n\n#_canopy .canopy-selected-link.canopy-global-link {\n  text-decoration: underline #4078c0;\n  color: #4078c0;\n}\n/*\n#_canopy .canopy-selected-link.canopy-url-link {\n  color: #4078c0;\n}*/\n\n#_canopy .canopy-open-link {\n  text-decoration: underline;\n}\n\n#_canopy .canopy-selected-link {\n  text-shadow: .8px 0px 0px black;\n}\n\na:focus {\n  outline:0;\n}\n", ""]);
+exports.push([module.i, "#_canopy {\n  padding-top: 25px; }\n  #_canopy h1 {\n    text-align: center;\n    margin-top: 10px; }\n  #_canopy section {\n    padding-top: 5px; }\n    #_canopy section:first-child {\n      padding-top: 5px; }\n  #_canopy p {\n    padding-bottom: 24px;\n    font-size: 23px;\n    width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a {\n    text-decoration: underline #E0E0E0;\n    color: black;\n    cursor: pointer; }\n    #_canopy a:hover {\n      text-decoration: underline; }\n    #_canopy a:focus {\n      outline: 0; }\n    #_canopy a.canopy-open-link {\n      text-decoration: underline; }\n    #_canopy a.canopy-selected-link {\n      text-shadow: .8px 0px 0px black; }\n    #_canopy a.canopy-global-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-painted-global-link {\n      text-decoration: underline #E0E0E0;\n      color: black; }\n      #_canopy a.canopy-global-link.canopy-painted-global-link:hover {\n        text-decoration: underline black;\n        color: black; }\n      #_canopy a.canopy-global-link.canopy-painted-global-link.canopy-selected-link {\n        text-decoration: underline black;\n        color: black; }\n", ""]);
 
 // exports
 
@@ -708,8 +708,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var render_render_topic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/render_topic */ "./src/client/render/render_topic.js");
 /* harmony import */ var helpers_url_parsers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/url_parsers */ "./src/client/helpers/url_parsers.js");
 /* harmony import */ var helpers_set_path_and_fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/set_path_and_fragment */ "./src/client/helpers/set_path_and_fragment.js");
-/* harmony import */ var style_canopy_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! style/canopy.css */ "./src/client/style/canopy.css");
-/* harmony import */ var style_canopy_css__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(style_canopy_css__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! style/canopy.scss */ "./src/client/style/canopy.scss");
+/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(style_canopy_scss__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var keys_register_key_listener__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! keys/register_key_listener */ "./src/client/keys/register_key_listener.js");
 /* harmony import */ var keys_register_alt_key_listener__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! keys/register_alt_key_listener */ "./src/client/keys/register_alt_key_listener.js");
 
@@ -1604,15 +1604,15 @@ var requestJson = function requestJson(topicName, success, error) {
 
 /***/ }),
 
-/***/ "./src/client/style/canopy.css":
-/*!*************************************!*\
-  !*** ./src/client/style/canopy.css ***!
-  \*************************************/
+/***/ "./src/client/style/canopy.scss":
+/*!**************************************!*\
+  !*** ./src/client/style/canopy.scss ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../node_modules/css-loader!./canopy.css */ "./node_modules/css-loader/index.js!./src/client/style/canopy.css");
+var content = __webpack_require__(/*! !../../../node_modules/css-loader!../../../node_modules/sass-loader/lib/loader.js!./canopy.scss */ "./node_modules/css-loader/index.js!./node_modules/sass-loader/lib/loader.js!./src/client/style/canopy.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 

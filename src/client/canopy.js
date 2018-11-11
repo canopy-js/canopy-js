@@ -8,7 +8,7 @@ import {
 import renderTopic from 'render/render_topic';
 import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers'
 import setPathAndFragment from 'helpers/set_path_and_fragment';
-import css from 'style/canopy.css';
+import css from 'style/canopy.scss';
 import registerKeyListener from 'keys/register_key_listener';
 import registerAltKeyListener from 'keys/register_alt_key_listener';
 

@@ -1,0 +1,78 @@
+// Copyright Greenhouse Software 2017
+
+#_canopy {
+  padding-top: 25px;
+
+  h1 {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  section {
+    padding-top: 5px;
+
+    &:first-child {
+      padding-top: 5px;
+    }
+  }
+
+  p {
+    padding-bottom: 24px;
+    font-size: 23px;
+    width: 700px;
+    margin: auto;
+
+    line-height: 1.3;
+    letter-spacing: -.003em;
+    font-weight: 400;
+  }
+
+  a {
+    text-decoration: underline #E0E0E0;
+    color: black;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus {
+      outline:0;
+    }
+
+
+    &.canopy-open-link {
+      text-decoration: underline;
+    }
+
+    &.canopy-selected-link {
+      text-shadow: .8px 0px 0px black;
+    }
+
+    &.canopy-global-link {
+      &:hover {
+        color: #4078c0;
+      }
+
+      &.canopy-selected-link {
+        text-decoration: underline #4078c0;
+        color: #4078c0;
+      }
+
+      &.canopy-painted-global-link {
+        text-decoration: underline #E0E0E0;
+        color: black;
+
+        &:hover {
+          text-decoration: underline black;
+          color: black;
+        }
+
+        &.canopy-selected-link {
+          text-decoration: underline black;
+          color: black;
+        }
+      }
+    }
+  }
+}
