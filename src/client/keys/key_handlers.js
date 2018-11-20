@@ -9,17 +9,23 @@ import {
   firstChildLinkOfParentLink
 } from 'helpers/relationships';
 import renderTopic from 'render/render_topic';
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import setPathAndFragment from 'path/set_path';
 import displayPath from 'display/display_path';
+import parsePathString from 'path/parse_path_array';
 
 function moveUpward() {
   // TODO: If root, unselect link
   var linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
 
+    var pathArray = parsePathString();
+    var finalTuple = pathArray.pop();
+    var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    pathArray.pop();
+    pathArray.push(newTuple);
+
     displayPath(
-      linkElement.dataset.enclosingTopic,
-      linkElement.dataset.urlSubtopic,
+      pathArray,
       linkElement
     );
 }
@@ -32,9 +38,13 @@ function moveDownward(cycle) {
     (cycle ? firstSiblingOf(selectedLink()) : null) ||
     selectedLink();
 
+  var pathArray = parsePathString();
+  var finalTuple = pathArray.pop();
+  var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  pathArray.push(newTuple);
+
   displayPath(
-    linkElement.dataset.enclosingTopic,
-    linkElement.dataset.urlSubtopic,
+    pathArray,
     linkElement
   );
 }
@@ -42,9 +52,14 @@ function moveDownward(cycle) {
 function moveLeftward() {
   var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
 
+  var pathArray = parsePathString();
+  var finalTuple = pathArray.pop();
+  var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  pathArray.pop();
+  pathArray.push(newTuple);
+
   displayPath(
-    linkElement.dataset.enclosingTopic,
-    linkElement.dataset.urlSubtopic,
+    pathArray,
     linkElement
   );
 }
@@ -52,28 +67,42 @@ function moveLeftward() {
 function moveRightward() {
   var linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
 
+  var pathArray = parsePathString();
+  var finalTuple = pathArray.pop();
+  var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  pathArray.pop();
+  pathArray.push(newTuple);
+
   displayPath(
-    linkElement.dataset.enclosingTopic,
-    linkElement.dataset.urlSubtopic,
+    pathArray,
     linkElement
   );
 }
 
 function moveDownOrRedirect() {
+  var pathArray = parsePathString();
+  var finalTuple = pathArray.pop();
+  var newTuple = [
+    selectedLink().dataset.targetTopic,
+    selectedLink().dataset.targetSubtopic
+  ];
+  pathArray.pop();
+  pathArray.push(newTuple);
+
   if (selectedLink().classList.contains('canopy-parent-link')) {
     moveDownward(false);
   } else if (selectedLink().classList.contains('canopy-global-link')) {
     renderTopic(
-      selectedLink().dataset.targetTopic,
-      selectedLink().dataset.targetSubtopic,
+      pathArray,
       null,
       true
     );
   } else if (selectedLink().classList.contains('canopy-redundant-parent-link')) {
     renderTopic(
-      selectedLink().dataset.targetTopic,
-      selectedLink().dataset.targetSubtopic
+      pathArray
     );
+  } else if (selectedLink().classList.contains('canopy-converted-global-link')) {
+    renderAndSelectConvertedParentLink(pathArray, );
   }
 }
 

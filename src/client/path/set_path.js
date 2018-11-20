@@ -1,33 +1,39 @@
 import { slugFor } from 'helpers/identifiers';
 import {
-  topicNameFromUrl,
-  subtopicNameFromUrl
-} from 'helpers/url_parsers';
-import {
   selectedLink,
   documentTitleFor,
   uniqueSubtopic,
   metadataFromLink
 } from 'helpers/getters';
+import parsePathString from 'path/parse_path_array';
+import pathStringFor from 'path/path_string_for';
 
-const setPathAndFragment = (topicName, subtopicName) => {
+const setPathAndFragment = (newPathArray) => {
+  var newTopicName = newPathArray[0][0];
+  var newSubtopicName = newPathArray[0][1];
+  var currentTopicName = parsePathString()[0][0];
+
   var replaceState = (a, b, c) => { history.replaceState(a, b, c) };
   var pushState = (a, b, c) => {
     history.pushState(a, b, c);
   };
-  var historyApiFunction = topicNameFromUrl() === topicName ? replaceState : pushState;
+  var historyApiFunction = currentTopicName === newTopicName ? replaceState : pushState;
 
   historyApiFunction(
     metadataFromLink(selectedLink()),
-    documentTitleFor(topicName, subtopicName),
-    pathFor(topicName, subtopicName)
+    documentTitleFor(newTopicName, newSubtopicName),
+    pathStringFor(newPathArray)
   );
 
-  function pathFor(topicName, subtopicName) {
-    return '/' + slugFor(topicName) +
-      (uniqueSubtopic(topicName, subtopicName) ?
-        `#${slugFor(subtopicName)}` : '')
-  }
+  // function pathFor(topicName, subtopicName) {
+  //   return '/' + slugFor(topicName) +
+  //     (uniqueSubtopic(topicName, subtopicName) ?
+  //       `#${slugFor(subtopicName)}` : '')
+  // }
+
+  // function pathStringFor(pathArray) {
+  //   pathArray.map((tuple) => `${tuple[0]}#${tuple[1]}`).join('/');
+  // }
 
   // var popStateEvent = new PopStateEvent(
   //   'popstate',

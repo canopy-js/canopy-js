@@ -5,9 +5,10 @@ import {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
-} from 'keys/handlers';
+} from 'keys/key_handlers';
 import { firstLinkOfSection } from 'helpers/relationships';
 import displayPath from 'display/display_path';
+import parsePathString from 'path/parse_path_array';
 
 // Copyright Greenhouse Software 2017
 const registerKeyListener = () => {
@@ -30,17 +31,13 @@ const registerKeyListener = () => {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
       displayPath(
-        currentSection().dataset.topicName,
-        currentSection().dataset.subtopicName,
+        parsePathString(),
         null,
         true
       );
-      // displaySelectedLink(firstLinkOfSection(currentSection()));
     }
   });
 }
-
-// Pressing down on alias link should cause redirect
 
 const shortcutRelationships = {
   'left': moveLeftward,

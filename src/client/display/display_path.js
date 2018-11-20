@@ -1,5 +1,5 @@
 import { htmlIdFor } from 'helpers/identifiers';
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import setPathAndFragment from 'path/set_path';
 import {
   canopyContainer,
   rootSectionElement,
@@ -19,9 +19,12 @@ import {
 
 import { firstLinkOfSection } from 'helpers/relationships';
 
-const displayPath = (topicName, subtopicName, linkToSelect, selectFirstLink) => {
+const displayPath = (pathArray, linkToSelect, selectFirstLink) => {
+  var topicName = pathArray[0][0];
+  var subtopicName = pathArray[0][1];
+
   const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
-  if (!sectionElement) { return setPathAndFragment(topicName, topicName); } // Does this ever happen?
+  if (!sectionElement) { return setPathAndFragment([[topicName, topicName]]); } // Does this ever happen?
   moveSelectedSectionClass(sectionElement);
 
   hideAllSectionElements();
@@ -39,7 +42,7 @@ const displayPath = (topicName, subtopicName, linkToSelect, selectFirstLink) => 
   }
 
   document.title = documentTitleFor(topicName, subtopicName);
-  setPathAndFragment(topicName, subtopicName);
+  setPathAndFragment(pathArray);
   displayPathTo(sectionElement);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };

@@ -5,16 +5,18 @@ import displayPath from 'display/display_path'
 import { sectionElementOfTopic, findLinkFromMetadata } from 'helpers/getters';
 import { firstLinkOfSection } from 'helpers/relationships';
 import { defaultTopic } from 'helpers/getters';
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import setPathAndFragment from 'path/set_path';
 
-const renderTopic = (topicName, selectedSubtopicName, selectedLinkData, selectFirstLink) => {
-  var existingSectionElement = sectionElementOfTopic(topicName, selectedSubtopicName)
+const renderTopic = (pathArray, selectedLinkData, selectFirstLink, anchorElement) => {
+  var topicName = pathArray[0][0];
+  var subtopicName = pathArray[0][1];
+
+  var existingSectionElement = sectionElementOfTopic(topicName, subtopicName);
 
   if (existingSectionElement) {
     createOrReplaceHeader(topicName);
     return displayPath(
-      topicName,
-      selectedSubtopicName,
+      pathArray,
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
       selectFirstLink
     );
@@ -26,23 +28,23 @@ const renderTopic = (topicName, selectedSubtopicName, selectedLinkData, selectFi
     createOrReplaceHeader(topicName);
 
     const domTree = renderDomTree(
-      topicName,
-      topicName,
+      pathArray[0][0],
+      pathArray,
+      '',
       paragraphsBySubtopic,
       [],
       {}
     );
 
-    canopyContainer.appendChild(domTree);
+    (anchorElement || canopyContainer).appendChild(domTree);
 
     displayPath(
-      topicName,
-      selectedSubtopicName,
+      pathArray,
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
       selectFirstLink
     );
   }, (e) => {
-    setPathAndFragment(defaultTopic, null);
+    renderTopic([[defaultTopic, defaultTopic]], null);
   });
 }
 

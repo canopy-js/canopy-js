@@ -1,4 +1,4 @@
-import { paintGlobalLinks, unpaintGlobalLinks } from 'keys/handlers';
+import { paintGlobalLinks, unpaintGlobalLinks } from 'keys/key_handlers';
 
 function registerAltKeyListeners() {
   window.addEventListener('keydown', function(e) {

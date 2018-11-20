@@ -6,18 +6,18 @@ import {
 } from 'helpers/getters';
 
 import renderTopic from 'render/render_topic';
-import { topicNameFromUrl, subtopicNameFromUrl } from 'helpers/url_parsers'
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import setPathAndFragment from 'path/set_path';
 import css from 'style/canopy.scss';
 import registerKeyListener from 'keys/register_key_listener';
 import registerAltKeyListener from 'keys/register_alt_key_listener';
+import parsePathString from 'path/parse_path_array';
 
-if (!topicNameFromUrl()) {
+if (!parsePathString()[0][0]) {
   setPathAndFragment(defaultTopic, null);
 } else {
   renderTopic(
-    topicNameFromUrl(),
-    subtopicNameFromUrl() || topicNameFromUrl(),
+    parsePathString(),
+    null,
     history.state
   );
 }
@@ -39,8 +39,7 @@ window.addEventListener('popstate', (e) => {
   var selectedLinkData = e.state && e.state.targetTopic ? e.state : null;
 
   renderTopic(
-    topicNameFromUrl(),
-    subtopicNameFromUrl() || topicNameFromUrl(),
+    parsePathString(),
     selectedLinkData
   );
 });

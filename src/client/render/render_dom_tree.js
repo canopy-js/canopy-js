@@ -1,23 +1,29 @@
 import { htmlIdFor } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
-import setPathAndFragment from 'helpers/set_path_and_fragment';
+import setPathAndFragment from 'path/set_path';
 import { slugFor } from 'helpers/identifiers';
 import { linkNumberOf } from 'helpers/getters';
-import renderTopic from 'render/render_topic'
+import renderTopic from 'render/render_topic';
+import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 
-const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, currentTopicStack, renderedSubtopics) => {
+const renderDomTree = (subtopicToRender, pathArray, idPrefix, paragraphsBySubtopic, currentTopicStack, renderedSubtopics) => {
+  var topicName = pathArray[0][0];
+  var subtopicContainingConvertedParentLink = pathArray[0][1];
+  var nextTopicName = pathArray[1] && pathArray[1][0];
+  var nextSubtopicName = pathArray[1] && pathArray[1][1];
+
   var sectionElement = document.createElement('section');
   var paragraphElement = document.createElement('p');
 
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
-  sectionElement.id = htmlIdFor(topicName, subtopicName);
+  sectionElement.id = htmlIdFor(topicName, subtopicToRender);
   sectionElement.dataset.topicName = topicName;
-  sectionElement.dataset.subtopicName = subtopicName;
+  sectionElement.dataset.subtopicName = subtopicToRender;
 
-  var linesOfBlock = paragraphsBySubtopic[subtopicName];
+  var linesOfBlock = paragraphsBySubtopic[subtopicToRender];
   currentTopicStack.push(topicName);
-  renderedSubtopics[subtopicName] = true;
+  renderedSubtopics[subtopicToRender] = true;
 
   linesOfBlock.forEach((tokensOfLine, lineNumber) => {
     if (lineNumber > 0) {
@@ -27,37 +33,25 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, currentTop
     tokensOfLine.forEach(token => {
       var tokenElement;
       var textElement = document.createTextNode(token.text);
-      if(token.type === 'text' || currentTopicStack.includes(token.targetSubtopic)) {
+
+      if (token.type === 'text' || currentTopicStack.includes(token.targetSubtopic)) {
         tokenElement = textElement;
+
       } else if (token.type === 'local') {
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
 
         if (!renderedSubtopics.hasOwnProperty(token.targetSubtopic)) {
           var subtree = renderDomTree(
-            topicName,
             token.targetSubtopic,
+            pathArray,
+            idPrefix,
             paragraphsBySubtopic,
             currentTopicStack,
             renderedSubtopics
           );
 
-          tokenElement.addEventListener('click', (e) => {
-            e.preventDefault();
-            // If the link's child is already selected, display the link's section
-            if (document.querySelector('.canopy-selected-section') === subtree) {
-
-              displayPath(
-                linkElement.dataset.topicName,
-                linkElement.dataset.enclosingSubtopic
-              );
-            } else {
-              displayPath(
-                topicName,
-                token.targetSubtopic,
-              );
-            }
-          });
+          tokenElement.addEventListener('click', onParentLinkClick(topicName, tokenElement, token.targetSubtopic));
 
           var id = htmlIdFor(topicName, token.targetSubtopic);
           tokenElement.classList.add(id);
@@ -69,7 +63,6 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, currentTop
           tokenElement.dataset.urlSubtopic = token.targetSubtopic;
           tokenElement.dataset.enclosingTopic = token.enclosingTopic;
           tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-          tokenElement.dataset.clauseText = token.clause;
           tokenElement.href = `/${slugFor(topicName)}#${slugFor(token.targetSubtopic)}`;
 
           sectionElement.appendChild(subtree);
@@ -81,35 +74,31 @@ const renderDomTree = (topicName, subtopicName, paragraphsBySubtopic, currentTop
           tokenElement.dataset.enclosingTopic = token.enclosingTopic;
           tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
           tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
-          tokenElement.dataset.clauseText = token.clause;
           tokenElement.href = `/${slugFor(topicName)}#${slugFor(token.enclosingSubtopic)}`;
-          tokenElement.addEventListener('click', (e) => {
-            e.preventDefault();
-            displayPath(
-              topicName,
-              token.targetSubtopic
-            );
-          });
+          tokenElement.addEventListener('click', onParentLinkClick(topicName, tokenElement, token.targetSubtopic));
         }
       } else if (token.type === 'global') {
         tokenElement = document.createElement('a');
         tokenElement.appendChild(textElement);
-        tokenElement.classList.add('canopy-global-link');
         tokenElement.dataset.type = 'global';
         tokenElement.dataset.targetTopic = token.targetTopic;
         tokenElement.dataset.targetSubtopic = token.targetSubtopic;
         tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
         tokenElement.dataset.enclosingTopic = token.enclosingTopic;
         tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-        tokenElement.dataset.clauseText = token.clause;
-        tokenElement.href = `/${slugFor(token.topic)}#${slugFor(token.urlSubtopic)}`;
-        tokenElement.addEventListener('click', (e) => {
-          e.preventDefault();
-          renderTopic(
-            token.targetTopic,
-            token.targetSubtopic
-          );
-        });
+        tokenElement.classList.add('canopy-global-link');
+        tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+
+        var convertedGlobalLink = pathArray[1] &&
+          tokenElement.dataset.targetTopic === pathArray[1][0] &&
+          tokenElement.dataset.targetSubtopic === pathArray[1][1];
+
+        if (convertedGlobalLink) {
+          tokenElement.classList.add('canopy-converted-global-link');
+          tokenElement.addEventListener('click', onParentLinkClick(topicName, tokenElement, token.targetSubtopic));
+        } else {
+          tokenElement.addEventListener('click', onGlobalLinkClick(token.targetTopic, token.targetSubtopic));
+        }
       }
       paragraphElement.appendChild(tokenElement);
     });
