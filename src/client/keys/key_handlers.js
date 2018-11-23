@@ -8,7 +8,7 @@ import {
   lastSiblingOf,
   firstChildLinkOfParentLink
 } from 'helpers/relationships';
-import renderTopic from 'render/render_topic';
+import updateView from 'render/update_view';
 import setPathAndFragment from 'path/set_path';
 import displayPath from 'display/display_path';
 import parsePathString from 'path/parse_path_array';
@@ -92,17 +92,22 @@ function moveDownOrRedirect() {
   if (selectedLink().classList.contains('canopy-parent-link')) {
     moveDownward(false);
   } else if (selectedLink().classList.contains('canopy-global-link')) {
-    renderTopic(
+    updateView(
       pathArray,
       null,
       true
     );
   } else if (selectedLink().classList.contains('canopy-redundant-parent-link')) {
-    renderTopic(
+    updateView(
       pathArray
     );
   } else if (selectedLink().classList.contains('canopy-converted-global-link')) {
-    renderAndSelectConvertedParentLink(pathArray, );
+    //
+  } else if (selectedLink().classList.contains('canopy-painted-global-link')) {
+    // updateView(
+    //   pathArray.push
+
+    // );
   }
 }
 

@@ -14,7 +14,6 @@ function moveSelectedSectionClass(sectionElement) {
 function hideAllSectionElements() {
   forEach(document.getElementsByTagName("section"), function(sectionElement) {
     sectionElement.style.display = 'none';
-    sectionElement.classList.remove('canopy-current-root-section');
   });
 }
 

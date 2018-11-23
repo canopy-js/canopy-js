@@ -3,27 +3,28 @@ import displayPath from 'display/display_path';
 import setPathAndFragment from 'path/set_path';
 import { slugFor } from 'helpers/identifiers';
 import { linkNumberOf } from 'helpers/getters';
-import renderTopic from 'render/render_topic';
+import fetchAndRenderPath from 'render/fetch_and_render_path';
 import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 
-const renderDomTree = (subtopicToRender, pathArray, idPrefix, paragraphsBySubtopic, currentTopicStack, renderedSubtopics) => {
+const renderTopicDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, currentTopicStack, renderedSubtopics, pathDepth) => {
   var topicName = pathArray[0][0];
-  var subtopicContainingConvertedParentLink = pathArray[0][1];
-  var nextTopicName = pathArray[1] && pathArray[1][0];
-  var nextSubtopicName = pathArray[1] && pathArray[1][1];
+  var subtopicContainingConvertedGlobalReference = pathArray[0][1];
+  var convertedGlobalLinkExists = pathArray[1];
+  var convertedGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
+  var convertedGlobalLinkTargetSubtopic = pathArray[1] && pathArray[1][1];
 
   var sectionElement = document.createElement('section');
   var paragraphElement = document.createElement('p');
 
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
-  sectionElement.id = htmlIdFor(topicName, subtopicToRender);
   sectionElement.dataset.topicName = topicName;
-  sectionElement.dataset.subtopicName = subtopicToRender;
+  sectionElement.dataset.subtopicName = currentSubtopicName;
+  sectionElement.dataset.pathDepth = pathDepth;
 
-  var linesOfBlock = paragraphsBySubtopic[subtopicToRender];
+  var linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
   currentTopicStack.push(topicName);
-  renderedSubtopics[subtopicToRender] = true;
+  renderedSubtopics[currentSubtopicName] = true;
 
   linesOfBlock.forEach((tokensOfLine, lineNumber) => {
     if (lineNumber > 0) {
@@ -42,21 +43,18 @@ const renderDomTree = (subtopicToRender, pathArray, idPrefix, paragraphsBySubtop
         tokenElement.appendChild(textElement);
 
         if (!renderedSubtopics.hasOwnProperty(token.targetSubtopic)) {
-          var subtree = renderDomTree(
+          var subtree = renderTopicDomTree(
             token.targetSubtopic,
             pathArray,
-            idPrefix,
             paragraphsBySubtopic,
             currentTopicStack,
-            renderedSubtopics
+            renderedSubtopics,
+            pathDepth
           );
 
           tokenElement.addEventListener('click', onParentLinkClick(topicName, tokenElement, token.targetSubtopic));
 
-          var id = htmlIdFor(topicName, token.targetSubtopic);
-          tokenElement.classList.add(id);
           tokenElement.classList.add('canopy-parent-link');
-          tokenElement.dataset.childSectionId = id;
           tokenElement.dataset.type = 'parent';
           tokenElement.dataset.targetTopic = topicName;
           tokenElement.dataset.targetSubtopic = token.targetSubtopic;
@@ -89,13 +87,19 @@ const renderDomTree = (subtopicToRender, pathArray, idPrefix, paragraphsBySubtop
         tokenElement.classList.add('canopy-global-link');
         tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
 
-        var convertedGlobalLink = pathArray[1] &&
-          tokenElement.dataset.targetTopic === pathArray[1][0] &&
-          tokenElement.dataset.targetSubtopic === pathArray[1][1];
+        var globalLinkIsConverted = convertedGlobalLinkExists &&
+          tokenElement.dataset.targetTopic === convertedGlobalLinkTargetTopic &&
+          tokenElement.dataset.targetSubtopic === convertedGlobalLinkTargetSubtopic &&
+          currentSubtopicName === subtopicContainingConvertedGlobalReference;
 
-        if (convertedGlobalLink) {
+        if (globalLinkIsConverted) {
           tokenElement.classList.add('canopy-converted-global-link');
           tokenElement.addEventListener('click', onParentLinkClick(topicName, tokenElement, token.targetSubtopic));
+
+          var whenDomRenders = fetchAndRenderPath(pathArray.slice(1), pathDepth + 1);
+          whenDomRenders.then((topicDomTree) => {
+            sectionElement.appendChild(topicDomTree);
+          });
         } else {
           tokenElement.addEventListener('click', onGlobalLinkClick(token.targetTopic, token.targetSubtopic));
         }
@@ -108,4 +112,4 @@ const renderDomTree = (subtopicToRender, pathArray, idPrefix, paragraphsBySubtop
   return sectionElement;
 }
 
-export default renderDomTree;
+export default renderTopicDomTree;

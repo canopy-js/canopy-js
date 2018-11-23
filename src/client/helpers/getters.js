@@ -10,12 +10,28 @@ if(!defaultTopic) {
   throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
 }
 
-const sectionElementOfTopic = (topicName, subtopicName) => {
-  return document.querySelector('#_canopy #_canopy_' + slugFor(topicName) + '_' + slugFor(subtopicName));
+const sectionElementOfPath = (pathArray) => {
+  var currentNode = canopyContainer;
+
+  for (var i = 0; i < pathArray.length; i++) {
+    if (!currentNode) { return null; }
+
+    var topicName = pathArray[i][0];
+    var subtopicName = pathArray[i][1];
+
+    currentNode = currentNode.querySelector(
+      `[data-topic-name="${topicName}"]` +
+      `[data-subtopic-name="${subtopicName}"]` +
+      `[data-path-depth="${i}"]`
+    );
+  }
+
+  return currentNode;
 }
 
 const currentSection = () => {
-  return document.querySelector('.canopy-selected-section');
+  var nodeList = document.querySelectorAll('section[style="display: block;"');
+  return nodeList[nodeList.length - 1];
 }
 
 const selectedLink = () => {
@@ -23,15 +39,35 @@ const selectedLink = () => {
 }
 
 const currentRootSection = () => {
-  return document.querySelector('.canopy-current-root-section');
+  var nodeList = document.querySelectorAll('section[style="display: block;"');
+  return nodeList[0];
 }
 
 const parentLinkOfSection = (sectionElement) => {
-  return document.querySelector('#_canopy a.' + sectionElement.id);
+  if (sectionElement.parentNode === canopyContainer) { return null; }
+
+  var paragraphElement = Array.from(
+      sectionElement.
+      parentNode.
+      childNodes
+    ).find((element) => element.tagName === 'P')
+
+  return Array.
+    from(paragraphElement.childNodes).
+    find((linkElement) =>
+      linkElement.tagName === 'A' &&
+      linkElement.dataset.targetTopic === sectionElement.dataset.topicName &&
+      linkElement.dataset.targetSubtopic === sectionElement.dataset.subtopicName);
 }
 
 const childSectionElementOfParentLink = (linkElement) => {
-  return document.querySelector('#' + linkElement.dataset.childSectionId);
+  return Array.from(linkElement.
+    parentNode.
+    parentNode.
+    childNodes).
+    find((sectionElement) =>
+      sectionElement.dataset.topicName === linkElement.dataset.targetTopic &&
+      sectionElement.dataset.subtopicName === linkElement.dataset.targetSubtopic);
 }
 
 function sectionElementOfLink(linkElement) {
@@ -53,14 +89,18 @@ function documentTitleFor(topicName, subtopicName) {
 function metadataFromLink(linkElement) {
   if (!linkElement) { return {}; }
 
-  var relativeLinkNumber = Array.from(document.querySelectorAll(
-    '#' + sectionElementOfLink(linkElement).id +
+  var sectionElement = sectionElementOfLink(linkElement);
+
+  var relativeLinkNumber = Array.from(
+    sectionElement.querySelectorAll(
     ` a[data-target-topic="${linkElement.dataset.targetTopic}"]` +
     `[data-target-subtopic="${linkElement.dataset.targetSubtopic}"]`
   )).indexOf(linkElement);
 
   return {
-    sectionElementid: sectionElementOfLink(linkElement).id,
+    sectionElementTopicName: sectionElement.dataset.topicName,
+    sectionElementSubtopicName: sectionElement.dataset.subtopicName,
+    sectionElementPathDepth: sectionElement.dataset.pathDepth,
     targetTopic: linkElement.dataset.targetTopic,
     targetSubtopic: linkElement.dataset.targetSubtopic,
     relativeLinkNumber: relativeLinkNumber
@@ -69,16 +109,35 @@ function metadataFromLink(linkElement) {
 
 function findLinkFromMetadata(linkSelectionData) {
   return document.querySelectorAll(
-    '#' + linkSelectionData.sectionElementid +
+    `section[data-topic-name="${linkSelectionData.sectionElementTopicName}"]` +
+    `[data-subtopic-name="${linkSelectionData.sectionElementSubtopicName}"]` +
+    `[data-path-depth="${linkSelectionData.sectionElementPathDepth}"]` +
     ` a[data-target-topic="${linkSelectionData.targetTopic}"]` +
     `[data-target-subtopic="${linkSelectionData.targetSubtopic}"]`
   )[linkSelectionData.relativeLinkNumber];
 }
 
+function findLowestExtantSectionElementOfPath(pathArray) {
+  var lowestExtantSectionElement = null;
+  var pathSuffixToRender = [];
+
+  for (var i = 0; i < pathArray.length; i++) {
+    var pathSegment = pathArray.slice(0, i + 1);
+    var sectionElement = sectionElementOfPath(pathSegment);
+    if (sectionElement) {
+      lowestExtantSectionElement = sectionElementOfPath(pathSegment);
+    } else {
+      pathSuffixToRender = pathArray.slice(i);
+    }
+  }
+
+  return { lowestExtantSectionElement, pathSuffixToRender };
+}
+
 export {
   canopyContainer,
   defaultTopic,
-  sectionElementOfTopic,
+  sectionElementOfPath,
   currentSection,
   currentRootSection,
   selectedLink,
@@ -90,5 +149,6 @@ export {
   metadataFromLink,
   uniqueSubtopic,
   documentTitleFor,
-  findLinkFromMetadata
+  findLinkFromMetadata,
+  findLowestExtantSectionElementOfPath
 };

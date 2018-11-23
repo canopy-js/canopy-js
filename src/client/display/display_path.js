@@ -4,7 +4,7 @@ import {
   canopyContainer,
   rootSectionElement,
   selectedLink,
-  sectionElementOfTopic,
+  sectionElementOfPath,
   linkNumberOf,
   parentLinkOfSection,
   metadataFromLink,
@@ -16,24 +16,35 @@ import {
   hideAllSectionElements,
   deselectAllLinks
 } from 'display/reset_page';
-
+import { defaultTopic } from 'helpers/getters';
+import updateView from 'render/update_view';
 import { firstLinkOfSection } from 'helpers/relationships';
+import createOrReplaceHeader from 'display/create_or_replace_header';
 
-const displayPath = (pathArray, linkToSelect, selectFirstLink) => {
-  var topicName = pathArray[0][0];
-  var subtopicName = pathArray[0][1];
+const displayPath = (pathArray, linkToSelect, selectALink) => {
+  var topicName = pathArray[pathArray.length - 1][0];
+  var subtopicName = pathArray[pathArray.length - 1][1];
 
-  const sectionElement = sectionElementOfTopic(topicName, subtopicName || topicName);
-  if (!sectionElement) { return setPathAndFragment([[topicName, topicName]]); } // Does this ever happen?
-  moveSelectedSectionClass(sectionElement);
+  const sectionElement = sectionElementOfPath(pathArray);
+  // if (!sectionElement) {
+  //   // Try each path segment, etc
+  //   return updateView([[topicName, topicName]]);
+  //   // return updateView(
+  //   // pathArray.slice(0, pathArray.length + 1) ||
+  //   // [[pathArray[0][0], pathArray[0][1]]]) // Maybe this should try pathArray[i][0], pathArray[i][0] first
+  // }
+
+  createOrReplaceHeader(topicName);
 
   hideAllSectionElements();
   deselectAllLinks();
 
-  if (!linkToSelect && selectFirstLink) {
+  if (pathArray[pathArray.length - 1][0] !== pathArray[pathArray.length - 1][1] && selectALink && !linkToSelect) {
+    linkToSelect = parentLinkOfSection(sectionElement) || null;
+  } else if (!linkToSelect && selectALink) {
     linkToSelect = firstLinkOfSection(sectionElement);
   } else if (!linkToSelect) {
-    linkToSelect = parentLinkOfSection(sectionElement) || null;
+    // linkToSelect = parentLinkOfSection(sectionElement) || null;
   }
 
   if (linkToSelect) { linkToSelect.classList.add('canopy-selected-link'); }
@@ -50,7 +61,6 @@ const displayPath = (pathArray, linkToSelect, selectFirstLink) => {
 const displayPathTo = (sectionElement) => {
   sectionElement.style.display = 'block';
   if (sectionElement.parentNode === canopyContainer) {
-    sectionElement.classList.add('canopy-current-root-section');
     return;
   }
   var parentLink = parentLinkOfSection(sectionElement);

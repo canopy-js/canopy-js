@@ -1,15 +1,18 @@
 import { slugFor } from 'helpers/identifiers';
 
-const requestJson = (topicName, success, error) => {
-  fetch('data/' + slugFor(topicName.toLowerCase()) + '.json').
-    then(res => res.json()).
-    catch(function(e) {
-      error(e)
-    }).
-    then(json => {
-      if (json) {
-        success(json)
-      }
+var cache = {};
+
+const requestJson = (topicName) => {
+  if (cache[topicName]) { return Promise.resolve(cache[topicName]); }
+
+  var dataPath = 'data/' + slugFor(topicName.toLowerCase()) + '.json';
+
+  return fetch(dataPath).
+    then(res => {
+      return res.json().then((json) => {
+        cache[topicName] = json;
+        return json;
+      });
     });
 }
 

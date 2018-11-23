@@ -1,6 +1,6 @@
 import parsePathString from 'path/parse_path_array';
 import displayPath from 'display/display_path';
-import renderTopic from 'render/render_topic';
+import updateView from 'render/update_view';
 
 const onParentLinkClick = (topicName, linkElement, targetSubtopic) => {
   return (e) => {
@@ -27,7 +27,7 @@ const onParentLinkClick = (topicName, linkElement, targetSubtopic) => {
 const onGlobalLinkClick = (targetTopic, targetSubtopic) => {
   return (e) => {
     e.preventDefault();
-    renderTopic(
+    updateView(
       [[targetTopic, targetSubtopic]]
     );
   }
