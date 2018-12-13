@@ -5,19 +5,19 @@ import {
   uniqueSubtopic,
   metadataFromLink
 } from 'helpers/getters';
-import parsePathString from 'path/parse_path_array';
+import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
 
 const setPathAndFragment = (newPathArray) => {
   var newTopicName = newPathArray[0][0];
   var newSubtopicName = newPathArray[0][1];
-  var currentTopicName = parsePathString()[0][0];
+  var oldPathArray = parsePathString();
 
   var replaceState = (a, b, c) => { history.replaceState(a, b, c) };
   var pushState = (a, b, c) => {
     history.pushState(a, b, c);
   };
-  var historyApiFunction = currentTopicName === newTopicName ? replaceState : pushState;
+  var historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
 
   historyApiFunction(
     metadataFromLink(selectedLink()),

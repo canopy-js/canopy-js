@@ -2,22 +2,20 @@
 
 #_canopy {
   padding-top: 25px;
+  padding-bottom: 55px;
 
   h1 {
     text-align: center;
     margin-top: 10px;
   }
 
-  section {
-    padding-top: 5px;
-
-    &:first-child {
-      padding-top: 5px;
-    }
+  hr {
+    width: 20%;
   }
 
   p {
-    padding-bottom: 24px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     font-size: 23px;
     width: 700px;
     margin: auto;
@@ -28,7 +26,7 @@
   }
 
   a {
-    text-decoration: underline #E0E0E0;
+    text-decoration: underline #F5F5F5;
     color: black;
     cursor: pointer;
 
@@ -40,13 +38,16 @@
       outline:0;
     }
 
-
     &.canopy-open-link {
       text-decoration: underline;
     }
 
     &.canopy-selected-link {
       text-shadow: .8px 0px 0px black;
+    }
+
+    &.canopy-redundant-parent-link {
+      text-decoration: underline;
     }
 
     &.canopy-global-link {
@@ -59,19 +60,8 @@
         color: #4078c0;
       }
 
-      &.canopy-painted-global-link, &.canopy-converted-global-link {
-        text-decoration: underline #E0E0E0;
-        color: black;
-
-        &:hover {
-          text-decoration: underline black;
-          color: black;
-        }
-
-        &.canopy-selected-link {
-          text-decoration: underline black;
-          color: black;
-        }
+      &.canopy-open-link {
+        color: #4078c0;
       }
     }
   }

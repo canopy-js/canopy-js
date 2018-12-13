@@ -1,4 +1,4 @@
-import { selectedLink, currentRootSection} from 'helpers/getters';
+import { selectedLink, currentRootSection, canopyContainer } from 'helpers/getters';
 import {
   childSectionElementOfParentLink,
   parentLinkOfSection,
@@ -74,11 +74,14 @@ function firstChildLinkOfParentLink(linkElement) {
     return null;
   }
 
-  if (!linkElement.classList.contains('canopy-parent-link')) {
+  if (!linkElement.classList.contains('canopy-parent-link') &&
+      !linkElement.classList.contains('canopy-redundant-parent-link')) {
     return null;
   }
 
   var sectionElement = childSectionElementOfParentLink(linkElement);
+  if (!sectionElement) { return null; }
+
   return sectionElement.querySelectorAll('a')[0];
 }
 
@@ -90,6 +93,33 @@ function firstLinkOfSection(sectionElement) {
   return sectionElement.querySelectorAll('a')[0] || null;
 }
 
+function isTopicRootSection(sectionElement) {
+  return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
+}
+
+function isTreeRootSection(sectionElement) {
+  return sectionElement.parentNode === canopyContainer;
+}
+
+function pathForSectionElement(sectionElement) {
+  var pathArray = [];
+  var currentElement = sectionElement;
+
+  while (currentElement !== canopyContainer) {
+    var currentTopic = currentElement.dataset.topicName;
+
+    pathArray.unshift([
+      currentTopic,
+      currentElement.dataset.subtopicName
+    ]);
+
+    while (currentElement.dataset.topicName === currentTopic) {
+      currentElement = currentElement.parentNode;
+    }
+  }
+
+  return pathArray;
+}
 
 export {
   firstSiblingOf,
@@ -103,4 +133,7 @@ export {
   parentLinkOf,
   firstLinkOfSection,
   firstChildLinkOfParentLink,
+  isTopicRootSection,
+  isTreeRootSection,
+  pathForSectionElement
 };

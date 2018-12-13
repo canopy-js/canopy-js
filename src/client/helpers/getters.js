@@ -71,7 +71,7 @@ const childSectionElementOfParentLink = (linkElement) => {
 }
 
 function sectionElementOfLink(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -118,20 +118,21 @@ function findLinkFromMetadata(linkSelectionData) {
 }
 
 function findLowestExtantSectionElementOfPath(pathArray) {
-  var lowestExtantSectionElement = null;
+  var lowestExtantSectionElementOfPath = null;
   var pathSuffixToRender = [];
 
   for (var i = 0; i < pathArray.length; i++) {
     var pathSegment = pathArray.slice(0, i + 1);
     var sectionElement = sectionElementOfPath(pathSegment);
     if (sectionElement) {
-      lowestExtantSectionElement = sectionElementOfPath(pathSegment);
+      lowestExtantSectionElementOfPath = sectionElementOfPath(pathSegment);
     } else {
       pathSuffixToRender = pathArray.slice(i);
+      break;
     }
   }
 
-  return { lowestExtantSectionElement, pathSuffixToRender };
+  return { lowestExtantSectionElementOfPath, pathSuffixToRender };
 }
 
 export {

@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: {
@@ -38,6 +39,8 @@ module.exports = {
   node: {
    fs: "empty"
   },
+  target: 'node',
+  externals: [nodeExternals()],
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({

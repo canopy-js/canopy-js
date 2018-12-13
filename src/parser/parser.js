@@ -1,9 +1,12 @@
 import jsonForDgsDirectory from './components/json_for_dgs_directory';
 
-if (process.argv.length < 3) {
+console.log(process);
+console.log('sdfsdfsdfd')
+
+if (process.argv.length < 2) {
   console.log('Project directory argument required');
   console.log('Example Usage:');
-  console.log('node dist/compiler.js /Users/Me/project');
+  console.log('node dist/parser.js /Users/Me/project');
   throw('Missing commandline argument');
 }
 

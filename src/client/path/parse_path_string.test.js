@@ -1,4 +1,4 @@
-import parsePathString from './parse_path_array';
+import parsePathString from './parse_path_string';
 
 test('just topic', () => {
   var path = '/Topic'
@@ -34,4 +34,10 @@ test('empty segment', () => {
   var path = '/Topic#Subtopic/#'
   var pathArray = parsePathString(path);
   expect(pathArray).toEqual([['Topic', 'Subtopic']]);
+});
+
+test('No initial subtopic', () => {
+  var path = '/Topic/Topic2#Subtopic'
+  var pathArray = parsePathString(path);
+  expect(pathArray).toEqual([['Topic', 'Topic'], ['Topic2', 'Subtopic']]);
 });

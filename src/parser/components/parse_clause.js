@@ -47,7 +47,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           continueFlag = true;
         }
       }
-      if(continueFlag){continue;}
+      if (continueFlag) {continue;}
 
       if (globalNamespace.hasOwnProperty(substringCapitalized)) {
         if (textTokenBuffer){

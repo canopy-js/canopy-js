@@ -9,7 +9,9 @@ import {
   parentLinkOfSection,
   metadataFromLink,
   findLinkFromMetadata,
-  documentTitleFor
+  documentTitleFor,
+  childSectionElementOfParentLink,
+  sectionElementOfLink
 } from 'helpers/getters';
 import {
   moveSelectedSectionClass,
@@ -21,11 +23,11 @@ import updateView from 'render/update_view';
 import { firstLinkOfSection } from 'helpers/relationships';
 import createOrReplaceHeader from 'display/create_or_replace_header';
 
-const displayPath = (pathArray, linkToSelect, selectALink) => {
-  var topicName = pathArray[pathArray.length - 1][0];
-  var subtopicName = pathArray[pathArray.length - 1][1];
+const displayPath = (pathArray, linkToSelect, selectALink, popState) => {
+  var topicName = pathArray[0][0];
 
-  const sectionElement = sectionElementOfPath(pathArray);
+  const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
+
   // if (!sectionElement) {
   //   // Try each path segment, etc
   //   return updateView([[topicName, topicName]]);
@@ -39,22 +41,28 @@ const displayPath = (pathArray, linkToSelect, selectALink) => {
   hideAllSectionElements();
   deselectAllLinks();
 
-  if (pathArray[pathArray.length - 1][0] !== pathArray[pathArray.length - 1][1] && selectALink && !linkToSelect) {
-    linkToSelect = parentLinkOfSection(sectionElement) || null;
-  } else if (!linkToSelect && selectALink) {
-    linkToSelect = firstLinkOfSection(sectionElement);
-  } else if (!linkToSelect) {
-    // linkToSelect = parentLinkOfSection(sectionElement) || null;
+  if (!linkToSelect){
+    if (selectALink){
+      var lastPathSegment = pathArray[pathArray.length - 1];
+      if (lastPathSegment[0] !== lastPathSegment[1]) {
+        linkToSelect = parentLinkOfSection(sectionElementOfCurrentPath) || null;
+      } else {
+        linkToSelect = firstLinkOfSection(sectionElementOfCurrentPath);
+      }
+    }
   }
+
+  var sectionElementToDisplay = (linkToSelect && linkToSelect.classList.contains('canopy-parent-link') ?
+  childSectionElementOfParentLink(linkToSelect) :
+  sectionElementOfPath(pathArray)) || sectionElementOfCurrentPath;
 
   if (linkToSelect) { linkToSelect.classList.add('canopy-selected-link'); }
   if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
     linkToSelect.classList.add('canopy-open-link');
   }
 
-  document.title = documentTitleFor(topicName, subtopicName);
-  setPathAndFragment(pathArray);
-  displayPathTo(sectionElement);
+  !popState && setPathAndFragment(pathArray);
+  displayPathTo(sectionElementToDisplay);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
@@ -65,6 +73,15 @@ const displayPathTo = (sectionElement) => {
   }
   var parentLink = parentLinkOfSection(sectionElement);
   parentLink.classList.add('canopy-open-link');
+
+  Array.from(parentLink.parentNode.childNodes).filter((linkElement) => {
+    return linkElement.dataset &&
+           linkElement.dataset.targetTopic === parentLink.dataset.targetTopic &&
+           linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic;
+  }).forEach((redundantParentLink) => {
+    redundantParentLink.classList.add('canopy-open-link');
+  });
+
   var parentSectionElement = parentLink.parentNode.parentNode;
   displayPathTo(parentSectionElement);
 }

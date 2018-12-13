@@ -7,7 +7,7 @@ import {
   findLinkFromMetadata
 } from 'helpers/getters';
 
-const updateView = (pathArray, selectedLinkData, selectALink) => {
+const updateView = (pathArray, selectedLinkData, selectALink, popState) => {
   var topicName = pathArray[0][0];
   var subtopicName = pathArray[0][1];
 
@@ -16,31 +16,19 @@ const updateView = (pathArray, selectedLinkData, selectALink) => {
     pathSuffixToRender
   } = findLowestExtantSectionElementOfPath(pathArray);
 
-  if (pathSuffixToRender.length === 0) {
-    return displayPath(
-      pathArray,
-      selectedLinkData && findLinkFromMetadata(selectedLinkData),
-      selectALink
-    );
-  }
+  var promisedDomTree = fetchAndRenderPath(
+    pathSuffixToRender,
+    pathArray.length - pathSuffixToRender.length
+  )
 
-  var whenDomRendered = fetchAndRenderPath(
-      pathSuffixToRender,
-      0
-    );
-
-  // We don't want to give up anymore just because we had one failure, salvage the rest of the path
-  // whenDomRendered.catch((e) => {
-  //   updateView([[defaultTopic, defaultTopic]], null);
-  // });
-
-  whenDomRendered.then((domTree) => {
-    (lowestExtantSectionElementOfPath || canopyContainer).appendChild(domTree);
+  promisedDomTree.then((domTree) => {
+    domTree && (lowestExtantSectionElementOfPath || canopyContainer).appendChild(domTree);
 
     displayPath(
       pathArray,
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
-      selectALink
+      selectALink,
+      popState
     );
   });
 }

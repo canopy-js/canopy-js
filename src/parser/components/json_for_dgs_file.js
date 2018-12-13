@@ -11,7 +11,7 @@ function jsonForDgsFile(path, namespaceObject) {
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
     var paragraphData = extractKeyAndParagraph(paragraphWithKey);
-    if(!paragraphData.key){ return; }
+    if (!paragraphData.key) { return; }
 
     var currentSubtopic = paragraphData.key;
     var textWithoutKey = paragraphData.block;

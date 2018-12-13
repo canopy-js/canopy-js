@@ -8,7 +8,7 @@ import {
 } from 'keys/key_handlers';
 import { firstLinkOfSection } from 'helpers/relationships';
 import displayPath from 'display/display_path';
-import parsePathString from 'path/parse_path_array';
+import parsePathString from 'path/parse_path_string';
 
 // Copyright Greenhouse Software 2017
 const registerKeyListener = () => {

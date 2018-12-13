@@ -9,21 +9,21 @@ import updateView from 'render/update_view';
 import setPathAndFragment from 'path/set_path';
 import css from 'style/canopy.scss';
 import registerKeyListener from 'keys/register_key_listener';
-import registerAltKeyListener from 'keys/register_alt_key_listener';
-import parsePathString from 'path/parse_path_array';
+import parsePathString from 'path/parse_path_string';
 
+// history.state.paths = {};
 // if (!parsePathString()[0]) {
 //   setPathAndFragment(defaultTopic, null);
 // } else {
+
 updateView(
   parsePathString(),
-  null,
-  history.state
+  history.state,
+  null
 );
 // }
 
 registerKeyListener();
-registerAltKeyListener();
 
 window.addEventListener('popstate', (e) => {
   var oldState = Object.assign(
@@ -40,6 +40,8 @@ window.addEventListener('popstate', (e) => {
 
   updateView(
     parsePathString(),
-    selectedLinkData
+    selectedLinkData,
+    null,
+    true
   );
 });
