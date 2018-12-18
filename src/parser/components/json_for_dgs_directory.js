@@ -1,7 +1,7 @@
 import fs from 'fs';
-import listDgsFilesRecursive from '../helpers/list_dgs_files_recursive.js';
-import buildNamespaceObject from './build_namespace_object.js';
-import jsonForDgsFile from './json_for_dgs_file.js';
+import listDgsFilesRecursive from 'helpers/list_dgs_files_recursive.js';
+import buildNamespaceObject from 'components/build_namespace_object.js';
+import jsonForDgsFile from 'components/json_for_dgs_file.js';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 
 function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {

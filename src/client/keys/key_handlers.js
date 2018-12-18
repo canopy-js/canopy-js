@@ -127,7 +127,6 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect() {
-  debugger;
   if (selectedLink().classList.contains('canopy-parent-link') ||
       selectedLink().classList.contains('canopy-redundant-parent-link')) {
     moveDownward(false);

@@ -1,17 +1,23 @@
-import paragraphsOfFile from '../helpers/paragraphs_of_file';
-import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
+import paragraphsOfFile from 'helpers/paragraphs_of_file';
+import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
+import withoutArticle from 'helpers/without_article';
+import capitalize from 'helpers/capitalize';
 
 function buildNamespaceObject(pathList) {
   var namespacesObject = {};
 
   pathList.forEach(function(path){
     var paragraphsWithKeys = paragraphsOfFile(path);
-    var currentTopic = extractKeyAndParagraph(paragraphsWithKeys[0]).key
-    namespacesObject[currentTopic] = {};
+    var currentTopicKey = capitalize(withoutArticle(
+      extractKeyAndParagraph(paragraphsWithKeys[0]).key
+    ));
+
+    namespacesObject[currentTopicKey] = {};
 
     paragraphsWithKeys.forEach(function(paragraphWithKey){
       var key = paragraphWithKey.split(':')[0];
-      namespacesObject[currentTopic][key] = true;
+      var keyWithoutArticle = capitalize(withoutArticle(key));
+      namespacesObject[currentTopicKey][keyWithoutArticle] = key;
     });
   });
 

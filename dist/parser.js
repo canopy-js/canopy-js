@@ -95,20 +95,25 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
-/* harmony import */ var _helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
+/* harmony import */ var helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
+/* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
+/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
+/* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
+
+
 
 
 
 function buildNamespaceObject(pathList) {
   var namespacesObject = {};
   pathList.forEach(function (path) {
-    var paragraphsWithKeys = Object(_helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__["default"])(path);
-    var currentTopic = Object(_helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(paragraphsWithKeys[0]).key;
-    namespacesObject[currentTopic] = {};
+    var paragraphsWithKeys = Object(helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__["default"])(path);
+    var currentTopicKey = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(paragraphsWithKeys[0]).key));
+    namespacesObject[currentTopicKey] = {};
     paragraphsWithKeys.forEach(function (paragraphWithKey) {
       var key = paragraphWithKey.split(':')[0];
-      namespacesObject[currentTopic][key] = true;
+      var keyWithoutArticle = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(key));
+      namespacesObject[currentTopicKey][keyWithoutArticle] = key;
     });
   });
   return namespacesObject;
@@ -129,9 +134,9 @@ function buildNamespaceObject(pathList) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ "fs");
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/list_dgs_files_recursive.js */ "./src/parser/helpers/list_dgs_files_recursive.js");
-/* harmony import */ var _build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./build_namespace_object.js */ "./src/parser/components/build_namespace_object.js");
-/* harmony import */ var _json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./json_for_dgs_file.js */ "./src/parser/components/json_for_dgs_file.js");
+/* harmony import */ var helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/list_dgs_files_recursive.js */ "./src/parser/helpers/list_dgs_files_recursive.js");
+/* harmony import */ var components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! components/build_namespace_object.js */ "./src/parser/components/build_namespace_object.js");
+/* harmony import */ var components_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! components/json_for_dgs_file.js */ "./src/parser/components/json_for_dgs_file.js");
 /* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
 
 
@@ -140,10 +145,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
-  var dgsFilePaths = Object(_helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__["default"])(sourceDirectory);
-  var namespaceObject = Object(_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
+  var dgsFilePaths = Object(helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__["default"])(sourceDirectory);
+  var namespaceObject = Object(components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
   dgsFilePaths.forEach(function (path) {
-    var json = Object(_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__["default"])(path, namespaceObject);
+    var json = Object(components_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__["default"])(path, namespaceObject);
     var dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
 
     if (!fs__WEBPACK_IMPORTED_MODULE_0___default.a.existsSync(destinationDirectory)) {
@@ -176,25 +181,29 @@ function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ "fs");
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _parse_block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_block */ "./src/parser/components/parse_block.js");
-/* harmony import */ var _helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
-/* harmony import */ var _helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
+/* harmony import */ var components_parse_block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_block */ "./src/parser/components/parse_block.js");
+/* harmony import */ var helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
+/* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
+/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
+/* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
+
+
 
 
 
 
 
 function jsonForDgsFile(path, namespaceObject) {
-  var paragraphsWithKeys = Object(_helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__["default"])(path);
+  var paragraphsWithKeys = Object(helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__["default"])(path);
   var tokenizedParagraphsByKey = {};
-  var topicOfFile = Object(_helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphsWithKeys[0]).key;
+  var topicOfFile = Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphsWithKeys[0]).key;
 
   if (!topicOfFile) {
     return '';
   }
 
   paragraphsWithKeys.forEach(function (paragraphWithKey) {
-    var paragraphData = Object(_helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphWithKey);
+    var paragraphData = Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphWithKey);
 
     if (!paragraphData.key) {
       return;
@@ -202,7 +211,7 @@ function jsonForDgsFile(path, namespaceObject) {
 
     var currentSubtopic = paragraphData.key;
     var textWithoutKey = paragraphData.block;
-    var tokensOfParagraph = Object(_parse_block__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, currentSubtopic, topicOfFile);
+    var tokensOfParagraph = Object(components_parse_block__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, currentSubtopic, topicOfFile);
     tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
   return JSON.stringify(tokenizedParagraphsByKey, null, process.env.CANOPY_DEBUG ? 1 : 0);
@@ -221,8 +230,8 @@ function jsonForDgsFile(path, namespaceObject) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
-/* harmony import */ var _parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse_clause */ "./src/parser/components/parse_clause.js");
+/* harmony import */ var helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
+/* harmony import */ var components_parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_clause */ "./src/parser/components/parse_clause.js");
 
 
 
@@ -230,10 +239,10 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
   var lines = textWithoutKey.split(/\n/);
   var tokensOfBlock = [];
   lines.forEach(function (line) {
-    var clausesOfParagraph = Object(_helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
+    var clausesOfParagraph = Object(helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
     var avaliableNamespaces = [currentTopic];
     var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
-      return Object(_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces);
+      return Object(components_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces);
     });
     var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
     tokensOfBlock.push(tokensOfLine);
@@ -254,14 +263,16 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _helpers_units_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers/units_of */ "./src/parser/helpers/units_of.js");
-/* harmony import */ var _helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/capitalize */ "./src/parser/helpers/capitalize.js");
+/* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
+/* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
+/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
+
 
 
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces) {
   var tokens = [];
-  var units = Object(_helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
+  var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
   var globalNamespace = namespaceObject;
   var textTokenBuffer = ''; // Find greatest suffix-prefix match
 
@@ -276,15 +287,17 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
       }
 
       var substring = units.slice(0, i + 1).join('');
-      var substringCapitalized = Object(_helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(substring);
+      var substringCapitalized = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(substring);
+      var substringToMatch = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(substringCapitalized));
       var continueFlag = false;
 
       for (var j = 0; j < avaliableNamespaces.length; j++) {
         var namespaceName = avaliableNamespaces[j];
-        var currentNamespace = namespaceObject[namespaceName];
+        var namespaceNameWithoutArticle = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(namespaceName));
+        var currentNamespace = namespaceObject[namespaceNameWithoutArticle];
 
-        if (currentNamespace.hasOwnProperty(substringCapitalized)) {
-          if (substringCapitalized === currentSubtopic) {
+        if (currentNamespace.hasOwnProperty(substringToMatch)) {
+          if (substringToMatch === currentSubtopic) {
             break;
           }
 
@@ -295,7 +308,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           }
 
           var tokenType = currentTopic === namespaceName ? LocalReferenceToken : GlobalReferenceToken;
-          var token = new tokenType(namespaceName, substringCapitalized, currentTopic, currentSubtopic, substring, clauseWithPunctuation);
+          var token = new tokenType(namespaceObject[namespaceNameWithoutArticle][namespaceNameWithoutArticle], namespaceObject[namespaceNameWithoutArticle][substringToMatch], currentTopic, currentSubtopic, substring, clauseWithPunctuation);
           tokens.push(token);
           units = units.slice(i + 1, units.length);
           continueFlag = true;
@@ -306,20 +319,20 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
         continue;
       }
 
-      if (globalNamespace.hasOwnProperty(substringCapitalized)) {
+      if (globalNamespace.hasOwnProperty(substringToMatch)) {
         if (textTokenBuffer) {
           var token = new TextToken(textTokenBuffer);
           tokens.push(token);
           textTokenBuffer = '';
         }
 
-        if (substringCapitalized === currentTopic) {
+        if (substringToMatch === currentTopic) {
           break; //Reject self-match
         }
 
-        var token = new GlobalReferenceToken(substringCapitalized, substringCapitalized, currentTopic, currentSubtopic, substring, clauseWithPunctuation);
+        var token = new GlobalReferenceToken(namespaceObject[substringToMatch][substringToMatch], namespaceObject[substringToMatch][substringToMatch], currentTopic, currentSubtopic, substring, clauseWithPunctuation);
         tokens.push(token);
-        avaliableNamespaces.push(substringCapitalized);
+        avaliableNamespaces.push(substringToMatch);
         units = units.slice(i + 1, units.length);
         continue;
       }
@@ -574,6 +587,23 @@ function unitsOf(string) {
 
 /***/ }),
 
+/***/ "./src/parser/helpers/without_article.js":
+/*!***********************************************!*\
+  !*** ./src/parser/helpers/without_article.js ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function withoutArticle(key) {
+  return (key.match(/^(A|a|The|the)[\s_]+(.*)/) || {})[2] || key;
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (withoutArticle);
+
+/***/ }),
+
 /***/ "./src/parser/parser.js":
 /*!******************************!*\
   !*** ./src/parser/parser.js ***!
@@ -585,8 +615,6 @@ function unitsOf(string) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/json_for_dgs_directory */ "./src/parser/components/json_for_dgs_directory.js");
 
-console.log(process);
-console.log('sdfsdfsdfd');
 
 if (process.argv.length < 2) {
   console.log('Project directory argument required');

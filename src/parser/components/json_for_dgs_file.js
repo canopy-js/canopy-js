@@ -1,7 +1,9 @@
 import fs from 'fs';
-import parseBlock from './parse_block';
-import paragraphsOfFile from '../helpers/paragraphs_of_file';
-import extractKeyAndParagraph from '../helpers/extract_key_and_paragraph';
+import parseBlock from 'components/parse_block';
+import paragraphsOfFile from 'helpers/paragraphs_of_file';
+import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
+import withoutArticle from 'helpers/without_article';
+import capitalize from 'helpers/capitalize';
 
 function jsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = paragraphsOfFile(path);

@@ -1,5 +1,5 @@
-import clausesWithPunctutionOf from '../helpers/clauses_with_punctuation_of';
-import parseClause from './parse_clause';
+import clausesWithPunctutionOf from 'helpers/clauses_with_punctuation_of';
+import parseClause from 'components/parse_clause';
 
 function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
   var lines = textWithoutKey.split(/\n/);

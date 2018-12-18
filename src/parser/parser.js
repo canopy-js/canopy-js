@@ -1,8 +1,5 @@
 import jsonForDgsDirectory from './components/json_for_dgs_directory';
 
-console.log(process);
-console.log('sdfsdfsdfd')
-
 if (process.argv.length < 2) {
   console.log('Project directory argument required');
   console.log('Example Usage:');

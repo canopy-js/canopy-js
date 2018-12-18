@@ -1,5 +1,6 @@
-import unitsOf from '../helpers/units_of';
-import capitalize from '../helpers/capitalize';
+import unitsOf from 'helpers/units_of';
+import capitalize from 'helpers/capitalize';
+import withoutArticle from 'helpers/without_article';
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces) {
   var tokens = [];
@@ -15,13 +16,16 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
       var substring = units.slice(0, i + 1).join('');
       var substringCapitalized = capitalize(substring);
+      var substringToMatch = capitalize(withoutArticle(substringCapitalized));
 
       var continueFlag = false;
-      for(var j = 0; j < avaliableNamespaces.length; j++){
+      for (var j = 0; j < avaliableNamespaces.length; j++) {
         var namespaceName = avaliableNamespaces[j];
-        var currentNamespace = namespaceObject[namespaceName];
-        if (currentNamespace.hasOwnProperty(substringCapitalized)) {
-          if (substringCapitalized === currentSubtopic) {
+        var namespaceNameWithoutArticle = capitalize(withoutArticle(namespaceName));
+        var currentNamespace = namespaceObject[namespaceNameWithoutArticle];
+
+        if (currentNamespace.hasOwnProperty(substringToMatch)) {
+          if (substringToMatch === capitalize(withoutArticle(currentSubtopic))) {
             break;
           }
 
@@ -35,13 +39,14 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
             LocalReferenceToken : GlobalReferenceToken;
 
           var token = new tokenType(
-            namespaceName,
-            substringCapitalized,
+            namespaceObject[namespaceNameWithoutArticle][namespaceNameWithoutArticle],
+            namespaceObject[namespaceNameWithoutArticle][substringToMatch],
             currentTopic,
             currentSubtopic,
             substring,
-            clauseWithPunctuation
+            clauseWithPunctuation,
           );
+
           tokens.push(token);
           units = units.slice(i + 1, units.length);
           continueFlag = true;
@@ -49,27 +54,28 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
       }
       if (continueFlag) {continue;}
 
-      if (globalNamespace.hasOwnProperty(substringCapitalized)) {
+      if (globalNamespace.hasOwnProperty(substringToMatch)) {
         if (textTokenBuffer){
           var token = new TextToken(textTokenBuffer);
           tokens.push(token);
           textTokenBuffer = '';
         }
 
-        if (substringCapitalized === currentTopic) {
+        if (substringToMatch === capitalize(withoutArticle(currentTopic))) {
           break; //Reject self-match
         }
 
         var token = new GlobalReferenceToken(
-          substringCapitalized,
-          substringCapitalized,
+          namespaceObject[substringToMatch][substringToMatch],
+          namespaceObject[substringToMatch][substringToMatch],
           currentTopic,
           currentSubtopic,
           substring,
-          clauseWithPunctuation
+          clauseWithPunctuation,
         );
+
         tokens.push(token);
-        avaliableNamespaces.push(substringCapitalized);
+        avaliableNamespaces.push(substringToMatch);
         units = units.slice(i + 1, units.length);
         continue;
       }
@@ -98,7 +104,7 @@ function LocalReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text
+    text,
   ) {
   this.type = 'local';
   this.text = text;
@@ -113,7 +119,7 @@ function GlobalReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text
+    text,
   ) {
   this.type = 'global';
   this.targetTopic = targetTopic;

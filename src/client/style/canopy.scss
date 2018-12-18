@@ -44,10 +44,10 @@
 
     &.canopy-selected-link {
       text-shadow: .8px 0px 0px black;
-    }
 
-    &.canopy-redundant-parent-link {
-      text-decoration: underline;
+      &.canopy-redundant-parent-link {
+        text-decoration: underline black;
+      }
     }
 
     &.canopy-global-link {

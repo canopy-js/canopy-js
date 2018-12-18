@@ -15,6 +15,7 @@ module.exports = {
     modules: [
       path.resolve(__dirname, 'src/client/'),
       path.resolve(__dirname, 'src/parser/'),
+      path.resolve(__dirname, 'src/shared/'),
       'node_modules'
     ],
     extensions: [ '.js' ]
