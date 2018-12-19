@@ -82,8 +82,8 @@ function uniqueSubtopic(topicName, subtopicName) {
   return subtopicName && subtopicName !== topicName;
 }
 
-function documentTitleFor(topicName, subtopicName) {
-  return topicName + ((subtopicName && subtopicName !== topicName) ? `: ${subtopicName}` : '');
+function documentTitleFor(topicName) {
+  return topicName;// + ((subtopicName && subtopicName !== topicName) ? `: ${subtopicName}` : '');
 }
 
 function metadataFromLink(linkElement) {

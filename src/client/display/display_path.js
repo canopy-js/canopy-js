@@ -25,6 +25,8 @@ import createOrReplaceHeader from 'display/create_or_replace_header';
 
 const displayPath = (pathArray, linkToSelect, selectALink, popState) => {
   var topicName = pathArray[0][0];
+  var subtopicName = pathArray[0][1];
+  document.title = documentTitleFor(topicName);
 
   const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
 

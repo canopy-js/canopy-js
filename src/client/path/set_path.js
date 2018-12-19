@@ -21,7 +21,7 @@ const setPathAndFragment = (newPathArray) => {
 
   historyApiFunction(
     metadataFromLink(selectedLink()),
-    documentTitleFor(newTopicName, newSubtopicName),
+    '',
     pathStringFor(newPathArray)
   );
 
