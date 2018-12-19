@@ -32,3 +32,5 @@
 - Allow keys to begin with an "a" or "the" that gets ignored in matching
 - If you get a 404, just don't change the page
 - Remove "prepend" calls
+- CLI
+- Command return
