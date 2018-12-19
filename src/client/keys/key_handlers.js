@@ -29,7 +29,6 @@ function moveUpward() {
 
   var linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
-
     var pathArray = parsePathString();
 
     if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
@@ -39,7 +38,7 @@ function moveUpward() {
         sectionElement.dataset.topicName
       ]];
 
-      linkElement = null;
+      linkElement = selectedLink();
     } else if (isTopicRootSection(sectionElementOfLink(selectedLink()))) {
       pathArray.pop();
     } else {
@@ -76,6 +75,8 @@ function moveDownward(cycle) {
     selectedLink();
 
   if (selectedLink().classList.contains('canopy-global-link')) {
+    if (selectedLink().classList.contains('canopy-open-link')) { return; }
+
     pathArray.push([
       selectedLink().dataset.targetTopic,
       selectedLink().dataset.targetSubtopic

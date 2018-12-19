@@ -49,7 +49,8 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState) => {
       if (lastPathSegment[0] !== lastPathSegment[1]) {
         linkToSelect = parentLinkOfSection(sectionElementOfCurrentPath) || null;
       } else {
-        linkToSelect = firstLinkOfSection(sectionElementOfCurrentPath);
+        linkToSelect = firstLinkOfSection(sectionElementOfCurrentPath) ||
+          parentLinkOfSection(sectionElementOfCurrentPath);
       }
     }
   }
