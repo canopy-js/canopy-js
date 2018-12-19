@@ -297,7 +297,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
         var currentNamespace = namespaceObject[namespaceNameWithoutArticle];
 
         if (currentNamespace.hasOwnProperty(substringToMatch)) {
-          if (substringToMatch === currentSubtopic) {
+          if (substringToMatch === Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(currentSubtopic))) {
             break;
           }
 
@@ -326,7 +326,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           textTokenBuffer = '';
         }
 
-        if (substringToMatch === currentTopic) {
+        if (substringToMatch === Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(currentTopic))) {
           break; //Reject self-match
         }
 

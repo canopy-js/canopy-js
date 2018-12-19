@@ -790,6 +790,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var displayPath = function displayPath(pathArray, linkToSelect, selectALink, popState) {
   var topicName = pathArray[0][0];
+  var subtopicName = pathArray[0][1];
+  document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["documentTitleFor"])(topicName, subtopicName);
   var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray); // if (!sectionElement) {
   //   // Try each path segment, etc
   //   return updateView([[topicName, topicName]]);
@@ -797,6 +799,7 @@ var displayPath = function displayPath(pathArray, linkToSelect, selectALink, pop
   //   // pathArray.slice(0, pathArray.length + 1) ||
   //   // [[pathArray[0][0], pathArray[0][1]]]) // Maybe this should try pathArray[i][0], pathArray[i][0] first
   // }
+  // Maybe I can reuse the helper from update_view to find the lowest extant node or maybe that does this already
 
   Object(display_create_or_replace_header__WEBPACK_IMPORTED_MODULE_6__["default"])(topicName);
   Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["hideAllSectionElements"])();
@@ -809,12 +812,17 @@ var displayPath = function displayPath(pathArray, linkToSelect, selectALink, pop
       if (lastPathSegment[0] !== lastPathSegment[1]) {
         linkToSelect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath) || null;
       } else {
-        linkToSelect = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_5__["firstLinkOfSection"])(sectionElementOfCurrentPath);
+        linkToSelect = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_5__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath);
       }
     }
   }
 
-  var sectionElementToDisplay = (linkToSelect && linkToSelect.classList.contains('canopy-parent-link') ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["childSectionElementOfParentLink"])(linkToSelect) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray)) || sectionElementOfCurrentPath;
+  var sectionElementToDisplay;
+  var redundantParentLinksInSameParagraph = linkToSelect.classList.contains('canopy-redundant-parent-link') && Array.from(linkToSelect.parentNode.childNodes).filter(function (linkElement) {
+    return linkElement.dataset && linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic && linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic && linkElement !== linkToSelect;
+  }).length > 0;
+  var displaySectionBelowLink = linkToSelect.classList.contains('canopy-parent-link') || redundantParentLinksInSameParagraph;
+  var sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["childSectionElementOfParentLink"])(linkToSelect) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray)) || sectionElementOfCurrentPath;
 
   if (linkToSelect) {
     linkToSelect.classList.add('canopy-selected-link');
@@ -1267,7 +1275,7 @@ function moveUpward() {
   if (Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["isTreeRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
     pathArray = [[sectionElement.dataset.topicName, sectionElement.dataset.topicName]];
-    linkElement = null;
+    linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
   } else if (Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["isTopicRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     pathArray.pop();
   } else {
@@ -1293,6 +1301,10 @@ function moveDownward(cycle) {
   var linkElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || (cycle ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || (cycle ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
+    if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
+      return;
+    }
+
     pathArray.push([Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]);
     return Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray, null, true);
   } else {
@@ -1532,7 +1544,7 @@ var setPathAndFragment = function setPathAndFragment(newPathArray) {
   };
 
   var historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
-  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["selectedLink"])()), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(newTopicName, newSubtopicName), Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray)); // function pathFor(topicName, subtopicName) {
+  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["selectedLink"])()), '', Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray)); // function pathFor(topicName, subtopicName) {
   //   return '/' + slugFor(topicName) +
   //     (uniqueSubtopic(topicName, subtopicName) ?
   //       `#${slugFor(subtopicName)}` : '')
@@ -1810,7 +1822,17 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, p
 
   var promisedDomTree = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathSuffixToRender, pathArray.length - pathSuffixToRender.length);
   promisedDomTree.then(function (domTree) {
-    domTree && (lowestExtantSectionElementOfPath || helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"]).appendChild(domTree);
+    if (domTree) {
+      var anchorElement = lowestExtantSectionElementOfPath || helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"];
+      var newNodeAlreadyPresent = Array.from(anchorElement.childNodes).filter(function (childNode) {
+        return childNode.dataset && childNode.dataset.topicName === domTree.dataset.topicName && childNode.dataset.subtopicName === domTree.dataset.subtopicName;
+      }).length > 0;
+
+      if (!newNodeAlreadyPresent) {
+        anchorElement.appendChild(domTree);
+      }
+    }
+
     Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, popState);
   });
 };
