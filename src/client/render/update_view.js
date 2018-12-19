@@ -22,7 +22,20 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState) => {
   )
 
   promisedDomTree.then((domTree) => {
-    domTree && (lowestExtantSectionElementOfPath || canopyContainer).appendChild(domTree);
+    if (domTree) {
+      var anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
+
+      var newNodeAlreadyPresent = Array.from(anchorElement.childNodes)
+        .filter((childNode) => {
+          return childNode.dataset &&
+            childNode.dataset.topicName === domTree.dataset.topicName &&
+            childNode.dataset.subtopicName === domTree.dataset.subtopicName;
+        }).length > 0;
+
+      if (!newNodeAlreadyPresent) {
+        anchorElement.appendChild(domTree);
+      }
+    }
 
     displayPath(
       pathArray,
