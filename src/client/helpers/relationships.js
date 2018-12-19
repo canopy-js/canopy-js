@@ -74,11 +74,6 @@ function firstChildLinkOfParentLink(linkElement) {
     return null;
   }
 
-  if (!linkElement.classList.contains('canopy-parent-link') &&
-      !linkElement.classList.contains('canopy-redundant-parent-link')) {
-    return null;
-  }
-
   var sectionElement = childSectionElementOfParentLink(linkElement);
   if (!sectionElement) { return null; }
 

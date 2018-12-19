@@ -5,7 +5,8 @@ import {
   linkNumberOf,
   sectionElementOfLink,
   parentLinkOfSection,
-  sectionElementOfPath
+  sectionElementOfPath,
+  metadataFromLink
 } from 'helpers/getters';
 import {
   parentLinkOf,
@@ -29,28 +30,35 @@ function moveUpward() {
 
   var linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
-    var pathArray = parsePathString();
+  var pathArray = parsePathString();
 
-    if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
-      var sectionElement = sectionElementOfLink(selectedLink());
-      pathArray = [[
-        sectionElement.dataset.topicName,
-        sectionElement.dataset.topicName
-      ]];
+  if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
+    var sectionElement = sectionElementOfLink(selectedLink());
+    pathArray = [[
+      sectionElement.dataset.topicName,
+      sectionElement.dataset.topicName
+    ]];
 
+    linkElement = null;
+  } else if (isTopicRootSection(sectionElementOfLink(selectedLink()))) {
+    pathArray.pop();
+
+    var currentSectionElement = currentSection();
+    var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+
+    if (currentSectionElement !== sectionElementOfSelectedLink && selectedLink().classList.contains('canopy-global-link')) { //handle global link with inlined child with no links
       linkElement = selectedLink();
-    } else if (isTopicRootSection(sectionElementOfLink(selectedLink()))) {
-      pathArray.pop();
-    } else {
-      var finalTuple = pathArray.pop();
-      var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
-      pathArray.push(newTuple);
     }
+  } else {
+    var finalTuple = pathArray.pop();
+    var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    pathArray.push(newTuple);
+  }
 
-    displayPath(
-      pathArray,
-      linkElement
-    );
+  updateView(
+    pathArray,
+    metadataFromLink(linkElement)
+  );
 }
 
 function moveDownward(cycle) {
@@ -100,9 +108,18 @@ function moveDownward(cycle) {
 }
 
 function moveLeftward() {
-  var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
+  var currentSectionElement = currentSection();
+  var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
   var pathArray = parsePathString();
+
+  if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
+    currentSectionElement !== sectionElementOfSelectedLink) {
+    pathArray.pop();
+  }
+
+  var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
+
   var finalTuple = pathArray.pop();
   var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
@@ -114,9 +131,18 @@ function moveLeftward() {
 }
 
 function moveRightward() {
+  var currentSectionElement = currentSection();
+  var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+
   var linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
 
   var pathArray = parsePathString();
+
+  if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
+    currentSectionElement !== sectionElementOfSelectedLink) {
+    pathArray.pop();
+  }
+
   var finalTuple = pathArray.pop();
   var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
