@@ -1849,6 +1849,11 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, p
       pathSuffixToRender = _findLowestExtantSect.pathSuffixToRender;
 
   var promisedDomTree = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathSuffixToRender, pathArray.length - pathSuffixToRender.length);
+  promisedDomTree.catch(function (e) {
+    if (helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"].childNodes.length === 0) {
+      return updateView([[helpers_getters__WEBPACK_IMPORTED_MODULE_2__["defaultTopic"], helpers_getters__WEBPACK_IMPORTED_MODULE_2__["defaultTopic"]]]);
+    }
+  });
   promisedDomTree.then(function (domTree) {
     if (domTree) {
       var anchorElement = lowestExtantSectionElementOfPath || helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"];

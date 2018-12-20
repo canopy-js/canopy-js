@@ -21,6 +21,12 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState) => {
     pathArray.length - pathSuffixToRender.length
   )
 
+  promisedDomTree.catch((e) => {
+    if (canopyContainer.childNodes.length === 0) {
+      return updateView([[defaultTopic, defaultTopic]]);
+    }
+  })
+
   promisedDomTree.then((domTree) => {
     if (domTree) {
       var anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
