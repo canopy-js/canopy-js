@@ -24,6 +24,7 @@ import setPathAndFragment from 'path/set_path';
 import displayPath from 'display/display_path';
 import parsePathString from 'path/parse_path_string';
 import { deselectAllLinks } from 'display/reset_page';
+import pathStringFor from 'path/path_string_for';
 
 function moveUpward() {
   // TODO: If root, unselect link
@@ -153,7 +154,7 @@ function moveRightward() {
   );
 }
 
-function moveDownOrRedirect() {
+function moveDownOrRedirect(newTab) {
   if (selectedLink().classList.contains('canopy-parent-link') ||
       selectedLink().classList.contains('canopy-redundant-parent-link')) {
     moveDownward(false);
@@ -162,6 +163,14 @@ function moveDownOrRedirect() {
       selectedLink().dataset.targetTopic,
       selectedLink().dataset.targetSubtopic
     ]];
+
+    if (newTab) {
+      var pathString = pathStringFor(pathArray);
+      return window.open(
+        location.origin + pathString,
+        '_blank'
+      );
+    }
 
     updateView(
       pathArray,

@@ -978,7 +978,7 @@ var currentSection = function currentSection() {
 };
 
 var selectedLink = function selectedLink() {
-  return document.querySelector('.canopy-selected-link[style="display: block;"');
+  return document.querySelector('.canopy-selected-link');
 };
 
 var currentRootSection = function currentRootSection() {
@@ -1255,6 +1255,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 /* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+
 
 
 
@@ -1353,11 +1355,17 @@ function moveRightward() {
   Object(display_display_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray, linkElement);
 }
 
-function moveDownOrRedirect() {
+function moveDownOrRedirect(newTab) {
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-parent-link') || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-parent-link')) {
     moveDownward(false);
   } else if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
     var pathArray = [[Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]];
+
+    if (newTab) {
+      var pathString = Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_7__["default"])(pathArray);
+      return window.open(location.origin + pathString, '_blank');
+    }
+
     Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray, null, true);
   }
 }
@@ -1431,7 +1439,8 @@ var shortcutRelationships = {
   'j': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownward"],
   'k': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveUpward"],
   'l': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveRightward"],
-  'return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"]
+  'return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"],
+  'command-return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"].bind(null, true)
 };
 var keyNames = (_keyNames = {
   37: 'left',

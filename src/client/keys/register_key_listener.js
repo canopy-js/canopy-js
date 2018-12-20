@@ -50,7 +50,8 @@ const shortcutRelationships = {
   'k': moveUpward,
   'l': moveRightward,
 
-  'return': moveDownOrRedirect
+  'return': moveDownOrRedirect,
+  'command-return': moveDownOrRedirect.bind(null, true)
 }
 
 const keyNames = {
