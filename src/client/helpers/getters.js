@@ -35,7 +35,7 @@ const currentSection = () => {
 }
 
 const selectedLink = () => {
-  return document.querySelector('.canopy-selected-link[style="display: block;"');
+  return document.querySelector('.canopy-selected-link');
 }
 
 const currentRootSection = () => {
