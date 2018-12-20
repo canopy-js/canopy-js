@@ -28,9 +28,4 @@
 – When you can't find a match for URL, try capitalizing
 – Assert on duplicate local keys
 – Move acknowledgements to a file
-- Make underlines a lighter gray
-- Allow keys to begin with an "a" or "the" that gets ignored in matching
-- If you get a 404, just don't change the page
 - Remove "prepend" calls
-- CLI
-- Command return

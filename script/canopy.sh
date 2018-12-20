@@ -1,0 +1,97 @@
+#!/bin/sh
+
+set -ex
+
+case $1 in
+build)
+  if [ ! -d ./topics ]; then
+    echo "There must be a 'topics' directory at the current path"
+    exit 1
+  fi
+
+  DEFAULT_TOPIC=`cat .default_topic`
+
+  mkdir -p build
+
+  cat << EOF > build/index.html
+  <html>
+  <head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  </head>
+  <body>
+  <div id="_canopy" data-default-topic="$DEFAULT_TOPIC"></div>
+  <script src="/canopy.js"></script>
+  </body>
+  </html>
+EOF
+
+  cp /usr/local/lib/canopy/dist/canopy.js build/canopy.js
+  CANOPY_DEBUG=true node /usr/local/lib/canopy/dist/parser.js .
+;;
+update)
+  cd /usr/local/lib/canopy
+  git pull origin master
+  cp dist/canopy.sh /usr/local/bin/canopy
+  echo Update success;;
+init)
+  mkdir topics
+  touch .gitignore
+  echo "build/" >> .gitignore
+  echo "Enter default topic name:"
+  read DEFAULT_TOPIC
+  echo $DEFAULT_TOPIC > .default_topic
+  echo $DEFAULT_TOPIC | node /usr/local/lib/canopy/script/snake_case.js
+  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node /usr/local/lib/canopy/script/snake_case.js)
+  ;;
+watch)
+  command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
+
+  if [ "$2" == "stop" ]; then
+    kill $(cat .canopy_watch.pid) > /dev/null 2>&1;
+    exit 1;
+  fi
+
+  PIDFILE=.canopy_watch.pid
+  if [ -f $PIDFILE ];
+  then
+    PID=$(cat $PIDFILE)
+    if ps -p $PID > /dev/null 2>&1;
+    then
+      # Canopy watch is already running
+      kill $PID
+    fi
+  fi
+
+  if [ ! -d ./topics ]; then
+    echo "There must be a topics directory at the current path"
+    exit 1
+  fi
+
+  #######
+  fswatch -0 -o topics | CANOPY_DEBUG=true xargs -0 -n1 -I{} node /usr/local/lib/canopy/dist/parser.js . > /dev/null 2>&1 &
+  #######
+
+  echo $(jobs -p | tail -1) > $PIDFILE
+  if [ $? -ne 0 ];
+  then
+    echo "Could not create PID file"
+    exit 1
+  fi
+
+  canopy build $2;;
+serve)
+  canopy build
+  cd build && node /usr/local/lib/canopy/dist/server.js
+  ;;
+?|usage)
+echo  "Usage:"
+echo  "  canopy build"
+echo  "  canopy update"
+echo  "  canopy init"
+echo  "  canopy watch"
+echo  "  canopy watch stop";;
+*)
+  echo Unknown command;;
+esac
+
