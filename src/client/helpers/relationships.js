@@ -69,15 +69,32 @@ function linkBefore(linkElement) {
   }
 }
 
-function firstChildLinkOfParentLink(linkElement) {
-  if (linkElement === null){
+function nthChildLinkOfParentLink(linkElement, n) {
+  if (linkElement === null) {
     return null;
   }
 
   var sectionElement = childSectionElementOfParentLink(linkElement);
   if (!sectionElement) { return null; }
 
-  return sectionElement.querySelectorAll('a')[0];
+  return sectionElement.querySelectorAll('a')[n];
+}
+
+function firstChildLinkOfParentLink(linkElement) {
+  return nthChildLinkOfParentLink(linkElement, 0);
+}
+
+function lastChildLinkOfParentLink(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var sectionElement = childSectionElementOfParentLink(linkElement);
+  if (!sectionElement) { return null; }
+
+  var array = Array.from(sectionElement.firstElementChild.childNodes).filter((node) => node.tagName === 'A');
+
+  return array[array.length - 1];
 }
 
 function firstLinkOfSection(sectionElement) {
@@ -97,6 +114,8 @@ function isTreeRootSection(sectionElement) {
 }
 
 function pathForSectionElement(sectionElement) {
+  if (!sectionElement) { return null; }
+
   var pathArray = [];
   var currentElement = sectionElement;
 
@@ -116,6 +135,22 @@ function pathForSectionElement(sectionElement) {
   return pathArray;
 }
 
+function enclosingTopicSectionOfLink(linkElement) {
+  var sectionElement = sectionElementOfLink(linkElement);
+
+  if (sectionElement.dataset.pathDepth === "0") {
+    return currentRootSection();
+  }
+
+  var currentSectionElement = sectionElement;
+
+  while (currentSectionElement.parentNode.dataset.pathDepth === sectionElement.dataset.pathDepth) {
+    currentSectionElement = currentSectionElement.parentNode;
+  }
+
+  return currentSectionElement;
+}
+
 export {
   firstSiblingOf,
   lastSiblingOf,
@@ -127,8 +162,11 @@ export {
   downwardLink,
   parentLinkOf,
   firstLinkOfSection,
+  nthChildLinkOfParentLink,
   firstChildLinkOfParentLink,
   isTopicRootSection,
   isTreeRootSection,
-  pathForSectionElement
+  pathForSectionElement,
+  lastChildLinkOfParentLink,
+  enclosingTopicSectionOfLink
 };

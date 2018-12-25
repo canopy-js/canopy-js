@@ -5,6 +5,10 @@ import {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
+  depthFirstSearch,
+  reverseDepthFirstSearch,
+  goToEnclosingTopic,
+  goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
 import { firstLinkOfSection } from 'helpers/relationships';
 import displayPath from 'display/display_path';
@@ -50,8 +54,15 @@ const shortcutRelationships = {
   'k': moveUpward,
   'l': moveRightward,
 
+  'escape': goToParentOfEnclosingTopic,
+  'shift-escape': goToEnclosingTopic,
+
   'return': moveDownOrRedirect,
-  'command-return': moveDownOrRedirect.bind(null, true)
+  'command-return': moveDownOrRedirect.bind(null, true),
+
+  'tab': depthFirstSearch.bind(null, true),
+  'alt-tab': depthFirstSearch.bind(null, true, true),
+  'shift-tab': depthFirstSearch.bind(null, false)
 }
 
 const keyNames = {

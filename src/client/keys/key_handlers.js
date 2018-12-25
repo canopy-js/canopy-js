@@ -6,7 +6,9 @@ import {
   sectionElementOfLink,
   parentLinkOfSection,
   sectionElementOfPath,
-  metadataFromLink
+  metadataFromLink,
+  openLinkOfSection,
+  canopyContainer
 } from 'helpers/getters';
 import {
   parentLinkOf,
@@ -16,8 +18,11 @@ import {
   firstSiblingOf,
   lastSiblingOf,
   firstChildLinkOfParentLink,
+  lastChildLinkOfParentLink,
   isTopicRootSection,
-  isTreeRootSection
+  isTreeRootSection,
+  pathForSectionElement,
+  enclosingTopicSectionOfLink
 } from 'helpers/relationships';
 import updateView from 'render/update_view';
 import setPathAndFragment from 'path/set_path';
@@ -180,10 +185,94 @@ function moveDownOrRedirect(newTab) {
   }
 }
 
+function depthFirstSearch(forwardDirection, skipChildren) {
+  var nextLink;
+  var previouslySelectedLinkClassName = forwardDirection ?
+    'canopy-dfs-previously-selected-link' :
+    'canopy-reverse-dfs-previously-selected-link';
+  var previouslySelectedLink =
+    document.querySelector('.' + previouslySelectedLinkClassName);
+
+  var lastChildToVisit = forwardDirection ?
+    lastChildLinkOfParentLink(selectedLink()) :
+    firstChildLinkOfParentLink(selectedLink());
+
+  var firstChildToVisit = forwardDirection ?
+    firstChildLinkOfParentLink(selectedLink()) :
+    lastChildLinkOfParentLink(selectedLink());
+
+  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) &&
+    selectedLink().dataset.type !== 'global' &&
+    !skipChildren
+  ) {
+    nextLink = firstChildToVisit;
+  }
+
+  var nextSiblingToVisit = forwardDirection ?
+    linkAfter(selectedLink()) :
+    linkBefore(selectedLink());
+
+  if (!nextLink) {
+    nextLink = nextSiblingToVisit;
+  }
+
+  var parentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
+  if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
+    nextLink = parentLink;
+  }
+
+  // update previous link unless it didn't change
+  if (nextLink) {
+    if (previouslySelectedLink) {
+      previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+    }
+    selectedLink().classList.add(previouslySelectedLinkClassName);
+  }
+
+  if (!nextLink) {
+    return;
+  }
+
+  updateView(
+    pathForSectionElement(sectionElementOfLink(nextLink)),
+    metadataFromLink(nextLink),
+    null,
+    null,
+    forwardDirection
+  );
+}
+
+function goToEnclosingTopic() {
+  var sectionElement = enclosingTopicSectionOfLink(selectedLink());
+  var linkElement = openLinkOfSection(sectionElement) || selectedLink();
+
+  updateView(
+    pathForSectionElement(sectionElement),
+    metadataFromLink(linkElement)
+  );
+}
+
+function goToParentOfEnclosingTopic() {
+  var sectionElement = enclosingTopicSectionOfLink(selectedLink());
+  if (sectionElement.parentNode !== canopyContainer) {
+    sectionElement = sectionElement.parentNode;
+  }
+  var linkElement = openLinkOfSection(sectionElement);
+
+  updateView(
+    pathForSectionElement(sectionElement),
+    metadataFromLink(linkElement)
+  );
+}
+
 export {
   moveUpward,
   moveDownward,
   moveLeftward,
   moveRightward,
-  moveDownOrRedirect
+  moveDownOrRedirect,
+  depthFirstSearch,
+  reverseDepthFirstSearch,
+  goToEnclosingTopic,
+  goToParentOfEnclosingTopic
 };

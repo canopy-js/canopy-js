@@ -13,7 +13,7 @@
   "author": "CanopyJS",
   "license": "Apache",
   "devDependencies": {
-    "@babel/core": "^7.0.0-0",
+    "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
@@ -30,6 +30,7 @@
     "@babel/core": "^7.1.2",
     "babel-preset-env": "^1.7.0",
     "css-loader": "^1.0.0",
+    "eslint": "^5.11.1",
     "express": "^4.16.3",
     "style-loader": "^0.23.1",
     "webpack-node-externals": "^1.7.2"

@@ -29,3 +29,7 @@
 – Assert on duplicate local keys
 – Move acknowledgements to a file
 - Remove "prepend" calls
+- Eslint
+- A script to batch create folders and files
+- Test that cycles don't work
+- DFS when redundant parent link isn't in the same paragraph as primary - already works

@@ -16,14 +16,15 @@ import {
 import {
   moveSelectedSectionClass,
   hideAllSectionElements,
-  deselectAllLinks
+  deselectAllLinks,
+  clearDfsClasses
 } from 'display/reset_page';
 import { defaultTopic } from 'helpers/getters';
 import updateView from 'render/update_view';
 import { firstLinkOfSection } from 'helpers/relationships';
 import createOrReplaceHeader from 'display/create_or_replace_header';
 
-const displayPath = (pathArray, linkToSelect, selectALink, popState) => {
+const displayPath = (pathArray, linkToSelect, selectALink, popState, directionToPreserveDfsClassesIn) => {
   var topicName = pathArray[0][0];
   var subtopicName = pathArray[0][1];
   document.title = documentTitleFor(topicName);
@@ -42,7 +43,12 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState) => {
   createOrReplaceHeader(topicName);
 
   hideAllSectionElements();
+
+  var previouslySelectedLink = selectedLink();
+
   deselectAllLinks();
+
+  clearDfsClasses(directionToPreserveDfsClassesIn);
 
   if (!linkToSelect){
     if (selectALink){

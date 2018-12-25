@@ -46,11 +46,7 @@ const currentRootSection = () => {
 const parentLinkOfSection = (sectionElement) => {
   if (sectionElement.parentNode === canopyContainer) { return null; }
 
-  var paragraphElement = Array.from(
-      sectionElement.
-      parentNode.
-      childNodes
-    ).find((element) => element.tagName === 'P')
+  var paragraphElement = paragraphElementOfSection(sectionElement.parentNode);
 
   return Array.
     from(paragraphElement.childNodes).
@@ -87,7 +83,7 @@ function documentTitleFor(topicName) {
 }
 
 function metadataFromLink(linkElement) {
-  if (!linkElement) { return {}; }
+  if (!linkElement) { return null; }
 
   var sectionElement = sectionElementOfLink(linkElement);
 
@@ -135,6 +131,23 @@ function findLowestExtantSectionElementOfPath(pathArray) {
   return { lowestExtantSectionElementOfPath, pathSuffixToRender };
 }
 
+function openLinkOfSection(sectionElement) {
+  var paragraphElement = paragraphElementOfSection(sectionElement);
+
+  return Array.
+    from(paragraphElement.childNodes).
+    find((linkElement) =>
+      linkElement.tagName === 'A' &&
+      linkElement.classList.contains('canopy-open-link'));
+}
+
+function paragraphElementOfSection(sectionElement) {
+  return Array.from(
+    sectionElement.
+    childNodes
+  ).find((element) => element.tagName === 'P')
+}
+
 export {
   canopyContainer,
   defaultTopic,
@@ -151,5 +164,6 @@ export {
   uniqueSubtopic,
   documentTitleFor,
   findLinkFromMetadata,
-  findLowestExtantSectionElementOfPath
+  findLowestExtantSectionElementOfPath,
+  openLinkOfSection
 };

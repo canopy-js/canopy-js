@@ -7,7 +7,7 @@ import {
   findLinkFromMetadata
 } from 'helpers/getters';
 
-const updateView = (pathArray, selectedLinkData, selectALink, popState) => {
+const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfsClasses) => {
   var topicName = pathArray[0][0];
   var subtopicName = pathArray[0][1];
 
@@ -47,7 +47,8 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState) => {
       pathArray,
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
       selectALink,
-      popState
+      popState,
+      clearDfsClasses
     );
   });
 }

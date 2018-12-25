@@ -40,8 +40,19 @@ function underlineLink(linkElement) {
   linkElement.classList.add('canopy-open-link');
 }
 
+function clearDfsClasses(preserveLinksInForwardDirection) {
+  var preserveForward = preserveLinksInForwardDirection === true;
+  var preserveBackwards = preserveLinksInForwardDirection === false;
+
+  forEach(document.getElementsByTagName("a"), function(linkElement) {
+    !preserveForward && linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    !preserveBackwards && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+  });
+}
+
 export {
   moveSelectedSectionClass,
   hideAllSectionElements,
-  deselectAllLinks
+  deselectAllLinks,
+  clearDfsClasses
 };
