@@ -1,10 +1,10 @@
 function unitsOf(string) {
-  var units = [];
-  var stops = ['.', '!', '?', ',', ';', ':'];
-  var seperatingPunctuation = ['"', "'", '[', ']', '(', ')', '{', '}', '<', '>', '_', '`'];
+  let units = [];
+  let stops = ['.', '!', '?', ',', ';', ':'];
+  let seperatingPunctuation = ['"', "'", '[', ']', '(', ')', '{', '}', '<', '>', '_', '`'];
 
-  var start = 0;
-  for (var i = 0; i < string.length; i++) {
+  let start = 0;
+  for (let i = 0; i < string.length; i++) {
     if (string[i] === ' ') {
       if (start !== i) {
         units.push(string.slice(start, i));

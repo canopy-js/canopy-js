@@ -1,5 +1,5 @@
 function extractKeyAndParagraph(paragraphWithKey) {
-  var match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
+  let match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
   if(!match) {
     return {
@@ -8,8 +8,8 @@ function extractKeyAndParagraph(paragraphWithKey) {
     }
   }
 
-  var key = match[1];
-  var paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
+  let key = match[1];
+  let paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
 
   return {
     key: key,

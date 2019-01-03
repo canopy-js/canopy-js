@@ -6,19 +6,19 @@ import withoutArticle from 'helpers/without_article';
 import capitalize from 'helpers/capitalize';
 
 function jsonForDgsFile(path, namespaceObject) {
-  var paragraphsWithKeys = paragraphsOfFile(path);
-  var tokenizedParagraphsByKey = {};
-  var topicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
+  let paragraphsWithKeys = paragraphsOfFile(path);
+  let tokenizedParagraphsByKey = {};
+  let topicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
   if (!topicOfFile) { return ''; }
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
-    var paragraphData = extractKeyAndParagraph(paragraphWithKey);
+    let paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if (!paragraphData.key) { return; }
 
-    var currentSubtopic = paragraphData.key;
-    var textWithoutKey = paragraphData.block;
+    let currentSubtopic = paragraphData.key;
+    let textWithoutKey = paragraphData.block;
 
-    var tokensOfParagraph = parseBlock(
+    let tokensOfParagraph = parseBlock(
       textWithoutKey,
       namespaceObject,
       currentSubtopic,

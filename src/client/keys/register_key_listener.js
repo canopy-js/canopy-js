@@ -17,16 +17,16 @@ import parsePathString from 'path/parse_path_string';
 // Copyright Greenhouse Software 2017
 const registerKeyListener = () => {
   window.addEventListener('keydown', function(e) {
-    var modifiers =
+    let modifiers =
       (e.metaKey ? 'command-' : '') +
       (e.altKey ? 'alt-' : '') +
       (e.ctrlKey ? 'ctrl-' : '') +
       (e.shiftKey ? 'shift-' : '');
 
-    var keyName = keyNames[e.keyCode];
-    var shortcutName = modifiers + keyName;
+    let keyName = keyNames[e.keyCode];
+    let shortcutName = modifiers + keyName;
 
-    var preventDefaultList = ['space', 'tab'];
+    let preventDefaultList = ['space', 'tab'];
     if (preventDefaultList.includes(keyName)) {
       e.preventDefault();
     }

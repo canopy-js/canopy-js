@@ -6,9 +6,9 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
     return Promise.resolve(null);
   }
 
-  var topicName = pathArray[0][0];
+  let topicName = pathArray[0][0];
 
-  var uponResponse = requestJson(topicName);
+  let uponResponse = requestJson(topicName);
 
   return uponResponse.then((paragraphsBySubtopic) => {
     const promisedDomTree = renderDomTree(
@@ -22,7 +22,7 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
 
     const promisedDomTreeWithRule = promisedDomTree.then((domTree) => {
       if (pathDepth > 0) {
-        var hr = document.createElement('HR');
+        let hr = document.createElement('HR');
         domTree.prepend(hr);
       }
 

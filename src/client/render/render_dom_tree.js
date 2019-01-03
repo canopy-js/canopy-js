@@ -7,15 +7,15 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 
 const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, currentTopicStack, renderedSubtopics, pathDepth) => {
-  var topicName = pathArray[0][0];
-  var subtopicContainingOpenGlobalReference = pathArray[0][1];
-  var openGlobalLinkExists = pathArray[1];
-  var openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
-  var openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-  var promises = [];
+  let topicName = pathArray[0][0];
+  let subtopicContainingOpenGlobalReference = pathArray[0][1];
+  let openGlobalLinkExists = pathArray[1];
+  let openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
+  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
+  let promises = [];
 
-  var sectionElement = document.createElement('section');
-  var paragraphElement = document.createElement('p');
+  let sectionElement = document.createElement('section');
+  let paragraphElement = document.createElement('p');
 
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
@@ -23,7 +23,7 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, cur
   sectionElement.dataset.subtopicName = currentSubtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
 
-  var linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
+  let linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
   currentTopicStack.push(topicName);
   renderedSubtopics[currentSubtopicName] = true;
 
@@ -33,8 +33,8 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, cur
     }
 
     tokensOfLine.forEach(token => {
-      var tokenElement;
-      var textElement = document.createTextNode(token.text);
+      let tokenElement;
+      let textElement = document.createTextNode(token.text);
 
       if (token.type === 'text' || currentTopicStack.includes(token.targetSubtopic)) {
         tokenElement = textElement;
@@ -44,7 +44,7 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, cur
         tokenElement.appendChild(textElement);
 
         if (!renderedSubtopics.hasOwnProperty(token.targetSubtopic)) {
-          var promisedSubtree = renderDomTree(
+          let promisedSubtree = renderDomTree(
             token.targetSubtopic,
             pathArray,
             paragraphsBySubtopic,
@@ -92,7 +92,7 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, cur
         tokenElement.classList.add('canopy-global-link');
         tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
 
-        var globalLinkIsOpen = openGlobalLinkExists &&
+        let globalLinkIsOpen = openGlobalLinkExists &&
           tokenElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
           tokenElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic &&
           currentSubtopicName === subtopicContainingOpenGlobalReference &&
@@ -102,8 +102,8 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, cur
           );
 
         if (globalLinkIsOpen) {
-          var whenDomRenders = fetchAndRenderPath(pathArray.slice(1), pathDepth + 1);
-          var whenElementAppended = whenDomRenders.then((domTree) => {
+          let whenDomRenders = fetchAndRenderPath(pathArray.slice(1), pathDepth + 1);
+          let whenElementAppended = whenDomRenders.then((domTree) => {
             sectionElement.appendChild(domTree);
           });
 

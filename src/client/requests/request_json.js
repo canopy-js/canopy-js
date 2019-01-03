@@ -1,11 +1,11 @@
 import { slugFor } from 'helpers/identifiers';
 
-var cache = {};
+let cache = {};
 
 const requestJson = (topicName) => {
   if (cache[topicName]) { return Promise.resolve(cache[topicName]); }
 
-  var dataPath = '/data/' + slugFor(topicName.toLowerCase()) + '.json';
+  let dataPath = '/data/' + slugFor(topicName.toLowerCase()) + '.json';
 
   return fetch(dataPath).
     then(res => {

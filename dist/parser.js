@@ -302,8 +302,9 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           }
 
           if (textTokenBuffer) {
-            var token = new TextToken(textTokenBuffer);
-            tokens.push(token);
+            var _token = new TextToken(textTokenBuffer);
+
+            tokens.push(_token);
             textTokenBuffer = '';
           }
 
@@ -321,8 +322,9 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
       if (globalNamespace.hasOwnProperty(substringToMatch)) {
         if (textTokenBuffer) {
-          var token = new TextToken(textTokenBuffer);
-          tokens.push(token);
+          var _token3 = new TextToken(textTokenBuffer);
+
+          tokens.push(_token3);
           textTokenBuffer = '';
         }
 
@@ -330,8 +332,9 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           break; //Reject self-match
         }
 
-        var token = new GlobalReferenceToken(namespaceObject[substringToMatch][substringToMatch], namespaceObject[substringToMatch][substringToMatch], currentTopic, currentSubtopic, substring, clauseWithPunctuation);
-        tokens.push(token);
+        var _token2 = new GlobalReferenceToken(namespaceObject[substringToMatch][substringToMatch], namespaceObject[substringToMatch][substringToMatch], currentTopic, currentSubtopic, substring, clauseWithPunctuation);
+
+        tokens.push(_token2);
         avaliableNamespaces.push(substringToMatch);
         units = units.slice(i + 1, units.length);
         continue;
@@ -344,8 +347,9 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
   }
 
   if (textTokenBuffer) {
-    var token = new TextToken(textTokenBuffer);
-    tokens.push(token);
+    var _token4 = new TextToken(textTokenBuffer);
+
+    tokens.push(_token4);
   }
 
   return tokens;

@@ -7,7 +7,7 @@ if (process.argv.length < 2) {
   throw('Missing commandline argument');
 }
 
-var projectDir = process.argv[2].replace(/\/$/, '');
+let projectDir = process.argv[2].replace(/\/$/, '');
 
 jsonForDgsDirectory(
   projectDir + '/topics',

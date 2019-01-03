@@ -4,19 +4,19 @@ import withoutArticle from 'helpers/without_article';
 import capitalize from 'helpers/capitalize';
 
 function buildNamespaceObject(pathList) {
-  var namespacesObject = {};
+  let namespacesObject = {};
 
   pathList.forEach(function(path){
-    var paragraphsWithKeys = paragraphsOfFile(path);
-    var currentTopicKey = capitalize(withoutArticle(
+    let paragraphsWithKeys = paragraphsOfFile(path);
+    let currentTopicKey = capitalize(withoutArticle(
       extractKeyAndParagraph(paragraphsWithKeys[0]).key
     ));
 
     namespacesObject[currentTopicKey] = {};
 
     paragraphsWithKeys.forEach(function(paragraphWithKey){
-      var key = paragraphWithKey.split(':')[0];
-      var keyWithoutArticle = capitalize(withoutArticle(key));
+      let key = paragraphWithKey.split(':')[0];
+      let keyWithoutArticle = capitalize(withoutArticle(key));
       namespacesObject[currentTopicKey][keyWithoutArticle] = key;
     });
   });

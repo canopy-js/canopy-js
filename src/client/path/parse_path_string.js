@@ -1,13 +1,13 @@
 const parsePathString = (pathString) => {
-  var pathString = pathString || window.location.pathname + window.location.hash;
+  let pathString = pathString || window.location.pathname + window.location.hash;
 
-  var slashSeparatedUnits = pathString.
+  let slashSeparatedUnits = pathString.
     replace(/_/g, ' ').
     split('/').
     filter((string) => string !== '');
 
   return slashSeparatedUnits.map((slashSeparatedUnit) => {
-    var match = slashSeparatedUnit.match(/([^#]*)(?:#([^#]*))?/);
+    let match = slashSeparatedUnit.match(/([^#]*)(?:#([^#]*))?/);
     return [
       match[1] || match[2] || null,
       match[2] || match[1] || null,

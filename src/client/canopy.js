@@ -26,7 +26,7 @@ updateView(
 registerKeyListener();
 
 window.addEventListener('popstate', (e) => {
-  var oldState = Object.assign(
+  let oldState = Object.assign(
     history.state || {}, metadataFromLink(selectedLink())
   );
 
@@ -36,7 +36,7 @@ window.addEventListener('popstate', (e) => {
     window.location.href
   );
 
-  var selectedLinkData = e.state && e.state.targetTopic ? e.state : null;
+  let selectedLinkData = e.state && e.state.targetTopic ? e.state : null;
 
   updateView(
     parsePathString(),

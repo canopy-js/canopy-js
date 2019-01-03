@@ -25,8 +25,8 @@ import { firstLinkOfSection } from 'helpers/relationships';
 import createOrReplaceHeader from 'display/create_or_replace_header';
 
 const displayPath = (pathArray, linkToSelect, selectALink, popState, directionToPreserveDfsClassesIn) => {
-  var topicName = pathArray[0][0];
-  var subtopicName = pathArray[0][1];
+  let topicName = pathArray[0][0];
+  let subtopicName = pathArray[0][1];
   document.title = documentTitleFor(topicName);
 
   const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
@@ -44,7 +44,7 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState, directionTo
 
   hideAllSectionElements();
 
-  var previouslySelectedLink = selectedLink();
+  let previouslySelectedLink = selectedLink();
 
   deselectAllLinks();
 
@@ -52,7 +52,7 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState, directionTo
 
   if (!linkToSelect){
     if (selectALink){
-      var lastPathSegment = pathArray[pathArray.length - 1];
+      let lastPathSegment = pathArray[pathArray.length - 1];
       if (lastPathSegment[0] !== lastPathSegment[1]) {
         linkToSelect = parentLinkOfSection(sectionElementOfCurrentPath) || null;
       } else {
@@ -62,8 +62,8 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState, directionTo
     }
   }
 
-  var sectionElementToDisplay;
-  var redundantParentLinksInSameParagraph =
+  let sectionElementToDisplay;
+  let redundantParentLinksInSameParagraph =
     linkToSelect && linkToSelect.classList.contains('canopy-redundant-parent-link') &&
     Array.from(linkToSelect.parentNode.childNodes).filter((linkElement) => {
       return linkElement.dataset &&
@@ -72,11 +72,11 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState, directionTo
         linkElement !== linkToSelect;
     }).length > 0;
 
-  var displaySectionBelowLink =
+  let displaySectionBelowLink =
     linkToSelect && (linkToSelect.classList.contains('canopy-parent-link') ||
     redundantParentLinksInSameParagraph);
 
-  var sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ?
+  let sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ?
     childSectionElementOfParentLink(linkToSelect) :
     sectionElementOfPath(pathArray)) || sectionElementOfCurrentPath;
 
@@ -95,7 +95,7 @@ const displayPathTo = (sectionElement) => {
   if (sectionElement.parentNode === canopyContainer) {
     return;
   }
-  var parentLink = parentLinkOfSection(sectionElement);
+  let parentLink = parentLinkOfSection(sectionElement);
   parentLink.classList.add('canopy-open-link');
 
   Array.from(parentLink.parentNode.childNodes).filter((linkElement) => {
@@ -106,7 +106,7 @@ const displayPathTo = (sectionElement) => {
     redundantParentLink.classList.add('canopy-open-link');
   });
 
-  var parentSectionElement = parentLink.parentNode.parentNode;
+  let parentSectionElement = parentLink.parentNode.parentNode;
   displayPathTo(parentSectionElement);
 }
 

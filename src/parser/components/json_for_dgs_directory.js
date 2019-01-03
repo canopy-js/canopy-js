@@ -5,12 +5,12 @@ import jsonForDgsFile from 'components/json_for_dgs_file.js';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 
 function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
-  var dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
-  var namespaceObject = buildNamespaceObject(dgsFilePaths);
+  let dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
+  let namespaceObject = buildNamespaceObject(dgsFilePaths);
 
   dgsFilePaths.forEach(function(path) {
-    var json = jsonForDgsFile(path, namespaceObject);
-    var dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
+    let json = jsonForDgsFile(path, namespaceObject);
+    let dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
 
     if (!fs.existsSync(destinationDirectory)){
         fs.mkdirSync(destinationDirectory);
@@ -20,7 +20,7 @@ function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
       throw 'Data filenames may not contain spaces: ' + path;
     }
 
-    var destinationPath = destinationDirectory + '/' + dgsFileNameWithoutExtension + '.json';
+    let destinationPath = destinationDirectory + '/' + dgsFileNameWithoutExtension + '.json';
     console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);

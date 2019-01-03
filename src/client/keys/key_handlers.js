@@ -34,12 +34,12 @@ import pathStringFor from 'path/path_string_for';
 function moveUpward() {
   // TODO: If root, unselect link
 
-  var linkElement = parentLinkOf(selectedLink()) ||
+  let linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
-  var pathArray = parsePathString();
+  let pathArray = parsePathString();
 
   if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
-    var sectionElement = sectionElementOfLink(selectedLink());
+    let sectionElement = sectionElementOfLink(selectedLink());
     pathArray = [[
       sectionElement.dataset.topicName,
       sectionElement.dataset.topicName
@@ -49,15 +49,15 @@ function moveUpward() {
   } else if (isTopicRootSection(sectionElementOfLink(selectedLink()))) {
     pathArray.pop();
 
-    var currentSectionElement = currentSection();
-    var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+    let currentSectionElement = currentSection();
+    let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
     if (currentSectionElement !== sectionElementOfSelectedLink && selectedLink().classList.contains('canopy-global-link')) { //handle global link with inlined child with no links
       linkElement = selectedLink();
     }
   } else {
-    var finalTuple = pathArray.pop();
-    var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
     pathArray.push(newTuple);
   }
 
@@ -68,13 +68,13 @@ function moveUpward() {
 }
 
 function moveDownward(cycle) {
-  var pathArray = parsePathString();
+  let pathArray = parsePathString();
 
   if (selectedLink().classList.contains('canopy-redundant-parent-link')) {
-    var finalTuple = pathArray.pop();
-    var newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
-    var linkElement = parentLinkOfSection(sectionElementOfPath(pathArray));
+    let linkElement = parentLinkOfSection(sectionElementOfPath(pathArray));
 
     displayPath(
       pathArray,
@@ -82,7 +82,7 @@ function moveDownward(cycle) {
     );
   }
 
-  var linkElement =
+  let linkElement =
     firstChildLinkOfParentLink(selectedLink()) ||
     (cycle ? linkAfter(selectedLink()) : null) ||
     (cycle ? firstSiblingOf(selectedLink()) : null) ||
@@ -102,8 +102,8 @@ function moveDownward(cycle) {
       true
     );
   } else {
-    var finalTuple = pathArray.pop();
-    var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
     pathArray.push(newTuple);
   }
 
@@ -114,20 +114,20 @@ function moveDownward(cycle) {
 }
 
 function moveLeftward() {
-  var currentSectionElement = currentSection();
-  var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+  let currentSectionElement = currentSection();
+  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
-  var pathArray = parsePathString();
+  let pathArray = parsePathString();
 
   if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
     currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
-  var linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
+  let linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
 
-  var finalTuple = pathArray.pop();
-  var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  let finalTuple = pathArray.pop();
+  let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
 
   displayPath(
@@ -137,20 +137,20 @@ function moveLeftward() {
 }
 
 function moveRightward() {
-  var currentSectionElement = currentSection();
-  var sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+  let currentSectionElement = currentSection();
+  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
-  var linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
+  let linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
 
-  var pathArray = parsePathString();
+  let pathArray = parsePathString();
 
   if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
     currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
-  var finalTuple = pathArray.pop();
-  var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  let finalTuple = pathArray.pop();
+  let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
 
   displayPath(
@@ -164,13 +164,13 @@ function moveDownOrRedirect(newTab) {
       selectedLink().classList.contains('canopy-redundant-parent-link')) {
     moveDownward(false);
   } else if (selectedLink().classList.contains('canopy-global-link')) {
-    var pathArray = [[
+    let pathArray = [[
       selectedLink().dataset.targetTopic,
       selectedLink().dataset.targetSubtopic
     ]];
 
     if (newTab) {
-      var pathString = pathStringFor(pathArray);
+      let pathString = pathStringFor(pathArray);
       return window.open(
         location.origin + pathString,
         '_blank'
@@ -186,18 +186,18 @@ function moveDownOrRedirect(newTab) {
 }
 
 function depthFirstSearch(forwardDirection, skipChildren) {
-  var nextLink;
-  var previouslySelectedLinkClassName = forwardDirection ?
+  let nextLink;
+  let previouslySelectedLinkClassName = forwardDirection ?
     'canopy-dfs-previously-selected-link' :
     'canopy-reverse-dfs-previously-selected-link';
-  var previouslySelectedLink =
+  let previouslySelectedLink =
     document.querySelector('.' + previouslySelectedLinkClassName);
 
-  var lastChildToVisit = forwardDirection ?
+  let lastChildToVisit = forwardDirection ?
     lastChildLinkOfParentLink(selectedLink()) :
     firstChildLinkOfParentLink(selectedLink());
 
-  var firstChildToVisit = forwardDirection ?
+  let firstChildToVisit = forwardDirection ?
     firstChildLinkOfParentLink(selectedLink()) :
     lastChildLinkOfParentLink(selectedLink());
 
@@ -208,7 +208,7 @@ function depthFirstSearch(forwardDirection, skipChildren) {
     nextLink = firstChildToVisit;
   }
 
-  var nextSiblingToVisit = forwardDirection ?
+  let nextSiblingToVisit = forwardDirection ?
     linkAfter(selectedLink()) :
     linkBefore(selectedLink());
 
@@ -216,7 +216,7 @@ function depthFirstSearch(forwardDirection, skipChildren) {
     nextLink = nextSiblingToVisit;
   }
 
-  var parentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
+  let parentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
   if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
     nextLink = parentLink;
   }
@@ -243,8 +243,8 @@ function depthFirstSearch(forwardDirection, skipChildren) {
 }
 
 function goToEnclosingTopic() {
-  var sectionElement = enclosingTopicSectionOfLink(selectedLink());
-  var linkElement = openLinkOfSection(sectionElement) || selectedLink();
+  let sectionElement = enclosingTopicSectionOfLink(selectedLink());
+  let linkElement = openLinkOfSection(sectionElement) || selectedLink();
 
   updateView(
     pathForSectionElement(sectionElement),
@@ -253,11 +253,11 @@ function goToEnclosingTopic() {
 }
 
 function goToParentOfEnclosingTopic() {
-  var sectionElement = enclosingTopicSectionOfLink(selectedLink());
+  let sectionElement = enclosingTopicSectionOfLink(selectedLink());
   if (sectionElement.parentNode !== canopyContainer) {
     sectionElement = sectionElement.parentNode;
   }
-  var linkElement = openLinkOfSection(sectionElement);
+  let linkElement = openLinkOfSection(sectionElement);
 
   updateView(
     pathForSectionElement(sectionElement),

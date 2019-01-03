@@ -2,14 +2,14 @@ import clausesWithPunctutionOf from 'helpers/clauses_with_punctuation_of';
 import parseClause from 'components/parse_clause';
 
 function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
-  var lines = textWithoutKey.split(/\n/);
+  let lines = textWithoutKey.split(/\n/);
 
-  var tokensOfBlock = [];
+  let tokensOfBlock = [];
   lines.forEach(function(line){
-    var clausesOfParagraph = clausesWithPunctutionOf(line);
-    var avaliableNamespaces = [currentTopic];
+    let clausesOfParagraph = clausesWithPunctutionOf(line);
+    let avaliableNamespaces = [currentTopic];
 
-    var tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
+    let tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
       return parseClause(
         clause,
         namespaceObject,
@@ -19,7 +19,7 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
       );
     });
 
-    var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
+    let tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
 
     tokensOfBlock.push(tokensOfLine);
   });

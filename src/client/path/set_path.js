@@ -9,15 +9,15 @@ import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
 
 const setPathAndFragment = (newPathArray) => {
-  var newTopicName = newPathArray[0][0];
-  var newSubtopicName = newPathArray[0][1];
-  var oldPathArray = parsePathString();
+  let newTopicName = newPathArray[0][0];
+  let newSubtopicName = newPathArray[0][1];
+  let oldPathArray = parsePathString();
 
-  var replaceState = (a, b, c) => { history.replaceState(a, b, c) };
-  var pushState = (a, b, c) => {
+  let replaceState = (a, b, c) => { history.replaceState(a, b, c) };
+  let pushState = (a, b, c) => {
     history.pushState(a, b, c);
   };
-  var historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
+  let historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
 
   historyApiFunction(
     metadataFromLink(selectedLink()),
@@ -35,7 +35,7 @@ const setPathAndFragment = (newPathArray) => {
   //   pathArray.map((tuple) => `${tuple[0]}#${tuple[1]}`).join('/');
   // }
 
-  // var popStateEvent = new PopStateEvent(
+  // let popStateEvent = new PopStateEvent(
   //   'popstate',
   //   {
   //     state: nextLinkNumberAndLinkTypeAsObject(

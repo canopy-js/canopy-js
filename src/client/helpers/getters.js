@@ -11,13 +11,13 @@ if(!defaultTopic) {
 }
 
 const sectionElementOfPath = (pathArray) => {
-  var currentNode = canopyContainer;
+  let currentNode = canopyContainer;
 
-  for (var i = 0; i < pathArray.length; i++) {
+  for (let i = 0; i < pathArray.length; i++) {
     if (!currentNode) { return null; }
 
-    var topicName = pathArray[i][0];
-    var subtopicName = pathArray[i][1];
+    let topicName = pathArray[i][0];
+    let subtopicName = pathArray[i][1];
 
     currentNode = currentNode.querySelector(
       `[data-topic-name="${topicName}"]` +
@@ -30,7 +30,7 @@ const sectionElementOfPath = (pathArray) => {
 }
 
 const currentSection = () => {
-  var nodeList = document.querySelectorAll('section[style="display: block;"');
+  let nodeList = document.querySelectorAll('section[style="display: block;"');
   return nodeList[nodeList.length - 1];
 }
 
@@ -39,14 +39,14 @@ const selectedLink = () => {
 }
 
 const currentRootSection = () => {
-  var nodeList = document.querySelectorAll('section[style="display: block;"');
+  let nodeList = document.querySelectorAll('section[style="display: block;"');
   return nodeList[0];
 }
 
 const parentLinkOfSection = (sectionElement) => {
   if (sectionElement.parentNode === canopyContainer) { return null; }
 
-  var paragraphElement = paragraphElementOfSection(sectionElement.parentNode);
+  let paragraphElement = paragraphElementOfSection(sectionElement.parentNode);
 
   return Array.
     from(paragraphElement.childNodes).
@@ -85,9 +85,9 @@ function documentTitleFor(topicName) {
 function metadataFromLink(linkElement) {
   if (!linkElement) { return null; }
 
-  var sectionElement = sectionElementOfLink(linkElement);
+  let sectionElement = sectionElementOfLink(linkElement);
 
-  var relativeLinkNumber = Array.from(
+  let relativeLinkNumber = Array.from(
     sectionElement.querySelectorAll(
     ` a[data-target-topic="${linkElement.dataset.targetTopic}"]` +
     `[data-target-subtopic="${linkElement.dataset.targetSubtopic}"]`
@@ -114,12 +114,12 @@ function findLinkFromMetadata(linkSelectionData) {
 }
 
 function findLowestExtantSectionElementOfPath(pathArray) {
-  var lowestExtantSectionElementOfPath = null;
-  var pathSuffixToRender = [];
+  let lowestExtantSectionElementOfPath = null;
+  let pathSuffixToRender = [];
 
-  for (var i = 0; i < pathArray.length; i++) {
-    var pathSegment = pathArray.slice(0, i + 1);
-    var sectionElement = sectionElementOfPath(pathSegment);
+  for (let i = 0; i < pathArray.length; i++) {
+    let pathSegment = pathArray.slice(0, i + 1);
+    let sectionElement = sectionElementOfPath(pathSegment);
     if (sectionElement) {
       lowestExtantSectionElementOfPath = sectionElementOfPath(pathSegment);
     } else {
@@ -132,7 +132,7 @@ function findLowestExtantSectionElementOfPath(pathArray) {
 }
 
 function openLinkOfSection(sectionElement) {
-  var paragraphElement = paragraphElementOfSection(sectionElement);
+  let paragraphElement = paragraphElementOfSection(sectionElement);
 
   return Array.
     from(paragraphElement.childNodes).

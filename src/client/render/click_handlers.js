@@ -8,17 +8,17 @@ const onParentLinkClick = (topicName, linkElement, targetSubtopic) => {
   return (e) => {
     e.preventDefault();
     // If the link's child is already selected, display the link's section
-    var pathArray = pathForSectionElement(sectionElementOfLink(linkElement));
+    let pathArray = pathForSectionElement(sectionElementOfLink(linkElement));
 
     if (linkElement.classList.contains('canopy-open-link')) {
       pathArray.pop();
-      var newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
+      let newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
       pathArray.push(newTuple);
 
       displayPath(pathArray);
     } else {
       pathArray.pop();
-      var newTuple = [topicName, targetSubtopic];
+      let newTuple = [topicName, targetSubtopic];
       pathArray.push(newTuple);
 
       displayPath(pathArray);
@@ -31,7 +31,7 @@ const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
     e.preventDefault();
 
     if (e.altKey) {
-      var pathArray = pathForSectionElement(sectionElementOfLink(linkElement))
+      let pathArray = pathForSectionElement(sectionElementOfLink(linkElement))
 
       if (linkElement.classList.contains('canopy-open-link')) {
         return updateView(

@@ -3,26 +3,26 @@ import capitalize from 'helpers/capitalize';
 import withoutArticle from 'helpers/without_article';
 
 function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces) {
-  var tokens = [];
-  var units = unitsOf(clauseWithPunctuation);
-  var globalNamespace = namespaceObject;
-  var textTokenBuffer = '';
+  let tokens = [];
+  let units = unitsOf(clauseWithPunctuation);
+  let globalNamespace = namespaceObject;
+  let textTokenBuffer = '';
 
   // Find greatest suffix-prefix match
   while (units.length > 0) {
-    for(var i = units.length - 1; i >= 0; i--) {
+    for(let i = units.length - 1; i >= 0; i--) {
       if (units[0] === ' ') { break; }
       if (units[i] === ' ') { continue; }
 
-      var substring = units.slice(0, i + 1).join('');
-      var substringCapitalized = capitalize(substring);
-      var substringToMatch = capitalize(withoutArticle(substringCapitalized));
+      let substring = units.slice(0, i + 1).join('');
+      let substringCapitalized = capitalize(substring);
+      let substringToMatch = capitalize(withoutArticle(substringCapitalized));
 
-      var continueFlag = false;
-      for (var j = 0; j < avaliableNamespaces.length; j++) {
-        var namespaceName = avaliableNamespaces[j];
-        var namespaceNameWithoutArticle = capitalize(withoutArticle(namespaceName));
-        var currentNamespace = namespaceObject[namespaceNameWithoutArticle];
+      let continueFlag = false;
+      for (let j = 0; j < avaliableNamespaces.length; j++) {
+        let namespaceName = avaliableNamespaces[j];
+        let namespaceNameWithoutArticle = capitalize(withoutArticle(namespaceName));
+        let currentNamespace = namespaceObject[namespaceNameWithoutArticle];
 
         if (currentNamespace.hasOwnProperty(substringToMatch)) {
           if (substringToMatch === capitalize(withoutArticle(currentSubtopic))) {
@@ -30,15 +30,15 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           }
 
           if (textTokenBuffer){
-            var token = new TextToken(textTokenBuffer);
+            let token = new TextToken(textTokenBuffer);
             tokens.push(token);
             textTokenBuffer = '';
           }
 
-          var tokenType = currentTopic === namespaceName ?
+          let tokenType = currentTopic === namespaceName ?
             LocalReferenceToken : GlobalReferenceToken;
 
-          var token = new tokenType(
+          let token = new tokenType(
             namespaceObject[namespaceNameWithoutArticle][namespaceNameWithoutArticle],
             namespaceObject[namespaceNameWithoutArticle][substringToMatch],
             currentTopic,
@@ -56,7 +56,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
 
       if (globalNamespace.hasOwnProperty(substringToMatch)) {
         if (textTokenBuffer){
-          var token = new TextToken(textTokenBuffer);
+          let token = new TextToken(textTokenBuffer);
           tokens.push(token);
           textTokenBuffer = '';
         }
@@ -65,7 +65,7 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
           break; //Reject self-match
         }
 
-        var token = new GlobalReferenceToken(
+        let token = new GlobalReferenceToken(
           namespaceObject[substringToMatch][substringToMatch],
           namespaceObject[substringToMatch][substringToMatch],
           currentTopic,
@@ -81,13 +81,13 @@ function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, curre
       }
     }
 
-    var firstUnit = units.slice(0, 1);
+    let firstUnit = units.slice(0, 1);
     textTokenBuffer += firstUnit;
     units = units.slice(1);
   }
 
   if(textTokenBuffer) {
-    var token = new TextToken(textTokenBuffer);
+    let token = new TextToken(textTokenBuffer);
     tokens.push(token);
   }
 

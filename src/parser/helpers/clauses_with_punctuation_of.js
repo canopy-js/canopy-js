@@ -3,13 +3,13 @@ function clausesWithPunctuationOf(string) {
     return [];
   }
 
-  var clausesWithPunctuation = [];
-  var buffer = '';
+  let clausesWithPunctuation = [];
+  let buffer = '';
 
   while (string.length) {
-    var indexOfNextStop = -1;
-    for (var i = 0; i < string.length; i++) {
-      var stops = ['.', '!', '?', ',', ';', ':'];
+    let indexOfNextStop = -1;
+    for (let i = 0; i < string.length; i++) {
+      let stops = ['.', '!', '?', ',', ';', ':'];
       if (stops.indexOf(string[i]) > -1) {
         indexOfNextStop = i;
         break;
@@ -21,14 +21,14 @@ function clausesWithPunctuationOf(string) {
       break;
     }
 
-    var charactersThatFollowClauseBreaks = [undefined, ' ', ')', '"', "'"];
+    let charactersThatFollowClauseBreaks = [undefined, ' ', ')', '"', "'"];
 
-    var validClauseBreak = charactersThatFollowClauseBreaks.
+    let validClauseBreak = charactersThatFollowClauseBreaks.
       indexOf(string[indexOfNextStop + 1]) !== -1;
 
     if (validClauseBreak) {
-      var clauseString = buffer + string.slice(0, indexOfNextStop + 1);
-      var closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
+      let clauseString = buffer + string.slice(0, indexOfNextStop + 1);
+      let closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
       clauseString += closingPunctuation;
       clausesWithPunctuation.push(clauseString);
       buffer = '';

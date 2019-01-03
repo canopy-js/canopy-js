@@ -8,15 +8,15 @@ import {
 } from 'helpers/getters';
 
 const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfsClasses) => {
-  var topicName = pathArray[0][0];
-  var subtopicName = pathArray[0][1];
+  let topicName = pathArray[0][0];
+  let subtopicName = pathArray[0][1];
 
-  var {
+  let {
     lowestExtantSectionElementOfPath,
     pathSuffixToRender
   } = findLowestExtantSectionElementOfPath(pathArray);
 
-  var promisedDomTree = fetchAndRenderPath(
+  let promisedDomTree = fetchAndRenderPath(
     pathSuffixToRender,
     pathArray.length - pathSuffixToRender.length
   )
@@ -29,9 +29,9 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfs
 
   promisedDomTree.then((domTree) => {
     if (domTree) {
-      var anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
+      let anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
 
-      var newNodeAlreadyPresent = Array.from(anchorElement.childNodes)
+      let newNodeAlreadyPresent = Array.from(anchorElement.childNodes)
         .filter((childNode) => {
           return childNode.dataset &&
             childNode.dataset.topicName === domTree.dataset.topicName &&

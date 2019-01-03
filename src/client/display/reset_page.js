@@ -1,5 +1,5 @@
 function forEach(list, callback) {
-  for (var i = 0; i < list.length; i++) {
+  for (let i = 0; i < list.length; i++) {
     callback(list[i]);
   }
 }
@@ -41,8 +41,8 @@ function underlineLink(linkElement) {
 }
 
 function clearDfsClasses(preserveLinksInForwardDirection) {
-  var preserveForward = preserveLinksInForwardDirection === true;
-  var preserveBackwards = preserveLinksInForwardDirection === false;
+  let preserveForward = preserveLinksInForwardDirection === true;
+  let preserveBackwards = preserveLinksInForwardDirection === false;
 
   forEach(document.getElementsByTagName("a"), function(linkElement) {
     !preserveForward && linkElement.classList.remove('canopy-dfs-previously-selected-link');

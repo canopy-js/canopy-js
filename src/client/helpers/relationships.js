@@ -10,7 +10,7 @@ function firstSiblingOf(linkElement) {
     return null;
   }
 
-  var links = linkElement.parentNode.querySelectorAll('a');
+  let links = linkElement.parentNode.querySelectorAll('a');
   return links[0] || linkElement;
 }
 
@@ -19,7 +19,7 @@ function lastSiblingOf(linkElement) {
     return null;
   }
 
-  var links = linkElement.parentNode.querySelectorAll('a');
+  let links = linkElement.parentNode.querySelectorAll('a');
   return links[links.length - 1] || null;
 }
 
@@ -44,7 +44,7 @@ function linkAfter(linkElement) {
     return null;
   }
 
-  var links = linkElement.parentNode.querySelectorAll('a');
+  let links = linkElement.parentNode.querySelectorAll('a');
   if (linkElement !== links[links.length - 1]){
     return links[
       Array.prototype.slice.call(links).indexOf(linkElement) + 1
@@ -59,7 +59,7 @@ function linkBefore(linkElement) {
     return null;
   }
 
-  var links = linkElement.parentNode.querySelectorAll('a');
+  let links = linkElement.parentNode.querySelectorAll('a');
   if (linkElement !== links[0]){
     return links[
       Array.prototype.slice.call(links).indexOf(linkElement) - 1
@@ -74,7 +74,7 @@ function nthChildLinkOfParentLink(linkElement, n) {
     return null;
   }
 
-  var sectionElement = childSectionElementOfParentLink(linkElement);
+  let sectionElement = childSectionElementOfParentLink(linkElement);
   if (!sectionElement) { return null; }
 
   return sectionElement.querySelectorAll('a')[n];
@@ -89,10 +89,10 @@ function lastChildLinkOfParentLink(linkElement) {
     return null;
   }
 
-  var sectionElement = childSectionElementOfParentLink(linkElement);
+  let sectionElement = childSectionElementOfParentLink(linkElement);
   if (!sectionElement) { return null; }
 
-  var array = Array.from(sectionElement.firstElementChild.childNodes).filter((node) => node.tagName === 'A');
+  let array = Array.from(sectionElement.firstElementChild.childNodes).filter((node) => node.tagName === 'A');
 
   return array[array.length - 1];
 }
@@ -116,11 +116,11 @@ function isTreeRootSection(sectionElement) {
 function pathForSectionElement(sectionElement) {
   if (!sectionElement) { return null; }
 
-  var pathArray = [];
-  var currentElement = sectionElement;
+  let pathArray = [];
+  let currentElement = sectionElement;
 
   while (currentElement !== canopyContainer) {
-    var currentTopic = currentElement.dataset.topicName;
+    let currentTopic = currentElement.dataset.topicName;
 
     pathArray.unshift([
       currentTopic,
@@ -136,13 +136,13 @@ function pathForSectionElement(sectionElement) {
 }
 
 function enclosingTopicSectionOfLink(linkElement) {
-  var sectionElement = sectionElementOfLink(linkElement);
+  let sectionElement = sectionElementOfLink(linkElement);
 
   if (sectionElement.dataset.pathDepth === "0") {
     return currentRootSection();
   }
 
-  var currentSectionElement = sectionElement;
+  let currentSectionElement = sectionElement;
 
   while (currentSectionElement.parentNode.dataset.pathDepth === sectionElement.dataset.pathDepth) {
     currentSectionElement = currentSectionElement.parentNode;
