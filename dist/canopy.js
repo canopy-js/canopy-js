@@ -704,32 +704,52 @@ module.exports = function (css) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! style/canopy.scss */ "./src/client/style/canopy.scss");
+/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(style_canopy_scss__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
-/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
-/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! style/canopy.scss */ "./src/client/style/canopy.scss");
-/* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(style_canopy_scss__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var keys_register_key_listener__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! keys/register_key_listener */ "./src/client/keys/register_key_listener.js");
-/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var keys_register_key_listeners__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! keys/register_key_listeners */ "./src/client/keys/register_key_listeners.js");
+/* harmony import */ var history_register_pop_state_listener__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! history/register_pop_state_listener */ "./src/client/history/register_pop_state_listener.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
 
 
 
 
- // history.state.paths = {};
-// if (!parsePathString()[0]) {
-//   setPathAndFragment(defaultTopic, null);
-// } else {
 
-Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])(), history.state, null); // }
+Object(keys_register_key_listeners__WEBPACK_IMPORTED_MODULE_2__["default"])();
+Object(history_register_pop_state_listener__WEBPACK_IMPORTED_MODULE_3__["default"])();
+Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__["default"])(), history.state);
 
-Object(keys_register_key_listener__WEBPACK_IMPORTED_MODULE_4__["default"])();
-window.addEventListener('popstate', function (e) {
-  var oldState = Object.assign(history.state || {}, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
-  history.replaceState(Object.assign(history.state || {}, oldState), document.title, window.location.href);
-  var selectedLinkData = e.state && e.state.targetTopic ? e.state : null;
-  Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])(), selectedLinkData, null, true);
-});
+/***/ }),
+
+/***/ "./src/client/display/create_or_replace_header.js":
+/*!********************************************************!*\
+  !*** ./src/client/display/create_or_replace_header.js ***!
+  \********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
+function createOrReplaceHeader(topicName) {
+  var existingHeader = document.querySelector('#_canopy h1');
+
+  if (existingHeader) {
+    existingHeader.remove();
+  }
+
+  var headerTextNode = document.createTextNode(topicName);
+  var headerDomElement = document.createElement('h1');
+  headerDomElement.appendChild(headerTextNode);
+  helpers_getters__WEBPACK_IMPORTED_MODULE_0__["canopyContainer"].prepend(headerDomElement);
+}
+
+;
+/* harmony default export */ __webpack_exports__["default"] = (createOrReplaceHeader);
 
 /***/ }),
 
@@ -738,9 +758,96 @@ window.addEventListener('popstate', function (e) {
   !*** ./src/client/display/display_path.js ***!
   \********************************************/
 /*! exports provided: default */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nTypeError: /Users/Allen/canopy/src/client/display/display_path.js: Duplicate declaration \"sectionElementToDisplay\"\n\u001b[0m \u001b[90m 77 | \u001b[39m    redundantParentLinksInSameParagraph)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 78 | \u001b[39m\u001b[0m\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 79 | \u001b[39m  let sectionElementToDisplay \u001b[33m=\u001b[39m (linkToSelect \u001b[33m&&\u001b[39m displaySectionBelowLink \u001b[33m?\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m    | \u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 80 | \u001b[39m    childSectionElementOfParentLink(linkToSelect) \u001b[33m:\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 81 | \u001b[39m    sectionElementOfPath(pathArray)) \u001b[33m||\u001b[39m sectionElementOfCurrentPath\u001b[33m;\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 82 | \u001b[39m\u001b[0m\n    at File.buildCodeFrameError (/Users/Allen/canopy/node_modules/@babel/core/lib/transformation/file/file.js:261:12)\n    at Scope.checkBlockScopedCollisions (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:347:22)\n    at Scope.registerBinding (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:504:16)\n    at Scope.registerDeclaration (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:444:14)\n    at Object.BlockScoped (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:189:28)\n    at Object.newFn (/Users/Allen/canopy/node_modules/@babel/traverse/lib/visitors.js:230:17)\n    at NodePath._call (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:53:20)\n    at NodePath.call (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:36:14)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:88:12)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitMultiple (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:85:17)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:144:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitSingle (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:90:19)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:146:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitSingle (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:90:19)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:146:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitMultiple (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:85:17)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:144:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
+/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
+/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
+/* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
+/* harmony import */ var display_create_or_replace_header__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! display/create_or_replace_header */ "./src/client/display/create_or_replace_header.js");
+
+
+
+
+
+
+
+
+
+var displayPath = function displayPath(pathArray, linkToSelect, selectALink, popState, directionToPreserveDfsClassesIn) {
+  var topicName = pathArray[0][0];
+  var subtopicName = pathArray[0][1];
+  document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["documentTitleFor"])(topicName);
+  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray); // if (!sectionElement) {
+  //   // Try each path segment, etc
+  //   return updateView([[topicName, topicName]]);
+  //   // return updateView(
+  //   // pathArray.slice(0, pathArray.length + 1) ||
+  //   // [[pathArray[0][0], pathArray[0][1]]]) // Maybe this should try pathArray[i][0], pathArray[i][0] first
+  // }
+  // Maybe I can reuse the helper from update_view to find the lowest extant node or maybe that does this already
+
+  Object(display_create_or_replace_header__WEBPACK_IMPORTED_MODULE_6__["default"])(topicName);
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["hideAllSectionElements"])();
+  var previouslySelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["selectedLink"])();
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["deselectAllLinks"])();
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["clearDfsClasses"])(directionToPreserveDfsClassesIn);
+
+  if (!linkToSelect) {
+    if (selectALink) {
+      var lastPathSegment = pathArray[pathArray.length - 1];
+
+      if (lastPathSegment[0] !== lastPathSegment[1]) {
+        linkToSelect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath) || null;
+      } else {
+        linkToSelect = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_5__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath);
+      }
+    }
+  }
+
+  var sectionElementToDisplay;
+  var redundantParentLinksInSameParagraph = linkToSelect && linkToSelect.classList.contains('canopy-redundant-parent-link') && Array.from(linkToSelect.parentNode.childNodes).filter(function (linkElement) {
+    return linkElement.dataset && linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic && linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic && linkElement !== linkToSelect;
+  }).length > 0;
+  var displaySectionBelowLink = linkToSelect && (linkToSelect.classList.contains('canopy-parent-link') || redundantParentLinksInSameParagraph);
+  sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["childSectionElementOfParentLink"])(linkToSelect) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray)) || sectionElementOfCurrentPath;
+
+  if (linkToSelect) {
+    linkToSelect.classList.add('canopy-selected-link');
+  }
+
+  if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
+    linkToSelect.classList.add('canopy-open-link');
+  }
+
+  !popState && Object(path_set_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray);
+  displayPathTo(sectionElementToDisplay);
+  window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"].scrollHeight);
+};
+
+var displayPathTo = function displayPathTo(sectionElement) {
+  sectionElement.style.display = 'block';
+
+  if (sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"]) {
+    return;
+  }
+
+  var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElement);
+  parentLink.classList.add('canopy-open-link');
+  Array.from(parentLink.parentNode.childNodes).filter(function (linkElement) {
+    return linkElement.dataset && linkElement.dataset.targetTopic === parentLink.dataset.targetTopic && linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic;
+  }).forEach(function (redundantParentLink) {
+    redundantParentLink.classList.add('canopy-open-link');
+  });
+  var parentSectionElement = parentLink.parentNode.parentNode;
+  displayPathTo(parentSectionElement);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (displayPath);
 
 /***/ }),
 
@@ -1185,6 +1292,62 @@ function enclosingTopicSectionOfLink(linkElement) {
 
 /***/ }),
 
+/***/ "./src/client/history/helpers.js":
+/*!***************************************!*\
+  !*** ./src/client/history/helpers.js ***!
+  \***************************************/
+/*! exports provided: linkSelectionPresentInEvent, saveCurrentLinkSelectionInHistoryStack */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkSelectionPresentInEvent", function() { return linkSelectionPresentInEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "saveCurrentLinkSelectionInHistoryStack", function() { return saveCurrentLinkSelectionInHistoryStack; });
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
+function linkSelectionPresentInEvent(e) {
+  return e.state && e.state.targetTopic;
+}
+
+function saveCurrentLinkSelectionInHistoryStack(linkElement) {
+  history.replaceState(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement), document.title, window.location.href);
+}
+
+
+
+/***/ }),
+
+/***/ "./src/client/history/register_pop_state_listener.js":
+/*!***********************************************************!*\
+  !*** ./src/client/history/register_pop_state_listener.js ***!
+  \***********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var history_helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! history/helpers */ "./src/client/history/helpers.js");
+/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
+
+
+
+function registerPopStateListener() {
+  window.addEventListener('popstate', function (e) {
+    Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["saveCurrentLinkSelectionInHistoryStack"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["selectedLink"])());
+    var newLinkSelectionData = Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["linkSelectionPresentInEvent"])(e) ? e.state : null;
+    Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__["default"])(), newLinkSelectionData, null, true);
+  });
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (registerPopStateListener);
+
+/***/ }),
+
 /***/ "./src/client/keys/key_handlers.js":
 /*!*****************************************!*\
   !*** ./src/client/keys/key_handlers.js ***!
@@ -1388,10 +1551,10 @@ function goToParentOfEnclosingTopic() {
 
 /***/ }),
 
-/***/ "./src/client/keys/register_key_listener.js":
-/*!**************************************************!*\
-  !*** ./src/client/keys/register_key_listener.js ***!
-  \**************************************************/
+/***/ "./src/client/keys/register_key_listeners.js":
+/*!***************************************************!*\
+  !*** ./src/client/keys/register_key_listeners.js ***!
+  \***************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1516,9 +1679,24 @@ var keyNames = (_keyNames = {
   !*** ./src/client/path/parse_path_string.js ***!
   \**********************************************/
 /*! exports provided: default */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nTypeError: /Users/Allen/canopy/src/client/path/parse_path_string.js: Duplicate declaration \"pathString\"\n\u001b[0m \u001b[90m 1 | \u001b[39m\u001b[36mconst\u001b[39m parsePathString \u001b[33m=\u001b[39m (pathString) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 2 | \u001b[39m  let pathString \u001b[33m=\u001b[39m pathString \u001b[33m||\u001b[39m window\u001b[33m.\u001b[39mlocation\u001b[33m.\u001b[39mpathname \u001b[33m+\u001b[39m window\u001b[33m.\u001b[39mlocation\u001b[33m.\u001b[39mhash\u001b[33m;\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m   | \u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 3 | \u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 4 | \u001b[39m  let slashSeparatedUnits \u001b[33m=\u001b[39m pathString\u001b[33m.\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 5 | \u001b[39m    replace(\u001b[35m/_/g\u001b[39m\u001b[33m,\u001b[39m \u001b[32m' '\u001b[39m)\u001b[33m.\u001b[39m\u001b[0m\n    at File.buildCodeFrameError (/Users/Allen/canopy/node_modules/@babel/core/lib/transformation/file/file.js:261:12)\n    at Scope.checkBlockScopedCollisions (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:347:22)\n    at Scope.registerBinding (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:504:16)\n    at Scope.registerDeclaration (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:444:14)\n    at Object.BlockScoped (/Users/Allen/canopy/node_modules/@babel/traverse/lib/scope/index.js:189:28)\n    at Object.newFn (/Users/Allen/canopy/node_modules/@babel/traverse/lib/visitors.js:230:17)\n    at NodePath._call (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:53:20)\n    at NodePath.call (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:36:14)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:88:12)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitMultiple (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:85:17)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:144:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitSingle (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:90:19)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:146:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitSingle (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:90:19)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:146:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)\n    at TraversalContext.visitMultiple (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:85:17)\n    at TraversalContext.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:144:19)\n    at Function.traverse.node (/Users/Allen/canopy/node_modules/@babel/traverse/lib/index.js:94:17)\n    at NodePath.visit (/Users/Allen/canopy/node_modules/@babel/traverse/lib/path/context.js:95:18)\n    at TraversalContext.visitQueue (/Users/Allen/canopy/node_modules/@babel/traverse/lib/context.js:118:16)");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var parsePathString = function parsePathString(pathStringArg) {
+  var pathString = pathStringArg || window.location.pathname + window.location.hash;
+  var slashSeparatedUnits = pathString.replace(/_/g, ' ').split('/').filter(function (string) {
+    return string !== '';
+  });
+  return slashSeparatedUnits.map(function (slashSeparatedUnit) {
+    var match = slashSeparatedUnit.match(/([^#]*)(?:#([^#]*))?/);
+    return [match[1] || match[2] || null, match[2] || match[1] || null];
+  }).filter(function (tuple) {
+    return tuple[0] !== null;
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (parsePathString);
 
 /***/ }),
 

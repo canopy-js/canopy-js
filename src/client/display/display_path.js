@@ -76,7 +76,7 @@ const displayPath = (pathArray, linkToSelect, selectALink, popState, directionTo
     linkToSelect && (linkToSelect.classList.contains('canopy-parent-link') ||
     redundantParentLinksInSameParagraph);
 
-  let sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ?
+  sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ?
     childSectionElementOfParentLink(linkToSelect) :
     sectionElementOfPath(pathArray)) || sectionElementOfCurrentPath;
 

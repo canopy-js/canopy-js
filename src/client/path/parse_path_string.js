@@ -1,5 +1,5 @@
-const parsePathString = (pathString) => {
-  let pathString = pathString || window.location.pathname + window.location.hash;
+const parsePathString = (pathStringArg) => {
+  let pathString = pathStringArg || window.location.pathname + window.location.hash;
 
   let slashSeparatedUnits = pathString.
     replace(/_/g, ' ').
