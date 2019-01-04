@@ -1,10 +1,10 @@
 import clausesWithPunctutionOf from 'helpers/clauses_with_punctuation_of';
 import parseClause from 'components/parse_clause';
 
-function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
+function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
   let lines = textWithoutKey.split(/\n/);
 
-  let tokensOfBlock = [];
+  let tokensOfParagraph = [];
   lines.forEach(function(line){
     let clausesOfParagraph = clausesWithPunctutionOf(line);
     let avaliableNamespaces = [currentTopic];
@@ -21,10 +21,10 @@ function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTop
 
     let tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
 
-    tokensOfBlock.push(tokensOfLine);
+    tokensOfParagraph.push(tokensOfLine);
   });
 
-  return tokensOfBlock;
+  return tokensOfParagraph;
 }
 
-export default parseBlock;
+export default parseParagraph;

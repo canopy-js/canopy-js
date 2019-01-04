@@ -23,7 +23,6 @@ const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopS
   promisedDomTree.then((domTree) => {
     if (domTree) {
       let anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
-
       if (!newNodeAlreadyPresent(anchorElement, domTree)) {
         anchorElement.appendChild(domTree);
       }

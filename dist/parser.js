@@ -181,7 +181,7 @@ function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ "fs");
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var components_parse_block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_block */ "./src/parser/components/parse_block.js");
+/* harmony import */ var components_parse_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_paragraph */ "./src/parser/components/parse_paragraph.js");
 /* harmony import */ var helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
 /* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
 /* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
@@ -210,47 +210,14 @@ function jsonForDgsFile(path, namespaceObject) {
     }
 
     var currentSubtopic = paragraphData.key;
-    var textWithoutKey = paragraphData.block;
-    var tokensOfParagraph = Object(components_parse_block__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, currentSubtopic, topicOfFile);
+    var textWithoutKey = paragraphData.paragraph;
+    var tokensOfParagraph = Object(components_parse_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, currentSubtopic, topicOfFile);
     tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
   return JSON.stringify(tokenizedParagraphsByKey, null, process.env.CANOPY_DEBUG ? 1 : 0);
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (jsonForDgsFile);
-
-/***/ }),
-
-/***/ "./src/parser/components/parse_block.js":
-/*!**********************************************!*\
-  !*** ./src/parser/components/parse_block.js ***!
-  \**********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
-/* harmony import */ var components_parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_clause */ "./src/parser/components/parse_clause.js");
-
-
-
-function parseBlock(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
-  var lines = textWithoutKey.split(/\n/);
-  var tokensOfBlock = [];
-  lines.forEach(function (line) {
-    var clausesOfParagraph = Object(helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
-    var avaliableNamespaces = [currentTopic];
-    var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
-      return Object(components_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces);
-    });
-    var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
-    tokensOfBlock.push(tokensOfLine);
-  });
-  return tokensOfBlock;
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (parseBlock);
 
 /***/ }),
 
@@ -382,6 +349,39 @@ function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclo
 
 /***/ }),
 
+/***/ "./src/parser/components/parse_paragraph.js":
+/*!**************************************************!*\
+  !*** ./src/parser/components/parse_paragraph.js ***!
+  \**************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
+/* harmony import */ var components_parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_clause */ "./src/parser/components/parse_clause.js");
+
+
+
+function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
+  var lines = textWithoutKey.split(/\n/);
+  var tokensOfParagraph = [];
+  lines.forEach(function (line) {
+    var clausesOfParagraph = Object(helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
+    var avaliableNamespaces = [currentTopic];
+    var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
+      return Object(components_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces);
+    });
+    var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
+    tokensOfParagraph.push(tokensOfLine);
+  });
+  return tokensOfParagraph;
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (parseParagraph);
+
+/***/ }),
+
 /***/ "./src/parser/helpers/capitalize.js":
 /*!******************************************!*\
   !*** ./src/parser/helpers/capitalize.js ***!
@@ -475,7 +475,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
   if (!match) {
     return {
       key: null,
-      block: paragraphWithKey
+      paragraph: paragraphWithKey
     };
   }
 
@@ -483,7 +483,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
   var paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
   return {
     key: key,
-    block: paragraphWithoutKey
+    paragraph: paragraphWithoutKey
   };
 }
 

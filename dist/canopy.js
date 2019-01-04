@@ -1982,7 +1982,7 @@ __webpack_require__.r(__webpack_exports__);
 var renderDomTree = function renderDomTree(currentSubtopicName, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth) {
   var topicName = pathArray[0][0];
   var sectionElement = createNewSectionElement(topicName, currentSubtopicName, pathDepth);
-  var linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
+  var linesOfParagraph = paragraphsBySubtopic[currentSubtopicName];
   renderedSubtopics[currentSubtopicName] = true;
   var promises = [];
 
@@ -2012,7 +2012,7 @@ var renderDomTree = function renderDomTree(currentSubtopicName, pathArray, parag
     promises.push(whenTopicTreeAppended);
   };
 
-  var tokenElements = renderElementsForTokens(linesOfBlock, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree);
+  var tokenElements = renderElementsForTokens(linesOfParagraph, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree);
   tokenElements.forEach(function (tokenElement) {
     Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["paragraphElementOfSection"])(sectionElement).appendChild(tokenElement);
   });
@@ -2036,9 +2036,9 @@ function subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, tok
   return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["linkOfSectionByTarget"])(sectionElement, token.targetTopic, token.targetSubtopic);
 }
 
-function renderElementsForTokens(linesOfBlock, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree) {
+function renderElementsForTokens(linesOfParagraph, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree) {
   var tokenArray = [];
-  linesOfBlock.forEach(function (tokensOfLine, lineNumber) {
+  linesOfParagraph.forEach(function (tokensOfLine, lineNumber) {
     lineNumber > 0 && tokenArray.push(document.createElement('br'));
     var newElements = tokensOfLine.map(function (token) {
       return generateTokenElement(token, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree);

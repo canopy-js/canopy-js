@@ -9,7 +9,7 @@ import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth) => {
   let topicName = pathArray[0][0];
   let sectionElement = createNewSectionElement(topicName, currentSubtopicName, pathDepth);
-  let linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
+  let linesOfParagraph = paragraphsBySubtopic[currentSubtopicName];
   renderedSubtopics[currentSubtopicName] = true;
   let promises = [];
 
@@ -49,7 +49,7 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, ren
   }
 
   let tokenElements = renderElementsForTokens(
-    linesOfBlock,
+    linesOfParagraph,
     pathArray,
     currentSubtopicName,
     promises,
@@ -86,7 +86,7 @@ function subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, tok
 }
 
 function renderElementsForTokens(
-  linesOfBlock,
+  linesOfParagraph,
   pathArray,
   currentSubtopicName,
   promises,
@@ -94,7 +94,7 @@ function renderElementsForTokens(
   onParentLinkTokenRequiringSubtree,
   onGlobalLinkTokenRequiringSubtree) {
   var tokenArray = [];
-  linesOfBlock.forEach((tokensOfLine, lineNumber) => {
+  linesOfParagraph.forEach((tokensOfLine, lineNumber) => {
     lineNumber > 0 && tokenArray.push(document.createElement('br'));
     var newElements = tokensOfLine.map((token) => {
       return generateTokenElement(

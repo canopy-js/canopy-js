@@ -1,5 +1,5 @@
 import fs from 'fs';
-import parseBlock from 'components/parse_block';
+import parseParagraph from 'components/parse_paragraph';
 import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import withoutArticle from 'helpers/without_article';
@@ -16,9 +16,9 @@ function jsonForDgsFile(path, namespaceObject) {
     if (!paragraphData.key) { return; }
 
     let currentSubtopic = paragraphData.key;
-    let textWithoutKey = paragraphData.block;
+    let textWithoutKey = paragraphData.paragraph;
 
-    let tokensOfParagraph = parseBlock(
+    let tokensOfParagraph = parseParagraph(
       textWithoutKey,
       namespaceObject,
       currentSubtopic,

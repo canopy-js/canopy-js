@@ -4,7 +4,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
   if(!match) {
     return {
       key: null,
-      block: paragraphWithKey
+      paragraph: paragraphWithKey
     }
   }
 
@@ -13,7 +13,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
 
   return {
     key: key,
-    block: paragraphWithoutKey
+    paragraph: paragraphWithoutKey
   };
 }
 
