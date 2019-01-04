@@ -1,4 +1,3 @@
-import { slugFor } from 'helpers/identifiers';
 import {
   selectedLink,
   documentTitleFor,
@@ -8,50 +7,27 @@ import {
 import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
 
-const setPathAndFragment = (newPathArray) => {
-  let newTopicName = newPathArray[0][0];
-  let newSubtopicName = newPathArray[0][1];
+const setPath = (newPathArray) => {
   let oldPathArray = parsePathString();
+  let documentTitle = newPathArray[0][0];
 
-  let replaceState = (a, b, c) => { history.replaceState(a, b, c) };
-  let pushState = (a, b, c) => {
-    history.pushState(a, b, c);
-  };
-  let historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
+  let historyApiFunction = newPathArray === oldPathArray ? // always false
+    replaceState : pushState;
 
   historyApiFunction(
     metadataFromLink(selectedLink()),
-    '',
+    documentTitle,
     pathStringFor(newPathArray)
   );
-
-  // function pathFor(topicName, subtopicName) {
-  //   return '/' + slugFor(topicName) +
-  //     (uniqueSubtopic(topicName, subtopicName) ?
-  //       `#${slugFor(subtopicName)}` : '')
-  // }
-
-  // function pathStringFor(pathArray) {
-  //   pathArray.map((tuple) => `${tuple[0]}#${tuple[1]}`).join('/');
-  // }
-
-  // let popStateEvent = new PopStateEvent(
-  //   'popstate',
-  //   {
-  //     state: nextLinkNumberAndLinkTypeAsObject(
-  //       selectedLinkInParentSection,
-  //       selectedLinkNumber
-  //     )
-  //   }
-  // );
-
-  // dispatchEvent(popStateEvent);
 }
-// function nextLinkNumberAndLinkTypeAsObject(selectedLinkInParentSection, selectedLinkNumber) {
-//   return {
-//     selectedLinkNumber,
-//     selectedLinkInParentSection
-//   };
-// }
 
-export default setPathAndFragment;
+function replaceState(a, b, c) {
+  history.replaceState(a, b, c)
+};
+
+function pushState(a, b, c) {
+  history.pushState(a, b, c);
+};
+
+export default setPath;
+

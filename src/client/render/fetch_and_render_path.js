@@ -5,31 +5,22 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
   if (pathArray.length === 0) {
     return Promise.resolve(null);
   }
-
   let topicName = pathArray[0][0];
+  let uponResponsePromise = requestJson(topicName);
 
-  let uponResponse = requestJson(topicName);
-
-  return uponResponse.then((paragraphsBySubtopic) => {
-    const promisedDomTree = renderDomTree(
+  let promisedDomTree = uponResponsePromise.then((paragraphsBySubtopic) => {
+    return renderDomTree(
       pathArray[0][0],
       pathArray,
       paragraphsBySubtopic,
-      [],
       {},
       pathDepth
     );
+  })
 
-    const promisedDomTreeWithRule = promisedDomTree.then((domTree) => {
-      if (pathDepth > 0) {
-        let hr = document.createElement('HR');
-        domTree.prepend(hr);
-      }
-
-      return domTree;
-    });
-
-    return promisedDomTreeWithRule;
+  return promisedDomTree.then((domTree) => {
+    pathDepth > 0 && domTree.prepend(document.createElement('hr'));
+    return domTree;
   });
 }
 

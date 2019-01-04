@@ -1,4 +1,5 @@
 import { slugFor } from 'helpers/identifiers';
+import { isInRootSection } from 'helpers/booleans';
 
 const canopyContainer = document.getElementById('_canopy');
 if(!canopyContainer) {
@@ -46,14 +47,11 @@ const currentRootSection = () => {
 const parentLinkOfSection = (sectionElement) => {
   if (sectionElement.parentNode === canopyContainer) { return null; }
 
-  let paragraphElement = paragraphElementOfSection(sectionElement.parentNode);
-
-  return Array.
-    from(paragraphElement.childNodes).
-    find((linkElement) =>
-      linkElement.tagName === 'A' &&
-      linkElement.dataset.targetTopic === sectionElement.dataset.topicName &&
-      linkElement.dataset.targetSubtopic === sectionElement.dataset.subtopicName);
+  return linkOfSectionByTarget(
+    sectionElement.parentNode,
+    sectionElement.dataset.topicName,
+    sectionElement.dataset.subtopicName
+  );
 }
 
 const childSectionElementOfParentLink = (linkElement) => {
@@ -74,12 +72,8 @@ function sectionElementOfLink(linkElement) {
   return linkElement.parentNode.parentNode;
 }
 
-function uniqueSubtopic(topicName, subtopicName) {
-  return subtopicName && subtopicName !== topicName;
-}
-
 function documentTitleFor(topicName) {
-  return topicName;// + ((subtopicName && subtopicName !== topicName) ? `: ${subtopicName}` : '');
+  return topicName;
 }
 
 function metadataFromLink(linkElement) {
@@ -132,13 +126,10 @@ function findLowestExtantSectionElementOfPath(pathArray) {
 }
 
 function openLinkOfSection(sectionElement) {
-  let paragraphElement = paragraphElementOfSection(sectionElement);
-
-  return Array.
-    from(paragraphElement.childNodes).
-    find((linkElement) =>
-      linkElement.tagName === 'A' &&
-      linkElement.classList.contains('canopy-open-link'));
+  return linkOfSectionLike(
+    sectionElement,
+    (linkElement) => linkElement.classList.contains('canopy-open-link')
+  );
 }
 
 function paragraphElementOfSection(sectionElement) {
@@ -146,6 +137,136 @@ function paragraphElementOfSection(sectionElement) {
     sectionElement.
     childNodes
   ).find((element) => element.tagName === 'P')
+}
+
+function linkAfter(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  let links = linkElement.parentNode.querySelectorAll('a');
+  if (linkElement !== links[links.length - 1]){
+    return links[
+      Array.prototype.slice.call(links).indexOf(linkElement) + 1
+    ];
+  } else {
+    return null;
+  }
+}
+
+function linkBefore(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  let links = linkElement.parentNode.querySelectorAll('a');
+  if (linkElement !== links[0]){
+    return links[
+      Array.prototype.slice.call(links).indexOf(linkElement) - 1
+    ];
+  } else {
+    return null;
+  }
+}
+
+function firstOrLastChildOfParentLink(linkElement, first) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  let sectionElement = childSectionElementOfParentLink(linkElement);
+  if (!sectionElement) { return null; }
+
+  let array = Array.from(sectionElement.firstElementChild.childNodes).filter((node) => node.tagName === 'A');
+
+  if (first) {
+    return array[0];
+  } else {
+    return array[array.length - 1];
+  }
+}
+
+function firstChildLinkOfParentLink(linkElement) {
+  return firstOrLastChildOfParentLink(linkElement, true);
+}
+
+function lastChildLinkOfParentLink(linkElement) {
+  return firstOrLastChildOfParentLink(linkElement, false);
+}
+
+function firstLinkOfSection(sectionElement) {
+  if (sectionElement === null){
+    return null;
+  }
+
+  return sectionElement.querySelectorAll('a')[0] || null;
+}
+
+function enclosingTopicSectionOfLink(linkElement) {
+  let sectionElement = sectionElementOfLink(linkElement);
+
+  if (sectionElement.dataset.pathDepth === "0") {
+    return currentRootSection();
+  }
+
+  let currentSectionElement = sectionElement;
+
+  while (currentSectionElement.parentNode.dataset.pathDepth === sectionElement.dataset.pathDepth) {
+    currentSectionElement = currentSectionElement.parentNode;
+  }
+
+  return currentSectionElement;
+}
+
+function firstSiblingOf(linkElement) {
+  if (linkElement === null){
+    return null;
+  }
+
+  let links = linkElement.parentNode.querySelectorAll('a');
+  return links[0] || linkElement;
+}
+
+function lastSiblingOf(linkElement) {
+  if (linkElement === null){
+    return null;
+  }
+
+  let links = linkElement.parentNode.querySelectorAll('a');
+  return links[links.length - 1] || null;
+}
+
+function parentLinkOf(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  if (isInRootSection(linkElement)) {
+    return null;
+  }
+
+  return parentLinkOfSection(sectionElementOfLink(linkElement));
+}
+
+function siblingOfLinkLike(linkElement, condition) {
+  return Array.from(linkToSelect.parentNode.childNodes).find((linkElement) => {
+      return condition(linkElement) &&
+        linkElement !== linkToSelect;
+    });
+}
+
+function linkOfSectionLike(sectionElement, condition) {
+  let paragraphElement = paragraphElementOfSection(sectionElement);
+  return Array.
+    from(paragraphElement.childNodes).
+    find((linkElement) => linkElement.tagName === 'A' && condition(linkElement));
+}
+
+function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
+  return linkOfSectionLike(sectionElement, (linkElement) =>
+    linkElement.dataset.targetTopic === topicName &&
+    linkElement.dataset.targetSubtopic === subtopicName
+  )
 }
 
 export {
@@ -158,12 +279,22 @@ export {
   parentLinkOfSection,
   childSectionElementOfParentLink,
   sectionElementOfLink,
-  linkNumberOf,
-  linkOfNumber,
   metadataFromLink,
-  uniqueSubtopic,
   documentTitleFor,
   findLinkFromMetadata,
   findLowestExtantSectionElementOfPath,
-  openLinkOfSection
+  openLinkOfSection,
+  paragraphElementOfSection,
+  linkAfter,
+  linkBefore,
+  firstChildLinkOfParentLink,
+  lastChildLinkOfParentLink,
+  firstLinkOfSection,
+  enclosingTopicSectionOfLink,
+  firstSiblingOf,
+  lastSiblingOf,
+  parentLinkOf,
+  siblingOfLinkLike,
+  linkOfSectionLike,
+  linkOfSectionByTarget,
 };

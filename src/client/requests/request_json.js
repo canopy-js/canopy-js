@@ -13,6 +13,10 @@ const requestJson = (topicName) => {
         cache[topicName] = json;
         return json;
       });
+    }).catch((e) => {
+      if (canopyContainer.childNodes.length === 0) {
+        return updateView([[defaultTopic, defaultTopic]]);
+      }
     });
 }
 

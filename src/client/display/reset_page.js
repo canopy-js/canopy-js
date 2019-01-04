@@ -1,3 +1,5 @@
+import { childSectionElementOfParentLink } from 'helpers/getters';
+
 function forEach(list, callback) {
   for (let i = 0; i < list.length; i++) {
     callback(list[i]);
@@ -40,13 +42,13 @@ function underlineLink(linkElement) {
   linkElement.classList.add('canopy-open-link');
 }
 
-function clearDfsClasses(preserveLinksInForwardDirection) {
-  let preserveForward = preserveLinksInForwardDirection === true;
-  let preserveBackwards = preserveLinksInForwardDirection === false;
+function clearDfsClasses(directionToPreserveDfsClassesIn) {
+  let preserveForwardDfsClass = directionToPreserveDfsClassesIn === true;
+  let preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === false;
 
   forEach(document.getElementsByTagName("a"), function(linkElement) {
-    !preserveForward && linkElement.classList.remove('canopy-dfs-previously-selected-link');
-    !preserveBackwards && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+    !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
   });
 }
 

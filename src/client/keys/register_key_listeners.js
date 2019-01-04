@@ -1,4 +1,4 @@
-import { currentSection, selectedLink } from 'helpers/getters';
+import { currentSection, selectedLink, firstLinkOfSection } from 'helpers/getters';
 import {
   moveUpward,
   moveDownward,
@@ -10,12 +10,10 @@ import {
   goToEnclosingTopic,
   goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
-import { firstLinkOfSection } from 'helpers/relationships';
 import displayPath from 'display/display_path';
 import parsePathString from 'path/parse_path_string';
 
-// Copyright Greenhouse Software 2017
-const registerKeyListener = () => {
+const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
     let modifiers =
       (e.metaKey ? 'command-' : '') +
@@ -137,4 +135,4 @@ const keyNames = {
   187: '='
 }
 
-export default registerKeyListener;
+export default registerKeyListeners;

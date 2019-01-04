@@ -1,10 +1,10 @@
 import parsePathString from 'path/parse_path_string';
 import displayPath from 'display/display_path';
-import updateView from 'render/update_view';
+import updateView from 'display/update_view';
 import { sectionElementOfLink } from 'helpers/getters';
-import { pathForSectionElement } from 'helpers/relationships'
+import pathForSectionElement from 'helpers/path_for_section_element'
 
-const onParentLinkClick = (topicName, linkElement, targetSubtopic) => {
+const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
   return (e) => {
     e.preventDefault();
     // If the link's child is already selected, display the link's section

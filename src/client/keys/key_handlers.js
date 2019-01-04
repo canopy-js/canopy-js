@@ -8,9 +8,7 @@ import {
   sectionElementOfPath,
   metadataFromLink,
   openLinkOfSection,
-  canopyContainer
-} from 'helpers/getters';
-import {
+  canopyContainer,
   parentLinkOf,
   firstLinkOfSection,
   linkAfter,
@@ -19,21 +17,21 @@ import {
   lastSiblingOf,
   firstChildLinkOfParentLink,
   lastChildLinkOfParentLink,
+  enclosingTopicSectionOfLink,
+} from 'helpers/getters';
+import {
   isTopicRootSection,
   isTreeRootSection,
-  pathForSectionElement,
-  enclosingTopicSectionOfLink
-} from 'helpers/relationships';
-import updateView from 'render/update_view';
-import setPathAndFragment from 'path/set_path';
+} from 'helpers/booleans';
+import pathForSectionElement from 'helpers/path_for_section_element';
+import updateView from 'display/update_view';
+import setPath from 'path/set_path';
 import displayPath from 'display/display_path';
 import parsePathString from 'path/parse_path_string';
 import { deselectAllLinks } from 'display/reset_page';
 import pathStringFor from 'path/path_string_for';
 
 function moveUpward() {
-  // TODO: If root, unselect link
-
   let linkElement = parentLinkOf(selectedLink()) ||
     firstLinkOfSection(currentRootSection());
   let pathArray = parsePathString();

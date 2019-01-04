@@ -7,10 +7,9 @@ import {
   findLinkFromMetadata
 } from 'helpers/getters';
 
-const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfsClasses) => {
-  let topicName = pathArray[0][0];
-  let subtopicName = pathArray[0][1];
+import { newNodeAlreadyPresent } from 'display/helpers';
 
+const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) => {
   let {
     lowestExtantSectionElementOfPath,
     pathSuffixToRender
@@ -21,24 +20,11 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfs
     pathArray.length - pathSuffixToRender.length
   )
 
-  promisedDomTree.catch((e) => {
-    if (canopyContainer.childNodes.length === 0) {
-      return updateView([[defaultTopic, defaultTopic]]);
-    }
-  })
-
   promisedDomTree.then((domTree) => {
     if (domTree) {
       let anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
 
-      let newNodeAlreadyPresent = Array.from(anchorElement.childNodes)
-        .filter((childNode) => {
-          return childNode.dataset &&
-            childNode.dataset.topicName === domTree.dataset.topicName &&
-            childNode.dataset.subtopicName === domTree.dataset.subtopicName;
-        }).length > 0;
-
-      if (!newNodeAlreadyPresent) {
+      if (!newNodeAlreadyPresent(anchorElement, domTree)) {
         anchorElement.appendChild(domTree);
       }
     }
@@ -47,8 +33,8 @@ const updateView = (pathArray, selectedLinkData, selectALink, popState, clearDfs
       pathArray,
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
       selectALink,
-      popState,
-      clearDfsClasses
+      originatesFromPopStateEvent,
+      directionToPreserveDfsClassesIn
     );
   });
 }

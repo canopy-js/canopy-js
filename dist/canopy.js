@@ -706,7 +706,7 @@ module.exports = function (css) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! style/canopy.scss */ "./src/client/style/canopy.scss");
 /* harmony import */ var style_canopy_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(style_canopy_scss__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
+/* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
 /* harmony import */ var keys_register_key_listeners__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! keys/register_key_listeners */ "./src/client/keys/register_key_listeners.js");
 /* harmony import */ var history_register_pop_state_listener__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! history/register_pop_state_listener */ "./src/client/history/register_pop_state_listener.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
@@ -719,21 +719,113 @@ __webpack_require__.r(__webpack_exports__);
 
 Object(keys_register_key_listeners__WEBPACK_IMPORTED_MODULE_2__["default"])();
 Object(history_register_pop_state_listener__WEBPACK_IMPORTED_MODULE_3__["default"])();
-Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__["default"])(), history.state);
+Object(display_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__["default"])(), history.state);
 
 /***/ }),
 
-/***/ "./src/client/display/create_or_replace_header.js":
-/*!********************************************************!*\
-  !*** ./src/client/display/create_or_replace_header.js ***!
-  \********************************************************/
+/***/ "./src/client/display/display_path.js":
+/*!********************************************!*\
+  !*** ./src/client/display/display_path.js ***!
+  \********************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
+/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
+
+
+
+
+
+var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) {
+  var topicName = pathArray[0][0];
+  document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
+  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["createOrReplaceHeader"])(topicName);
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["clearDfsClasses"])(directionToPreserveDfsClassesIn);
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
+  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineLinkToSelect"])(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath);
+  var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineSectionElementToDisplay"])(linkToSelect, sectionElementOfCurrentPath);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addSelectedLinkClass"])(linkToSelect);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenLinkClass"])(linkToSelect);
+
+  if (!originatesFromPopStateEvent) {
+    Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
+  }
+
+  displayPathTo(sectionElementToDisplay);
+  window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].scrollHeight);
+};
+
+var displayPathTo = function displayPathTo(sectionElement) {
+  sectionElement.style.display = 'block';
+
+  if (sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"]) {
+    return;
+  }
+
+  var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["parentLinkOfSection"])(sectionElement);
+  parentLink.classList.add('canopy-open-link');
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenClassToRedundantSiblings"])(parentLink);
+  var parentSectionElement = parentLink.parentNode.parentNode;
+  displayPathTo(parentSectionElement);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (displayPath);
+
+/***/ }),
+
+/***/ "./src/client/display/helpers.js":
+/*!***************************************!*\
+  !*** ./src/client/display/helpers.js ***!
+  \***************************************/
+/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, addOpenLinkClass, addOpenClassToRedundantSiblings */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "newNodeAlreadyPresent", function() { return newNodeAlreadyPresent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "determineLinkToSelect", function() { return determineLinkToSelect; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "determineSectionElementToDisplay", function() { return determineSectionElementToDisplay; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createOrReplaceHeader", function() { return createOrReplaceHeader; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displaySectionBelowLink", function() { return displaySectionBelowLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSelectedLinkClass", function() { return addSelectedLinkClass; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addOpenLinkClass", function() { return addOpenLinkClass; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addOpenClassToRedundantSiblings", function() { return addOpenClassToRedundantSiblings; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
+
+function newNodeAlreadyPresent(anchorElement, domTree) {
+  return Array.from(anchorElement.childNodes).filter(function (childNode) {
+    return childNode.dataset && childNode.dataset.topicName === domTree.dataset.topicName && childNode.dataset.subtopicName === domTree.dataset.subtopicName;
+  }).length > 0;
+}
+
+function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath) {
+  if (providedLink) {
+    return providedLink;
+  }
+
+  if (selectALink) {
+    if (lastPathSegmentIsTopicRoot(pathArray)) {
+      return parentLinkOfSection(sectionElementOfCurrentPath) || null;
+    } else {
+      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(sectionElementOfCurrentPath) || parentLinkOfSection(sectionElementOfCurrentPath);
+    }
+  } else {
+    return null;
+  }
+}
+
+function lastPathSegmentIsTopicRoot(pathArray) {
+  var lastPathSegment = pathArray[pathArray.length - 1];
+  return lastPathSegment[0] !== lastPathSegment[1];
+}
 
 function createOrReplaceHeader(topicName) {
   var existingHeader = document.querySelector('#_canopy h1');
@@ -749,105 +841,46 @@ function createOrReplaceHeader(topicName) {
 }
 
 ;
-/* harmony default export */ __webpack_exports__["default"] = (createOrReplaceHeader);
 
-/***/ }),
-
-/***/ "./src/client/display/display_path.js":
-/*!********************************************!*\
-  !*** ./src/client/display/display_path.js ***!
-  \********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
-/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
-/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
-/* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
-/* harmony import */ var display_create_or_replace_header__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! display/create_or_replace_header */ "./src/client/display/create_or_replace_header.js");
-
-
-
-
-
-
-
-
-
-var displayPath = function displayPath(pathArray, linkToSelect, selectALink, popState, directionToPreserveDfsClassesIn) {
-  var topicName = pathArray[0][0];
-  var subtopicName = pathArray[0][1];
-  document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["documentTitleFor"])(topicName);
-  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray); // if (!sectionElement) {
-  //   // Try each path segment, etc
-  //   return updateView([[topicName, topicName]]);
-  //   // return updateView(
-  //   // pathArray.slice(0, pathArray.length + 1) ||
-  //   // [[pathArray[0][0], pathArray[0][1]]]) // Maybe this should try pathArray[i][0], pathArray[i][0] first
-  // }
-  // Maybe I can reuse the helper from update_view to find the lowest extant node or maybe that does this already
-
-  Object(display_create_or_replace_header__WEBPACK_IMPORTED_MODULE_6__["default"])(topicName);
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["hideAllSectionElements"])();
-  var previouslySelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["selectedLink"])();
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["deselectAllLinks"])();
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_3__["clearDfsClasses"])(directionToPreserveDfsClassesIn);
-
-  if (!linkToSelect) {
-    if (selectALink) {
-      var lastPathSegment = pathArray[pathArray.length - 1];
-
-      if (lastPathSegment[0] !== lastPathSegment[1]) {
-        linkToSelect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath) || null;
-      } else {
-        linkToSelect = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_5__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElementOfCurrentPath);
-      }
-    }
+function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath) {
+  if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
+    return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(linkToSelect);
+  } else {
+    return sectionElementOfCurrentPath;
   }
+}
 
-  var sectionElementToDisplay;
-  var redundantParentLinksInSameParagraph = linkToSelect && linkToSelect.classList.contains('canopy-redundant-parent-link') && Array.from(linkToSelect.parentNode.childNodes).filter(function (linkElement) {
-    return linkElement.dataset && linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic && linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic && linkElement !== linkToSelect;
-  }).length > 0;
-  var displaySectionBelowLink = linkToSelect && (linkToSelect.classList.contains('canopy-parent-link') || redundantParentLinksInSameParagraph);
-  sectionElementToDisplay = (linkToSelect && displaySectionBelowLink ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["childSectionElementOfParentLink"])(linkToSelect) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["sectionElementOfPath"])(pathArray)) || sectionElementOfCurrentPath;
+function displaySectionBelowLink(linkToSelect) {
+  return linkToSelect && (linkToSelect.dataset.type === 'parent' || redundantParentLinkInSameParagraphAsPrimary(linkToSelect));
+}
 
+function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
+  return linkToSelect && linkToSelect.dataset.type === 'redundant-parent' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["siblingOfLinkLike"])(linkToSelect, function (linkElement) {
+    return linkElement.dataset && linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic && linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic;
+  });
+}
+
+function addSelectedLinkClass(linkToSelect) {
   if (linkToSelect) {
     linkToSelect.classList.add('canopy-selected-link');
   }
+}
 
+function addOpenLinkClass(linkToSelect) {
   if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
     linkToSelect.classList.add('canopy-open-link');
   }
+}
 
-  !popState && Object(path_set_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray);
-  displayPathTo(sectionElementToDisplay);
-  window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"].scrollHeight);
-};
-
-var displayPathTo = function displayPathTo(sectionElement) {
-  sectionElement.style.display = 'block';
-
-  if (sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"]) {
-    return;
-  }
-
-  var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["parentLinkOfSection"])(sectionElement);
-  parentLink.classList.add('canopy-open-link');
+function addOpenClassToRedundantSiblings(parentLink) {
   Array.from(parentLink.parentNode.childNodes).filter(function (linkElement) {
     return linkElement.dataset && linkElement.dataset.targetTopic === parentLink.dataset.targetTopic && linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic;
   }).forEach(function (redundantParentLink) {
     redundantParentLink.classList.add('canopy-open-link');
   });
-  var parentSectionElement = parentLink.parentNode.parentNode;
-  displayPathTo(parentSectionElement);
-};
+}
 
-/* harmony default export */ __webpack_exports__["default"] = (displayPath);
+
 
 /***/ }),
 
@@ -864,6 +897,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideAllSectionElements", function() { return hideAllSectionElements; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deselectAllLinks", function() { return deselectAllLinks; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clearDfsClasses", function() { return clearDfsClasses; });
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
 function forEach(list, callback) {
   for (var i = 0; i < list.length; i++) {
     callback(list[i]);
@@ -906,13 +942,86 @@ function underlineLink(linkElement) {
   linkElement.classList.add('canopy-open-link');
 }
 
-function clearDfsClasses(preserveLinksInForwardDirection) {
-  var preserveForward = preserveLinksInForwardDirection === true;
-  var preserveBackwards = preserveLinksInForwardDirection === false;
+function clearDfsClasses(directionToPreserveDfsClassesIn) {
+  var preserveForwardDfsClass = directionToPreserveDfsClassesIn === true;
+  var preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === false;
   forEach(document.getElementsByTagName("a"), function (linkElement) {
-    !preserveForward && linkElement.classList.remove('canopy-dfs-previously-selected-link');
-    !preserveBackwards && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+    !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
   });
+}
+
+
+
+/***/ }),
+
+/***/ "./src/client/display/update_view.js":
+/*!*******************************************!*\
+  !*** ./src/client/display/update_view.js ***!
+  \*******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! render/fetch_and_render_path */ "./src/client/render/fetch_and_render_path.js");
+/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
+
+
+
+
+
+var updateView = function updateView(pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) {
+  var _findLowestExtantSect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLowestExtantSectionElementOfPath"])(pathArray),
+      lowestExtantSectionElementOfPath = _findLowestExtantSect.lowestExtantSectionElementOfPath,
+      pathSuffixToRender = _findLowestExtantSect.pathSuffixToRender;
+
+  var promisedDomTree = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathSuffixToRender, pathArray.length - pathSuffixToRender.length);
+  promisedDomTree.then(function (domTree) {
+    if (domTree) {
+      var anchorElement = lowestExtantSectionElementOfPath || helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"];
+
+      if (!Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["newNodeAlreadyPresent"])(anchorElement, domTree)) {
+        anchorElement.appendChild(domTree);
+      }
+    }
+
+    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn);
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (updateView);
+
+/***/ }),
+
+/***/ "./src/client/helpers/booleans.js":
+/*!****************************************!*\
+  !*** ./src/client/helpers/booleans.js ***!
+  \****************************************/
+/*! exports provided: isInRootSection, isTopicRootSection, isTreeRootSection */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isInRootSection", function() { return isInRootSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTopicRootSection", function() { return isTopicRootSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTreeRootSection", function() { return isTreeRootSection; });
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
+
+function isInRootSection(linkElement) {
+  return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(linkElement) === Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])();
+}
+
+function isTopicRootSection(sectionElement) {
+  return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
+}
+
+function isTreeRootSection(sectionElement) {
+  return sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_0__["canopyContainer"];
 }
 
 
@@ -923,7 +1032,7 @@ function clearDfsClasses(preserveLinksInForwardDirection) {
 /*!***************************************!*\
   !*** ./src/client/helpers/getters.js ***!
   \***************************************/
-/*! exports provided: canopyContainer, defaultTopic, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, childSectionElementOfParentLink, sectionElementOfLink, linkNumberOf, linkOfNumber, metadataFromLink, uniqueSubtopic, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection */
+/*! exports provided: canopyContainer, defaultTopic, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, childSectionElementOfParentLink, sectionElementOfLink, metadataFromLink, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection, paragraphElementOfSection, linkAfter, linkBefore, firstChildLinkOfParentLink, lastChildLinkOfParentLink, firstLinkOfSection, enclosingTopicSectionOfLink, firstSiblingOf, lastSiblingOf, parentLinkOf, siblingOfLinkLike, linkOfSectionLike, linkOfSectionByTarget */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -937,15 +1046,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parentLinkOfSection", function() { return parentLinkOfSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "childSectionElementOfParentLink", function() { return childSectionElementOfParentLink; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionElementOfLink", function() { return sectionElementOfLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkNumberOf", function() { return linkNumberOf; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkOfNumber", function() { return linkOfNumber; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "metadataFromLink", function() { return metadataFromLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "uniqueSubtopic", function() { return uniqueSubtopic; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "documentTitleFor", function() { return documentTitleFor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findLinkFromMetadata", function() { return findLinkFromMetadata; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findLowestExtantSectionElementOfPath", function() { return findLowestExtantSectionElementOfPath; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "openLinkOfSection", function() { return openLinkOfSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "paragraphElementOfSection", function() { return paragraphElementOfSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkAfter", function() { return linkAfter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkBefore", function() { return linkBefore; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstChildLinkOfParentLink", function() { return firstChildLinkOfParentLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastChildLinkOfParentLink", function() { return lastChildLinkOfParentLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstLinkOfSection", function() { return firstLinkOfSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enclosingTopicSectionOfLink", function() { return enclosingTopicSectionOfLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstSiblingOf", function() { return firstSiblingOf; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastSiblingOf", function() { return lastSiblingOf; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parentLinkOf", function() { return parentLinkOf; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "siblingOfLinkLike", function() { return siblingOfLinkLike; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkOfSectionLike", function() { return linkOfSectionLike; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkOfSectionByTarget", function() { return linkOfSectionByTarget; });
 /* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
+/* harmony import */ var helpers_booleans__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/booleans */ "./src/client/helpers/booleans.js");
+
 
 var canopyContainer = document.getElementById('_canopy');
 
@@ -994,10 +1115,7 @@ var parentLinkOfSection = function parentLinkOfSection(sectionElement) {
     return null;
   }
 
-  var paragraphElement = paragraphElementOfSection(sectionElement.parentNode);
-  return Array.from(paragraphElement.childNodes).find(function (linkElement) {
-    return linkElement.tagName === 'A' && linkElement.dataset.targetTopic === sectionElement.dataset.topicName && linkElement.dataset.targetSubtopic === sectionElement.dataset.subtopicName;
-  });
+  return linkOfSectionByTarget(sectionElement.parentNode, sectionElement.dataset.topicName, sectionElement.dataset.subtopicName);
 };
 
 var childSectionElementOfParentLink = function childSectionElementOfParentLink(linkElement) {
@@ -1014,12 +1132,8 @@ function sectionElementOfLink(linkElement) {
   return linkElement.parentNode.parentNode;
 }
 
-function uniqueSubtopic(topicName, subtopicName) {
-  return subtopicName && subtopicName !== topicName;
-}
-
 function documentTitleFor(topicName) {
-  return topicName; // + ((subtopicName && subtopicName !== topicName) ? `: ${subtopicName}` : '');
+  return topicName;
 }
 
 function metadataFromLink(linkElement) {
@@ -1066,15 +1180,145 @@ function findLowestExtantSectionElementOfPath(pathArray) {
 }
 
 function openLinkOfSection(sectionElement) {
-  var paragraphElement = paragraphElementOfSection(sectionElement);
-  return Array.from(paragraphElement.childNodes).find(function (linkElement) {
-    return linkElement.tagName === 'A' && linkElement.classList.contains('canopy-open-link');
+  return linkOfSectionLike(sectionElement, function (linkElement) {
+    return linkElement.classList.contains('canopy-open-link');
   });
 }
 
 function paragraphElementOfSection(sectionElement) {
   return Array.from(sectionElement.childNodes).find(function (element) {
     return element.tagName === 'P';
+  });
+}
+
+function linkAfter(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var links = linkElement.parentNode.querySelectorAll('a');
+
+  if (linkElement !== links[links.length - 1]) {
+    return links[Array.prototype.slice.call(links).indexOf(linkElement) + 1];
+  } else {
+    return null;
+  }
+}
+
+function linkBefore(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var links = linkElement.parentNode.querySelectorAll('a');
+
+  if (linkElement !== links[0]) {
+    return links[Array.prototype.slice.call(links).indexOf(linkElement) - 1];
+  } else {
+    return null;
+  }
+}
+
+function firstOrLastChildOfParentLink(linkElement, first) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var sectionElement = childSectionElementOfParentLink(linkElement);
+
+  if (!sectionElement) {
+    return null;
+  }
+
+  var array = Array.from(sectionElement.firstElementChild.childNodes).filter(function (node) {
+    return node.tagName === 'A';
+  });
+
+  if (first) {
+    return array[0];
+  } else {
+    return array[array.length - 1];
+  }
+}
+
+function firstChildLinkOfParentLink(linkElement) {
+  return firstOrLastChildOfParentLink(linkElement, true);
+}
+
+function lastChildLinkOfParentLink(linkElement) {
+  return firstOrLastChildOfParentLink(linkElement, false);
+}
+
+function firstLinkOfSection(sectionElement) {
+  if (sectionElement === null) {
+    return null;
+  }
+
+  return sectionElement.querySelectorAll('a')[0] || null;
+}
+
+function enclosingTopicSectionOfLink(linkElement) {
+  var sectionElement = sectionElementOfLink(linkElement);
+
+  if (sectionElement.dataset.pathDepth === "0") {
+    return currentRootSection();
+  }
+
+  var currentSectionElement = sectionElement;
+
+  while (currentSectionElement.parentNode.dataset.pathDepth === sectionElement.dataset.pathDepth) {
+    currentSectionElement = currentSectionElement.parentNode;
+  }
+
+  return currentSectionElement;
+}
+
+function firstSiblingOf(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var links = linkElement.parentNode.querySelectorAll('a');
+  return links[0] || linkElement;
+}
+
+function lastSiblingOf(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  var links = linkElement.parentNode.querySelectorAll('a');
+  return links[links.length - 1] || null;
+}
+
+function parentLinkOf(linkElement) {
+  if (linkElement === null) {
+    return null;
+  }
+
+  if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isInRootSection"])(linkElement)) {
+    return null;
+  }
+
+  return parentLinkOfSection(sectionElementOfLink(linkElement));
+}
+
+function siblingOfLinkLike(linkElement, condition) {
+  return Array.from(linkToSelect.parentNode.childNodes).find(function (linkElement) {
+    return condition(linkElement) && linkElement !== linkToSelect;
+  });
+}
+
+function linkOfSectionLike(sectionElement, condition) {
+  var paragraphElement = paragraphElementOfSection(sectionElement);
+  return Array.from(paragraphElement.childNodes).find(function (linkElement) {
+    return linkElement.tagName === 'A' && condition(linkElement);
+  });
+}
+
+function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
+  return linkOfSectionLike(sectionElement, function (linkElement) {
+    return linkElement.dataset.targetTopic === topicName && linkElement.dataset.targetSubtopic === subtopicName;
   });
 }
 
@@ -1109,148 +1353,17 @@ var htmlIdFor = function htmlIdFor(topicName, subtopicName) {
 
 /***/ }),
 
-/***/ "./src/client/helpers/relationships.js":
-/*!*********************************************!*\
-  !*** ./src/client/helpers/relationships.js ***!
-  \*********************************************/
-/*! exports provided: firstSiblingOf, lastSiblingOf, leftwardLink, rightwardLink, linkAfter, linkBefore, upwardLink, downwardLink, parentLinkOf, firstLinkOfSection, nthChildLinkOfParentLink, firstChildLinkOfParentLink, isTopicRootSection, isTreeRootSection, pathForSectionElement, lastChildLinkOfParentLink, enclosingTopicSectionOfLink */
+/***/ "./src/client/helpers/path_for_section_element.js":
+/*!********************************************************!*\
+  !*** ./src/client/helpers/path_for_section_element.js ***!
+  \********************************************************/
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstSiblingOf", function() { return firstSiblingOf; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastSiblingOf", function() { return lastSiblingOf; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "leftwardLink", function() { return leftwardLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rightwardLink", function() { return rightwardLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkAfter", function() { return linkAfter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkBefore", function() { return linkBefore; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "upwardLink", function() { return upwardLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "downwardLink", function() { return downwardLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parentLinkOf", function() { return parentLinkOf; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstLinkOfSection", function() { return firstLinkOfSection; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nthChildLinkOfParentLink", function() { return nthChildLinkOfParentLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstChildLinkOfParentLink", function() { return firstChildLinkOfParentLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTopicRootSection", function() { return isTopicRootSection; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTreeRootSection", function() { return isTreeRootSection; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pathForSectionElement", function() { return pathForSectionElement; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastChildLinkOfParentLink", function() { return lastChildLinkOfParentLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enclosingTopicSectionOfLink", function() { return enclosingTopicSectionOfLink; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
-
-
-function firstSiblingOf(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var links = linkElement.parentNode.querySelectorAll('a');
-  return links[0] || linkElement;
-}
-
-function lastSiblingOf(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var links = linkElement.parentNode.querySelectorAll('a');
-  return links[links.length - 1] || null;
-}
-
-function parentLinkOf(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  if (isInRootSection(linkElement)) {
-    return null;
-  }
-
-  return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(linkElement));
-}
-
-function isInRootSection(linkElement) {
-  return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(linkElement) === Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])();
-}
-
-function linkAfter(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var links = linkElement.parentNode.querySelectorAll('a');
-
-  if (linkElement !== links[links.length - 1]) {
-    return links[Array.prototype.slice.call(links).indexOf(linkElement) + 1];
-  } else {
-    return null;
-  }
-}
-
-function linkBefore(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var links = linkElement.parentNode.querySelectorAll('a');
-
-  if (linkElement !== links[0]) {
-    return links[Array.prototype.slice.call(links).indexOf(linkElement) - 1];
-  } else {
-    return null;
-  }
-}
-
-function nthChildLinkOfParentLink(linkElement, n) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(linkElement);
-
-  if (!sectionElement) {
-    return null;
-  }
-
-  return sectionElement.querySelectorAll('a')[n];
-}
-
-function firstChildLinkOfParentLink(linkElement) {
-  return nthChildLinkOfParentLink(linkElement, 0);
-}
-
-function lastChildLinkOfParentLink(linkElement) {
-  if (linkElement === null) {
-    return null;
-  }
-
-  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(linkElement);
-
-  if (!sectionElement) {
-    return null;
-  }
-
-  var array = Array.from(sectionElement.firstElementChild.childNodes).filter(function (node) {
-    return node.tagName === 'A';
-  });
-  return array[array.length - 1];
-}
-
-function firstLinkOfSection(sectionElement) {
-  if (sectionElement === null) {
-    return null;
-  }
-
-  return sectionElement.querySelectorAll('a')[0] || null;
-}
-
-function isTopicRootSection(sectionElement) {
-  return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
-}
-
-function isTreeRootSection(sectionElement) {
-  return sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_0__["canopyContainer"];
-}
 
 function pathForSectionElement(sectionElement) {
   if (!sectionElement) {
@@ -1272,23 +1385,7 @@ function pathForSectionElement(sectionElement) {
   return pathArray;
 }
 
-function enclosingTopicSectionOfLink(linkElement) {
-  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(linkElement);
-
-  if (sectionElement.dataset.pathDepth === "0") {
-    return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])();
-  }
-
-  var currentSectionElement = sectionElement;
-
-  while (currentSectionElement.parentNode.dataset.pathDepth === sectionElement.dataset.pathDepth) {
-    currentSectionElement = currentSectionElement.parentNode;
-  }
-
-  return currentSectionElement;
-}
-
-
+/* harmony default export */ __webpack_exports__["default"] = (pathForSectionElement);
 
 /***/ }),
 
@@ -1328,7 +1425,7 @@ function saveCurrentLinkSelectionInHistoryStack(linkElement) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var history_helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! history/helpers */ "./src/client/history/helpers.js");
-/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
+/* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
@@ -1340,7 +1437,7 @@ function registerPopStateListener() {
   window.addEventListener('popstate', function (e) {
     Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["saveCurrentLinkSelectionInHistoryStack"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["selectedLink"])());
     var newLinkSelectionData = Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["linkSelectionPresentInEvent"])(e) ? e.state : null;
-    Object(render_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__["default"])(), newLinkSelectionData, null, true);
+    Object(display_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__["default"])(), newLinkSelectionData, null, true);
   });
 }
 
@@ -1367,13 +1464,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "goToEnclosingTopic", function() { return goToEnclosingTopic; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "goToParentOfEnclosingTopic", function() { return goToParentOfEnclosingTopic; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
-/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
-/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
-/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
-/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
-/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
-/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+/* harmony import */ var helpers_booleans__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/booleans */ "./src/client/helpers/booleans.js");
+/* harmony import */ var helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/path_for_section_element */ "./src/client/helpers/path_for_section_element.js");
+/* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
+/* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
+/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+
 
 
 
@@ -1384,15 +1483,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function moveUpward() {
-  // TODO: If root, unselect link
-  var linkElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["parentLinkOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
+  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])());
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
-  if (Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["isTreeRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
+  if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isTreeRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
     pathArray = [[sectionElement.dataset.topicName, sectionElement.dataset.topicName]];
     linkElement = null;
-  } else if (Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["isTopicRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
+  } else if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isTopicRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     pathArray.pop();
     var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
     var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
@@ -1407,11 +1505,11 @@ function moveUpward() {
     pathArray.push(newTuple);
   }
 
-  Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
+  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
 }
 
 function moveDownward(cycle) {
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-parent-link')) {
     var finalTuple = pathArray.pop();
@@ -1420,10 +1518,10 @@ function moveDownward(cycle) {
 
     var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
 
-    Object(display_display_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray, _linkElement);
+    Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, _linkElement);
   }
 
-  var linkElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || (cycle ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || (cycle ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
+  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || (cycle ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || (cycle ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
     if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
@@ -1431,7 +1529,7 @@ function moveDownward(cycle) {
     }
 
     pathArray.push([Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]);
-    return Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray, null, true);
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, null, true);
   } else {
     var _finalTuple = pathArray.pop();
 
@@ -1439,31 +1537,31 @@ function moveDownward(cycle) {
     pathArray.push(_newTuple);
   }
 
-  Object(display_display_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray, linkElement);
+  Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, linkElement);
 }
 
 function moveLeftward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
   currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
-  var linkElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["lastSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
   var finalTuple = pathArray.pop();
   var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
-  Object(display_display_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray, linkElement);
+  Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, linkElement);
 }
 
 function moveRightward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var linkElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
+  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
   currentSectionElement !== sectionElementOfSelectedLink) {
@@ -1473,7 +1571,7 @@ function moveRightward() {
   var finalTuple = pathArray.pop();
   var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
-  Object(display_display_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray, linkElement);
+  Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, linkElement);
 }
 
 function moveDownOrRedirect(newTab) {
@@ -1483,11 +1581,11 @@ function moveDownOrRedirect(newTab) {
     var pathArray = [[Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]];
 
     if (newTab) {
-      var pathString = Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_7__["default"])(pathArray);
+      var pathString = Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_8__["default"])(pathArray);
       return window.open(location.origin + pathString, '_blank');
     }
 
-    Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray, null, true);
+    Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, null, true);
   }
 }
 
@@ -1495,14 +1593,14 @@ function depthFirstSearch(forwardDirection, skipChildren) {
   var nextLink;
   var previouslySelectedLinkClassName = forwardDirection ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
   var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
-  var lastChildToVisit = forwardDirection ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var firstChildToVisit = forwardDirection ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var lastChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var firstChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
   if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' && !skipChildren) {
     nextLink = firstChildToVisit;
   }
 
-  var nextSiblingToVisit = forwardDirection ? Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var nextSiblingToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
   if (!nextLink) {
     nextLink = nextSiblingToVisit;
@@ -1527,24 +1625,24 @@ function depthFirstSearch(forwardDirection, skipChildren) {
     return;
   }
 
-  Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["pathForSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, forwardDirection);
+  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, forwardDirection);
 }
 
 function goToEnclosingTopic() {
-  var sectionElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["enclosingTopicSectionOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["enclosingTopicSectionOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
   var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["openLinkOfSection"])(sectionElement) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
-  Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["pathForSectionElement"])(sectionElement), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
+  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(sectionElement), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
 }
 
 function goToParentOfEnclosingTopic() {
-  var sectionElement = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["enclosingTopicSectionOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["enclosingTopicSectionOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
   if (sectionElement.parentNode !== helpers_getters__WEBPACK_IMPORTED_MODULE_0__["canopyContainer"]) {
     sectionElement = sectionElement.parentNode;
   }
 
   var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["openLinkOfSection"])(sectionElement);
-  Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_1__["pathForSectionElement"])(sectionElement), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
+  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(sectionElement), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
 }
 
 
@@ -1562,9 +1660,8 @@ function goToParentOfEnclosingTopic() {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 /* harmony import */ var keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! keys/key_handlers */ "./src/client/keys/key_handlers.js");
-/* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
-/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
-/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 var _keyNames;
 
 function _defineProperty(obj, key, value) {
@@ -1586,9 +1683,8 @@ function _defineProperty(obj, key, value) {
 
 
 
- // Copyright Greenhouse Software 2017
 
-var registerKeyListener = function registerKeyListener() {
+var registerKeyListeners = function registerKeyListeners() {
   window.addEventListener('keydown', function (e) {
     var modifiers = (e.metaKey ? 'command-' : '') + (e.altKey ? 'alt-' : '') + (e.ctrlKey ? 'ctrl-' : '') + (e.shiftKey ? 'shift-' : '');
     var keyName = keyNames[e.keyCode];
@@ -1602,7 +1698,7 @@ var registerKeyListener = function registerKeyListener() {
     if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) {
       (shortcutRelationships[shortcutName] || function () {})();
     } else if (shortcutRelationships[shortcutName]) {
-      Object(display_display_path__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__["default"])(), null, true);
+      Object(display_display_path__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_3__["default"])(), null, true);
     }
   });
 };
@@ -1670,7 +1766,7 @@ var keyNames = (_keyNames = {
   68: 'd',
   70: 'f'
 }, _defineProperty(_keyNames, "71", 'g'), _defineProperty(_keyNames, 90, 'z'), _defineProperty(_keyNames, 88, 'x'), _defineProperty(_keyNames, 67, 'c'), _defineProperty(_keyNames, 86, 'v'), _defineProperty(_keyNames, 66, 'b'), _defineProperty(_keyNames, 55, '7'), _defineProperty(_keyNames, 56, '8'), _defineProperty(_keyNames, 57, '9'), _defineProperty(_keyNames, 48, '0'), _defineProperty(_keyNames, 189, '-'), _defineProperty(_keyNames, 187, '='), _keyNames);
-/* harmony default export */ __webpack_exports__["default"] = (registerKeyListener);
+/* harmony default export */ __webpack_exports__["default"] = (registerKeyListeners);
 
 /***/ }),
 
@@ -1731,56 +1827,33 @@ function pathStringFor(pathArray) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
-/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
 
 
 
 
+var setPath = function setPath(newPathArray) {
+  var oldPathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__["default"])();
+  var documentTitle = newPathArray[0][0];
+  var historyApiFunction = newPathArray === oldPathArray ? // always false
+  replaceState : pushState;
+  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), documentTitle, Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_2__["default"])(newPathArray));
+};
 
-var setPathAndFragment = function setPathAndFragment(newPathArray) {
-  var newTopicName = newPathArray[0][0];
-  var newSubtopicName = newPathArray[0][1];
-  var oldPathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__["default"])();
+function replaceState(a, b, c) {
+  history.replaceState(a, b, c);
+}
 
-  var replaceState = function replaceState(a, b, c) {
-    history.replaceState(a, b, c);
-  };
+;
 
-  var pushState = function pushState(a, b, c) {
-    history.pushState(a, b, c);
-  };
+function pushState(a, b, c) {
+  history.pushState(a, b, c);
+}
 
-  var historyApiFunction = newPathArray === oldPathArray ? replaceState : pushState;
-  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["selectedLink"])()), '', Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray)); // function pathFor(topicName, subtopicName) {
-  //   return '/' + slugFor(topicName) +
-  //     (uniqueSubtopic(topicName, subtopicName) ?
-  //       `#${slugFor(subtopicName)}` : '')
-  // }
-  // function pathStringFor(pathArray) {
-  //   pathArray.map((tuple) => `${tuple[0]}#${tuple[1]}`).join('/');
-  // }
-  // let popStateEvent = new PopStateEvent(
-  //   'popstate',
-  //   {
-  //     state: nextLinkNumberAndLinkTypeAsObject(
-  //       selectedLinkInParentSection,
-  //       selectedLinkNumber
-  //     )
-  //   }
-  // );
-  // dispatchEvent(popStateEvent);
-}; // function nextLinkNumberAndLinkTypeAsObject(selectedLinkInParentSection, selectedLinkNumber) {
-//   return {
-//     selectedLinkNumber,
-//     selectedLinkInParentSection
-//   };
-// }
-
-
-/* harmony default export */ __webpack_exports__["default"] = (setPathAndFragment);
+;
+/* harmony default export */ __webpack_exports__["default"] = (setPath);
 
 /***/ }),
 
@@ -1797,20 +1870,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onGlobalLinkClick", function() { return onGlobalLinkClick; });
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 /* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
-/* harmony import */ var render_update_view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! render/update_view */ "./src/client/render/update_view.js");
+/* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var helpers_relationships__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/relationships */ "./src/client/helpers/relationships.js");
+/* harmony import */ var helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/path_for_section_element */ "./src/client/helpers/path_for_section_element.js");
 
 
 
 
 
 
-var onParentLinkClick = function onParentLinkClick(topicName, linkElement, targetSubtopic) {
+var onParentLinkClick = function onParentLinkClick(topicName, targetSubtopic, linkElement) {
   return function (e) {
     e.preventDefault(); // If the link's child is already selected, display the link's section
 
-    var pathArray = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_4__["pathForSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["sectionElementOfLink"])(linkElement));
+    var pathArray = Object(helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_4__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["sectionElementOfLink"])(linkElement));
 
     if (linkElement.classList.contains('canopy-open-link')) {
       pathArray.pop();
@@ -1831,16 +1904,16 @@ var onGlobalLinkClick = function onGlobalLinkClick(targetTopic, targetSubtopic, 
     e.preventDefault();
 
     if (e.altKey) {
-      var pathArray = Object(helpers_relationships__WEBPACK_IMPORTED_MODULE_4__["pathForSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["sectionElementOfLink"])(linkElement));
+      var pathArray = Object(helpers_path_for_section_element__WEBPACK_IMPORTED_MODULE_4__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["sectionElementOfLink"])(linkElement));
 
       if (linkElement.classList.contains('canopy-open-link')) {
-        return Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray);
+        return Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray);
       } else {
         pathArray.push([linkElement.dataset.targetTopic, linkElement.dataset.targetSubtopic]);
-        return Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray);
+        return Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(pathArray);
       }
     } else {
-      Object(render_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])([[targetTopic, targetSubtopic]]);
+      Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])([[targetTopic, targetSubtopic]]);
     }
   };
 };
@@ -1869,18 +1942,13 @@ var fetchAndRenderPath = function fetchAndRenderPath(pathArray, pathDepth) {
   }
 
   var topicName = pathArray[0][0];
-  var uponResponse = Object(requests_request_json__WEBPACK_IMPORTED_MODULE_1__["default"])(topicName);
-  return uponResponse.then(function (paragraphsBySubtopic) {
-    var promisedDomTree = Object(render_render_dom_tree__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray[0][0], pathArray, paragraphsBySubtopic, [], {}, pathDepth);
-    var promisedDomTreeWithRule = promisedDomTree.then(function (domTree) {
-      if (pathDepth > 0) {
-        var hr = document.createElement('HR');
-        domTree.prepend(hr);
-      }
-
-      return domTree;
-    });
-    return promisedDomTreeWithRule;
+  var uponResponsePromise = Object(requests_request_json__WEBPACK_IMPORTED_MODULE_1__["default"])(topicName);
+  var promisedDomTree = uponResponsePromise.then(function (paragraphsBySubtopic) {
+    return Object(render_render_dom_tree__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray[0][0], pathArray, paragraphsBySubtopic, {}, pathDepth);
+  });
+  return promisedDomTree.then(function (domTree) {
+    pathDepth > 0 && domTree.prepend(document.createElement('hr'));
+    return domTree;
   });
 };
 
@@ -1911,13 +1979,49 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var renderDomTree = function renderDomTree(currentSubtopicName, pathArray, paragraphsBySubtopic, currentTopicStack, renderedSubtopics, pathDepth) {
+var renderDomTree = function renderDomTree(currentSubtopicName, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth) {
   var topicName = pathArray[0][0];
-  var subtopicContainingOpenGlobalReference = pathArray[0][1];
-  var openGlobalLinkExists = pathArray[1];
-  var openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
-  var openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
+  var sectionElement = createNewSectionElement(topicName, currentSubtopicName, pathDepth);
+  var linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
+  renderedSubtopics[currentSubtopicName] = true;
   var promises = [];
+
+  var subtopicAlreadyRendered = function subtopicAlreadyRendered(targetSubtopic) {
+    return renderedSubtopics.hasOwnProperty(targetSubtopic);
+  };
+
+  var onParentLinkTokenRequiringSubtree = function onParentLinkTokenRequiringSubtree(token) {
+    var promisedSubtree = renderDomTree(token.targetSubtopic, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth);
+    promisedSubtree.then(function (subtree) {
+      sectionElement.appendChild(subtree);
+    });
+    promises.push(promisedSubtree);
+  };
+
+  var onGlobalLinkTokenRequiringSubtree = function onGlobalLinkTokenRequiringSubtree(token) {
+    if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
+      return;
+    }
+
+    var pathArrayForSubtree = pathArray.slice(1);
+    var pathDepthOfSubtree = pathDepth + 1;
+    var whenTopicTreeRenders = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArrayForSubtree, pathDepthOfSubtree);
+    var whenTopicTreeAppended = whenTopicTreeRenders.then(function (topicTree) {
+      sectionElement.appendChild(topicTree);
+    });
+    promises.push(whenTopicTreeAppended);
+  };
+
+  var tokenElements = renderElementsForTokens(linesOfBlock, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree);
+  tokenElements.forEach(function (tokenElement) {
+    Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["paragraphElementOfSection"])(sectionElement).appendChild(tokenElement);
+  });
+  return Promise.all(promises).then(function (_) {
+    return sectionElement;
+  });
+};
+
+function createNewSectionElement(topicName, currentSubtopicName, pathDepth) {
   var sectionElement = document.createElement('section');
   var paragraphElement = document.createElement('p');
   sectionElement.appendChild(paragraphElement);
@@ -1925,134 +2029,113 @@ var renderDomTree = function renderDomTree(currentSubtopicName, pathArray, parag
   sectionElement.dataset.topicName = topicName;
   sectionElement.dataset.subtopicName = currentSubtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
-  var linesOfBlock = paragraphsBySubtopic[currentSubtopicName];
-  currentTopicStack.push(topicName);
-  renderedSubtopics[currentSubtopicName] = true;
+  return sectionElement;
+}
+
+function subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token) {
+  return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["linkOfSectionByTarget"])(sectionElement, token.targetTopic, token.targetSubtopic);
+}
+
+function renderElementsForTokens(linesOfBlock, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree) {
+  var tokenArray = [];
   linesOfBlock.forEach(function (tokensOfLine, lineNumber) {
-    if (lineNumber > 0) {
-      paragraphElement.appendChild(document.createElement('br'));
-    }
-
-    tokensOfLine.forEach(function (token) {
-      var tokenElement;
-      var textElement = document.createTextNode(token.text);
-
-      if (token.type === 'text' || currentTopicStack.includes(token.targetSubtopic)) {
-        tokenElement = textElement;
-      } else if (token.type === 'local') {
-        tokenElement = document.createElement('a');
-        tokenElement.appendChild(textElement);
-
-        if (!renderedSubtopics.hasOwnProperty(token.targetSubtopic)) {
-          var promisedSubtree = renderDomTree(token.targetSubtopic, pathArray, paragraphsBySubtopic, currentTopicStack, renderedSubtopics, pathDepth);
-          tokenElement.addEventListener('click', Object(render_click_handlers__WEBPACK_IMPORTED_MODULE_5__["onParentLinkClick"])(topicName, tokenElement, token.targetSubtopic));
-          tokenElement.classList.add('canopy-parent-link');
-          tokenElement.dataset.type = 'parent';
-          tokenElement.dataset.targetTopic = topicName;
-          tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-          tokenElement.dataset.urlSubtopic = token.targetSubtopic;
-          tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-          tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-          tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetSubtopic));
-          promisedSubtree.then(function (subtree) {
-            sectionElement.appendChild(subtree);
-          });
-          promises.push(promisedSubtree);
-        } else {
-          tokenElement.classList.add('canopy-redundant-parent-link');
-          tokenElement.dataset.type = 'redundant-parent';
-          tokenElement.dataset.targetTopic = topicName;
-          tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-          tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-          tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-          tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
-          tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.enclosingSubtopic));
-          tokenElement.addEventListener('click', Object(render_click_handlers__WEBPACK_IMPORTED_MODULE_5__["onParentLinkClick"])(topicName, tokenElement, token.targetSubtopic));
-        }
-      } else if (token.type === 'global') {
-        tokenElement = document.createElement('a');
-        tokenElement.appendChild(textElement);
-        tokenElement.dataset.type = 'global';
-        tokenElement.dataset.targetTopic = token.targetTopic;
-        tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-        tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
-        tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-        tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-        tokenElement.classList.add('canopy-global-link');
-        tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetTopic), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetSubtopic));
-        var globalLinkIsOpen = openGlobalLinkExists && tokenElement.dataset.targetTopic === openGlobalLinkTargetTopic && tokenElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic && currentSubtopicName === subtopicContainingOpenGlobalReference && !sectionElement.querySelector("a[data-target-topic=\"".concat(tokenElement.dataset.targetTopic, "\"]") + "[data-target-subtopic=\"".concat(tokenElement.dataset.targetSubtopic, "\"]"));
-
-        if (globalLinkIsOpen) {
-          var whenDomRenders = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_4__["default"])(pathArray.slice(1), pathDepth + 1);
-          var whenElementAppended = whenDomRenders.then(function (domTree) {
-            sectionElement.appendChild(domTree);
-          });
-          promises.push(whenElementAppended);
-        } else {
-          tokenElement.addEventListener('click', Object(render_click_handlers__WEBPACK_IMPORTED_MODULE_5__["onGlobalLinkClick"])(token.targetTopic, token.targetSubtopic, tokenElement));
-        }
-      }
-
-      paragraphElement.appendChild(tokenElement);
+    lineNumber > 0 && tokenArray.push(document.createElement('br'));
+    var newElements = tokensOfLine.map(function (token) {
+      return generateTokenElement(token, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree);
     });
+    tokenArray = tokenArray.concat(newElements);
   });
-  currentTopicStack.pop(topicName);
-  return Promise.all(promises).then(function (_) {
-    return sectionElement;
-  });
-};
+  return tokenArray;
+}
+
+function generateTokenElement(token, pathArray, currentSubtopicName, promises, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree, onGlobalLinkTokenRequiringSubtree) {
+  if (token.type === 'text') {
+    return document.createTextNode(token.text);
+  } else if (token.type === 'local') {
+    return generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree);
+  } else if (token.type === 'global') {
+    return generateGlobalLink(token, pathArray, currentSubtopicName, onGlobalLinkTokenRequiringSubtree);
+  }
+}
+
+function generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree) {
+  if (!subtopicAlreadyRendered(token.targetSubtopic)) {
+    onParentLinkTokenRequiringSubtree(token);
+    return generateRegularParentLink(token);
+  } else {
+    return generateRedundantParentLink(token);
+  }
+}
+
+function generateRegularParentLink(token) {
+  var tokenElement = generateSharedParentLinkBase(token);
+  tokenElement.classList.add('canopy-parent-link');
+  tokenElement.dataset.type = 'parent';
+  tokenElement.dataset.targetTopic = token.targetTopic;
+  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
+  tokenElement.dataset.urlSubtopic = token.targetSubtopic;
+  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
+  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetTopic), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetSubtopic));
+  return tokenElement;
+}
+
+function generateRedundantParentLink(token) {
+  var tokenElement = generateSharedParentLinkBase(token);
+  tokenElement.classList.add('canopy-redundant-parent-link');
+  tokenElement.dataset.type = 'redundant-parent';
+  tokenElement.dataset.targetTopic = token.targetTopic;
+  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
+  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
+  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
+  tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.enclosingTopic), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.enclosingSubtopic));
+  return tokenElement;
+}
+
+function generateSharedParentLinkBase(token) {
+  var textElement = document.createTextNode(token.text);
+  var tokenElement = document.createElement('a');
+  tokenElement.appendChild(textElement);
+  tokenElement.addEventListener('click', Object(render_click_handlers__WEBPACK_IMPORTED_MODULE_5__["onParentLinkClick"])(token.targetTopic, token.targetSubtopic, tokenElement));
+  return tokenElement;
+}
+
+function generateGlobalLink(token, pathArray, currentSubtopicName, onGlobalLinkTokenRequiringSubtree) {
+  var tokenElement = createGlobalLinkElement(token, pathArray);
+
+  if (globalLinkIsOpen(tokenElement, pathArray, currentSubtopicName)) {
+    onGlobalLinkTokenRequiringSubtree(token);
+  }
+
+  return tokenElement;
+}
+
+function createGlobalLinkElement(token) {
+  var textElement = document.createTextNode(token.text);
+  var tokenElement = document.createElement('a');
+  tokenElement.appendChild(textElement);
+  tokenElement.dataset.type = 'global';
+  tokenElement.dataset.targetTopic = token.targetTopic;
+  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
+  tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
+  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
+  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  tokenElement.classList.add('canopy-global-link');
+  tokenElement.href = "/".concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetTopic), "#").concat(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(token.targetSubtopic));
+  tokenElement.addEventListener('click', Object(render_click_handlers__WEBPACK_IMPORTED_MODULE_5__["onGlobalLinkClick"])(token.targetTopic, token.targetSubtopic, tokenElement));
+  return tokenElement;
+}
+
+function globalLinkIsOpen(tokenElement, pathArray, currentSubtopicName) {
+  var subtopicContainingOpenGlobalReference = pathArray[0][1];
+  var openGlobalLinkExists = pathArray[1];
+  var openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
+  var openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
+  return openGlobalLinkExists && tokenElement.dataset.targetTopic === openGlobalLinkTargetTopic && tokenElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic && currentSubtopicName === subtopicContainingOpenGlobalReference;
+}
 
 /* harmony default export */ __webpack_exports__["default"] = (renderDomTree);
-
-/***/ }),
-
-/***/ "./src/client/render/update_view.js":
-/*!******************************************!*\
-  !*** ./src/client/render/update_view.js ***!
-  \******************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! render/fetch_and_render_path */ "./src/client/render/fetch_and_render_path.js");
-/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-
-
-
-
-var updateView = function updateView(pathArray, selectedLinkData, selectALink, popState, clearDfsClasses) {
-  var topicName = pathArray[0][0];
-  var subtopicName = pathArray[0][1];
-
-  var _findLowestExtantSect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLowestExtantSectionElementOfPath"])(pathArray),
-      lowestExtantSectionElementOfPath = _findLowestExtantSect.lowestExtantSectionElementOfPath,
-      pathSuffixToRender = _findLowestExtantSect.pathSuffixToRender;
-
-  var promisedDomTree = Object(render_fetch_and_render_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathSuffixToRender, pathArray.length - pathSuffixToRender.length);
-  promisedDomTree.catch(function (e) {
-    if (helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"].childNodes.length === 0) {
-      return updateView([[helpers_getters__WEBPACK_IMPORTED_MODULE_2__["defaultTopic"], helpers_getters__WEBPACK_IMPORTED_MODULE_2__["defaultTopic"]]]);
-    }
-  });
-  promisedDomTree.then(function (domTree) {
-    if (domTree) {
-      var anchorElement = lowestExtantSectionElementOfPath || helpers_getters__WEBPACK_IMPORTED_MODULE_2__["canopyContainer"];
-      var newNodeAlreadyPresent = Array.from(anchorElement.childNodes).filter(function (childNode) {
-        return childNode.dataset && childNode.dataset.topicName === domTree.dataset.topicName && childNode.dataset.subtopicName === domTree.dataset.subtopicName;
-      }).length > 0;
-
-      if (!newNodeAlreadyPresent) {
-        anchorElement.appendChild(domTree);
-      }
-    }
-
-    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, popState, clearDfsClasses);
-  });
-};
-
-/* harmony default export */ __webpack_exports__["default"] = (updateView);
 
 /***/ }),
 
@@ -2080,6 +2163,10 @@ var requestJson = function requestJson(topicName) {
       cache[topicName] = json;
       return json;
     });
+  }).catch(function (e) {
+    if (canopyContainer.childNodes.length === 0) {
+      return updateView([[defaultTopic, defaultTopic]]);
+    }
   });
 };
 

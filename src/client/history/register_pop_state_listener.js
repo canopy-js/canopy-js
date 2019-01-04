@@ -3,7 +3,7 @@ import {
   linkSelectionPresentInEvent
 } from 'history/helpers';
 
-import updateView from 'render/update_view';
+import updateView from 'display/update_view';
 import parsePathString from 'path/parse_path_string';
 import { selectedLink } from 'helpers/getters';
 
