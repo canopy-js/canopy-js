@@ -1,132 +1,164 @@
 import unitsOf from 'helpers/units_of';
 import capitalize from 'helpers/capitalize';
 import withoutArticle from 'helpers/without_article';
+import {
+  LocalReferenceToken,
+  GlobalReferenceToken,
+  TextToken,
+  consolidateTextTokens
+} from 'components/tokens';
 
-function parseClause(clauseWithPunctuation, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces) {
-  let tokens = [];
+function parseClause(
+  clauseWithPunctuation,
+  displaySubtopicsByTopicAndSubtopic,
+  currentTopic,
+  currentSubtopic,
+  avaliableNamespaces
+) {
   let units = unitsOf(clauseWithPunctuation);
-  let globalNamespace = namespaceObject;
-  let textTokenBuffer = '';
 
-  // Find greatest suffix-prefix match
-  while (units.length > 0) {
-    for(let i = units.length - 1; i >= 0; i--) {
-      if (units[0] === ' ') { break; }
-      if (units[i] === ' ') { continue; }
+  return consolidateTextTokens(
+    tokensOfSuffix(
+      units,
+      displaySubtopicsByTopicAndSubtopic,
+      currentTopic,
+      currentSubtopic,
+      avaliableNamespaces
+    )
+  );
+}
 
-      let substring = units.slice(0, i + 1).join('');
-      let substringCapitalized = capitalize(substring);
-      let substringToMatch = capitalize(withoutArticle(substringCapitalized));
+function tokensOfSuffix(
+  units,
+  displaySubtopicsByTopicAndSubtopic,
+  currentTopic,
+  currentSubtopic,
+  avaliableNamespaces
+) {
+  if (units.length === 0) { return []; }
+  let prefixObjects = prefixesOf(units);
 
-      let continueFlag = false;
-      for (let j = 0; j < avaliableNamespaces.length; j++) {
-        let namespaceName = avaliableNamespaces[j];
-        let namespaceNameWithoutArticle = capitalize(withoutArticle(namespaceName));
-        let currentNamespace = namespaceObject[namespaceNameWithoutArticle];
+  let token = findAndReturnResult(prefixObjects,
+    (prefixObject) => findAndReturnResult(Matchers,
+      (matcher) => matcher(
+        prefixObject,
+        displaySubtopicsByTopicAndSubtopic,
+        currentTopic,
+        currentSubtopic,
+        avaliableNamespaces
+      )
+    )
+  );
 
-        if (currentNamespace.hasOwnProperty(substringToMatch)) {
-          if (substringToMatch === capitalize(withoutArticle(currentSubtopic))) {
-            break;
-          }
+  return [].concat(
+    token,
+    tokensOfSuffix(
+      units.slice(token.units.length),
+      displaySubtopicsByTopicAndSubtopic,
+      currentTopic,
+      currentSubtopic,
+      avaliableNamespaces
+    ));
+}
 
-          if (textTokenBuffer){
-            let token = new TextToken(textTokenBuffer);
-            tokens.push(token);
-            textTokenBuffer = '';
-          }
+function findAndReturnResult(array, callback) {
+  let foundItem = array.find((item) => callback(item));
+  return foundItem && callback(foundItem);
+}
 
-          let tokenType = currentTopic === namespaceName ?
-            LocalReferenceToken : GlobalReferenceToken;
+function prefixesOf(units) {
+  let prefixObjects = [];
 
-          let token = new tokenType(
-            namespaceObject[namespaceNameWithoutArticle][namespaceNameWithoutArticle],
-            namespaceObject[namespaceNameWithoutArticle][substringToMatch],
-            currentTopic,
-            currentSubtopic,
-            substring,
-            clauseWithPunctuation,
-          );
+  for (let i = units.length - 1; i >= 0; i--) {
+    let prefixUnits = units.slice(0, i + 1);
+    let substring = prefixUnits.join('');
+    let substringAsKey = capitalize(withoutArticle(capitalize(substring)));
 
-          tokens.push(token);
-          units = units.slice(i + 1, units.length);
-          continueFlag = true;
-        }
-      }
-      if (continueFlag) {continue;}
+    prefixObjects.push({units: prefixUnits, substring, substringAsKey});
+  }
 
-      if (globalNamespace.hasOwnProperty(substringToMatch)) {
-        if (textTokenBuffer){
-          let token = new TextToken(textTokenBuffer);
-          tokens.push(token);
-          textTokenBuffer = '';
-        }
+  return prefixObjects;
+}
 
-        if (substringToMatch === capitalize(withoutArticle(currentTopic))) {
-          break; //Reject self-match
-        }
+const Matchers = [
+  function localReferenceMatcher(
+    prefixObject,
+    displaySubtopicsByTopicAndSubtopic,
+    currentTopic,
+    currentSubtopic
+  ) {
+    if (
+      displaySubtopicsByTopicAndSubtopic[currentTopic].hasOwnProperty(prefixObject.substringAsKey) &&
+      currentSubtopic !== prefixObject.substringAsKey &&
+      currentTopic !== prefixObject.substringAsKey
+      ){
+      return new LocalReferenceToken(
+        currentTopic,
+        prefixObject.substringAsKey,
+        currentTopic,
+        currentSubtopic,
+        prefixObject.substring,
+        prefixObject.units
+      );
+    } else {
+      return null;
+    };
+  },
 
-        let token = new GlobalReferenceToken(
-          namespaceObject[substringToMatch][substringToMatch],
-          namespaceObject[substringToMatch][substringToMatch],
+  function globalReferenceMatcher(
+    prefixObject,
+    displaySubtopicsByTopicAndSubtopic,
+    currentTopic,
+    currentSubtopic,
+    avaliableNamespaces
+  ) {
+    if (
+      displaySubtopicsByTopicAndSubtopic.hasOwnProperty(prefixObject.substringAsKey) &&
+      currentTopic !== prefixObject.substringAsKey
+      ) {
+      avaliableNamespaces.push(prefixObject.substringAsKey);
+      return new GlobalReferenceToken(
+        displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey],
+        displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey],
+        currentTopic,
+        currentSubtopic,
+        prefixObject.substring,
+        prefixObject.units
+      );
+    } else {
+      return null;
+    }
+  },
+
+  function importReferenceMatcher(
+    prefixObject,
+    displaySubtopicsByTopicAndSubtopic,
+    currentTopic,
+    currentSubtopic,
+    avaliableNamespaces
+  ) {
+    return findAndReturnResult(avaliableNamespaces, (namespaceNameAsKey) => {
+      if (displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
+        return new GlobalReferenceToken(
+          displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][namespaceNameAsKey],
+          displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][prefixObject.substringAsKey],
           currentTopic,
           currentSubtopic,
-          substring,
-          clauseWithPunctuation,
+          prefixObject.substring,
+          prefixObject.units
         );
-
-        tokens.push(token);
-        avaliableNamespaces.push(substringToMatch);
-        units = units.slice(i + 1, units.length);
-        continue;
       }
+    }) || null;
+  },
+
+  function textMatcher(prefixObject) {
+    if (prefixObject.units.length !== 1) {
+     return null;
+    } else {
+     return new TextToken(prefixObject.substring, prefixObject.units);
     }
-
-    let firstUnit = units.slice(0, 1);
-    textTokenBuffer += firstUnit;
-    units = units.slice(1);
   }
+];
 
-  if(textTokenBuffer) {
-    let token = new TextToken(textTokenBuffer);
-    tokens.push(token);
-  }
-
-  return tokens
-}
-
-function TextToken(text) {
-  this.text = text;
-  this.type = 'text';
-}
-
-function LocalReferenceToken(
-    targetTopic,
-    targetSubtopic,
-    enclosingTopic,
-    enclosingSubtopic,
-    text,
-  ) {
-  this.type = 'local';
-  this.text = text;
-  this.targetSubtopic = targetSubtopic;
-  this.targetTopic = targetTopic;
-  this.enclosingTopic = enclosingTopic;
-  this.enclosingSubtopic = enclosingSubtopic;
-}
-
-function GlobalReferenceToken(
-    targetTopic,
-    targetSubtopic,
-    enclosingTopic,
-    enclosingSubtopic,
-    text,
-  ) {
-  this.type = 'global';
-  this.targetTopic = targetTopic;
-  this.targetSubtopic = targetSubtopic;
-  this.enclosingTopic = enclosingTopic;
-  this.enclosingSubtopic = enclosingSubtopic;
-  this.text = text;
-}
 
 export default parseClause;

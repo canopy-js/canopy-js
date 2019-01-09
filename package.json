@@ -21,6 +21,7 @@
     "eslint": "^5.11.1",
     "eslint-config-google": "^0.11.0",
     "jest": "^23.6.0",
+    "jest-webpack-resolver": "^0.3.0",
     "node-sass": "^4.10.0",
     "recursive-readdir-sync": "1.0.6",
     "regenerator-runtime": "^0.12.1",
@@ -30,11 +31,16 @@
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
+    "array.prototype.flat": "^1.2.1",
     "babel-eslint": "^10.0.1",
     "babel-preset-env": "^1.7.0",
     "css-loader": "^1.0.0",
     "express": "^4.16.3",
     "style-loader": "^0.23.1",
     "webpack-node-externals": "^1.7.2"
+  },
+  "jestWebpackResolver": {
+    "webpackConfig": "./webpack.config.js",
+    "silent": true
   }
 }

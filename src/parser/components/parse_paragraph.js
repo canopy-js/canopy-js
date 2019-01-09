@@ -7,7 +7,7 @@ function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, curren
   let tokensOfParagraph = [];
   lines.forEach(function(line){
     let clausesOfParagraph = clausesWithPunctutionOf(line);
-    let avaliableNamespaces = [currentTopic];
+    let avaliableNamespaces = [];
 
     let tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
       return parseClause(

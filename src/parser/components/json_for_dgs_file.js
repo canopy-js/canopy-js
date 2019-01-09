@@ -2,8 +2,6 @@ import fs from 'fs';
 import parseParagraph from 'components/parse_paragraph';
 import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
-import withoutArticle from 'helpers/without_article';
-import capitalize from 'helpers/capitalize';
 
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
