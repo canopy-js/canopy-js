@@ -98,7 +98,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#_canopy {\n  padding-top: 25px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 20%; }\n  #_canopy p {\n    padding-top: 10px;\n    padding-bottom: 10px;\n    font-size: 23px;\n    width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }*/ }\n    #_canopy a:hover {\n      text-decoration: underline; }\n    #_canopy a:focus {\n      outline: 0; }\n    #_canopy a.canopy-open-link {\n      text-decoration: underline; }\n    #_canopy a.canopy-selected-link {\n      text-shadow: .8px 0px 0px black; }\n      #_canopy a.canopy-selected-link.canopy-redundant-parent-link {\n        text-decoration: underline black; }\n    #_canopy a.canopy-global-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-open-link {\n      color: #4078c0; }\n", ""]);
+exports.push([module.i, "#_canopy {\n  padding-top: 25px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 20%; }\n  #_canopy p {\n    padding-top: 10px;\n    padding-bottom: 10px;\n    font-size: 23px;\n    width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }*/ }\n    #_canopy a:hover {\n      text-decoration: underline; }\n    #_canopy a:focus {\n      outline: 0; }\n    #_canopy a.canopy-open-link {\n      text-decoration: underline; }\n    #_canopy a.canopy-selected-link {\n      text-shadow: .8px 0px 0px black; }\n      #_canopy a.canopy-selected-link.canopy-redundant-local-link {\n        text-decoration: underline black; }\n    #_canopy a.canopy-global-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-open-link {\n      color: #4078c0; }\n", ""]);
 
 // exports
 
@@ -851,11 +851,11 @@ function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentP
 }
 
 function displaySectionBelowLink(linkToSelect) {
-  return linkToSelect && (linkToSelect.dataset.type === 'parent' || redundantParentLinkInSameParagraphAsPrimary(linkToSelect));
+  return linkToSelect && (linkToSelect.dataset.type === 'local' || redundantParentLinkInSameParagraphAsPrimary(linkToSelect));
 }
 
 function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
-  return linkToSelect && linkToSelect.dataset.type === 'redundant-parent' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["siblingOfLinkLike"])(linkToSelect, function (linkElement) {
+  return linkToSelect && linkToSelect.dataset.type === 'redundant-local' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["siblingOfLinkLike"])(linkToSelect, function (linkElement) {
     return linkElement.dataset && linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic && linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic;
   });
 }
@@ -867,7 +867,7 @@ function addSelectedLinkClass(linkToSelect) {
 }
 
 function addOpenLinkClass(linkToSelect) {
-  if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
+  if (linkToSelect && linkToSelect.classList.contains('canopy-local-link')) {
     linkToSelect.classList.add('canopy-open-link');
   }
 }
@@ -1511,7 +1511,7 @@ function moveUpward() {
 function moveDownward(cycle) {
   var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-parent-link')) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-local-link')) {
     var finalTuple = pathArray.pop();
     var newTuple = [finalTuple[0], Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic];
     pathArray.push(newTuple);
@@ -1575,7 +1575,7 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab) {
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-parent-link') || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-parent-link')) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-local-link') || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-local-link')) {
     moveDownward(false);
   } else if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
     var pathArray = [[Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]];
@@ -2069,8 +2069,8 @@ function generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenReq
 
 function generateRegularParentLink(token) {
   var tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-parent-link');
-  tokenElement.dataset.type = 'parent';
+  tokenElement.classList.add('canopy-local-link');
+  tokenElement.dataset.type = 'local';
   tokenElement.dataset.targetTopic = token.targetTopic;
   tokenElement.dataset.targetSubtopic = token.targetSubtopic;
   tokenElement.dataset.urlSubtopic = token.targetSubtopic;
@@ -2082,8 +2082,8 @@ function generateRegularParentLink(token) {
 
 function generateRedundantParentLink(token) {
   var tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-redundant-parent-link');
-  tokenElement.dataset.type = 'redundant-parent';
+  tokenElement.classList.add('canopy-redundant-local-link');
+  tokenElement.dataset.type = 'redundant-local';
   tokenElement.dataset.targetTopic = token.targetTopic;
   tokenElement.dataset.targetSubtopic = token.targetSubtopic;
   tokenElement.dataset.enclosingTopic = token.enclosingTopic;

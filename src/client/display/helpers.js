@@ -58,14 +58,14 @@ function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentP
 function displaySectionBelowLink(linkToSelect) {
   return linkToSelect &&
     (
-      linkToSelect.dataset.type === 'parent' ||
+      linkToSelect.dataset.type === 'local' ||
       redundantParentLinkInSameParagraphAsPrimary(linkToSelect)
     );
 }
 
 function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
   return linkToSelect &&
-    linkToSelect.dataset.type === 'redundant-parent' &&
+    linkToSelect.dataset.type === 'redundant-local' &&
     siblingOfLinkLike(linkToSelect, (linkElement) => {
       return linkElement.dataset &&
         linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic &&
@@ -80,7 +80,7 @@ function addSelectedLinkClass(linkToSelect) {
 }
 
 function addOpenLinkClass(linkToSelect) {
-  if (linkToSelect && linkToSelect.classList.contains('canopy-parent-link')) {
+  if (linkToSelect && linkToSelect.classList.contains('canopy-local-link')) {
     linkToSelect.classList.add('canopy-open-link');
   }
 }

@@ -68,7 +68,7 @@ function moveUpward() {
 function moveDownward(cycle) {
   let pathArray = parsePathString();
 
-  if (selectedLink().classList.contains('canopy-redundant-parent-link')) {
+  if (selectedLink().classList.contains('canopy-redundant-local-link')) {
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
@@ -158,8 +158,8 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab) {
-  if (selectedLink().classList.contains('canopy-parent-link') ||
-      selectedLink().classList.contains('canopy-redundant-parent-link')) {
+  if (selectedLink().classList.contains('canopy-local-link') ||
+      selectedLink().classList.contains('canopy-redundant-local-link')) {
     moveDownward(false);
   } else if (selectedLink().classList.contains('canopy-global-link')) {
     let pathArray = [[

@@ -143,8 +143,8 @@ function generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenReq
 
 function generateRegularParentLink(token) {
   let tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-parent-link');
-  tokenElement.dataset.type = 'parent';
+  tokenElement.classList.add('canopy-local-link');
+  tokenElement.dataset.type = 'local';
   tokenElement.dataset.targetTopic = token.targetTopic;
   tokenElement.dataset.targetSubtopic = token.targetSubtopic;
   tokenElement.dataset.urlSubtopic = token.targetSubtopic;
@@ -156,8 +156,8 @@ function generateRegularParentLink(token) {
 
 function generateRedundantParentLink(token) {
   let tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-redundant-parent-link');
-  tokenElement.dataset.type = 'redundant-parent';
+  tokenElement.classList.add('canopy-redundant-local-link');
+  tokenElement.dataset.type = 'redundant-local';
   tokenElement.dataset.targetTopic = token.targetTopic;
   tokenElement.dataset.targetSubtopic = token.targetSubtopic;
   tokenElement.dataset.enclosingTopic = token.enclosingTopic;
