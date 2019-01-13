@@ -80,7 +80,7 @@ function addSelectedLinkClass(linkToSelect) {
 }
 
 function addOpenLinkClass(linkToSelect) {
-  if (linkToSelect && linkToSelect.classList.contains('canopy-local-link')) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
     linkToSelect.classList.add('canopy-open-link');
   }
 }

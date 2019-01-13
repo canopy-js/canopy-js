@@ -867,7 +867,7 @@ function addSelectedLinkClass(linkToSelect) {
 }
 
 function addOpenLinkClass(linkToSelect) {
-  if (linkToSelect && linkToSelect.classList.contains('canopy-local-link')) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
     linkToSelect.classList.add('canopy-open-link');
   }
 }
@@ -1547,7 +1547,7 @@ function moveLeftward() {
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
   var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on inlined global with no child links
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && currentSectionElement !== sectionElementOfSelectedLink) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 

@@ -121,7 +121,7 @@ function moveLeftward() {
   let pathArray = parsePathString();
 
   // handle left on inlined global with no child links
-  if (selectedLink().classList.contains('canopy-global-link') &&
+  if (selectedLink().dataset.type === 'global' &&
     currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
