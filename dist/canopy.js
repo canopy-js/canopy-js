@@ -1000,13 +1000,13 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, o
 /*!****************************************!*\
   !*** ./src/client/helpers/booleans.js ***!
   \****************************************/
-/*! exports provided: isInRootSection, isTopicRootSection, isTreeRootSection */
+/*! exports provided: isInRootSection, isATopicRootSection, isTreeRootSection */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isInRootSection", function() { return isInRootSection; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTopicRootSection", function() { return isTopicRootSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isATopicRootSection", function() { return isATopicRootSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTreeRootSection", function() { return isTreeRootSection; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
@@ -1016,7 +1016,7 @@ function isInRootSection(linkElement) {
   return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(linkElement) === Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])();
 }
 
-function isTopicRootSection(sectionElement) {
+function isATopicRootSection(sectionElement) {
   return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
 }
 
@@ -1483,23 +1483,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function moveUpward() {
-  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentRootSection"])());
   var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
+  var linkElement;
 
   if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isTreeRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
     pathArray = [[sectionElement.dataset.topicName, sectionElement.dataset.topicName]];
     linkElement = null;
-  } else if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isTopicRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
+  } else if (Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["isATopicRootSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()))) {
     pathArray.pop();
+    linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
     var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
-    var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+    var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()); // Handle global link with inlined child with no links
 
-    if (currentSectionElement !== sectionElementOfSelectedLink && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
-      //handle global link with inlined child with no links
+    if (currentSectionElement !== sectionElementOfSelectedLink && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global') {
       linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
     }
   } else {
+    linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
     var finalTuple = pathArray.pop();
     var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
     pathArray.push(newTuple);
@@ -1511,42 +1512,42 @@ function moveUpward() {
 function moveDownward(cycle) {
   var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-local-link')) {
-    var finalTuple = pathArray.pop();
-    var newTuple = [finalTuple[0], Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic];
-    pathArray.push(newTuple);
-
-    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
-
-    Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, _linkElement);
-  }
-
-  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || (cycle ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || (cycle ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : null) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
-
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global') {
+    // Handle open global link with no children
     if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
       return;
     }
 
     pathArray.push([Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]);
     return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, null, true);
-  } else {
-    var _finalTuple = pathArray.pop();
-
-    var _newTuple = [_finalTuple[0], linkElement.dataset.urlSubtopic];
-    pathArray.push(_newTuple);
   }
 
-  Object(display_display_path__WEBPACK_IMPORTED_MODULE_5__["default"])(pathArray, linkElement);
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'local') {
+    var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
+    var finalTuple = pathArray.pop();
+    var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    pathArray.push(newTuple);
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(linkElement));
+  }
+
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'redundant-local') {
+    var _finalTuple = pathArray.pop();
+
+    var _newTuple = [_finalTuple[0], Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic];
+    pathArray.push(_newTuple);
+
+    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
+
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_linkElement));
+  }
 }
 
 function moveLeftward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on inlined global with no child links
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
-  currentSectionElement !== sectionElementOfSelectedLink) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
@@ -1560,14 +1561,13 @@ function moveLeftward() {
 function moveRightward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on inlined global with no child links
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
-  currentSectionElement !== sectionElementOfSelectedLink) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
+  var linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstSiblingOf"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
   var finalTuple = pathArray.pop();
   var newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
@@ -1575,9 +1575,9 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab) {
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-local-link') || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-redundant-local-link')) {
-    moveDownward(false);
-  } else if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-global-link')) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'local' || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'redundant-parent') {
+    return moveDownward(false);
+  } else if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global') {
     var pathArray = [[Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]];
 
     if (newTab) {

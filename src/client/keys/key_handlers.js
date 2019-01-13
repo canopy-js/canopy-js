@@ -20,7 +20,7 @@ import {
   enclosingTopicSectionOfLink,
 } from 'helpers/getters';
 import {
-  isTopicRootSection,
+  isATopicRootSection,
   isTreeRootSection,
 } from 'helpers/booleans';
 import pathForSectionElement from 'helpers/path_for_section_element';
@@ -32,9 +32,8 @@ import { deselectAllLinks } from 'display/reset_page';
 import pathStringFor from 'path/path_string_for';
 
 function moveUpward() {
-  let linkElement = parentLinkOf(selectedLink()) ||
-    firstLinkOfSection(currentRootSection());
   let pathArray = parsePathString();
+  let linkElement;
 
   if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
     let sectionElement = sectionElementOfLink(selectedLink());
@@ -44,16 +43,20 @@ function moveUpward() {
     ]];
 
     linkElement = null;
-  } else if (isTopicRootSection(sectionElementOfLink(selectedLink()))) {
+  } else if (isATopicRootSection(sectionElementOfLink(selectedLink()))) {
     pathArray.pop();
 
+    linkElement = parentLinkOf(selectedLink());
     let currentSectionElement = currentSection();
     let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
-    if (currentSectionElement !== sectionElementOfSelectedLink && selectedLink().classList.contains('canopy-global-link')) { //handle global link with inlined child with no links
+    // Handle global link with inlined child with no links
+    if (currentSectionElement !== sectionElementOfSelectedLink &&
+      selectedLink().dataset.type === 'global') {
       linkElement = selectedLink();
     }
   } else {
+    linkElement = parentLinkOf(selectedLink());
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
     pathArray.push(newTuple);
@@ -68,25 +71,8 @@ function moveUpward() {
 function moveDownward(cycle) {
   let pathArray = parsePathString();
 
-  if (selectedLink().classList.contains('canopy-redundant-local-link')) {
-    let finalTuple = pathArray.pop();
-    let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
-    pathArray.push(newTuple);
-    let linkElement = parentLinkOfSection(sectionElementOfPath(pathArray));
-
-    displayPath(
-      pathArray,
-      linkElement
-    );
-  }
-
-  let linkElement =
-    firstChildLinkOfParentLink(selectedLink()) ||
-    (cycle ? linkAfter(selectedLink()) : null) ||
-    (cycle ? firstSiblingOf(selectedLink()) : null) ||
-    selectedLink();
-
-  if (selectedLink().classList.contains('canopy-global-link')) {
+  if (selectedLink().dataset.type === 'global') {
+    // Handle open global link with no children
     if (selectedLink().classList.contains('canopy-open-link')) { return; }
 
     pathArray.push([
@@ -99,31 +85,48 @@ function moveDownward(cycle) {
       null,
       true
     );
-  } else {
+  }
+
+  if (selectedLink().dataset.type === 'local') {
+    let linkElement =
+      firstChildLinkOfParentLink(selectedLink()) ||
+      selectedLink();
+
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
     pathArray.push(newTuple);
+
+    return updateView(
+      pathArray,
+      metadataFromLink(linkElement)
+    );
   }
 
-  displayPath(
-    pathArray,
-    linkElement
-  );
+  if (selectedLink().dataset.type ==='redundant-local') {
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
+    pathArray.push(newTuple);
+    let linkElement = parentLinkOfSection(sectionElementOfPath(pathArray));
+
+    return updateView(
+      pathArray,
+      metadataFromLink(linkElement)
+    );
+  }
 }
 
 function moveLeftward() {
   let currentSectionElement = currentSection();
   let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
-
   let pathArray = parsePathString();
 
-  if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
+  // handle left on inlined global with no child links
+  if (selectedLink().classList.contains('canopy-global-link') &&
     currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
   let linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
-
   let finalTuple = pathArray.pop();
   let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
@@ -137,16 +140,15 @@ function moveLeftward() {
 function moveRightward() {
   let currentSectionElement = currentSection();
   let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
-
-  let linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
-
   let pathArray = parsePathString();
 
-  if (selectedLink().classList.contains('canopy-global-link') && // handle left on inlined global with no child links
+  // handle left on inlined global with no child links
+  if (selectedLink().dataset.type === 'global' &&
     currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
   }
 
+  let linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
   let finalTuple = pathArray.pop();
   let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
@@ -158,10 +160,10 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab) {
-  if (selectedLink().classList.contains('canopy-local-link') ||
-      selectedLink().classList.contains('canopy-redundant-local-link')) {
-    moveDownward(false);
-  } else if (selectedLink().classList.contains('canopy-global-link')) {
+  if (selectedLink().dataset.type === 'local' ||
+      selectedLink().dataset.type === 'redundant-parent') {
+    return moveDownward(false);
+  } else if (selectedLink().dataset.type === 'global') {
     let pathArray = [[
       selectedLink().dataset.targetTopic,
       selectedLink().dataset.targetSubtopic

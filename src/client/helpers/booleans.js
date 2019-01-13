@@ -5,7 +5,7 @@ function isInRootSection(linkElement) {
   return sectionElementOfLink(linkElement) === currentRootSection();
 }
 
-function isTopicRootSection(sectionElement) {
+function isATopicRootSection(sectionElement) {
   return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
 }
 
@@ -15,6 +15,6 @@ function isTreeRootSection(sectionElement) {
 
 export {
   isInRootSection,
-  isTopicRootSection,
+  isATopicRootSection,
   isTreeRootSection,
 };
