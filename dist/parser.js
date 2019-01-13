@@ -212,6 +212,47 @@ function jsonForDgsFile(path, namespaceObject) {
 
 /***/ }),
 
+/***/ "./src/parser/components/matchers.js":
+/*!*******************************************!*\
+  !*** ./src/parser/components/matchers.js ***!
+  \*******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var Matchers = [function localReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic) {
+  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
+    return new LocalReferenceToken(currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+  } else {
+    return null;
+  }
+
+  ;
+}, function globalReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
+  if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
+    avaliableNamespaces.push(prefixObject.substringAsKey);
+    return new GlobalReferenceToken(prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+  } else {
+    return null;
+  }
+}, function importReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
+  return findAndReturnResult(avaliableNamespaces, function (namespaceNameAsKey) {
+    if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)) {
+      return new GlobalReferenceToken(namespaceNameAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+    }
+  }) || null;
+}, function textMatcher(prefixObject) {
+  if (prefixObject.units.length !== 1) {
+    return null;
+  } else {
+    return new TextToken(prefixObject.substring, prefixObject.units);
+  }
+}];
+/* harmony default export */ __webpack_exports__["default"] = (Matchers);
+
+/***/ }),
+
 /***/ "./src/parser/components/parse_clause.js":
 /*!***********************************************!*\
   !*** ./src/parser/components/parse_clause.js ***!
@@ -224,13 +265,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
 /* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
 /* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
+/* harmony import */ var helpers_consoldiate_text_tokens__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/consoldiate_text_tokens */ "./src/parser/helpers/consoldiate_text_tokens.js");
+/* harmony import */ var components_matchers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! components/matchers */ "./src/parser/components/matchers.js");
+
+
 
 
 
 
 function parseClause(clauseWithPunctuation, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
   var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
-  return Object(components_tokens__WEBPACK_IMPORTED_MODULE_2__["consolidateTextTokens"])(tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
+  return Object(helpers_consoldiate_text_tokens__WEBPACK_IMPORTED_MODULE_3__["default"])(tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
 }
 
 function tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
@@ -240,7 +285,7 @@ function tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, av
 
   var prefixObjects = prefixesOf(units);
   var token = findAndReturnResult(prefixObjects, function (prefixObject) {
-    return findAndReturnResult(Matchers, function (matcher) {
+    return findAndReturnResult(components_matchers__WEBPACK_IMPORTED_MODULE_4__["default"], function (matcher) {
       return matcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces);
     });
   });
@@ -271,34 +316,6 @@ function prefixesOf(units) {
   return prefixObjects;
 }
 
-var Matchers = [function localReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic) {
-  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["LocalReferenceToken"](currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
-  } else {
-    return null;
-  }
-
-  ;
-}, function globalReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
-  if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
-    avaliableNamespaces.push(prefixObject.substringAsKey);
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["GlobalReferenceToken"](prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
-  } else {
-    return null;
-  }
-}, function importReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
-  return findAndReturnResult(avaliableNamespaces, function (namespaceNameAsKey) {
-    if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)) {
-      return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["GlobalReferenceToken"](namespaceNameAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
-    }
-  }) || null;
-}, function textMatcher(prefixObject) {
-  if (prefixObject.units.length !== 1) {
-    return null;
-  } else {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["TextToken"](prefixObject.substring, prefixObject.units);
-  }
-}];
 /* harmony default export */ __webpack_exports__["default"] = (parseClause);
 
 /***/ }),
@@ -340,7 +357,7 @@ function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, curren
 /*!*****************************************!*\
   !*** ./src/parser/components/tokens.js ***!
   \*****************************************/
-/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken, consolidateTextTokens */
+/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -348,11 +365,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LocalReferenceToken", function() { return LocalReferenceToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalReferenceToken", function() { return GlobalReferenceToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextToken", function() { return TextToken; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "consolidateTextTokens", function() { return consolidateTextTokens; });
-/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! array.prototype.flat */ "array.prototype.flat");
-/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(array_prototype_flat__WEBPACK_IMPORTED_MODULE_0__);
-
-
 function TextToken(text, units) {
   this.text = text;
   this.type = 'text';
@@ -377,50 +389,6 @@ function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclo
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
   this.units = units;
-}
-
-function consolidateTextTokens(tokenArray) {
-  var newArray = [];
-
-  for (var i = 0; i < tokenArray.length; i++) {
-    var startToken = tokenArray[i]; // If the current token is the last token, take it
-
-    if (i === tokenArray.length - 1) {
-      newArray.push(startToken);
-      break;
-    } // If the current token is not a text token, take it
-
-
-    if (startToken.type !== 'text') {
-      newArray.push(startToken);
-      continue;
-    } // If the current token is a text token and the next one is not, take it
-
-
-    if (tokenArray[i + 1].type !== 'text') {
-      newArray.push(startToken);
-      continue;
-    } // If the current token is a text token and the next one is also,
-    // look ahead until a non-text token or end-of-array is found,
-    // then merge all consecutive text tokens into one.
-
-
-    for (var j = i + 1; j < tokenArray.length; j++) {
-      var tokenAfterEndOfSpan = tokenArray[j + 1];
-
-      if (!tokenAfterEndOfSpan || tokenAfterEndOfSpan.type !== 'text') {
-        newArray.push(new TextToken(tokenArray.slice(i, j + 1).map(function (token) {
-          return token.text;
-        }).join(''), array_prototype_flat__WEBPACK_IMPORTED_MODULE_0___default()(tokenArray.slice(i, j + 1).map(function (token) {
-          return token.units;
-        }))));
-        i = j;
-        break;
-      }
-    }
-  }
-
-  return newArray;
 }
 
 
@@ -502,6 +470,17 @@ function closingPunctuationOf(string) {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (clausesWithPunctuationOf);
+
+/***/ }),
+
+/***/ "./src/parser/helpers/consoldiate_text_tokens.js":
+/*!*******************************************************!*\
+  !*** ./src/parser/helpers/consoldiate_text_tokens.js ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, exports) {
+
+throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: ENOENT: no such file or directory, open '/Users/Allen/canopy/src/parser/helpers/consoldiate_text_tokens.js'");
 
 /***/ }),
 
@@ -657,17 +636,6 @@ if (process.argv.length < 2) {
 
 var projectDir = process.argv[2].replace(/\/$/, '');
 Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build/data');
-
-/***/ }),
-
-/***/ "array.prototype.flat":
-/*!***************************************!*\
-  !*** external "array.prototype.flat" ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("array.prototype.flat");
 
 /***/ }),
 

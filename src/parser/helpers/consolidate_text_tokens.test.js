@@ -1,8 +1,8 @@
+import consolidateTextTokens from 'helpers/consolidate_text_tokens';
 import {
   LocalReferenceToken,
   GlobalReferenceToken,
-  TextToken,
-  consolidateTextTokens
+  TextToken
 } from 'components/tokens';
 
 test('it consolidates text tokens in a mixed array', () => {
@@ -16,7 +16,6 @@ test('it consolidates text tokens in a mixed array', () => {
   ];
 
   let result = consolidateTextTokens(tokenArray);
-  console.log('result', result);
 
   expect(result.length).toBe(4);
   expect(result[1].text).toBe('Hello World');
@@ -49,7 +48,5 @@ test('it handles consecutive link tokens', () => {
   ];
 
   let result = consolidateTextTokens(tokenArray);
-  console.log('result', result);
-
   expect(result.length).toBe(4);
 });
