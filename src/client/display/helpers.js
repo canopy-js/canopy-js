@@ -2,7 +2,8 @@ import {
   canopyContainer,
   siblingOfLinkLike,
   firstLinkOfSection,
-  childSectionElementOfParentLink
+  childSectionElementOfParentLink,
+  parentLinkOfSection
 } from 'helpers/getters';
 
 function newNodeAlreadyPresent(anchorElement, domTree) {
@@ -21,7 +22,7 @@ function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElem
 
   if (selectALink) {
     if (lastPathSegmentIsTopicRoot(pathArray)) {
-      return parentLinkOfSection(sectionElementOfCurrentPath) || null;
+      return parentLinkOfSection(sectionElementOfCurrentPath);
     } else {
       return firstLinkOfSection(sectionElementOfCurrentPath) ||
         parentLinkOfSection(sectionElementOfCurrentPath);

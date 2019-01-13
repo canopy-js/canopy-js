@@ -813,9 +813,9 @@ function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElem
 
   if (selectALink) {
     if (lastPathSegmentIsTopicRoot(pathArray)) {
-      return parentLinkOfSection(sectionElementOfCurrentPath) || null;
+      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
     } else {
-      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(sectionElementOfCurrentPath) || parentLinkOfSection(sectionElementOfCurrentPath);
+      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
     }
   } else {
     return null;

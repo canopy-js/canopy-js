@@ -1,6 +1,5 @@
 import unitsOf from 'helpers/units_of';
 import capitalize from 'helpers/capitalize';
-import withoutArticle from 'helpers/without_article';
 import {
   LocalReferenceToken,
   GlobalReferenceToken,
@@ -10,7 +9,7 @@ import {
 
 function parseClause(
   clauseWithPunctuation,
-  displaySubtopicsByTopicAndSubtopic,
+  topicSubtopics,
   currentTopic,
   currentSubtopic,
   avaliableNamespaces
@@ -20,7 +19,7 @@ function parseClause(
   return consolidateTextTokens(
     tokensOfSuffix(
       units,
-      displaySubtopicsByTopicAndSubtopic,
+      topicSubtopics,
       currentTopic,
       currentSubtopic,
       avaliableNamespaces
@@ -30,7 +29,7 @@ function parseClause(
 
 function tokensOfSuffix(
   units,
-  displaySubtopicsByTopicAndSubtopic,
+  topicSubtopics,
   currentTopic,
   currentSubtopic,
   avaliableNamespaces
@@ -42,7 +41,7 @@ function tokensOfSuffix(
     (prefixObject) => findAndReturnResult(Matchers,
       (matcher) => matcher(
         prefixObject,
-        displaySubtopicsByTopicAndSubtopic,
+        topicSubtopics,
         currentTopic,
         currentSubtopic,
         avaliableNamespaces
@@ -54,7 +53,7 @@ function tokensOfSuffix(
     token,
     tokensOfSuffix(
       units.slice(token.units.length),
-      displaySubtopicsByTopicAndSubtopic,
+      topicSubtopics,
       currentTopic,
       currentSubtopic,
       avaliableNamespaces
@@ -72,7 +71,7 @@ function prefixesOf(units) {
   for (let i = units.length - 1; i >= 0; i--) {
     let prefixUnits = units.slice(0, i + 1);
     let substring = prefixUnits.join('');
-    let substringAsKey = capitalize(withoutArticle(capitalize(substring)));
+    let substringAsKey = capitalize(substring);
 
     prefixObjects.push({units: prefixUnits, substring, substringAsKey});
   }
@@ -83,12 +82,12 @@ function prefixesOf(units) {
 const Matchers = [
   function localReferenceMatcher(
     prefixObject,
-    displaySubtopicsByTopicAndSubtopic,
+    topicSubtopics,
     currentTopic,
     currentSubtopic
   ) {
     if (
-      displaySubtopicsByTopicAndSubtopic[currentTopic].hasOwnProperty(prefixObject.substringAsKey) &&
+      topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) &&
       currentSubtopic !== prefixObject.substringAsKey &&
       currentTopic !== prefixObject.substringAsKey
       ){
@@ -107,19 +106,20 @@ const Matchers = [
 
   function globalReferenceMatcher(
     prefixObject,
-    displaySubtopicsByTopicAndSubtopic,
+    topicSubtopics,
     currentTopic,
     currentSubtopic,
     avaliableNamespaces
   ) {
     if (
-      displaySubtopicsByTopicAndSubtopic.hasOwnProperty(prefixObject.substringAsKey) &&
+      topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
       currentTopic !== prefixObject.substringAsKey
       ) {
       avaliableNamespaces.push(prefixObject.substringAsKey);
+
       return new GlobalReferenceToken(
-        displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey],
-        displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey],
+        prefixObject.substringAsKey,
+        prefixObject.substringAsKey,
         currentTopic,
         currentSubtopic,
         prefixObject.substring,
@@ -132,16 +132,16 @@ const Matchers = [
 
   function importReferenceMatcher(
     prefixObject,
-    displaySubtopicsByTopicAndSubtopic,
+    topicSubtopics,
     currentTopic,
     currentSubtopic,
     avaliableNamespaces
   ) {
     return findAndReturnResult(avaliableNamespaces, (namespaceNameAsKey) => {
-      if (displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
+      if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
         return new GlobalReferenceToken(
-          displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][namespaceNameAsKey],
-          displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][prefixObject.substringAsKey],
+          namespaceNameAsKey,
+          prefixObject.substringAsKey,
           currentTopic,
           currentSubtopic,
           prefixObject.substring,

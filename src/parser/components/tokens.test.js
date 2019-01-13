@@ -33,9 +33,23 @@ test('it consolidates text tokens in a text array', () => {
   ];
 
   let result = consolidateTextTokens(tokenArray);
-  console.log('result', result);
 
   expect(result.length).toBe(1);
   expect(result[0].text).toBe('Hello World!');
   expect(result[0].units).toEqual(['Hello', ' ', 'World', '!']);
+});
+
+
+test('it handles consecutive link tokens', () => {
+  let tokenArray = [
+    new TextToken('Hello', ['Hello']),
+    new GlobalReferenceToken(),
+    new GlobalReferenceToken(),
+    new TextToken('World', ['World'])
+  ];
+
+  let result = consolidateTextTokens(tokenArray);
+  console.log('result', result);
+
+  expect(result.length).toBe(4);
 });

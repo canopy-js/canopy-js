@@ -255,10 +255,6 @@ module.exports = function shimFlat() {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
 /* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
-/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
-/* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
-
-
 
 
 
@@ -266,12 +262,11 @@ function buildNamespaceObject(pathList) {
   var namespacesObject = {};
   pathList.forEach(function (path) {
     var paragraphsWithKeys = Object(helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_0__["default"])(path);
-    var currentTopicKey = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(paragraphsWithKeys[0]).key));
-    namespacesObject[currentTopicKey] = {};
+    var currentTopic = Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(paragraphsWithKeys[0]).key;
+    namespacesObject[currentTopic] = {};
     paragraphsWithKeys.forEach(function (paragraphWithKey) {
       var key = paragraphWithKey.split(':')[0];
-      var keyWithoutArticle = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(key));
-      namespacesObject[currentTopicKey][keyWithoutArticle] = key;
+      namespacesObject[currentTopic][key] = true;
     });
   });
   return namespacesObject;
@@ -386,19 +381,17 @@ function jsonForDgsFile(path, namespaceObject) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
 /* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
-/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
-/* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
+/* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
 
 
 
 
-
-function parseClause(clauseWithPunctuation, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces) {
+function parseClause(clauseWithPunctuation, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
   var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
-  return Object(components_tokens__WEBPACK_IMPORTED_MODULE_3__["consolidateTextTokens"])(tokensOfSuffix(units, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces));
+  return Object(components_tokens__WEBPACK_IMPORTED_MODULE_2__["consolidateTextTokens"])(tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
 }
 
-function tokensOfSuffix(units, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces) {
+function tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
   if (units.length === 0) {
     return [];
   }
@@ -406,10 +399,10 @@ function tokensOfSuffix(units, displaySubtopicsByTopicAndSubtopic, currentTopic,
   var prefixObjects = prefixesOf(units);
   var token = findAndReturnResult(prefixObjects, function (prefixObject) {
     return findAndReturnResult(Matchers, function (matcher) {
-      return matcher(prefixObject, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces);
+      return matcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces);
     });
   });
-  return [].concat(token, tokensOfSuffix(units.slice(token.units.length), displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces));
+  return [].concat(token, tokensOfSuffix(units.slice(token.units.length), topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
 }
 
 function findAndReturnResult(array, callback) {
@@ -425,7 +418,7 @@ function prefixesOf(units) {
   for (var i = units.length - 1; i >= 0; i--) {
     var prefixUnits = units.slice(0, i + 1);
     var substring = prefixUnits.join('');
-    var substringAsKey = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(substring)));
+    var substringAsKey = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(substring);
     prefixObjects.push({
       units: prefixUnits,
       substring: substring,
@@ -436,32 +429,32 @@ function prefixesOf(units) {
   return prefixObjects;
 }
 
-var Matchers = [function localReferenceMatcher(prefixObject, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic) {
-  if (displaySubtopicsByTopicAndSubtopic[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_3__["LocalReferenceToken"](currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+var Matchers = [function localReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic) {
+  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["LocalReferenceToken"](currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
   } else {
     return null;
   }
 
   ;
-}, function globalReferenceMatcher(prefixObject, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces) {
-  if (displaySubtopicsByTopicAndSubtopic.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
+}, function globalReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
+  if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
     avaliableNamespaces.push(prefixObject.substringAsKey);
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_3__["GlobalReferenceToken"](displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey], displaySubtopicsByTopicAndSubtopic[prefixObject.substringAsKey][prefixObject.substringAsKey], currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["GlobalReferenceToken"](prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
   } else {
     return null;
   }
-}, function importReferenceMatcher(prefixObject, displaySubtopicsByTopicAndSubtopic, currentTopic, currentSubtopic, avaliableNamespaces) {
+}, function importReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
   return findAndReturnResult(avaliableNamespaces, function (namespaceNameAsKey) {
-    if (displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)) {
-      return new components_tokens__WEBPACK_IMPORTED_MODULE_3__["GlobalReferenceToken"](displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][namespaceNameAsKey], displaySubtopicsByTopicAndSubtopic[namespaceNameAsKey][prefixObject.substringAsKey], currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+    if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)) {
+      return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["GlobalReferenceToken"](namespaceNameAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
     }
   }) || null;
 }, function textMatcher(prefixObject) {
   if (prefixObject.units.length !== 1) {
     return null;
   } else {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_3__["TextToken"](prefixObject.substring, prefixObject.units);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_2__["TextToken"](prefixObject.substring, prefixObject.units);
   }
 }];
 /* harmony default export */ __webpack_exports__["default"] = (parseClause);
@@ -525,8 +518,8 @@ function TextToken(text, units) {
 }
 
 function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text, units) {
-  this.type = 'local';
   this.text = text;
+  this.type = 'local';
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -535,13 +528,12 @@ function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclos
 }
 
 function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text, units) {
+  this.text = text;
   this.type = 'global';
   this.targetTopic = targetTopic;
   this.targetSubtopic = targetSubtopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.text = text;
-  this.length;
   this.units = units;
 }
 
@@ -565,7 +557,7 @@ function consolidateTextTokens(tokenArray) {
 
     if (tokenArray[i + 1].type !== 'text') {
       newArray.push(startToken);
-      break;
+      continue;
     } // If the current token is a text token and the next one is also,
     // look ahead until a non-text token or end-of-array is found,
     // then merge all consecutive text tokens into one.
@@ -680,11 +672,6 @@ function closingPunctuationOf(string) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_without_article__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/without_article */ "./src/parser/helpers/without_article.js");
-/* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
-
-
-
 function extractKeyAndParagraph(paragraphWithKey) {
   var match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
@@ -695,7 +682,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
     };
   }
 
-  var key = Object(helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(helpers_without_article__WEBPACK_IMPORTED_MODULE_0__["default"])(match[1]));
+  var key = match[1];
   var paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
   return {
     key: key,
@@ -804,23 +791,6 @@ function unitsOf(string) {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (unitsOf);
-
-/***/ }),
-
-/***/ "./src/parser/helpers/without_article.js":
-/*!***********************************************!*\
-  !*** ./src/parser/helpers/without_article.js ***!
-  \***********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-function withoutArticle(key) {
-  return (key.match(/^(A|a|The|the)[\s_]+(.*)/) || {})[2] || key;
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (withoutArticle);
 
 /***/ }),
 

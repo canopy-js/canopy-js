@@ -14,8 +14,8 @@ function LocalReferenceToken(
     text,
     units
   ) {
-  this.type = 'local';
   this.text = text;
+  this.type = 'local';
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -31,13 +31,12 @@ function GlobalReferenceToken(
     text,
     units
   ) {
+  this.text = text;
   this.type = 'global';
   this.targetTopic = targetTopic;
   this.targetSubtopic = targetSubtopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.text = text;
-  this.length;
   this.units = units;
 }
 
@@ -62,7 +61,7 @@ function consolidateTextTokens(tokenArray) {
     // If the current token is a text token and the next one is not, take it
     if (tokenArray[i + 1].type !== 'text') {
       newArray.push(startToken);
-      break;
+      continue;
     }
 
     // If the current token is a text token and the next one is also,

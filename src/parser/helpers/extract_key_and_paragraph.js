@@ -1,6 +1,3 @@
-import withoutArticle from 'helpers/without_article';
-import capitalize from 'helpers/capitalize';
-
 function extractKeyAndParagraph(paragraphWithKey) {
   let match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
@@ -11,7 +8,7 @@ function extractKeyAndParagraph(paragraphWithKey) {
     }
   }
 
-  let key = capitalize(withoutArticle(match[1]));
+  let key = match[1];
   let paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
 
   return {
