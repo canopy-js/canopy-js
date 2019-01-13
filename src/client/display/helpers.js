@@ -21,20 +21,20 @@ function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElem
   }
 
   if (selectALink) {
-    if (lastPathSegmentIsTopicRoot(pathArray)) {
-      return parentLinkOfSection(sectionElementOfCurrentPath);
-    } else {
+    if (lastPathSegmentIsATopicRoot(pathArray)) {
       return firstLinkOfSection(sectionElementOfCurrentPath) ||
-        parentLinkOfSection(sectionElementOfCurrentPath);
+      parentLinkOfSection(sectionElementOfCurrentPath);
+    } else {
+      return parentLinkOfSection(sectionElementOfCurrentPath);
     }
   } else {
     return null;
   }
 }
 
-function lastPathSegmentIsTopicRoot(pathArray) {
+function lastPathSegmentIsATopicRoot(pathArray) {
   let lastPathSegment = pathArray[pathArray.length - 1];
-  return lastPathSegment[0] !== lastPathSegment[1];
+  return lastPathSegment[0] === lastPathSegment[1];
 }
 
 function createOrReplaceHeader(topicName) {

@@ -812,19 +812,19 @@ function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElem
   }
 
   if (selectALink) {
-    if (lastPathSegmentIsTopicRoot(pathArray)) {
-      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
-    } else {
+    if (lastPathSegmentIsATopicRoot(pathArray)) {
       return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
+    } else {
+      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
     }
   } else {
     return null;
   }
 }
 
-function lastPathSegmentIsTopicRoot(pathArray) {
+function lastPathSegmentIsATopicRoot(pathArray) {
   var lastPathSegment = pathArray[pathArray.length - 1];
-  return lastPathSegment[0] !== lastPathSegment[1];
+  return lastPathSegment[0] === lastPathSegment[1];
 }
 
 function createOrReplaceHeader(topicName) {
@@ -1303,9 +1303,9 @@ function parentLinkOf(linkElement) {
   return parentLinkOfSection(sectionElementOfLink(linkElement));
 }
 
-function siblingOfLinkLike(linkElement, condition) {
-  return Array.from(linkToSelect.parentNode.childNodes).find(function (linkElement) {
-    return condition(linkElement) && linkElement !== linkToSelect;
+function siblingOfLinkLike(linkElementArg, condition) {
+  return Array.from(linkElementArg.parentNode.childNodes).find(function (linkElement) {
+    return condition(linkElement) && linkElement !== linkElementArg;
   });
 }
 

@@ -248,10 +248,10 @@ function parentLinkOf(linkElement) {
   return parentLinkOfSection(sectionElementOfLink(linkElement));
 }
 
-function siblingOfLinkLike(linkElement, condition) {
-  return Array.from(linkToSelect.parentNode.childNodes).find((linkElement) => {
+function siblingOfLinkLike(linkElementArg, condition) {
+  return Array.from(linkElementArg.parentNode.childNodes).find((linkElement) => {
       return condition(linkElement) &&
-        linkElement !== linkToSelect;
+        linkElement !== linkElementArg;
     });
 }
 
