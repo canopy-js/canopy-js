@@ -23,7 +23,7 @@ import {
   isATopicRootSection,
   isTreeRootSection,
 } from 'helpers/booleans';
-import pathForSectionElement from 'helpers/path_for_section_element';
+import pathForSectionElement from 'path/path_for_section_element';
 import updateView from 'display/update_view';
 import setPath from 'path/set_path';
 import displayPath from 'display/display_path';
