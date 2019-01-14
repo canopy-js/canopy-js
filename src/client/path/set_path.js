@@ -11,7 +11,7 @@ const setPath = (newPathArray) => {
   let oldPathArray = parsePathString();
   let documentTitle = newPathArray[0][0];
 
-  let historyApiFunction = newPathArray === oldPathArray ? // always false
+  let historyApiFunction = pathStringFor(newPathArray) === pathStringFor(oldPathArray) ?
     replaceState : pushState;
 
   historyApiFunction(
