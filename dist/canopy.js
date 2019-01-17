@@ -710,8 +710,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var keys_register_key_listeners__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! keys/register_key_listeners */ "./src/client/keys/register_key_listeners.js");
 /* harmony import */ var history_register_pop_state_listener__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! history/register_pop_state_listener */ "./src/client/history/register_pop_state_listener.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-
 
 
 
