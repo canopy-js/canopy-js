@@ -6,38 +6,89 @@ import { paragraphElementOfSection, linkOfSectionByTarget } from 'helpers/getter
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 
-const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth) => {
+function renderDomTree(
+  currentSubtopicName,
+  pathArray,
+  paragraphsBySubtopic,
+  renderedSubtopics,
+  pathDepth
+  ) {
   let topicName = pathArray[0][0];
   let sectionElement = createNewSectionElement(topicName, currentSubtopicName, pathDepth);
   let linesOfParagraph = paragraphsBySubtopic[currentSubtopicName];
-  renderedSubtopics[currentSubtopicName] = true;
   let promises = [];
+  renderedSubtopics[currentSubtopicName] = true;
 
-  let subtopicAlreadyRendered = (targetSubtopic) =>
-    renderedSubtopics.hasOwnProperty(targetSubtopic);
-
-  let onParentLinkTokenRequiringSubtree = (token) => {
-    let promisedSubtree = renderDomTree(
-      token.targetSubtopic,
+  let tokenElements = renderElementsForTokens(
+    linesOfParagraph,
+    pathArray,
+    currentSubtopicName,
+    promises,
+    subtopicAlreadyRenderedCallback(renderedSubtopics),
+    generateOnParentLinkTokenRequiringSubtreeCallback(
       pathArray,
       paragraphsBySubtopic,
       renderedSubtopics,
-      pathDepth
-    );
+      pathDepth,
+      sectionElement,
+      promises
+    ),
+    generateOnGlobalLinkTokenRequiringSubtreeCallback(
+      pathArray,
+      pathDepth,
+      sectionElement,
+      promises
+    )
+  )
 
-    promisedSubtree.then((subtree) => {
-      sectionElement.appendChild(subtree);
-    });
+  tokenElements.forEach((tokenElement) => {
+    paragraphElementOfSection(sectionElement).appendChild(tokenElement);
+  });
 
-    promises.push(promisedSubtree);
+  return Promise.all(promises).then((_) => sectionElement);
+}
+
+function subtopicAlreadyRenderedCallback (renderedSubtopics) {
+  return (targetSubtopic) => renderedSubtopics.hasOwnProperty(targetSubtopic);
+}
+
+function generateOnParentLinkTokenRequiringSubtreeCallback(
+  pathArray,
+  paragraphsBySubtopic,
+  renderedSubtopics,
+  pathDepth,
+  sectionElement,
+  promises
+  ) {
+    return (token) => {
+      let promisedSubtree = renderDomTree(
+        token.targetSubtopic,
+        pathArray,
+        paragraphsBySubtopic,
+        renderedSubtopics,
+        pathDepth
+      );
+
+      promisedSubtree.then((subtree) => {
+        sectionElement.appendChild(subtree);
+      });
+
+      promises.push(promisedSubtree);
+    }
   }
 
-  let onGlobalLinkTokenRequiringSubtree = (token) => {
+function generateOnGlobalLinkTokenRequiringSubtreeCallback(
+  pathArray,
+  pathDepth,
+  sectionElement,
+  promises
+  ) {
+  return (token) => {
     if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
       return;
     }
 
-    let pathArrayForSubtree = pathArray.slice(1);
+    let pathArrayForSubtree = (pathArray).slice(1);
     let pathDepthOfSubtree = pathDepth + 1;
 
     let whenTopicTreeRenders = fetchAndRenderPath(pathArrayForSubtree, pathDepthOfSubtree);
@@ -47,24 +98,6 @@ const renderDomTree = (currentSubtopicName, pathArray, paragraphsBySubtopic, ren
 
     promises.push(whenTopicTreeAppended);
   }
-
-  let tokenElements = renderElementsForTokens(
-    linesOfParagraph,
-    pathArray,
-    currentSubtopicName,
-    promises,
-    subtopicAlreadyRendered,
-    onParentLinkTokenRequiringSubtree,
-    onGlobalLinkTokenRequiringSubtree,
-  )
-
-  tokenElements.forEach((tokenElement) => {
-    paragraphElementOfSection(sectionElement).appendChild(tokenElement);
-  });
-
-  return Promise.all(promises).then((_) => {
-    return sectionElement;
-  });
 }
 
 function createNewSectionElement(topicName, currentSubtopicName, pathDepth) {
@@ -93,10 +126,11 @@ function renderElementsForTokens(
   subtopicAlreadyRendered,
   onParentLinkTokenRequiringSubtree,
   onGlobalLinkTokenRequiringSubtree) {
-  var tokenArray = [];
+  let tokenArray = [];
+
   linesOfParagraph.forEach((tokensOfLine, lineNumber) => {
     lineNumber > 0 && tokenArray.push(document.createElement('br'));
-    var newElements = tokensOfLine.map((token) => {
+    let newElements = tokensOfLine.map((token) => {
       return generateTokenElement(
         token,
         pathArray,
@@ -126,9 +160,18 @@ function generateTokenElement(
   if (token.type === 'text') {
     return document.createTextNode(token.text);
   } else if (token.type === 'local') {
-    return generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree);
+    return generateParentLink(
+      token,
+      subtopicAlreadyRendered,
+      onParentLinkTokenRequiringSubtree
+    );
   } else if (token.type === 'global') {
-    return generateGlobalLink(token, pathArray, currentSubtopicName, onGlobalLinkTokenRequiringSubtree);
+    return generateGlobalLink(
+      token,
+      pathArray,
+      currentSubtopicName,
+      onGlobalLinkTokenRequiringSubtree
+    );
   }
 }
 
@@ -171,7 +214,10 @@ function generateSharedParentLinkBase(token) {
   let textElement = document.createTextNode(token.text);
   let tokenElement = document.createElement('a');
   tokenElement.appendChild(textElement);
-  tokenElement.addEventListener('click', onParentLinkClick(token.targetTopic, token.targetSubtopic, tokenElement));
+  tokenElement.addEventListener(
+    'click',
+    onParentLinkClick(token.targetTopic, token.targetSubtopic, tokenElement)
+  );
   return tokenElement;
 }
 
@@ -197,7 +243,10 @@ function createGlobalLinkElement(token) {
   tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   tokenElement.classList.add('canopy-global-link');
   tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
-  tokenElement.addEventListener('click', onGlobalLinkClick(token.targetTopic, token.targetSubtopic, tokenElement));
+  tokenElement.addEventListener(
+    'click',
+    onGlobalLinkClick(token.targetTopic, token.targetSubtopic, tokenElement)
+  );
   return tokenElement
 }
 
