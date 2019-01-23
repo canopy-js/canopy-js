@@ -106,7 +106,7 @@ function moveDownward(cycle) {
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
-    let linkElement = parentLinkOfSection(sectionElementOfPath(pathArray));
+    let linkElement = firstLinkOfSection(sectionElementOfPath(pathArray));
 
     return updateView(
       pathArray,
