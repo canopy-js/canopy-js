@@ -1,3 +1,10 @@
+import findAndReturnResult from 'helpers/find_and_return_result';
+import {
+  LocalReferenceToken,
+  GlobalReferenceToken,
+  TextToken
+} from 'components/tokens';
+
 const Matchers = [
   function localReferenceMatcher(
     prefixObject,
