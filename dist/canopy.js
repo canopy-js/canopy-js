@@ -741,6 +741,11 @@ __webpack_require__.r(__webpack_exports__);
 
 var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) {
   var topicName = pathArray[0][0];
+
+  if (!originatesFromPopStateEvent) {
+    Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
+  }
+
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
   var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["createOrReplaceHeader"])(topicName);
@@ -751,11 +756,6 @@ var displayPath = function displayPath(pathArray, providedLinkToSelect, selectAL
   var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineSectionElementToDisplay"])(linkToSelect, sectionElementOfCurrentPath);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addSelectedLinkClass"])(linkToSelect);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenLinkClass"])(linkToSelect);
-
-  if (!originatesFromPopStateEvent) {
-    Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
-  }
-
   displayPathTo(sectionElementToDisplay);
   window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].scrollHeight);
 };
@@ -1498,9 +1498,9 @@ function moveDownward(cycle) {
     var _newTuple = [_finalTuple[0], Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic];
     pathArray.push(_newTuple);
 
-    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
+    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
 
-    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_linkElement));
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, _linkElement);
   }
 }
 
@@ -1551,14 +1551,14 @@ function moveDownOrRedirect(newTab) {
   }
 }
 
-function depthFirstSearch(forwardDirection, skipChildren) {
+function depthFirstSearch(forwardDirection, enterGlobalLinks) {
   var nextLink;
   var previouslySelectedLinkClassName = forwardDirection ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
   var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
   var lastChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
   var firstChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
-  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' && !skipChildren) {
+  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' || enterGlobalLinks)) {
     nextLink = firstChildToVisit;
   }
 
@@ -1680,7 +1680,8 @@ var shortcutRelationships = {
   'command-return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"].bind(null, true),
   'tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, true),
   'alt-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, true, true),
-  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, false)
+  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, false),
+  'alt-shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, false, true)
 };
 var keyNames = (_keyNames = {
   37: 'left',
@@ -1746,6 +1747,7 @@ var parsePathString = function parsePathString(pathStringArg) {
   var slashSeparatedUnits = pathString.replace(/_/g, ' ').split('/').filter(function (string) {
     return string !== '';
   });
+  slashSeparatedUnits = fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUnits);
   return slashSeparatedUnits.map(function (slashSeparatedUnit) {
     var match = slashSeparatedUnit.match(/([^#]*)(?:#([^#]*))?/);
     return [match[1] || match[2] || null, match[2] || match[1] || null];
@@ -1753,6 +1755,18 @@ var parsePathString = function parsePathString(pathStringArg) {
     return tuple[0] !== null;
   });
 };
+
+function fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUnits) {
+  // eg /Topic/#Subtopic/A#B
+  if (pathString.match(/^\/\w+\/#\w+\/?/)) {
+    var newFirstItem = slashSeparatedUnits[0] + slashSeparatedUnits[1];
+    var newArray = slashSeparatedUnits.slice(2);
+    newArray.unshift(newFirstItem);
+    return newArray;
+  }
+
+  return slashSeparatedUnits;
+}
 
 /* harmony default export */ __webpack_exports__["default"] = (parsePathString);
 
@@ -2159,7 +2173,7 @@ var requestJson = function requestJson(topicName) {
     return Promise.resolve(cache[topicName]);
   }
 
-  var dataPath = '/data/' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName.toLowerCase()) + '.json';
+  var dataPath = '/_data/' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName.toLowerCase()) + '.json';
   return fetch(dataPath).then(function (res) {
     return res.json().then(function (json) {
       cache[topicName] = json;

@@ -22,6 +22,7 @@ import {
 
 const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) => {
   let topicName = pathArray[0][0];
+  if (!originatesFromPopStateEvent) { setPath(pathArray); }
   document.title = documentTitleFor(topicName);
   const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
 
@@ -35,7 +36,6 @@ const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFro
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);
 
-  if (!originatesFromPopStateEvent) { setPath(pathArray); }
   displayPathTo(sectionElementToDisplay);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };

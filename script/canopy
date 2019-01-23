@@ -26,6 +26,10 @@ build)
   </html>
 EOF
 
+  for D in `find "$PWD/build" ! -name '*_data*' -type d -mindepth 1`; do
+    cp build/index.html $D
+  done
+
   cp /usr/local/lib/canopy/dist/canopy.js build/canopy.js
   CANOPY_DEBUG=true node /usr/local/lib/canopy/dist/parser.js .
 ;;
@@ -49,7 +53,8 @@ watch)
 
   if [ "$2" == "stop" ]; then
     kill $(cat .canopy_watch.pid) > /dev/null 2>&1;
-    exit 1;
+    rm .canopy_watch.pid
+    exit 0;
   fi
 
   PIDFILE=.canopy_watch.pid
@@ -69,7 +74,7 @@ watch)
   fi
 
   #######
-  fswatch -0 -o topics | CANOPY_DEBUG=true xargs -0 -n1 -I{} node /usr/local/lib/canopy/dist/parser.js . > /dev/null 2>&1 &
+  fswatch -0 -o topics | CANOPY_DEBUG=true xargs -0 -n1 -I{} canopy build > /dev/null 2>&1 &
   #######
 
   echo $(jobs -p | tail -1) > $PIDFILE
@@ -79,19 +84,20 @@ watch)
     exit 1
   fi
 
-  canopy build $2;;
+  canopy build;;
 serve)
   canopy build
-  cd build && node /usr/local/lib/canopy/dist/server.js
+  /usr/local/lib/canopy/node_modules/http-server/bin/http-server build -p ${2:-3000}
   ;;
 ?|usage)
 echo  "Usage:"
-echo  "  canopy build"
 echo  "  canopy update"
 echo  "  canopy init"
+echo  "  canopy build"
 echo  "  canopy watch"
-echo  "  canopy watch stop";;
+echo  "  canopy watch stop"
+echo  "  canopy serve [PORT]"
+;;
 *)
   echo Unknown command;;
 esac
-
