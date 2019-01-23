@@ -194,12 +194,18 @@ function lastChildLinkOfParentLink(linkElement) {
   return firstOrLastChildOfParentLink(linkElement, false);
 }
 
+function linksOfParagraph(paragraphElement) {
+  return Array.
+    from(paragraphElement.childNodes).
+    filter((linkElement) => linkElement.tagName === 'A');
+}
+
 function firstLinkOfSection(sectionElement) {
   if (sectionElement === null){
     return null;
   }
-
-  return sectionElement.querySelectorAll('a')[0] || null;
+  let paragraphElement = paragraphElementOfSection(sectionElement);
+  return linksOfParagraph(paragraphElement)[0] || null;
 }
 
 function enclosingTopicSectionOfLink(linkElement) {
@@ -257,9 +263,7 @@ function siblingOfLinkLike(linkElementArg, condition) {
 
 function linkOfSectionLike(sectionElement, condition) {
   let paragraphElement = paragraphElementOfSection(sectionElement);
-  return Array.
-    from(paragraphElement.childNodes).
-    find((linkElement) => linkElement.tagName === 'A' && condition(linkElement));
+  return linksOfParagraph(paragraphElement).find(condition);
 }
 
 function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
