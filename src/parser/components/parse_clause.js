@@ -1,12 +1,8 @@
 import unitsOf from 'helpers/units_of';
 import capitalize from 'helpers/capitalize';
-import {
-  LocalReferenceToken,
-  GlobalReferenceToken,
-  TextToken
-} from 'components/tokens';
 import consolidateTextTokens from 'helpers/consolidate_text_tokens';
 import Matchers from 'components/matchers';
+import findAndReturnResult from 'helpers/find_and_return_result';
 
 function parseClause(
   clauseWithPunctuation,
@@ -59,11 +55,6 @@ function tokensOfSuffix(
       currentSubtopic,
       avaliableNamespaces
     ));
-}
-
-function findAndReturnResult(array, callback) {
-  let foundItem = array.find((item) => callback(item));
-  return foundItem && callback(foundItem);
 }
 
 function prefixesOf(units) {
