@@ -30,7 +30,7 @@ function jsonForDgsFile(path, namespaceObject) {
     tokenizedParagraphsByKey,
     null,
     process.env.CANOPY_DEBUG ? 1 : 0
-    );
+  );
 }
 
 export default jsonForDgsFile;

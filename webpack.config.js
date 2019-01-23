@@ -13,6 +13,7 @@ module.exports = {
   },
   resolve: {
     modules: [
+      path.resolve(__dirname, 'src/'),
       path.resolve(__dirname, 'src/client/'),
       path.resolve(__dirname, 'src/parser/'),
       path.resolve(__dirname, 'src/shared/'),

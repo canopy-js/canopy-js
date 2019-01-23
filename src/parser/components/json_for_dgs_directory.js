@@ -3,8 +3,11 @@ import listDgsFilesRecursive from 'helpers/list_dgs_files_recursive.js';
 import buildNamespaceObject from 'components/build_namespace_object.js';
 import jsonForDgsFile from 'components/json_for_dgs_file.js';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
+import topicKeyOfFile from 'helpers/topic_key_of_file';
+import { slugFor } from 'helpers/identifiers';
 
-function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
+function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
+  let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
   let namespaceObject = buildNamespaceObject(dgsFilePaths);
 
@@ -12,19 +15,30 @@ function jsonForDgsDirectory(sourceDirectory, destinationDirectory) {
     let json = jsonForDgsFile(path, namespaceObject);
     let dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
 
-    if (!fs.existsSync(destinationDirectory)){
-        fs.mkdirSync(destinationDirectory);
+    if (!fs.existsSync(destinationDataDirectory)) {
+      fs.mkdirSync(destinationDataDirectory);
     }
 
-    if(dgsFileNameWithoutExtension.includes(' ')){
+    if (dgsFileNameWithoutExtension.includes(' ')) {
       throw 'Data filenames may not contain spaces: ' + path;
     }
 
-    let destinationPath = destinationDirectory + '/' + dgsFileNameWithoutExtension + '.json';
+    let destinationPath = destinationDataDirectory +
+      '/' +
+      dgsFileNameWithoutExtension +
+      '.json';
+
     console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);
+
+    let capitalizedKeySlug = slugFor(topicKeyOfFile(path));
+    let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
+    if (!fs.existsSync(topicFolderPath)) {
+      fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
+    }
+    console.log('Created directory: ' + topicFolderPath);
   });
 }
 
-export default jsonForDgsDirectory;
+export default jsonForProjectDirectory;
