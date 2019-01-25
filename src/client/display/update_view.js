@@ -9,7 +9,7 @@ import {
 
 import { newNodeAlreadyPresent } from 'display/helpers';
 
-const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) => {
+const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionOfDfs) => {
   let {
     lowestExtantSectionElementOfPath,
     pathSuffixToRender
@@ -33,7 +33,7 @@ const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopS
       selectedLinkData && findLinkFromMetadata(selectedLinkData),
       selectALink,
       originatesFromPopStateEvent,
-      directionToPreserveDfsClassesIn
+      directionOfDfs
     );
   });
 }

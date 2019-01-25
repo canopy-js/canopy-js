@@ -126,6 +126,10 @@ function findLowestExtantSectionElementOfPath(pathArray) {
 }
 
 function openLinkOfSection(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
   return linkOfSectionLike(
     sectionElement,
     (linkElement) => linkElement.classList.contains('canopy-open-link')
@@ -169,7 +173,7 @@ function linkBefore(linkElement) {
   }
 }
 
-function firstOrLastChildOfParentLink(linkElement, first) {
+function firstChildLinkOfParentLink(linkElement) {
   if (linkElement === null) {
     return null;
   }
@@ -177,21 +181,24 @@ function firstOrLastChildOfParentLink(linkElement, first) {
   let sectionElement = childSectionElementOfParentLink(linkElement);
   if (!sectionElement) { return null; }
 
-  let array = Array.from(sectionElement.firstElementChild.childNodes).filter((node) => node.tagName === 'A');
-
-  if (first) {
-    return array[0];
-  } else {
-    return array[array.length - 1];
-  }
-}
-
-function firstChildLinkOfParentLink(linkElement) {
-  return firstOrLastChildOfParentLink(linkElement, true);
+  let array = linksOfSectionElement(sectionElement);
+  return array[0];
 }
 
 function lastChildLinkOfParentLink(linkElement) {
-  return firstOrLastChildOfParentLink(linkElement, false);
+  if (linkElement === null) {
+    return null;
+  }
+
+  let sectionElement = childSectionElementOfParentLink(linkElement);
+  if (!sectionElement) { return null; }
+
+  let array = linksOfSectionElement(sectionElement);
+  return array[array.length - 1];
+}
+
+function linksOfSectionElement(sectionElement) {
+  return linksOfParagraph(paragraphElementOfSection(sectionElement));
 }
 
 function linksOfParagraph(paragraphElement) {
@@ -200,12 +207,20 @@ function linksOfParagraph(paragraphElement) {
     filter((linkElement) => linkElement.tagName === 'A');
 }
 
-function firstLinkOfSection(sectionElement) {
+function firstLinkOfSectionElement(sectionElement) {
   if (sectionElement === null){
     return null;
   }
-  let paragraphElement = paragraphElementOfSection(sectionElement);
-  return linksOfParagraph(paragraphElement)[0] || null;
+  return linksOfSectionElement(sectionElement)[0] || null;
+}
+
+function lastLinkOfSectionElement(sectionElement) {
+  if (sectionElement === null){
+    return null;
+  }
+
+  let array = linksOfSectionElement(sectionElement);
+  return array[array.length - 1] || null;
 }
 
 function enclosingTopicSectionOfLink(linkElement) {
@@ -262,8 +277,7 @@ function siblingOfLinkLike(linkElementArg, condition) {
 }
 
 function linkOfSectionLike(sectionElement, condition) {
-  let paragraphElement = paragraphElementOfSection(sectionElement);
-  return linksOfParagraph(paragraphElement).find(condition);
+  return linksOfSectionElement(sectionElement).find(condition);
 }
 
 function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
@@ -289,11 +303,13 @@ export {
   findLowestExtantSectionElementOfPath,
   openLinkOfSection,
   paragraphElementOfSection,
+  linksOfSectionElement,
   linkAfter,
   linkBefore,
   firstChildLinkOfParentLink,
   lastChildLinkOfParentLink,
-  firstLinkOfSection,
+  firstLinkOfSectionElement,
+  lastLinkOfSectionElement,
   enclosingTopicSectionOfLink,
   firstSiblingOf,
   lastSiblingOf,

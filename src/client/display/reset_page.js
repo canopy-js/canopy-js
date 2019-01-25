@@ -43,8 +43,8 @@ function underlineLink(linkElement) {
 }
 
 function clearDfsClasses(directionToPreserveDfsClassesIn) {
-  let preserveForwardDfsClass = directionToPreserveDfsClassesIn === true;
-  let preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === false;
+  let preserveForwardDfsClass = directionToPreserveDfsClassesIn === 1;
+  let preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === 2;
 
   forEach(document.getElementsByTagName("a"), function(linkElement) {
     !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');

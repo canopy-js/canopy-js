@@ -10,7 +10,7 @@ import {
   openLinkOfSection,
   canopyContainer,
   parentLinkOf,
-  firstLinkOfSection,
+  firstLinkOfSectionElement,
   linkAfter,
   linkBefore,
   firstSiblingOf,
@@ -18,10 +18,12 @@ import {
   firstChildLinkOfParentLink,
   lastChildLinkOfParentLink,
   enclosingTopicSectionOfLink,
+  childSectionElementOfParentLink
 } from 'helpers/getters';
 import {
   isATopicRootSection,
   isTreeRootSection,
+  sectionHasNoChildLinks
 } from 'helpers/booleans';
 import pathForSectionElement from 'path/path_for_section_element';
 import updateView from 'display/update_view';
@@ -106,7 +108,7 @@ function moveDownward(cycle) {
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
-    let linkElement = firstLinkOfSection(sectionElementOfPath(pathArray));
+    let linkElement = firstLinkOfSectionElement(sectionElementOfPath(pathArray));
 
     return updateView(
       pathArray,
@@ -185,30 +187,80 @@ function moveDownOrRedirect(newTab) {
   }
 }
 
-function depthFirstSearch(forwardDirection, skipChildren) {
+function depthFirstSearch(direction, enterGlobalLinks) {
   let nextLink;
-  let previouslySelectedLinkClassName = forwardDirection ?
+  let previouslySelectedLinkClassName = direction === 1 ?
     'canopy-dfs-previously-selected-link' :
     'canopy-reverse-dfs-previously-selected-link';
-  let previouslySelectedLink =
-    document.querySelector('.' + previouslySelectedLinkClassName);
+  let previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
+  let nextPreviouslySelectedLink;
 
-  let lastChildToVisit = forwardDirection ?
+  // Enter a global link
+  if (
+    selectedLink().dataset.type === 'global' &&
+    enterGlobalLinks &&
+    previouslySelectedLink !== selectedLink()
+  ) {
+    let targetTopic = selectedLink().dataset.targetTopic;
+    let pathToCurrentLink = pathForSectionElement(sectionElementOfLink(selectedLink()));
+    let newPathArray = pathToCurrentLink.concat([[targetTopic, targetTopic]]);
+    let sectionElement = sectionElementOfPath(newPathArray);
+
+    if (!sectionElement || !openLinkOfSection(sectionElement)) {
+      if (previouslySelectedLink) {
+        previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+      }
+      selectedLink().classList.add(previouslySelectedLinkClassName);
+
+      return updateView(
+        newPathArray,
+        null,
+        true,
+        null,
+        direction
+      );
+    }
+  }
+
+  // Close a global link with no children so selection never changes
+  if (
+    selectedLink().dataset.type === 'global' &&
+    sectionHasNoChildLinks(childSectionElementOfParentLink(selectedLink())) &&
+    selectedLink().classList.contains('canopy-open-link')
+  ) {
+    if (previouslySelectedLink) {
+      previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+    }
+    selectedLink().classList.add(previouslySelectedLinkClassName);
+
+    return updateView(
+      parsePathString().slice(0, -1),
+      metadataFromLink(selectedLink()),
+      false,
+      null,
+      direction
+    );
+  }
+
+  // Enter a parent link
+  let lastChildToVisit = direction === 1 ?
     lastChildLinkOfParentLink(selectedLink()) :
     firstChildLinkOfParentLink(selectedLink());
 
-  let firstChildToVisit = forwardDirection ?
+  let firstChildToVisit = direction === 1 ?
     firstChildLinkOfParentLink(selectedLink()) :
     lastChildLinkOfParentLink(selectedLink());
 
-  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) &&
+  if (
+    (!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) &&
     selectedLink().dataset.type !== 'global' &&
-    !skipChildren
+    selectedLink().dataset.type !== 'redundant-local'
   ) {
     nextLink = firstChildToVisit;
   }
 
-  let nextSiblingToVisit = forwardDirection ?
+  // Move to the next sibling
+  let nextSiblingToVisit = direction === 1 ?
     linkAfter(selectedLink()) :
     linkBefore(selectedLink());
 
@@ -216,29 +268,39 @@ function depthFirstSearch(forwardDirection, skipChildren) {
     nextLink = nextSiblingToVisit;
   }
 
+  // Move to parent
   let parentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
   if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
     nextLink = parentLink;
   }
 
-  // update previous link unless it didn't change
-  if (nextLink) {
-    if (previouslySelectedLink) {
-      previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
-    }
-    selectedLink().classList.add(previouslySelectedLinkClassName);
+  // Move to parent link that is a global link
+  let globalParentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
+
+  if (!nextLink && parentLink.dataset.type === 'global' && enterGlobalLinks) {
+    nextLink = globalParentLink;
+    nextPreviouslySelectedLink = parentLink;
   }
 
+
+  // Do nothing
   if (!nextLink) {
     return;
   }
 
+  // Update "previous link"
+  if (previouslySelectedLink) {
+    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+  }
+  (nextPreviouslySelectedLink || selectedLink()).classList.add(previouslySelectedLinkClassName);
+
+  // Update the view
   updateView(
     pathForSectionElement(sectionElementOfLink(nextLink)),
     metadataFromLink(nextLink),
     null,
     null,
-    forwardDirection
+    direction
   );
 }
 
