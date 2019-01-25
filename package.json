@@ -1,14 +1,18 @@
 {
-  "name": "canopy.js",
-  "version": "0.0.1",
+  "name": "canopy-js",
+  "version": "1.0.0",
   "description": "",
   "private": true,
-  "main": "src/frontend/index.js",
+  "main": "dist/parser.js",
   "scripts": {
     "test": "jest",
     "develop": "webpack --mode development --watch --module-bind js=babel-loader",
     "build": "webpack --mode development --module-bind js=babel-loader"
   },
+  "bin": {
+    "canopy": "./script/canopy"
+  },
+  "preferGlobal": true,
   "keywords": [],
   "author": "CanopyJS",
   "license": "Apache",

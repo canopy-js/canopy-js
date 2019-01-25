@@ -39,8 +39,8 @@ EOF
     done
   done
 
-  cp /usr/local/lib/canopy/dist/canopy.js build/canopy.js
-  CANOPY_DEBUG=true node /usr/local/lib/canopy/dist/parser.js .
+  cp $(npm root -g)/canopy-js/dist/canopy.js build/canopy.js
+  CANOPY_DEBUG=true node $(npm root -g)/canopy-js/dist/parser.js .
 ;;
 update)
   cd /usr/local/lib/canopy
@@ -54,8 +54,8 @@ init)
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .default_topic
-  echo $DEFAULT_TOPIC | node /usr/local/lib/canopy/script/snake_case.js
-  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node /usr/local/lib/canopy/script/snake_case.js)
+  echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js
+  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js)
   ;;
 watch)
   command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
@@ -96,7 +96,7 @@ watch)
   canopy build;;
 serve)
   canopy build
-  /usr/local/lib/canopy/node_modules/http-server/bin/http-server build -p ${2:-3000}
+  $(npm root -g)/canopy-js/node_modules/http-server/bin/http-server build -p ${2:-3000}
   ;;
 ?|usage)
 echo  "Usage:"
