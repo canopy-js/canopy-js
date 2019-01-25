@@ -741,13 +741,17 @@ __webpack_require__.r(__webpack_exports__);
 
 var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) {
   var topicName = pathArray[0][0];
+  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
+
+  if (!sectionElementOfCurrentPath) {
+    throw "No section element found for path: " + pathArray;
+  }
 
   if (!originatesFromPopStateEvent) {
     Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
   }
 
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
-  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["createOrReplaceHeader"])(topicName);
   Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
   Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["clearDfsClasses"])(directionOfDfs);

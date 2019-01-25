@@ -22,9 +22,10 @@ import {
 
 const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) => {
   let topicName = pathArray[0][0];
+  const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
+  if (!sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }
   if (!originatesFromPopStateEvent) { setPath(pathArray); }
   document.title = documentTitleFor(topicName);
-  const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
 
   createOrReplaceHeader(topicName);
   deselectAllLinks();
