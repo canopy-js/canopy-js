@@ -1,9 +1,10 @@
 import {
   canopyContainer,
   siblingOfLinkLike,
-  firstLinkOfSection,
+  firstLinkOfSectionElement,
   childSectionElementOfParentLink,
-  parentLinkOfSection
+  parentLinkOfSection,
+  lastLinkOfSectionElement
 } from 'helpers/getters';
 
 function newNodeAlreadyPresent(anchorElement, domTree) {
@@ -15,14 +16,23 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
     }).length > 0;
 }
 
-function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath) {
+function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs) {
   if (providedLink) {
     return providedLink;
   }
 
+  let nextChildLink;
+  if (directionOfDfs === 1) {
+    nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
+  } else if (directionOfDfs === 2) {
+    nextChildLink = lastLinkOfSectionElement(sectionElementOfCurrentPath);
+  } else {
+    nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
+  }
+
   if (selectALink) {
     if (lastPathSegmentIsATopicRoot(pathArray)) {
-      return firstLinkOfSection(sectionElementOfCurrentPath) ||
+      return nextChildLink ||
       parentLinkOfSection(sectionElementOfCurrentPath);
     } else {
       return parentLinkOfSection(sectionElementOfCurrentPath);

@@ -20,7 +20,7 @@ import {
   addOpenLinkClass
 } from 'display/helpers';
 
-const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) => {
+const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) => {
   let topicName = pathArray[0][0];
   if (!originatesFromPopStateEvent) { setPath(pathArray); }
   document.title = documentTitleFor(topicName);
@@ -28,10 +28,10 @@ const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFro
 
   createOrReplaceHeader(topicName);
   deselectAllLinks();
-  clearDfsClasses(directionToPreserveDfsClassesIn);
+  clearDfsClasses(directionOfDfs);
   hideAllSectionElements();
 
-  let linkToSelect = determineLinkToSelect(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath);
+  let linkToSelect = determineLinkToSelect(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath);
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);

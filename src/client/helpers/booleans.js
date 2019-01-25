@@ -1,5 +1,5 @@
 import { currentRootSection, canopyContainer } from 'helpers/getters';
-import { sectionElementOfLink } from 'helpers/getters';
+import { sectionElementOfLink, linksOfSectionElement, sectionElementOfPath } from 'helpers/getters';
 
 function isInRootSection(linkElement) {
   return sectionElementOfLink(linkElement) === currentRootSection();
@@ -13,8 +13,17 @@ function isTreeRootSection(sectionElement) {
   return sectionElement.parentNode === canopyContainer;
 }
 
+function sectionHasNoChildLinks(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+  return linksOfSectionElement(sectionElement).length === 0;
+}
+
 export {
   isInRootSection,
   isATopicRootSection,
   isTreeRootSection,
+  sectionHasNoChildLinks,
+  sectionElementOfPathVisible
 };

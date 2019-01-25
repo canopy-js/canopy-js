@@ -98,7 +98,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#_canopy {\n  padding-top: 25px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 20%; }\n  #_canopy p {\n    padding-top: 10px;\n    padding-bottom: 10px;\n    font-size: 23px;\n    width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }*/ }\n    #_canopy a:hover {\n      text-decoration: underline; }\n    #_canopy a:focus {\n      outline: 0; }\n    #_canopy a.canopy-open-link {\n      text-decoration: underline; }\n    #_canopy a.canopy-selected-link {\n      text-shadow: .8px 0px 0px black; }\n      #_canopy a.canopy-selected-link.canopy-redundant-local-link {\n        text-decoration: underline black; }\n    #_canopy a.canopy-global-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-open-link {\n      color: #4078c0; }\n", ""]);
+exports.push([module.i, "#_canopy {\n  padding-top: 25px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 20%; }\n  #_canopy p {\n    padding-top: 10px;\n    padding-bottom: 10px;\n    font-size: 23px;\n    width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }\n    */ }\n    #_canopy a:hover {\n      text-decoration: underline; }\n    #_canopy a:focus {\n      outline: 0; }\n    #_canopy a.canopy-open-link {\n      text-decoration: underline; }\n    #_canopy a.canopy-selected-link {\n      text-shadow: .8px 0px 0px black; }\n      #_canopy a.canopy-selected-link.canopy-redundant-local-link {\n        text-decoration: underline black; }\n    #_canopy a.canopy-global-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0; }\n    #_canopy a.canopy-global-link.canopy-open-link {\n      color: #4078c0; }\n", ""]);
 
 // exports
 
@@ -739,7 +739,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) {
+var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) {
   var topicName = pathArray[0][0];
 
   if (!originatesFromPopStateEvent) {
@@ -750,9 +750,9 @@ var displayPath = function displayPath(pathArray, providedLinkToSelect, selectAL
   var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["createOrReplaceHeader"])(topicName);
   Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["clearDfsClasses"])(directionToPreserveDfsClassesIn);
+  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["clearDfsClasses"])(directionOfDfs);
   Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
-  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineLinkToSelect"])(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath);
+  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineLinkToSelect"])(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs);
   var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineSectionElementToDisplay"])(linkToSelect, sectionElementOfCurrentPath);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addSelectedLinkClass"])(linkToSelect);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenLinkClass"])(linkToSelect);
@@ -804,14 +804,24 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
   }).length > 0;
 }
 
-function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath) {
+function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs) {
   if (providedLink) {
     return providedLink;
   }
 
+  var nextChildLink;
+
+  if (directionOfDfs === 1) {
+    nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(sectionElementOfCurrentPath);
+  } else if (directionOfDfs === 2) {
+    nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastLinkOfSectionElement"])(sectionElementOfCurrentPath);
+  } else {
+    nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(sectionElementOfCurrentPath);
+  }
+
   if (selectALink) {
     if (lastPathSegmentIsATopicRoot(pathArray)) {
-      return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(sectionElementOfCurrentPath) || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
+      return nextChildLink || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
     } else {
       return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(sectionElementOfCurrentPath);
     }
@@ -941,8 +951,8 @@ function underlineLink(linkElement) {
 }
 
 function clearDfsClasses(directionToPreserveDfsClassesIn) {
-  var preserveForwardDfsClass = directionToPreserveDfsClassesIn === true;
-  var preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === false;
+  var preserveForwardDfsClass = directionToPreserveDfsClassesIn === 1;
+  var preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === 2;
   forEach(document.getElementsByTagName("a"), function (linkElement) {
     !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
     !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
@@ -971,7 +981,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var updateView = function updateView(pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn) {
+var updateView = function updateView(pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionOfDfs) {
   var _findLowestExtantSect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLowestExtantSectionElementOfPath"])(pathArray),
       lowestExtantSectionElementOfPath = _findLowestExtantSect.lowestExtantSectionElementOfPath,
       pathSuffixToRender = _findLowestExtantSect.pathSuffixToRender;
@@ -986,7 +996,7 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, o
       }
     }
 
-    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, originatesFromPopStateEvent, directionToPreserveDfsClassesIn);
+    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, originatesFromPopStateEvent, directionOfDfs);
   });
 };
 
@@ -998,7 +1008,7 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, o
 /*!****************************************!*\
   !*** ./src/client/helpers/booleans.js ***!
   \****************************************/
-/*! exports provided: isInRootSection, isATopicRootSection, isTreeRootSection */
+/*! exports provided: isInRootSection, isATopicRootSection, isTreeRootSection, sectionHasNoChildLinks, sectionElementOfPathVisible */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1006,6 +1016,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isInRootSection", function() { return isInRootSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isATopicRootSection", function() { return isATopicRootSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isTreeRootSection", function() { return isTreeRootSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionHasNoChildLinks", function() { return sectionHasNoChildLinks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionElementOfPathVisible", function() { return sectionElementOfPathVisible; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
 
@@ -1022,6 +1034,14 @@ function isTreeRootSection(sectionElement) {
   return sectionElement.parentNode === helpers_getters__WEBPACK_IMPORTED_MODULE_0__["canopyContainer"];
 }
 
+function sectionHasNoChildLinks(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
+  return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linksOfSectionElement"])(sectionElement).length === 0;
+}
+
 
 
 /***/ }),
@@ -1030,7 +1050,7 @@ function isTreeRootSection(sectionElement) {
 /*!***************************************!*\
   !*** ./src/client/helpers/getters.js ***!
   \***************************************/
-/*! exports provided: canopyContainer, defaultTopic, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, childSectionElementOfParentLink, sectionElementOfLink, metadataFromLink, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection, paragraphElementOfSection, linkAfter, linkBefore, firstChildLinkOfParentLink, lastChildLinkOfParentLink, firstLinkOfSection, enclosingTopicSectionOfLink, firstSiblingOf, lastSiblingOf, parentLinkOf, siblingOfLinkLike, linkOfSectionLike, linkOfSectionByTarget */
+/*! exports provided: canopyContainer, defaultTopic, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, childSectionElementOfParentLink, sectionElementOfLink, metadataFromLink, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection, paragraphElementOfSection, linksOfSectionElement, linkAfter, linkBefore, firstChildLinkOfParentLink, lastChildLinkOfParentLink, firstLinkOfSectionElement, lastLinkOfSectionElement, enclosingTopicSectionOfLink, firstSiblingOf, lastSiblingOf, parentLinkOf, siblingOfLinkLike, linkOfSectionLike, linkOfSectionByTarget */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1050,11 +1070,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findLowestExtantSectionElementOfPath", function() { return findLowestExtantSectionElementOfPath; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "openLinkOfSection", function() { return openLinkOfSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "paragraphElementOfSection", function() { return paragraphElementOfSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linksOfSectionElement", function() { return linksOfSectionElement; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkAfter", function() { return linkAfter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkBefore", function() { return linkBefore; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstChildLinkOfParentLink", function() { return firstChildLinkOfParentLink; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastChildLinkOfParentLink", function() { return lastChildLinkOfParentLink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstLinkOfSection", function() { return firstLinkOfSection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstLinkOfSectionElement", function() { return firstLinkOfSectionElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastLinkOfSectionElement", function() { return lastLinkOfSectionElement; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "enclosingTopicSectionOfLink", function() { return enclosingTopicSectionOfLink; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "firstSiblingOf", function() { return firstSiblingOf; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lastSiblingOf", function() { return lastSiblingOf; });
@@ -1178,6 +1200,10 @@ function findLowestExtantSectionElementOfPath(pathArray) {
 }
 
 function openLinkOfSection(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
   return linkOfSectionLike(sectionElement, function (linkElement) {
     return linkElement.classList.contains('canopy-open-link');
   });
@@ -1217,7 +1243,7 @@ function linkBefore(linkElement) {
   }
 }
 
-function firstOrLastChildOfParentLink(linkElement, first) {
+function firstChildLinkOfParentLink(linkElement) {
   if (linkElement === null) {
     return null;
   }
@@ -1228,31 +1254,50 @@ function firstOrLastChildOfParentLink(linkElement, first) {
     return null;
   }
 
-  var array = Array.from(sectionElement.firstElementChild.childNodes).filter(function (node) {
-    return node.tagName === 'A';
-  });
-
-  if (first) {
-    return array[0];
-  } else {
-    return array[array.length - 1];
-  }
-}
-
-function firstChildLinkOfParentLink(linkElement) {
-  return firstOrLastChildOfParentLink(linkElement, true);
+  var array = linksOfSectionElement(sectionElement);
+  return array[0];
 }
 
 function lastChildLinkOfParentLink(linkElement) {
-  return firstOrLastChildOfParentLink(linkElement, false);
+  if (linkElement === null) {
+    return null;
+  }
+
+  var sectionElement = childSectionElementOfParentLink(linkElement);
+
+  if (!sectionElement) {
+    return null;
+  }
+
+  var array = linksOfSectionElement(sectionElement);
+  return array[array.length - 1];
 }
 
-function firstLinkOfSection(sectionElement) {
+function linksOfSectionElement(sectionElement) {
+  return linksOfParagraph(paragraphElementOfSection(sectionElement));
+}
+
+function linksOfParagraph(paragraphElement) {
+  return Array.from(paragraphElement.childNodes).filter(function (linkElement) {
+    return linkElement.tagName === 'A';
+  });
+}
+
+function firstLinkOfSectionElement(sectionElement) {
   if (sectionElement === null) {
     return null;
   }
 
-  return sectionElement.querySelectorAll('a')[0] || null;
+  return linksOfSectionElement(sectionElement)[0] || null;
+}
+
+function lastLinkOfSectionElement(sectionElement) {
+  if (sectionElement === null) {
+    return null;
+  }
+
+  var array = linksOfSectionElement(sectionElement);
+  return array[array.length - 1] || null;
 }
 
 function enclosingTopicSectionOfLink(linkElement) {
@@ -1308,10 +1353,7 @@ function siblingOfLinkLike(linkElementArg, condition) {
 }
 
 function linkOfSectionLike(sectionElement, condition) {
-  var paragraphElement = paragraphElementOfSection(sectionElement);
-  return Array.from(paragraphElement.childNodes).find(function (linkElement) {
-    return linkElement.tagName === 'A' && condition(linkElement);
-  });
+  return linksOfSectionElement(sectionElement).find(condition);
 }
 
 function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
@@ -1498,9 +1540,9 @@ function moveDownward(cycle) {
     var _newTuple = [_finalTuple[0], Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic];
     pathArray.push(_newTuple);
 
-    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
+    var _linkElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathArray));
 
-    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, _linkElement);
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(pathArray, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_linkElement));
   }
 }
 
@@ -1551,43 +1593,79 @@ function moveDownOrRedirect(newTab) {
   }
 }
 
-function depthFirstSearch(forwardDirection, enterGlobalLinks) {
+function depthFirstSearch(direction, enterGlobalLinks) {
   var nextLink;
-  var previouslySelectedLinkClassName = forwardDirection ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
+  var previouslySelectedLinkClassName = direction === 1 ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
   var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
-  var lastChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var firstChildToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var nextPreviouslySelectedLink; // Entering a global link
 
-  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' || enterGlobalLinks)) {
-    nextLink = firstChildToVisit;
-  }
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && enterGlobalLinks && previouslySelectedLink !== Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) {
+    var targetTopic = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic;
+    var pathToCurrentLink = Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
+    var newPathArray = pathToCurrentLink.concat([[targetTopic, targetTopic]]);
+    var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(newPathArray);
 
-  var nextSiblingToVisit = forwardDirection ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+    if (!sectionElement || !Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["openLinkOfSection"])(sectionElement)) {
+      if (previouslySelectedLink) {
+        previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+      }
 
-  if (!nextLink) {
-    nextLink = nextSiblingToVisit;
-  }
-
-  var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
-
-  if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
-    nextLink = parentLink;
-  } // update previous link unless it didn't change
+      Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.add(previouslySelectedLinkClassName);
+      return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray, null, true, null, direction);
+    }
+  } // Closing a global link with no children so selection never changes
 
 
-  if (nextLink) {
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["sectionHasNoChildLinks"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])())) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
     if (previouslySelectedLink) {
       previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
     }
 
     Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.add(previouslySelectedLinkClassName);
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])().slice(0, -1), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), false, null, direction);
+  } // Enter a parent link
+
+
+  var lastChildToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var firstChildToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+
+  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'redundant-local') {
+    nextLink = firstChildToVisit;
+  } // Move to the next sibling
+
+
+  var nextSiblingToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+
+  if (!nextLink) {
+    nextLink = nextSiblingToVisit;
+  } // Move to parent
+
+
+  var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
+
+  if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
+    nextLink = parentLink;
+  } // Move to global parent
+
+
+  var globalParentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
+
+  if (!nextLink && parentLink.dataset.type === 'global' && enterGlobalLinks) {
+    nextLink = globalParentLink;
+    nextPreviouslySelectedLink = parentLink;
   }
 
   if (!nextLink) {
     return;
+  } // Update "previous link"
+
+
+  if (previouslySelectedLink) {
+    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
   }
 
-  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, forwardDirection);
+  (nextPreviouslySelectedLink || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()).classList.add(previouslySelectedLinkClassName);
+  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, direction);
 }
 
 function goToEnclosingTopic() {
@@ -1678,10 +1756,10 @@ var shortcutRelationships = {
   'shift-escape': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["goToEnclosingTopic"],
   'return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"],
   'command-return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"].bind(null, true),
-  'tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, true),
-  'alt-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, true, true),
-  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, false),
-  'alt-shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, false, true)
+  'tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1),
+  'alt-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1, true),
+  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2),
+  'alt-shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2, true)
 };
 var keyNames = (_keyNames = {
   37: 'left',
@@ -1757,11 +1835,11 @@ var parsePathString = function parsePathString(pathStringArg) {
 };
 
 function fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUnits) {
-  // eg /Topic/#Subtopic/A#B
-  if (pathString.match(/^\/\w+\/#\w+\/?/)) {
-    var newFirstItem = slashSeparatedUnits[0] + slashSeparatedUnits[1];
-    var newArray = slashSeparatedUnits.slice(2);
-    newArray.unshift(newFirstItem);
+  // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
+  if (pathString.match(/\/\w+\/#\w+\/?/)) {
+    var newLastItem = slashSeparatedUnits[slashSeparatedUnits.length - 2] + slashSeparatedUnits[slashSeparatedUnits.length - 1];
+    var newArray = slashSeparatedUnits.slice(0, slashSeparatedUnits.length - 2);
+    newArray.push(newLastItem);
     return newArray;
   }
 

@@ -1,4 +1,4 @@
-import { currentSection, selectedLink, firstLinkOfSection } from 'helpers/getters';
+import { currentSection, selectedLink } from 'helpers/getters';
 import {
   moveUpward,
   moveDownward,
@@ -58,9 +58,10 @@ const shortcutRelationships = {
   'return': moveDownOrRedirect,
   'command-return': moveDownOrRedirect.bind(null, true),
 
-  'tab': depthFirstSearch.bind(null, true),
-  'alt-tab': depthFirstSearch.bind(null, true, true),
-  'shift-tab': depthFirstSearch.bind(null, false)
+  'tab': depthFirstSearch.bind(null, 1),
+  'alt-tab': depthFirstSearch.bind(null, 1, true),
+  'shift-tab': depthFirstSearch.bind(null, 2),
+  'alt-shift-tab': depthFirstSearch.bind(null, 2, true),
 }
 
 const keyNames = {
