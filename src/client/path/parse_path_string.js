@@ -19,10 +19,11 @@ const parsePathString = (pathStringArg) => {
 
 function fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUnits) {
   // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
-  if (pathString.match(/^\/\w+\/#\w+\/?/)) {
-    let newFirstItem = slashSeparatedUnits[0] + slashSeparatedUnits[1];
-    let newArray = slashSeparatedUnits.slice(2);
-    newArray.unshift(newFirstItem);
+  if (pathString.match(/\/\w+\/#\w+\/?/)) {
+    let newLastItem = slashSeparatedUnits[slashSeparatedUnits.length - 2] +
+      slashSeparatedUnits[slashSeparatedUnits.length - 1];
+    let newArray = slashSeparatedUnits.slice(0, slashSeparatedUnits.length - 2);
+    newArray.push(newLastItem);
     return newArray;
   }
 

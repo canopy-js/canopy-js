@@ -47,3 +47,9 @@ test('Interpret fragment without topic as accidentally inserted slash', () => {
   let pathArray = parsePathString(path);
   expect(pathArray).toEqual([['Topic', 'Subtopic']]);
 });
+
+test('Interpret fragment without topic after first as accidentally inserted slash', () => {
+  let path = '/Topic/Subtopic1/#Subtopic2'
+  let pathArray = parsePathString(path);
+  expect(pathArray).toEqual([['Topic', 'Topic'], ['Subtopic1', 'Subtopic2']]);
+});
