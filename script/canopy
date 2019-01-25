@@ -30,6 +30,15 @@ EOF
     cp build/index.html $D
   done
 
+  for D1 in `find "$PWD/build" ! -name '*_data*' -type d -mindepth 1`; do
+    for D2 in `find "$PWD/build" ! -name '*_data*' -type d -mindepth 1`; do
+      if [ ! -L "${D2}/$(basename $D1)" ]; then
+        rm -f "${D2}/$(basename $D1)"
+        ln -s $D1 $D2
+      fi
+    done
+  done
+
   cp /usr/local/lib/canopy/dist/canopy.js build/canopy.js
   CANOPY_DEBUG=true node /usr/local/lib/canopy/dist/parser.js .
 ;;
