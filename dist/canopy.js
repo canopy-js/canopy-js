@@ -112,7 +112,83 @@ exports.push([module.i, "#_canopy {\n  padding-top: 25px;\n  padding-bottom: 55p
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: ENOENT: no such file or directory, open '/Users/Allen/canopy/node_modules/css-loader/lib/css-base.js'");
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function (useSourceMap) {
+  var list = []; // return the list of modules as css string
+
+  list.toString = function toString() {
+    return this.map(function (item) {
+      var content = cssWithMappingToString(item, useSourceMap);
+
+      if (item[2]) {
+        return "@media " + item[2] + "{" + content + "}";
+      } else {
+        return content;
+      }
+    }).join("");
+  }; // import a list of modules into the list
+
+
+  list.i = function (modules, mediaQuery) {
+    if (typeof modules === "string") modules = [[null, modules, ""]];
+    var alreadyImportedModules = {};
+
+    for (var i = 0; i < this.length; i++) {
+      var id = this[i][0];
+      if (typeof id === "number") alreadyImportedModules[id] = true;
+    }
+
+    for (i = 0; i < modules.length; i++) {
+      var item = modules[i]; // skip already imported module
+      // this implementation is not 100% perfect for weird media query combinations
+      //  when a module is imported multiple times with different media queries.
+      //  I hope this will never occur (Hey this way we have smaller bundles)
+
+      if (typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+        if (mediaQuery && !item[2]) {
+          item[2] = mediaQuery;
+        } else if (mediaQuery) {
+          item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+        }
+
+        list.push(item);
+      }
+    }
+  };
+
+  return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+  var content = item[1] || '';
+  var cssMapping = item[3];
+
+  if (!cssMapping) {
+    return content;
+  }
+
+  if (useSourceMap && typeof btoa === 'function') {
+    var sourceMapping = toComment(cssMapping);
+    var sourceURLs = cssMapping.sources.map(function (source) {
+      return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */';
+    });
+    return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+  }
+
+  return [content].join('\n');
+} // Adapted from convert-source-map (MIT)
+
+
+function toComment(sourceMap) {
+  // eslint-disable-next-line no-undef
+  var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+  var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+  return '/*# ' + data + ' */';
+}
 
 /***/ }),
 
@@ -121,9 +197,501 @@ throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index
   !*** ./node_modules/style-loader/lib/addStyles.js ***!
   \****************************************************/
 /*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+
+var stylesInDom = {};
+
+var	memoize = function (fn) {
+	var memo;
+
+	return function () {
+		if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+		return memo;
+	};
+};
+
+var isOldIE = memoize(function () {
+	// Test for IE <= 9 as proposed by Browserhacks
+	// @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+	// Tests for existence of standard globals is to allow style-loader
+	// to operate correctly into non-standard environments
+	// @see https://github.com/webpack-contrib/style-loader/issues/177
+	return window && document && document.all && !window.atob;
+});
+
+var getTarget = function (target, parent) {
+  if (parent){
+    return parent.querySelector(target);
+  }
+  return document.querySelector(target);
+};
+
+var getElement = (function (fn) {
+	var memo = {};
+
+	return function(target, parent) {
+                // If passing function in options, then use it for resolve "head" element.
+                // Useful for Shadow Root style i.e
+                // {
+                //   insertInto: function () { return document.querySelector("#foo").shadowRoot }
+                // }
+                if (typeof target === 'function') {
+                        return target();
+                }
+                if (typeof memo[target] === "undefined") {
+			var styleTarget = getTarget.call(this, target, parent);
+			// Special case to return head of iframe instead of iframe itself
+			if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+				try {
+					// This will throw an exception if access to iframe is blocked
+					// due to cross-origin restrictions
+					styleTarget = styleTarget.contentDocument.head;
+				} catch(e) {
+					styleTarget = null;
+				}
+			}
+			memo[target] = styleTarget;
+		}
+		return memo[target]
+	};
+})();
+
+var singleton = null;
+var	singletonCounter = 0;
+var	stylesInsertedAtTop = [];
+
+var	fixUrls = __webpack_require__(/*! ./urls */ "./node_modules/style-loader/lib/urls.js");
+
+module.exports = function(list, options) {
+	if (typeof DEBUG !== "undefined" && DEBUG) {
+		if (typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (!options.singleton && typeof options.singleton !== "boolean") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+        if (!options.insertInto) options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (!options.insertAt) options.insertAt = "bottom";
+
+	var styles = listToStyles(list, options);
+
+	addStylesToDom(styles, options);
+
+	return function update (newList) {
+		var mayRemove = [];
+
+		for (var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+
+		if(newList) {
+			var newStyles = listToStyles(newList, options);
+			addStylesToDom(newStyles, options);
+		}
+
+		for (var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+
+			if(domStyle.refs === 0) {
+				for (var j = 0; j < domStyle.parts.length; j++) domStyle.parts[j]();
+
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom (styles, options) {
+	for (var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+
+		if(domStyle) {
+			domStyle.refs++;
+
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles (list, options) {
+	var styles = [];
+	var newStyles = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = options.base ? item[0] + options.base : item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+
+		if(!newStyles[id]) styles.push(newStyles[id] = {id: id, parts: [part]});
+		else newStyles[id].parts.push(part);
+	}
+
+	return styles;
+}
+
+function insertStyleElement (options, style) {
+	var target = getElement(options.insertInto)
+
+	if (!target) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+
+	var lastStyleElementInsertedAtTop = stylesInsertedAtTop[stylesInsertedAtTop.length - 1];
+
+	if (options.insertAt === "top") {
+		if (!lastStyleElementInsertedAtTop) {
+			target.insertBefore(style, target.firstChild);
+		} else if (lastStyleElementInsertedAtTop.nextSibling) {
+			target.insertBefore(style, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			target.appendChild(style);
+		}
+		stylesInsertedAtTop.push(style);
+	} else if (options.insertAt === "bottom") {
+		target.appendChild(style);
+	} else if (typeof options.insertAt === "object" && options.insertAt.before) {
+		var nextSibling = getElement(options.insertAt.before, target);
+		target.insertBefore(style, nextSibling);
+	} else {
+		throw new Error("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
+	}
+}
+
+function removeStyleElement (style) {
+	if (style.parentNode === null) return false;
+	style.parentNode.removeChild(style);
+
+	var idx = stylesInsertedAtTop.indexOf(style);
+	if(idx >= 0) {
+		stylesInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement (options) {
+	var style = document.createElement("style");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+
+	if(options.attrs.nonce === undefined) {
+		var nonce = getNonce();
+		if (nonce) {
+			options.attrs.nonce = nonce;
+		}
+	}
+
+	addAttrs(style, options.attrs);
+	insertStyleElement(options, style);
+
+	return style;
+}
+
+function createLinkElement (options) {
+	var link = document.createElement("link");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+	options.attrs.rel = "stylesheet";
+
+	addAttrs(link, options.attrs);
+	insertStyleElement(options, link);
+
+	return link;
+}
+
+function addAttrs (el, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		el.setAttribute(key, attrs[key]);
+	});
+}
+
+function getNonce() {
+	if (false) {}
+
+	return __webpack_require__.nc;
+}
+
+function addStyle (obj, options) {
+	var style, update, remove, result;
+
+	// If a transform function was defined, run it on the css
+	if (options.transform && obj.css) {
+	    result = typeof options.transform === 'function'
+		 ? options.transform(obj.css) 
+		 : options.transform.default(obj.css);
+
+	    if (result) {
+	    	// If transform returns a value, use that instead of the original css.
+	    	// This allows running runtime transformations on the css.
+	    	obj.css = result;
+	    } else {
+	    	// If the transform function returns a falsy value, don't add this css.
+	    	// This allows conditional loading of css
+	    	return function() {
+	    		// noop
+	    	};
+	    }
+	}
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+
+		style = singleton || (singleton = createStyleElement(options));
+
+		update = applyToSingletonTag.bind(null, style, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+
+	} else if (
+		obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function"
+	) {
+		style = createLinkElement(options);
+		update = updateLink.bind(null, style, options);
+		remove = function () {
+			removeStyleElement(style);
+
+			if(style.href) URL.revokeObjectURL(style.href);
+		};
+	} else {
+		style = createStyleElement(options);
+		update = applyToTag.bind(null, style);
+		remove = function () {
+			removeStyleElement(style);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle (newObj) {
+		if (newObj) {
+			if (
+				newObj.css === obj.css &&
+				newObj.media === obj.media &&
+				newObj.sourceMap === obj.sourceMap
+			) {
+				return;
+			}
+
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag (style, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (style.styleSheet) {
+		style.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = style.childNodes;
+
+		if (childNodes[index]) style.removeChild(childNodes[index]);
+
+		if (childNodes.length) {
+			style.insertBefore(cssNode, childNodes[index]);
+		} else {
+			style.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag (style, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		style.setAttribute("media", media)
+	}
+
+	if(style.styleSheet) {
+		style.styleSheet.cssText = css;
+	} else {
+		while(style.firstChild) {
+			style.removeChild(style.firstChild);
+		}
+
+		style.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink (link, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/*
+		If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+		and there is no publicPath defined then lets turn convertToAbsoluteUrls
+		on by default.  Otherwise default to the convertToAbsoluteUrls option
+		directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls) {
+		css = fixUrls(css);
+	}
+
+	if (sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = link.href;
+
+	link.href = URL.createObjectURL(blob);
+
+	if(oldSrc) URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/lib/urls.js":
+/*!***********************************************!*\
+  !*** ./node_modules/style-loader/lib/urls.js ***!
+  \***********************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
-throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/Users/Allen/canopy/node_modules/style-loader/lib/addStyles.js'");
+/**
+ * When source maps are enabled, `style-loader` uses a link element with a data-uri to
+ * embed the css on the page. This breaks all relative urls because now they are relative to a
+ * bundle instead of the current page.
+ *
+ * One solution is to only use full urls, but that may be impossible.
+ *
+ * Instead, this function "fixes" the relative urls to be absolute according to the current page location.
+ *
+ * A rudimentary test suite is located at `test/fixUrls.js` and can be run via the `npm test` command.
+ *
+ */
+module.exports = function (css) {
+  // get current location
+  var location = typeof window !== "undefined" && window.location;
+
+  if (!location) {
+    throw new Error("fixUrls requires window.location");
+  } // blank or null?
+
+
+  if (!css || typeof css !== "string") {
+    return css;
+  }
+
+  var baseUrl = location.protocol + "//" + location.host;
+  var currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/"); // convert each url(...)
+
+  /*
+  This regular expression is just a way to recursively match brackets within
+  a string.
+  	 /url\s*\(  = Match on the word "url" with any whitespace after it and then a parens
+     (  = Start a capturing group
+       (?:  = Start a non-capturing group
+           [^)(]  = Match anything that isn't a parentheses
+           |  = OR
+           \(  = Match a start parentheses
+               (?:  = Start another non-capturing groups
+                   [^)(]+  = Match anything that isn't a parentheses
+                   |  = OR
+                   \(  = Match a start parentheses
+                       [^)(]*  = Match anything that isn't a parentheses
+                   \)  = Match a end parentheses
+               )  = End Group
+               *\) = Match anything and then a close parens
+           )  = Close non-capturing group
+           *  = Match anything
+        )  = Close capturing group
+   \)  = Match a close parens
+  	 /gi  = Get all matches, not the first.  Be case insensitive.
+   */
+
+  var fixedCss = css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function (fullMatch, origUrl) {
+    // strip quotes (if they exist)
+    var unquotedOrigUrl = origUrl.trim().replace(/^"(.*)"$/, function (o, $1) {
+      return $1;
+    }).replace(/^'(.*)'$/, function (o, $1) {
+      return $1;
+    }); // already a full url? no change
+
+    if (/^(#|data:|http:\/\/|https:\/\/|file:\/\/\/|\s*$)/i.test(unquotedOrigUrl)) {
+      return fullMatch;
+    } // convert the url to a full url
+
+
+    var newUrl;
+
+    if (unquotedOrigUrl.indexOf("//") === 0) {
+      //TODO: should we add protocol?
+      newUrl = unquotedOrigUrl;
+    } else if (unquotedOrigUrl.indexOf("/") === 0) {
+      // path should be relative to the base url
+      newUrl = baseUrl + unquotedOrigUrl; // already starts with '/'
+    } else {
+      // path should be relative to current directory
+      newUrl = currentDir + unquotedOrigUrl.replace(/^\.\//, ""); // Strip leading './'
+    } // send back the fixed url(...)
+
+
+    return "url(" + JSON.stringify(newUrl) + ")";
+  }); // send back the fixed css
+
+  return fixedCss;
+};
 
 /***/ }),
 
@@ -164,14 +732,12 @@ Object(display_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
-/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
+/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
 
 
 
 
-
-var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) {
+var displayPath = function displayPath(pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) {
   var topicName = pathArray[0][0];
   var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
 
@@ -184,14 +750,14 @@ var displayPath = function displayPath(pathArray, providedLinkToSelect, selectAL
   }
 
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
-  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["createOrReplaceHeader"])(topicName);
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["clearDfsClasses"])(directionOfDfs);
-  Object(display_reset_page__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
-  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineLinkToSelect"])(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs);
-  var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["determineSectionElementToDisplay"])(linkToSelect, sectionElementOfCurrentPath);
-  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addSelectedLinkClass"])(linkToSelect);
-  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenLinkClass"])(linkToSelect);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["createOrReplaceHeader"])(topicName);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["updateDfsClasses"])(dfsDirectionInteger);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
+  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineLinkToSelect"])(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger);
+  var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, sectionElementOfCurrentPath);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addSelectedLinkClass"])(linkToSelect);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addOpenLinkClass"])(linkToSelect);
   displayPathTo(sectionElementToDisplay);
   window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].scrollHeight);
 };
@@ -205,7 +771,7 @@ var displayPathTo = function displayPathTo(sectionElement) {
 
   var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["parentLinkOfSection"])(sectionElement);
   parentLink.classList.add('canopy-open-link');
-  Object(display_helpers__WEBPACK_IMPORTED_MODULE_3__["addOpenClassToRedundantSiblings"])(parentLink);
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addOpenClassToRedundantSiblings"])(parentLink);
   var parentSectionElement = parentLink.parentNode.parentNode;
   displayPathTo(parentSectionElement);
 };
@@ -218,7 +784,7 @@ var displayPathTo = function displayPathTo(sectionElement) {
 /*!***************************************!*\
   !*** ./src/client/display/helpers.js ***!
   \***************************************/
-/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, addOpenLinkClass, addOpenClassToRedundantSiblings */
+/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, addOpenLinkClass, addOpenClassToRedundantSiblings, moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, updateDfsClasses */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -231,6 +797,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSelectedLinkClass", function() { return addSelectedLinkClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addOpenLinkClass", function() { return addOpenLinkClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addOpenClassToRedundantSiblings", function() { return addOpenClassToRedundantSiblings; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveSelectedSectionClass", function() { return moveSelectedSectionClass; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideAllSectionElements", function() { return hideAllSectionElements; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deselectAllLinks", function() { return deselectAllLinks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateDfsClasses", function() { return updateDfsClasses; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
 
@@ -240,16 +810,16 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
   }).length > 0;
 }
 
-function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs) {
+function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger) {
   if (providedLink) {
     return providedLink;
   }
 
   var nextChildLink;
 
-  if (directionOfDfs === 1) {
+  if (dfsDirectionInteger === 1) {
     nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(sectionElementOfCurrentPath);
-  } else if (directionOfDfs === 2) {
+  } else if (dfsDirectionInteger === 2) {
     nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastLinkOfSectionElement"])(sectionElementOfCurrentPath);
   } else {
     nextChildLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(sectionElementOfCurrentPath);
@@ -324,26 +894,6 @@ function addOpenClassToRedundantSiblings(parentLink) {
   });
 }
 
-
-
-/***/ }),
-
-/***/ "./src/client/display/reset_page.js":
-/*!******************************************!*\
-  !*** ./src/client/display/reset_page.js ***!
-  \******************************************/
-/*! exports provided: moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, clearDfsClasses */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveSelectedSectionClass", function() { return moveSelectedSectionClass; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideAllSectionElements", function() { return hideAllSectionElements; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deselectAllLinks", function() { return deselectAllLinks; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "clearDfsClasses", function() { return clearDfsClasses; });
-/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-
-
 function forEach(list, callback) {
   for (var i = 0; i < list.length; i++) {
     callback(list[i]);
@@ -386,9 +936,17 @@ function underlineLink(linkElement) {
   linkElement.classList.add('canopy-open-link');
 }
 
-function clearDfsClasses(directionToPreserveDfsClassesIn) {
-  var preserveForwardDfsClass = directionToPreserveDfsClassesIn === 1;
-  var preserveBackwardsDfsClass = directionToPreserveDfsClassesIn === 2;
+function updateDfsClasses(dfsDirectionInteger) {
+  var previouslySelectedLinkClassName = dfsDirectionInteger === 1 ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
+  var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
+
+  if (previouslySelectedLink) {
+    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+  }
+
+  Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])() && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.add(previouslySelectedLinkClassName);
+  var preserveForwardDfsClass = dfsDirectionInteger === 1;
+  var preserveBackwardsDfsClass = dfsDirectionInteger === 2;
   forEach(document.getElementsByTagName("a"), function (linkElement) {
     !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
     !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
@@ -417,7 +975,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var updateView = function updateView(pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, directionOfDfs) {
+var updateView = function updateView(pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) {
   var _findLowestExtantSect = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLowestExtantSectionElementOfPath"])(pathArray),
       lowestExtantSectionElementOfPath = _findLowestExtantSect.lowestExtantSectionElementOfPath,
       pathSuffixToRender = _findLowestExtantSect.pathSuffixToRender;
@@ -432,7 +990,7 @@ var updateView = function updateView(pathArray, selectedLinkData, selectALink, o
       }
     }
 
-    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, originatesFromPopStateEvent, directionOfDfs);
+    Object(display_display_path__WEBPACK_IMPORTED_MODULE_1__["default"])(pathArray, selectedLinkData && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_2__["findLinkFromMetadata"])(selectedLinkData), selectALink, originatesFromPopStateEvent, dfsDirectionInteger);
   });
 };
 
@@ -646,13 +1204,17 @@ function openLinkOfSection(sectionElement) {
 }
 
 function paragraphElementOfSection(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
   return Array.from(sectionElement.childNodes).find(function (element) {
     return element.tagName === 'P';
   });
 }
 
 function linkAfter(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -666,7 +1228,7 @@ function linkAfter(linkElement) {
 }
 
 function linkBefore(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -680,7 +1242,7 @@ function linkBefore(linkElement) {
 }
 
 function firstChildLinkOfParentLink(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -695,7 +1257,7 @@ function firstChildLinkOfParentLink(linkElement) {
 }
 
 function lastChildLinkOfParentLink(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -710,17 +1272,25 @@ function lastChildLinkOfParentLink(linkElement) {
 }
 
 function linksOfSectionElement(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
   return linksOfParagraph(paragraphElementOfSection(sectionElement));
 }
 
 function linksOfParagraph(paragraphElement) {
+  if (!paragraphElement) {
+    return null;
+  }
+
   return Array.from(paragraphElement.childNodes).filter(function (linkElement) {
     return linkElement.tagName === 'A';
   });
 }
 
 function firstLinkOfSectionElement(sectionElement) {
-  if (sectionElement === null) {
+  if (!sectionElement) {
     return null;
   }
 
@@ -728,7 +1298,7 @@ function firstLinkOfSectionElement(sectionElement) {
 }
 
 function lastLinkOfSectionElement(sectionElement) {
-  if (sectionElement === null) {
+  if (!sectionElement) {
     return null;
   }
 
@@ -753,7 +1323,7 @@ function enclosingTopicSectionOfLink(linkElement) {
 }
 
 function firstSiblingOf(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -762,7 +1332,7 @@ function firstSiblingOf(linkElement) {
 }
 
 function lastSiblingOf(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -771,7 +1341,7 @@ function lastSiblingOf(linkElement) {
 }
 
 function parentLinkOf(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -910,7 +1480,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
 /* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
-/* harmony import */ var display_reset_page__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! display/reset_page */ "./src/client/display/reset_page.js");
+/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
 /* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
 
 
@@ -985,7 +1555,7 @@ function moveDownward(cycle) {
 function moveLeftward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on inlined global with no child links
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on opened global link with no child links
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
@@ -1001,7 +1571,7 @@ function moveLeftward() {
 function moveRightward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle left on inlined global with no child links
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])(); // handle right on opened global link with no child links
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
@@ -1029,81 +1599,61 @@ function moveDownOrRedirect(newTab) {
   }
 }
 
-function depthFirstSearch(direction, enterGlobalLinks) {
-  var nextLink;
-  var previouslySelectedLinkClassName = direction === 1 ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
-  var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
-  var nextPreviouslySelectedLink; // Enter a global link
+function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLinks) {
+  var previouslySelectedLinkClassName = dfsDirectionInteger === 1 ? 'canopy-dfs-previously-selected-link' : 'canopy-reverse-dfs-previously-selected-link';
+  var previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName); // Enter a global link
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && enterGlobalLinks && previouslySelectedLink !== Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) {
-    var targetTopic = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic;
-    var pathToCurrentLink = Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
-    var newPathArray = pathToCurrentLink.concat([[targetTopic, targetTopic]]);
-    var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(newPathArray);
+  var lastChildLink = dfsDirectionInteger === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastLinkOfSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])())) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstLinkOfSectionElement"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
+  var targetTopic = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic;
+  var pathToCurrentLink = Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
+  var newPathArray = pathToCurrentLink.concat([[targetTopic, targetTopic]]);
+  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfPath"])(pathToCurrentLink);
+  var alreadyVisitedGlobalLinkIfChildren = !lastChildLink || !previouslySelectedLink || previouslySelectedLink !== lastChildLink;
+  var alreadyVisitedGlobalLinkIfNoChildren = previouslySelectedLink !== Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])();
+  var alreadyVisitedGlobalLink = alreadyVisitedGlobalLinkIfChildren && alreadyVisitedGlobalLinkIfNoChildren;
+  var childSectionIsNotAlreadyVisible = !sectionElement || !Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["openLinkOfSection"])(sectionElement);
 
-    if (!sectionElement || !Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["openLinkOfSection"])(sectionElement)) {
-      if (previouslySelectedLink) {
-        previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
-      }
-
-      Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.add(previouslySelectedLinkClassName);
-      return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray, null, true, null, direction);
-    }
-  } // Close a global link with no children so selection never changes
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && enterGlobalLinks && alreadyVisitedGlobalLink && childSectionIsNotAlreadyVisible) {
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(newPathArray, null, true, null, dfsDirectionInteger);
+  } // Close a global link with no children
 
 
-  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["sectionHasNoChildLinks"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])())) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
-    if (previouslySelectedLink) {
-      previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
-    }
-
-    Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.add(previouslySelectedLinkClassName);
-    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])().slice(0, -1), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), false, null, direction);
+  if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && closeGlobalLinks && Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["sectionHasNoChildLinks"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])())) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_6__["default"])().slice(0, -1), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), false, null, dfsDirectionInteger);
   } // Enter a parent link
 
 
-  var lastChildToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var firstChildToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var lastChildToVisit = dfsDirectionInteger === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var firstChildToVisit = dfsDirectionInteger === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["firstChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["lastChildLinkOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
-  if ((!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'redundant-local') {
-    nextLink = firstChildToVisit;
+  if (firstChildToVisit && (!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'global' && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type !== 'redundant-local') {
+    var nextLink = firstChildToVisit;
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, dfsDirectionInteger);
   } // Move to the next sibling
 
 
-  var nextSiblingToVisit = direction === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
+  var nextSiblingToVisit = dfsDirectionInteger === 1 ? Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkAfter"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) : Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["linkBefore"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
 
-  if (!nextLink) {
-    nextLink = nextSiblingToVisit;
+  if (nextSiblingToVisit) {
+    var _nextLink = nextSiblingToVisit;
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(_nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_nextLink), null, null, dfsDirectionInteger);
   } // Move to parent
 
 
   var parentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
 
-  if (!nextLink && parentLink && parentLink.dataset.type !== 'global') {
-    nextLink = parentLink;
+  if (parentLink && parentLink.dataset.type !== 'global') {
+    var _nextLink2 = parentLink;
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(_nextLink2)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_nextLink2), null, null, dfsDirectionInteger);
   } // Move to parent link that is a global link
 
 
   var globalParentLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["parentLinkOfSection"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()));
 
-  if (!nextLink && parentLink.dataset.type === 'global' && enterGlobalLinks) {
-    nextLink = globalParentLink;
-    nextPreviouslySelectedLink = parentLink;
-  } // Do nothing
-
-
-  if (!nextLink) {
-    return;
-  } // Update "previous link"
-
-
-  if (previouslySelectedLink) {
-    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+  if (globalParentLink && globalParentLink.dataset.type === 'global' && closeGlobalLinks) {
+    var _nextLink3 = globalParentLink;
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(_nextLink3)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(_nextLink3), null, null, dfsDirectionInteger);
   }
-
-  (nextPreviouslySelectedLink || Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()).classList.add(previouslySelectedLinkClassName); // Update the view
-
-  Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_path_for_section_element__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(nextLink)), Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(nextLink), null, null, direction);
 }
 
 function goToEnclosingTopic() {
@@ -1140,23 +1690,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! keys/key_handlers */ "./src/client/keys/key_handlers.js");
 /* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
 /* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
-var _keyNames;
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
 
 
 
@@ -1167,9 +1700,8 @@ var registerKeyListeners = function registerKeyListeners() {
     var modifiers = (e.metaKey ? 'command-' : '') + (e.altKey ? 'alt-' : '') + (e.ctrlKey ? 'ctrl-' : '') + (e.shiftKey ? 'shift-' : '');
     var keyName = keyNames[e.keyCode];
     var shortcutName = modifiers + keyName;
-    var preventDefaultList = ['space', 'tab'];
 
-    if (preventDefaultList.includes(keyName)) {
+    if (keyName === 'tab') {
       e.preventDefault();
     }
 
@@ -1194,12 +1726,14 @@ var shortcutRelationships = {
   'shift-escape': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["goToEnclosingTopic"],
   'return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"],
   'command-return': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["moveDownOrRedirect"].bind(null, true),
-  'tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1),
-  'alt-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1, true),
-  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2),
-  'alt-shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2, true)
+  'tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1, false, false),
+  'alt-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1, true, true),
+  '`': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 1, false, true),
+  'shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2, false, false),
+  'alt-shift-tab': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2, true, true),
+  'shift-`': keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__["depthFirstSearch"].bind(null, 2, false, true)
 };
-var keyNames = (_keyNames = {
+var keyNames = {
   37: 'left',
   39: 'right',
   38: 'up',
@@ -1210,41 +1744,16 @@ var keyNames = (_keyNames = {
   74: 'j',
   76: 'l',
   186: ';',
-  222: '\'',
-  220: '\\',
-  89: 'y',
-  85: 'u',
-  73: 'i',
-  79: 'o',
-  80: 'p',
-  219: '[',
-  221: ']',
   13: 'return',
   9: 'tab',
   27: 'escape',
-  8: 'backspace',
-  32: 'space',
-  78: 'n',
-  77: 'm',
-  188: ',',
-  190: '.',
-  191: '/',
   192: '`',
   49: '1',
   50: '2',
   51: '3',
   52: '4',
-  53: '5',
-  81: 'q',
-  87: 'w',
-  69: 'e',
-  82: 'r',
-  84: 't',
-  65: 'a',
-  83: 's',
-  68: 'd',
-  70: 'f'
-}, _defineProperty(_keyNames, "71", 'g'), _defineProperty(_keyNames, 90, 'z'), _defineProperty(_keyNames, 88, 'x'), _defineProperty(_keyNames, 67, 'c'), _defineProperty(_keyNames, 86, 'v'), _defineProperty(_keyNames, 66, 'b'), _defineProperty(_keyNames, 55, '7'), _defineProperty(_keyNames, 56, '8'), _defineProperty(_keyNames, 57, '9'), _defineProperty(_keyNames, 48, '0'), _defineProperty(_keyNames, 189, '-'), _defineProperty(_keyNames, 187, '='), _keyNames);
+  53: '5'
+};
 /* harmony default export */ __webpack_exports__["default"] = (registerKeyListeners);
 
 /***/ }),

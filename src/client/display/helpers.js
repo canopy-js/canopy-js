@@ -4,7 +4,8 @@ import {
   firstLinkOfSectionElement,
   childSectionElementOfParentLink,
   parentLinkOfSection,
-  lastLinkOfSectionElement
+  lastLinkOfSectionElement,
+  selectedLink
 } from 'helpers/getters';
 
 function newNodeAlreadyPresent(anchorElement, domTree) {
@@ -16,15 +17,15 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
     }).length > 0;
 }
 
-function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs) {
+function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger) {
   if (providedLink) {
     return providedLink;
   }
 
   let nextChildLink;
-  if (directionOfDfs === 1) {
+  if (dfsDirectionInteger === 1) {
     nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
-  } else if (directionOfDfs === 2) {
+  } else if (dfsDirectionInteger === 2) {
     nextChildLink = lastLinkOfSectionElement(sectionElementOfCurrentPath);
   } else {
     nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
@@ -105,6 +106,69 @@ function addOpenClassToRedundantSiblings(parentLink) {
   });
 }
 
+
+function forEach(list, callback) {
+  for (let i = 0; i < list.length; i++) {
+    callback(list[i]);
+  }
+}
+
+function moveSelectedSectionClass(sectionElement) {
+  forEach(document.getElementsByTagName("section"), function(sectionElement) {
+    sectionElement.classList.remove('canopy-selected-section');
+  });
+  sectionElement.classList.add('canopy-selected-section');
+}
+
+function hideAllSectionElements() {
+  forEach(document.getElementsByTagName("section"), function(sectionElement) {
+    sectionElement.style.display = 'none';
+  });
+}
+
+function deselectAllLinks() {
+  forEach(document.getElementsByTagName("a"), function(linkElement) {
+    linkElement.classList.remove('canopy-selected-link');
+    linkElement.classList.remove('canopy-open-link');
+  });
+}
+
+function hideSectionElement(sectionElement) {
+  sectionElement.style.display = 'none';
+}
+
+function showSectionElement(sectionElement) {
+  sectionElement.style.display = 'block';
+}
+
+function showSectionElementOfLink(linkElement) {
+  showSectionElement(sectionElementOfLink(linkElement));
+}
+
+function underlineLink(linkElement) {
+  linkElement.classList.add('canopy-open-link');
+}
+
+function updateDfsClasses(dfsDirectionInteger) {
+  let previouslySelectedLinkClassName = dfsDirectionInteger === 1 ?
+    'canopy-dfs-previously-selected-link' :
+    'canopy-reverse-dfs-previously-selected-link';
+  let previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
+
+  if (previouslySelectedLink) {
+    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+  }
+  selectedLink() && selectedLink().classList.add(previouslySelectedLinkClassName);
+
+  let preserveForwardDfsClass = dfsDirectionInteger === 1;
+  let preserveBackwardsDfsClass = dfsDirectionInteger === 2;
+
+  forEach(document.getElementsByTagName("a"), function(linkElement) {
+    !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+  });
+}
+
 export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
@@ -113,5 +177,9 @@ export {
   displaySectionBelowLink,
   addSelectedLinkClass,
   addOpenLinkClass,
-  addOpenClassToRedundantSiblings
+  addOpenClassToRedundantSiblings,
+  moveSelectedSectionClass,
+  hideAllSectionElements,
+  deselectAllLinks,
+  updateDfsClasses
 };
