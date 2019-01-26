@@ -137,6 +137,10 @@ function openLinkOfSection(sectionElement) {
 }
 
 function paragraphElementOfSection(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
+
   return Array.from(
     sectionElement.
     childNodes
@@ -144,7 +148,7 @@ function paragraphElementOfSection(sectionElement) {
 }
 
 function linkAfter(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -159,7 +163,7 @@ function linkAfter(linkElement) {
 }
 
 function linkBefore(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -174,7 +178,7 @@ function linkBefore(linkElement) {
 }
 
 function firstChildLinkOfParentLink(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -186,7 +190,7 @@ function firstChildLinkOfParentLink(linkElement) {
 }
 
 function lastChildLinkOfParentLink(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 
@@ -198,24 +202,31 @@ function lastChildLinkOfParentLink(linkElement) {
 }
 
 function linksOfSectionElement(sectionElement) {
+  if (!sectionElement) {
+    return null;
+  }
   return linksOfParagraph(paragraphElementOfSection(sectionElement));
 }
 
 function linksOfParagraph(paragraphElement) {
+  if (!paragraphElement) {
+    return null;
+  }
+
   return Array.
     from(paragraphElement.childNodes).
     filter((linkElement) => linkElement.tagName === 'A');
 }
 
 function firstLinkOfSectionElement(sectionElement) {
-  if (sectionElement === null){
+  if (!sectionElement) {
     return null;
   }
   return linksOfSectionElement(sectionElement)[0] || null;
 }
 
 function lastLinkOfSectionElement(sectionElement) {
-  if (sectionElement === null){
+  if (!sectionElement) {
     return null;
   }
 
@@ -240,7 +251,7 @@ function enclosingTopicSectionOfLink(linkElement) {
 }
 
 function firstSiblingOf(linkElement) {
-  if (linkElement === null){
+  if (!linkElement){
     return null;
   }
 
@@ -249,7 +260,7 @@ function firstSiblingOf(linkElement) {
 }
 
 function lastSiblingOf(linkElement) {
-  if (linkElement === null){
+  if (!linkElement){
     return null;
   }
 
@@ -258,7 +269,7 @@ function lastSiblingOf(linkElement) {
 }
 
 function parentLinkOf(linkElement) {
-  if (linkElement === null) {
+  if (!linkElement) {
     return null;
   }
 

@@ -5,11 +5,7 @@ import {
   parentLinkOfSection,
   documentTitleFor,
 } from 'helpers/getters';
-import {
-  hideAllSectionElements,
-  deselectAllLinks,
-  clearDfsClasses
-} from 'display/reset_page';
+
 import {
   determineLinkToSelect,
   determineSectionElementToDisplay,
@@ -17,10 +13,13 @@ import {
   displaySectionBelowLink,
   addOpenClassToRedundantSiblings,
   addSelectedLinkClass,
-  addOpenLinkClass
+  addOpenLinkClass,
+  hideAllSectionElements,
+  deselectAllLinks,
+  updateDfsClasses
 } from 'display/helpers';
 
-const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, directionOfDfs) => {
+const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) => {
   let topicName = pathArray[0][0];
   const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
   if (!sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }
@@ -28,11 +27,11 @@ const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFro
   document.title = documentTitleFor(topicName);
 
   createOrReplaceHeader(topicName);
+  updateDfsClasses(dfsDirectionInteger);
   deselectAllLinks();
-  clearDfsClasses(directionOfDfs);
   hideAllSectionElements();
 
-  let linkToSelect = determineLinkToSelect(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, directionOfDfs);
+  let linkToSelect = determineLinkToSelect(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath);
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);
