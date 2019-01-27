@@ -1,4 +1,0 @@
-The following files derive from the Moss project published by Greenhouse Software under the Apache 2.0 License:
-  - client/keys/register_key_listeners.js
-  - parser/helpers/clauses_with_punctuation_of.js
-  - parser/helpers/units_of.js
