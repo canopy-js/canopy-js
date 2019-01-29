@@ -5,19 +5,19 @@ import jsonForDgsFile from 'components/json_for_dgs_file.js';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import topicKeyOfFile from 'helpers/topic_key_of_file';
 import { slugFor } from 'helpers/identifiers';
+import rimraf from 'rimraf';
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
   let namespaceObject = buildNamespaceObject(dgsFilePaths);
 
+  rimraf.sync(destinationDataDirectory);
+  fs.mkdirSync(destinationDataDirectory);
+
   dgsFilePaths.forEach(function(path) {
     let json = jsonForDgsFile(path, namespaceObject);
     let dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
-
-    if (!fs.existsSync(destinationDataDirectory)) {
-      fs.mkdirSync(destinationDataDirectory);
-    }
 
     if (dgsFileNameWithoutExtension.includes(' ')) {
       throw 'Data filenames may not contain spaces: ' + path;
