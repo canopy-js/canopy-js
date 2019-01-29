@@ -4,6 +4,8 @@
 
   h1 {
     text-align: center;
+    margin: auto;
+    width: 40%;
     margin-top: 10px;
   }
 
@@ -15,7 +17,7 @@
     padding-top: 10px;
     padding-bottom: 10px;
     font-size: 23px;
-    width: 700px;
+    max-width: 700px;
     margin: auto;
 
     line-height: 1.3;
