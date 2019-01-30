@@ -34,9 +34,9 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
 
     let capitalizedKeySlug = slugFor(topicKeyOfFile(path));
     let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
-    if (!fs.existsSync(topicFolderPath)) {
-      fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-    }
+
+    rimraf.sync(topicFolderPath);
+    fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
     console.log('Created directory: ' + topicFolderPath);
   });
 }

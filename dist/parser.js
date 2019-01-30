@@ -193,11 +193,8 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
     fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(destinationPath, json);
     var capitalizedKeySlug = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["slugFor"])(Object(helpers_topic_key_of_file__WEBPACK_IMPORTED_MODULE_5__["default"])(path));
     var topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
-
-    if (!fs__WEBPACK_IMPORTED_MODULE_0___default.a.existsSync(topicFolderPath)) {
-      fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-    }
-
+    rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(topicFolderPath);
+    fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
     console.log('Created directory: ' + topicFolderPath);
   });
 }
