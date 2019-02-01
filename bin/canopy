@@ -60,6 +60,7 @@ init)
   touch .gitignore
   echo "build/" >> .gitignore
   echo ".canopy_watch.pid" >> .gitignore
+  echo ".canopy_bulk_tmp" >> .gitignore
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .default_topic
@@ -106,6 +107,10 @@ watch)
 serve)
   canopy build
   $(npm root -g)/canopy-js/node_modules/http-server/bin/http-server build -p ${2:-3000}
+  ;;
+
+bulk)
+  node $(npm root -g)/canopy-js/script/bulk_edit.js "$@"
   ;;
 ?|usage)
 echo  "Usage:"

@@ -1,5 +1,5 @@
-let recursiveReadSync = require('recursive-readdir-sync');
-let fs = require('fs');
+import recursiveReadSync from 'recursive-readdir-sync';
+import fs from 'fs';
 
 function listDgsfilesRecursive(rootDirectory) {
   let filePaths = recursiveReadSync(rootDirectory);

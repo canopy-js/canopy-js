@@ -613,12 +613,15 @@ function findAndReturnResult(array, callback) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-var recursiveReadSync = __webpack_require__(/*! recursive-readdir-sync */ "recursive-readdir-sync");
+/* harmony import */ var recursive_readdir_sync__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! recursive-readdir-sync */ "recursive-readdir-sync");
+/* harmony import */ var recursive_readdir_sync__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(recursive_readdir_sync__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! fs */ "fs");
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
 
-var fs = __webpack_require__(/*! fs */ "fs");
+
 
 function listDgsfilesRecursive(rootDirectory) {
-  var filePaths = recursiveReadSync(rootDirectory);
+  var filePaths = recursive_readdir_sync__WEBPACK_IMPORTED_MODULE_0___default()(rootDirectory);
   filePaths = filePaths.filter(function (path) {
     return path.endsWith('.dgs');
   });
