@@ -440,7 +440,9 @@ function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclo
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function capitalize(text) {
-  return text[0].toUpperCase() + text.slice(1);
+  return text.replace(/^\W*(\w)/, function (match) {
+    return match.toUpperCase();
+  });
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (capitalize);
@@ -457,51 +459,35 @@ function capitalize(text) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function clausesWithPunctuationOf(string) {
-  if (!string) {
-    return [];
-  }
-
-  var clausesWithPunctuation = [];
-  var buffer = '';
-
-  while (string.length) {
-    var indexOfNextStop = -1;
-
-    for (var i = 0; i < string.length; i++) {
-      var stops = ['.', '!', '?', ',', ';', ':'];
-
-      if (stops.indexOf(string[i]) > -1) {
-        indexOfNextStop = i;
-        break;
-      }
-    }
-
-    if (indexOfNextStop === -1) {
-      clausesWithPunctuation.push(buffer + string);
-      break;
-    }
-
-    var charactersThatFollowClauseBreaks = [undefined, ' ', ')', '"', "'"];
-    var validClauseBreak = charactersThatFollowClauseBreaks.indexOf(string[indexOfNextStop + 1]) !== -1;
-
-    if (validClauseBreak) {
-      var clauseString = buffer + string.slice(0, indexOfNextStop + 1);
-      var closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
-      clauseString += closingPunctuation;
-      clausesWithPunctuation.push(clauseString);
-      buffer = '';
-      string = string.slice(indexOfNextStop + 1 + closingPunctuation.length);
-    } else {
-      buffer += string.slice(0, indexOfNextStop + 1);
-      string = string.slice(indexOfNextStop + 1);
-    }
-  }
-
-  return clausesWithPunctuation;
-}
-
-function closingPunctuationOf(string) {
-  return (string.match(/^['")\]}]+/) || {})[0] || '';
+  //
+  //  This function takes a paragraph and divides it into an array of clauses.
+  //
+  //  Definitions:
+  //
+  //  [.,:;?!] = clause terminating punctuation
+  //  ["'()<>{}[\]] = wrapping punctuation
+  //
+  //  Regex:
+  //
+  //  /
+  //    (
+  //      (?:                    Match a series of words
+  //        \s*                  which may begin with whitespace.
+  //        (?:
+  //          [.,:;?!]           Words may begin with clause terminating punctuation,
+  //          |
+  //          ["'()<>{}[\]]      or wrapping punctuation.
+  //        )*
+  //        \w+                  There must be at least one word character per word.
+  //        ["'()<>{}[\]]*       Words can end with wrapping punctuation, but not clause-terminating punctuation.
+  //        \s*                  A space can separate one word from the next, or a word from subsequent clause termination.
+  //      )+
+  //
+  //     [.,:;?!]+               If a word is reached that _does_ end in clause separating punctuation, terminate the clause.
+  //     [\"\'()<>{}[\]]*        Any wrapping punctuation that follows the clause-termination is included in the clause.
+  //   )
+  // /g
+  return Array.from(string.match(/((?:\s*(?:[.,:;?!]|["'()<>{}[\]])*\w+["'()<>{}[\]]*\s*)+[.,:;?!]+[\"\'()<>{}[\]]*)/g));
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (clausesWithPunctuationOf);
