@@ -1,49 +1,37 @@
 function clausesWithPunctuationOf(string) {
-  if (!string) {
-    return [];
-  }
+//
+//  This function takes a paragraph and divides it into an array of clauses.
+//
+//  Definitions:
+//
+//  [.,:;?!] = clause terminating punctuation
+//  ["'()<>{}[\]] = wrapping punctuation
+//  node.js = one word, two word segments
+//
+//  Regex:
+//
+//  /
+//    (
+//      (?:                    Match a series of word segments
+//        \s*                  which may begin with whitespace.
+//        (?:
+//          [.,:;?!]           Words may begin with clause terminating punctuation,
+//          |
+//          ["'()<>{}[\]]      or wrapping punctuation.
+//        )*
+//        \w+                  There must be at least one word character per word.
+//        ["'()<>{}[\]]*       Words can end with wrapping punctuation, but not clause-terminating punctuation.
+//        \s*                  A space can separate one word from the next, or a word from subsequent clause termination.
+//      )+
+//
+//     [.,:;?!]+               If a word is reached that _does_ end in clause separating punctuation, terminate the clause.
+//     [\"\'()<>{}[\]]*        Any wrapping punctuation that follows the clause-termination is included in the clause.
+//   )
+// /g
 
-  let clausesWithPunctuation = [];
-  let buffer = '';
-
-  while (string.length) {
-    let indexOfNextStop = -1;
-    for (let i = 0; i < string.length; i++) {
-      let stops = ['.', '!', '?', ',', ';', ':'];
-      if (stops.indexOf(string[i]) > -1) {
-        indexOfNextStop = i;
-        break;
-      }
-    }
-
-    if (indexOfNextStop === -1) {
-      clausesWithPunctuation.push(buffer + string);
-      break;
-    }
-
-    let charactersThatFollowClauseBreaks = [undefined, ' ', ')', '"', "'"];
-
-    let validClauseBreak = charactersThatFollowClauseBreaks.
-      indexOf(string[indexOfNextStop + 1]) !== -1;
-
-    if (validClauseBreak) {
-      let clauseString = buffer + string.slice(0, indexOfNextStop + 1);
-      let closingPunctuation = closingPunctuationOf(string.slice(indexOfNextStop + 1));
-      clauseString += closingPunctuation;
-      clausesWithPunctuation.push(clauseString);
-      buffer = '';
-      string = string.slice(indexOfNextStop + 1 + closingPunctuation.length);
-    } else {
-      buffer += string.slice(0, indexOfNextStop + 1);
-      string = string.slice(indexOfNextStop + 1);
-    }
-  }
-
-  return clausesWithPunctuation;
-}
-
-function closingPunctuationOf(string) {
-  return (string.match(/^['")\]}]+/) || {})[0] || '';
+  return Array.from(
+    string.match(/((?:\s*(?:[.,:;?!]|["'()<>{}[\]])*\w+["'()<>{}[\]]*\s*)+[.,:;?!]+[\"\'()<>{}[\]]*)/g)
+  );
 }
 
 export default clausesWithPunctuationOf;
