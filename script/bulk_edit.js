@@ -57,7 +57,7 @@ editor('.canopy_bulk_tmp', function (code, sig) {
 
 function reconstructDgsFilesFromTempFile(tempFileContents) {
   tempFileContents.split(/(?=topics\/)/).forEach(function(textForFile) {
-    let pathToFile = textForFile.match(/(topics\/([^\n]+)?)/)[1];
+    let pathToFile = textForFile.match(/(topics(\/[^\n\/]+)*)\/?/)[1] + '/';
     let dgsFileContentsWithExtraSpacing = textForFile.split("\n\n").slice(1).join("\n\n");
     let dgsFileContentsWithOutExtraSpacing =
       dgsFileContentsWithExtraSpacing.split("\n").slice(0, -2).join("\n");
