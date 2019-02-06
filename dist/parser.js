@@ -86,6 +86,164 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/array.prototype.flat/implementation.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/array.prototype.flat/implementation.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ES = __webpack_require__(/*! es-abstract/es2017 */ "es-abstract/es2017");
+
+var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || Math.pow(2, 53) - 1; // eslint-disable-next-line max-params, max-statements
+
+var FlattenIntoArray = function FlattenIntoArray(target, source, sourceLen, start, depth) {
+  var targetIndex = start;
+  var sourceIndex = 0;
+  /*
+  var mapperFunction;
+  if (arguments.length > 5) {
+  	mapperFunction = arguments[5];
+  }
+  */
+
+  while (sourceIndex < sourceLen) {
+    var P = ES.ToString(sourceIndex);
+    var exists = ES.HasProperty(source, P);
+
+    if (exists) {
+      var element = ES.Get(source, P);
+      /*
+      if (typeof mapperFunction !== 'undefined') {
+      	if (arguments.length <= 6) {
+      		throw new TypeError('Assertion failed: thisArg is required when mapperFunction is provided');
+      	}
+      	element = ES.Call(mapperFunction, arguments[6], [element, sourceIndex, source]);
+      }
+      */
+
+      var shouldFlatten = false;
+
+      if (depth > 0) {
+        shouldFlatten = ES.IsArray(element);
+      }
+
+      if (shouldFlatten) {
+        var elementLen = ES.ToLength(ES.Get(element, 'length'));
+        targetIndex = FlattenIntoArray(target, element, elementLen, targetIndex, depth - 1);
+      } else {
+        if (targetIndex >= MAX_SAFE_INTEGER) {
+          throw new TypeError('index too large');
+        }
+
+        ES.CreateDataPropertyOrThrow(target, ES.ToString(targetIndex), element);
+        targetIndex += 1;
+      }
+    }
+
+    sourceIndex += 1;
+  }
+
+  return targetIndex;
+};
+
+module.exports = function flat() {
+  var O = ES.ToObject(this);
+  var sourceLen = ES.ToLength(ES.Get(O, 'length'));
+  var depthNum = 1;
+
+  if (arguments.length > 0 && typeof arguments[0] !== 'undefined') {
+    depthNum = ES.ToInteger(arguments[0]);
+  }
+
+  var A = ES.ArraySpeciesCreate(O, 0);
+  FlattenIntoArray(A, O, sourceLen, 0, depthNum);
+  return A;
+};
+
+/***/ }),
+
+/***/ "./node_modules/array.prototype.flat/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/array.prototype.flat/index.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var define = __webpack_require__(/*! define-properties */ "define-properties");
+
+var bind = __webpack_require__(/*! function-bind */ "function-bind");
+
+var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/array.prototype.flat/implementation.js");
+
+var getPolyfill = __webpack_require__(/*! ./polyfill */ "./node_modules/array.prototype.flat/polyfill.js");
+
+var polyfill = getPolyfill();
+
+var shim = __webpack_require__(/*! ./shim */ "./node_modules/array.prototype.flat/shim.js");
+
+var boundFlat = bind.call(Function.call, polyfill);
+define(boundFlat, {
+  getPolyfill: getPolyfill,
+  implementation: implementation,
+  shim: shim
+});
+module.exports = boundFlat;
+
+/***/ }),
+
+/***/ "./node_modules/array.prototype.flat/polyfill.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/array.prototype.flat/polyfill.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/array.prototype.flat/implementation.js");
+
+module.exports = function getPolyfill() {
+  return Array.prototype.flat || implementation;
+};
+
+/***/ }),
+
+/***/ "./node_modules/array.prototype.flat/shim.js":
+/*!***************************************************!*\
+  !*** ./node_modules/array.prototype.flat/shim.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var define = __webpack_require__(/*! define-properties */ "define-properties");
+
+var getPolyfill = __webpack_require__(/*! ./polyfill */ "./node_modules/array.prototype.flat/polyfill.js");
+
+module.exports = function shimFlat() {
+  var polyfill = getPolyfill();
+  define(Array.prototype, {
+    flat: polyfill
+  }, {
+    flat: function () {
+      return Array.prototype.flat !== polyfill;
+    }
+  });
+  return polyfill;
+};
+
+/***/ }),
+
 /***/ "./src/client/helpers/identifiers.js":
 /*!*******************************************!*\
   !*** ./src/client/helpers/identifiers.js ***!
@@ -466,12 +624,13 @@ function clausesWithPunctuationOf(string) {
   //
   //  [.,:;?!] = clause terminating punctuation
   //  ["'()<>{}[\]] = wrapping punctuation
+  //  node.js = one word, two word segments
   //
   //  Regex:
   //
   //  /
   //    (
-  //      (?:                    Match a series of words
+  //      (?:                    Match a series of word segments
   //        \s*                  which may begin with whitespace.
   //        (?:
   //          [.,:;?!]           Words may begin with clause terminating punctuation,
@@ -504,7 +663,7 @@ function clausesWithPunctuationOf(string) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
-/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! array.prototype.flat */ "array.prototype.flat");
+/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! array.prototype.flat */ "./node_modules/array.prototype.flat/index.js");
 /* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -673,43 +832,7 @@ function topicKeyOfFile(path) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function unitsOf(string) {
-  var units = [];
-  var stops = ['.', '!', '?', ',', ';', ':'];
-  var seperatingPunctuation = ['"', "'", '[', ']', '(', ')', '{', '}', '<', '>', '_', '`'];
-  var start = 0;
-
-  for (var i = 0; i < string.length; i++) {
-    if (string[i] === ' ') {
-      if (start !== i) {
-        units.push(string.slice(start, i));
-      }
-
-      units.push(string.slice(i, i + 1));
-      start = i + 1;
-    } else if (seperatingPunctuation.indexOf(string[i]) !== -1) {
-      if (string[i - 1] === ' ' || string[i + 1] === ' ' || string[i + 1] === undefined || seperatingPunctuation.indexOf(string[i + 1]) !== -1 || seperatingPunctuation.indexOf(string[i - 1]) !== -1) {
-        if (start !== i) {
-          units.push(string.slice(start, i));
-        }
-
-        units.push(string[i]);
-        start = i + 1;
-      }
-    } else if (stops.indexOf(string[i]) !== -1) {
-      if (string[i + 1] === ' ' || string[i + 1] === undefined) {
-        if (start !== i) {
-          units.push(string.slice(start, i));
-        }
-
-        units.push(string.slice(i, i + 1));
-        start = i + 1;
-      }
-    } else if (string[i + 1] === undefined) {
-      units.push(string.slice(start, i + 1));
-    }
-  }
-
-  return units;
+  return string.split(/\b|(?=\W)/);
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (unitsOf);
@@ -740,14 +863,25 @@ Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"
 
 /***/ }),
 
-/***/ "array.prototype.flat":
-/*!***************************************!*\
-  !*** external "array.prototype.flat" ***!
-  \***************************************/
+/***/ "define-properties":
+/*!************************************!*\
+  !*** external "define-properties" ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("array.prototype.flat");
+module.exports = require("define-properties");
+
+/***/ }),
+
+/***/ "es-abstract/es2017":
+/*!*************************************!*\
+  !*** external "es-abstract/es2017" ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("es-abstract/es2017");
 
 /***/ }),
 
@@ -759,6 +893,17 @@ module.exports = require("array.prototype.flat");
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ "function-bind":
+/*!********************************!*\
+  !*** external "function-bind" ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("function-bind");
 
 /***/ }),
 
