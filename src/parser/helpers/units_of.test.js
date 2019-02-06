@@ -29,7 +29,7 @@ test('gets the units of a clause with external parenthases', () => {
 
 test('gets the units of a clause with quotes and parenthases', () => {
   let data = '("This is a clause.")';
-  let expectation = ['(', '"', 'This', ' ', 'is', ' ', '(', 'a', ')', ' ', 'clause', '.', '"', ')'];
+  let expectation = ['(', '"', 'This', ' ', 'is', ' ', 'a', ' ', 'clause', '.', '"', ')'];
 
   let result = unitsOf(data);
 
