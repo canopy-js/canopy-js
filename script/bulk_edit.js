@@ -6,6 +6,7 @@ let editor = require('editor');
 let mkdirp = require('mkdirp');
 
 let argumentArray = process.argv.slice(3);
+if (argumentArray.length === 0) { argumentArray = ['/'] }
 
 if (!fs.existsSync('./topics')) {
   throw "Must be in a projects directory with a topics folder"
