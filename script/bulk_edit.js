@@ -51,6 +51,7 @@ editor('.canopy_bulk_tmp', function (code, sig) {
   if (code === 0) {
     let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
     reconstructDgsFilesFromTempFile(tempFileContents);
+    fs.unlinkSync('.canopy_bulk_tmp');
   } else {
     throw "Error occured when editing canopy bulk temp file";
   }
