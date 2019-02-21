@@ -44,3 +44,12 @@ test('it allows there to be a space before the closing punctuation', () => {
 
   expect(result).toEqual(expectation);
 });
+
+test('if the last clause does not terminate, it includes it as a clause', () => {
+  let data = "Hello world. This is a clause. This is another clause";
+  let expectation = ["Hello world.", " This is a clause.", " This is another clause"];
+
+  let result = clausesWithPunctationOf(data);
+
+  expect(result).toEqual(expectation);
+});
