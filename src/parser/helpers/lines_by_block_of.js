@@ -1,13 +1,14 @@
 import unitsOf from 'helpers/units_of';
 
-function blocksOfParagraph(string) {
+function linesByBlockOf(string) {
   let lines = string.split(/\n/);
   let blocks = [];
+  let footnoteLines = [];
 
   lines.forEach((line) => {
     let lastBlock = blocks[blocks.length - 1];
 
-    if (line.match(/^\s*#/)) {
+    if (line.match(/^\s*`/) && line.match(/`/g).length % 2 === 1) {
       if (lastBlock && lastBlock.type === 'code') {
         lastBlock.lines.push(line);
       } else {
@@ -29,17 +30,30 @@ function blocksOfParagraph(string) {
           }
         );
       }
-    } else if (line.match(/^\s*\S+\.(\s|$)/)) {
-      if (lastBlock && lastBlock.type === 'outline') {
+    } else if (line.match(/^\s*(\S+\.|[+*-])(\s|$)/)) {
+      if (lastBlock && lastBlock.type === 'list') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
           {
-            type: 'outline',
+            type: 'list',
             lines: [line]
           }
         );
       }
+    } else if (line.match(/^\|([^|\n]*\|)+/)) {
+      if (lastBlock && lastBlock.type === 'table') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push(
+          {
+            type: 'table',
+            lines: [line]
+          }
+        );
+      }
+    } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
+      footnoteLines.push(line);
     } else {
       if (lastBlock && lastBlock.type === 'text') {
         lastBlock.lines.push(line);
@@ -54,7 +68,16 @@ function blocksOfParagraph(string) {
     }
   });
 
+  if (footnoteLines.length > 0) {
+    blocks.push(
+      {
+        type: 'footnote',
+        lines: footnoteLines
+      }
+    );
+  }
+
   return blocks;
 }
 
-export default blocksOfParagraph;
+export default linesByBlockOf;

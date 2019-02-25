@@ -1,4 +1,5 @@
 function clausesWithPunctuationOf(string) {
+  if (!string) return [''];
 //
 //  This function takes a paragraph and divides it into an array of clauses.
 //
@@ -20,13 +21,14 @@ function clausesWithPunctuationOf(string) {
 //       )
 //     )+
 //     .                        Match the last character, that _is_ followed by clause termination sequence.
-//     /S+                      Match the clause terminal and wrapping punctuation until the space.
+//     \S+                      Match the clause terminal and wrapping punctuation until the space.
+//     (\s*$)?                  Include any terminal whitespace after all the clauses.
 //   /g
 //
 //
 
   return Array.from(
-    string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.\S+/g)
+    string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.\S+(\s*$)?/g)
   );
 }
 
