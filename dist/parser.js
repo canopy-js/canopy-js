@@ -86,164 +86,6 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/array.prototype.flat/implementation.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/array.prototype.flat/implementation.js ***!
-  \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var ES = __webpack_require__(/*! es-abstract/es2017 */ "es-abstract/es2017");
-
-var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || Math.pow(2, 53) - 1; // eslint-disable-next-line max-params, max-statements
-
-var FlattenIntoArray = function FlattenIntoArray(target, source, sourceLen, start, depth) {
-  var targetIndex = start;
-  var sourceIndex = 0;
-  /*
-  var mapperFunction;
-  if (arguments.length > 5) {
-  	mapperFunction = arguments[5];
-  }
-  */
-
-  while (sourceIndex < sourceLen) {
-    var P = ES.ToString(sourceIndex);
-    var exists = ES.HasProperty(source, P);
-
-    if (exists) {
-      var element = ES.Get(source, P);
-      /*
-      if (typeof mapperFunction !== 'undefined') {
-      	if (arguments.length <= 6) {
-      		throw new TypeError('Assertion failed: thisArg is required when mapperFunction is provided');
-      	}
-      	element = ES.Call(mapperFunction, arguments[6], [element, sourceIndex, source]);
-      }
-      */
-
-      var shouldFlatten = false;
-
-      if (depth > 0) {
-        shouldFlatten = ES.IsArray(element);
-      }
-
-      if (shouldFlatten) {
-        var elementLen = ES.ToLength(ES.Get(element, 'length'));
-        targetIndex = FlattenIntoArray(target, element, elementLen, targetIndex, depth - 1);
-      } else {
-        if (targetIndex >= MAX_SAFE_INTEGER) {
-          throw new TypeError('index too large');
-        }
-
-        ES.CreateDataPropertyOrThrow(target, ES.ToString(targetIndex), element);
-        targetIndex += 1;
-      }
-    }
-
-    sourceIndex += 1;
-  }
-
-  return targetIndex;
-};
-
-module.exports = function flat() {
-  var O = ES.ToObject(this);
-  var sourceLen = ES.ToLength(ES.Get(O, 'length'));
-  var depthNum = 1;
-
-  if (arguments.length > 0 && typeof arguments[0] !== 'undefined') {
-    depthNum = ES.ToInteger(arguments[0]);
-  }
-
-  var A = ES.ArraySpeciesCreate(O, 0);
-  FlattenIntoArray(A, O, sourceLen, 0, depthNum);
-  return A;
-};
-
-/***/ }),
-
-/***/ "./node_modules/array.prototype.flat/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/array.prototype.flat/index.js ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var define = __webpack_require__(/*! define-properties */ "define-properties");
-
-var bind = __webpack_require__(/*! function-bind */ "function-bind");
-
-var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/array.prototype.flat/implementation.js");
-
-var getPolyfill = __webpack_require__(/*! ./polyfill */ "./node_modules/array.prototype.flat/polyfill.js");
-
-var polyfill = getPolyfill();
-
-var shim = __webpack_require__(/*! ./shim */ "./node_modules/array.prototype.flat/shim.js");
-
-var boundFlat = bind.call(Function.call, polyfill);
-define(boundFlat, {
-  getPolyfill: getPolyfill,
-  implementation: implementation,
-  shim: shim
-});
-module.exports = boundFlat;
-
-/***/ }),
-
-/***/ "./node_modules/array.prototype.flat/polyfill.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/array.prototype.flat/polyfill.js ***!
-  \*******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/array.prototype.flat/implementation.js");
-
-module.exports = function getPolyfill() {
-  return Array.prototype.flat || implementation;
-};
-
-/***/ }),
-
-/***/ "./node_modules/array.prototype.flat/shim.js":
-/*!***************************************************!*\
-  !*** ./node_modules/array.prototype.flat/shim.js ***!
-  \***************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var define = __webpack_require__(/*! define-properties */ "define-properties");
-
-var getPolyfill = __webpack_require__(/*! ./polyfill */ "./node_modules/array.prototype.flat/polyfill.js");
-
-module.exports = function shimFlat() {
-  var polyfill = getPolyfill();
-  define(Array.prototype, {
-    flat: polyfill
-  }, {
-    flat: function () {
-      return Array.prototype.flat !== polyfill;
-    }
-  });
-  return polyfill;
-};
-
-/***/ }),
-
 /***/ "./src/client/helpers/identifiers.js":
 /*!*******************************************!*\
   !*** ./src/client/helpers/identifiers.js ***!
@@ -266,6 +108,206 @@ var slugFor = function slugFor(string) {
 var htmlIdFor = function htmlIdFor(topicName, subtopicName) {
   return '_canopy_' + slugFor(topicName + '_' + subtopicName);
 };
+
+
+
+/***/ }),
+
+/***/ "./src/parser/components/block_parsers.js":
+/*!************************************************!*\
+  !*** ./src/parser/components/block_parsers.js ***!
+  \************************************************/
+/*! exports provided: textBlockFor, codeBlockFor, quoteBlockFor, listBlockFor, tableBlockFor, footnoteBlockFor */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "textBlockFor", function() { return textBlockFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "codeBlockFor", function() { return codeBlockFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "quoteBlockFor", function() { return quoteBlockFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "listBlockFor", function() { return listBlockFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "tableBlockFor", function() { return tableBlockFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "footnoteBlockFor", function() { return footnoteBlockFor; });
+/* harmony import */ var _parse_clause__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./parse_clause */ "./src/parser/components/parse_clause.js");
+/* harmony import */ var _helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
+/* harmony import */ var _tokens__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./tokens */ "./src/parser/components/tokens.js");
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+    var ownKeys = Object.keys(source);
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+      }));
+    }
+
+    ownKeys.forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    });
+  }
+
+  return target;
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+
+
+
+
+function textBlockFor(lines, parsingContext) {
+  var tokensByLine = lines.map(function (line) {
+    return linkifyMatches(line, parsingContext);
+  });
+  return {
+    type: 'text',
+    tokensByLine: tokensByLine
+  };
+}
+
+function codeBlockFor(lines) {
+  var linesWithoutInitialBackticks = lines.map(function (line) {
+    return line.match(/^\s*`(.*)/)[1];
+  });
+  return {
+    type: 'code',
+    lines: linesWithoutInitialBackticks
+  };
+}
+
+function quoteBlockFor(lines, parsingContext) {
+  var modifiedParsingContext = _objectSpread({
+    markdownOnly: true
+  }, parsingContext);
+
+  var tokensByLine = lines.map(function (line) {
+    return line.match(/^\s*>\s?(.*)$/)[1];
+  }).map(function (line) {
+    return parseTokens(line, modifiedParsingContext);
+  });
+  return {
+    type: 'quote',
+    tokensByLine: tokensByLine
+  };
+}
+
+function listBlockFor(lines, parsingContext) {
+  var topLevelNodes = [];
+  var lastNode;
+  lines.forEach(function (line) {
+    var initialWhitespace = line.match(/^(\s*)/)[1];
+    var orderedListMatch = line.match(/^\s*(\S+)\.(.*$)/);
+    var unorderedListMatch = line.match(/^\s*([+*-])(.*$)/);
+    var match = orderedListMatch || unorderedListMatch;
+    var ordinal = match[1];
+    var lineContents = match[2];
+    var tokensOfLine = linkifyMatches(lineContents, parsingContext);
+    var newNode = {
+      indentation: initialWhitespace.length,
+      ordinal: ordinal,
+      ordered: !!orderedListMatch,
+      tokensOfLine: tokensOfLine,
+      children: [],
+      parentNode: null
+    };
+
+    if (!lastNode) {
+      topLevelNodes.push(newNode);
+    } else if (newNode.indentation > lastNode.indentation) {
+      newNode.parentNode = lastNode;
+      lastNode.children.push(newNode);
+    } else if (newNode.indentation === lastNode.indentation) {
+      if (topLevelNodes.includes(lastNode)) {
+        topLevelNodes.push(newNode);
+      } else {
+        newNode.parentNode = lastNode.parentNode;
+        lastNode.parentNode.children.push(newNode);
+      }
+    } else {
+      var parentNode = lastNode;
+
+      while (parentNode && newNode.indentation <= parentNode.indentation) {
+        parentNode = parentNode.parentNode;
+      }
+
+      if (!parentNode) {
+        topLevelNodes.push(newNode);
+        newNode.parentNode = null;
+      } else {
+        newNode.parentNode = parentNode;
+        parentNode.children.push(newNode);
+      }
+    }
+
+    lastNode = newNode;
+  });
+  topLevelNodes.forEach(removeParentNodes);
+  return {
+    type: 'list',
+    topLevelNodes: topLevelNodes
+  };
+}
+
+function removeParentNodes(node) {
+  delete node.parentNode;
+  node.children.forEach(removeParentNodes);
+}
+
+function tableBlockFor(lines, parsingContext) {
+  var rows = lines.map(function (line) {
+    return line.replace(/(?:^|([^\\]))\|/g, '$1||').split('||').slice(1, -1);
+  });
+
+  if (rows[1][0].match(/^\s*[=#-]+\s*$/)) {
+    rows.splice(1, 1);
+  }
+
+  var tokensByCellByRow = rows.map(function (cellsOfRow) {
+    return cellsOfRow.map(function (cell) {
+      return Array.prototype.concat.apply([], linkifyMatches(cell, parsingContext));
+    });
+  });
+  return {
+    type: 'table',
+    tokensByCellByRow: tokensByCellByRow
+  };
+}
+
+function footnoteBlockFor(lines) {
+  var footnoteObjects = lines.map(function (footnote) {
+    var match = footnote.match(/^\[\^([^\]]+)]\:(.*$)/);
+    var superscript = match[1];
+    var text = match[2];
+    return {
+      text: text,
+      superscript: superscript
+    };
+  });
+  return {
+    type: 'footnote',
+    footnoteObjects: footnoteObjects
+  };
+}
+
+function linkifyMatches(line, parsingContext) {
+  return Array.prototype.concat.apply([], Object(_helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_1__["default"])(line).map(function (clauseString) {
+    return Object(_parse_clause__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseString, parsingContext);
+  }));
+}
 
 
 
@@ -412,44 +454,115 @@ function jsonForDgsFile(path, namespaceObject) {
 /*!*******************************************!*\
   !*** ./src/parser/components/matchers.js ***!
   \*******************************************/
-/*! exports provided: default */
+/*! exports provided: ReferenceMatchers, MarkdownMatchers, BaseMatchers */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_find_and_return_result__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/find_and_return_result */ "./src/parser/helpers/find_and_return_result.js");
-/* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReferenceMatchers", function() { return ReferenceMatchers; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MarkdownMatchers", function() { return MarkdownMatchers; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseMatchers", function() { return BaseMatchers; });
+/* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
+/* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
 
 
-var Matchers = [function localReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic) {
-  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_1__["LocalReferenceToken"](currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
-  } else {
-    return null;
+var ReferenceMatchers = [localReferenceMatcher, globalReferenceMatcher, importReferenceMatcher];
+var MarkdownMatchers = [escapedCharacterMatcher, markdownFootnoteMatcher, markdownHyperlinkMatcher, markdownImageMatcher, textMatcher];
+var BaseMatchers = [textMatcher];
+
+function escapedCharacterMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^\\(.)$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["TextToken"](match[1], true);
   }
+}
 
-  ;
-}, function globalReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
+function markdownFootnoteMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^\[\^([^\]]+)\]$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownFootnoteToken"](match[1]);
+  }
+}
+
+function markdownHyperlinkMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^\[([^\]]+)\](?:\((.*)\))?$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[2] || match[1]);
+  }
+}
+
+function markdownUrlMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^(\S+\b.*:\/\/.*\b\S+)$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[1]);
+  }
+}
+
+function markdownImageMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3]);
+  }
+}
+
+function markdownLinkedImageMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)\]\(([^)]*)\)$/);
+
+  if (match) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3], match[4]);
+  }
+}
+
+function localReferenceMatcher(prefixObject, parsingContext) {
+  var topicSubtopics = parsingContext.topicSubtopics,
+      currentTopic = parsingContext.currentTopic,
+      currentSubtopic = parsingContext.currentSubtopic;
+
+  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey) && currentSubtopic !== prefixObject.substringAsKey && currentTopic !== prefixObject.substringAsKey) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["LocalReferenceToken"](currentTopic, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring);
+  }
+}
+
+function globalReferenceMatcher(prefixObject, parsingContext) {
+  var topicSubtopics = parsingContext.topicSubtopics,
+      currentTopic = parsingContext.currentTopic,
+      currentSubtopic = parsingContext.currentSubtopic;
+
   if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
     avaliableNamespaces.push(prefixObject.substringAsKey);
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_1__["GlobalReferenceToken"](prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
-  } else {
-    return null;
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["GlobalReferenceToken"](prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring);
   }
-}, function importReferenceMatcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
-  return Object(helpers_find_and_return_result__WEBPACK_IMPORTED_MODULE_0__["default"])(avaliableNamespaces, function (namespaceNameAsKey) {
+}
+
+function importReferenceMatcher(prefixObject, parsingContext) {
+  var topicSubtopics = parsingContext.topicSubtopics,
+      currentTopic = parsingContext.currentTopic,
+      currentSubtopic = parsingContext.currentSubtopic,
+      avaliableNamespaces = parsingContext.avaliableNamespaces;
+
+  for (var i = 0; i < avaliableNamespaces.length; i++) {
+    var namespaceNameAsKey = avaliableNamespaces[i];
+
     if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)) {
-      return new components_tokens__WEBPACK_IMPORTED_MODULE_1__["GlobalReferenceToken"](namespaceNameAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring, prefixObject.units);
+      return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["GlobalReferenceToken"](namespaceNameAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring);
     }
-  }) || null;
-}, function textMatcher(prefixObject) {
+  }
+}
+
+function textMatcher(prefixObject) {
   if (prefixObject.units.length !== 1) {
     return null;
   } else {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_1__["TextToken"](prefixObject.substring, prefixObject.units);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["TextToken"](prefixObject.substring);
   }
-}];
-/* harmony default export */ __webpack_exports__["default"] = (Matchers);
+}
+
+
 
 /***/ }),
 
@@ -466,30 +579,80 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_capitalize__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/capitalize */ "./src/parser/helpers/capitalize.js");
 /* harmony import */ var helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/consolidate_text_tokens */ "./src/parser/helpers/consolidate_text_tokens.js");
 /* harmony import */ var components_matchers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! components/matchers */ "./src/parser/components/matchers.js");
-/* harmony import */ var helpers_find_and_return_result__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/find_and_return_result */ "./src/parser/helpers/find_and_return_result.js");
-
-
-
-
-
-
-function parseClause(clauseWithPunctuation, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
-  var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
-  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
+function _slicedToArray(arr, i) {
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
 }
 
-function tokensOfSuffix(units, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces) {
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+}
+
+function _iterableToArrayLimit(arr, i) {
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+
+
+
+
+
+function parseClause(clauseWithPunctuation, parsingContext) {
+  var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
+  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(tokensOfSuffix(units, parsingContext));
+}
+
+function tokensOfSuffix(units, parsingContext) {
   if (units.length === 0) {
     return [];
   }
 
   var prefixObjects = prefixesOf(units);
-  var token = Object(helpers_find_and_return_result__WEBPACK_IMPORTED_MODULE_4__["default"])(prefixObjects, function (prefixObject) {
-    return Object(helpers_find_and_return_result__WEBPACK_IMPORTED_MODULE_4__["default"])(components_matchers__WEBPACK_IMPORTED_MODULE_3__["default"], function (matcher) {
-      return matcher(prefixObject, topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces);
-    });
-  });
-  return [].concat(token, tokensOfSuffix(units.slice(token.units.length), topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces));
+
+  var _findMatch = findMatch(prefixObjects, parsingContext),
+      _findMatch2 = _slicedToArray(_findMatch, 2),
+      token = _findMatch2[0],
+      prefixObject = _findMatch2[1];
+
+  return [].concat(token, tokensOfSuffix(units.slice(prefixObject.units.length), parsingContext));
+}
+
+function findMatch(prefixObjects, parsingContext) {
+  var Matchers = components_matchers__WEBPACK_IMPORTED_MODULE_3__["MarkdownMatchers"].concat(parsingContext.markdownOnly ? [] : components_matchers__WEBPACK_IMPORTED_MODULE_3__["ReferenceMatchers"]).concat(components_matchers__WEBPACK_IMPORTED_MODULE_3__["BaseMatchers"]);
+
+  for (var i = 0; i < prefixObjects.length; i++) {
+    for (var j = 0; j < Matchers.length; j++) {
+      var matcher = Matchers[j];
+      var prefixObject = prefixObjects[i];
+      var token = matcher(prefixObject, parsingContext);
+      if (token) return [token, prefixObject];
+    }
+  }
 }
 
 function prefixesOf(units) {
@@ -522,24 +685,38 @@ function prefixesOf(units) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/clauses_with_punctuation_of */ "./src/parser/helpers/clauses_with_punctuation_of.js");
-/* harmony import */ var components_parse_clause__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_clause */ "./src/parser/components/parse_clause.js");
+/* harmony import */ var helpers_lines_by_block_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/lines_by_block_of */ "./src/parser/helpers/lines_by_block_of.js");
+/* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
+/* harmony import */ var components_block_parsers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! components/block_parsers */ "./src/parser/components/block_parsers.js");
 
 
 
-function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
-  var lines = textWithoutKey.split(/\n/);
-  var tokensOfParagraph = [];
-  lines.forEach(function (line) {
-    var clausesOfParagraph = Object(helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_0__["default"])(line);
-    var avaliableNamespaces = [];
-    var tokensOfParagraphByClause = clausesOfParagraph.map(function (clause) {
-      return Object(components_parse_clause__WEBPACK_IMPORTED_MODULE_1__["default"])(clause, namespaceObject, currentTopic, currentSubtopic, avaliableNamespaces);
-    });
-    var tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
-    tokensOfParagraph.push(tokensOfLine);
+
+function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, currentTopic) {
+  var parsingContext = {
+    topicSubtopics: topicSubtopics,
+    currentSubtopic: currentSubtopic,
+    currentTopic: currentTopic,
+    avaliableNamespaces: [],
+    markdownOnly: false
+  };
+  var linesContainerObjects = Object(helpers_lines_by_block_of__WEBPACK_IMPORTED_MODULE_0__["default"])(textWithoutKey);
+  var blockObjects = linesContainerObjects.map(function (linesContainerObject) {
+    if (linesContainerObject.type === 'text') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["textBlockFor"])(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'code') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["codeBlockFor"])(linesContainerObject.lines);
+    } else if (linesContainerObject.type === 'quote') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["quoteBlockFor"])(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'list') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["listBlockFor"])(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'table') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["tableBlockFor"])(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'footnote') {
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["footnoteBlockFor"])(linesContainerObject.lines);
+    }
   });
-  return tokensOfParagraph;
+  return blockObjects;
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (parseParagraph);
@@ -550,7 +727,7 @@ function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, curren
 /*!*****************************************!*\
   !*** ./src/parser/components/tokens.js ***!
   \*****************************************/
-/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken */
+/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken, markdownUrlToken, markdownImageToken, markdownFootnoteToken */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -558,30 +735,50 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LocalReferenceToken", function() { return LocalReferenceToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalReferenceToken", function() { return GlobalReferenceToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextToken", function() { return TextToken; });
-function TextToken(text, units) {
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownUrlToken", function() { return markdownUrlToken; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownImageToken", function() { return markdownImageToken; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownFootnoteToken", function() { return markdownFootnoteToken; });
+function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
-  this.units = units;
+  this.escaped = escaped;
 }
 
-function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text, units) {
+function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'local';
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.units = units;
 }
 
-function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text, units) {
+function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'global';
   this.targetTopic = targetTopic;
   this.targetSubtopic = targetSubtopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.units = units;
+}
+
+function markdownUrlToken(url, text) {
+  this.type = 'url-token';
+  this.text = text;
+  this.url = url;
+}
+
+function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
+  this.type = 'image-token';
+  this.text = text;
+  this.resourceUrl = resourceUrl;
+  this.title = title;
+  this.anchorUrl = anchorUrl;
+}
+
+function markdownFootnoteToken(superscript) {
+  this.type = 'footnote';
+  this.superscript = superscript;
 }
 
 
@@ -617,7 +814,7 @@ function capitalize(text) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function clausesWithPunctuationOf(string) {
-  //
+  if (!string) return ['']; //
   //  This function takes a paragraph and divides it into an array of clauses.
   //
   //  Definitions:
@@ -638,11 +835,13 @@ function clausesWithPunctuationOf(string) {
   //       )
   //     )+
   //     .                        Match the last character, that _is_ followed by clause termination sequence.
-  //     /S+                      Match the clause terminal and wrapping punctuation until the space.
+  //     \S+                      Match the clause terminal and wrapping punctuation until the space.
+  //     (\s*$)?                  Include any terminal whitespace after all the clauses.
   //   /g
   //
   //
-  return Array.from(string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.\S+/g));
+
+  return Array.from(string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.\S+(\s*$)?/g));
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (clausesWithPunctuationOf);
@@ -659,7 +858,7 @@ function clausesWithPunctuationOf(string) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
-/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! array.prototype.flat */ "./node_modules/array.prototype.flat/index.js");
+/* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! array.prototype.flat */ "array.prototype.flat");
 /* harmony import */ var array_prototype_flat__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(array_prototype_flat__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -682,9 +881,7 @@ function consolidateTextTokens(tokenArray) {
     numberOfTokensProcessed = indexAfterLastTextToken > -1 ? indexAfterLastTextToken : tokenArray.length;
     nextToken = new components_tokens__WEBPACK_IMPORTED_MODULE_0__["TextToken"](tokenArray.slice(0, numberOfTokensProcessed).map(function (token) {
       return token.text;
-    }).join(''), array_prototype_flat__WEBPACK_IMPORTED_MODULE_1___default()(tokenArray.slice(0, numberOfTokensProcessed).map(function (token) {
-      return token.units;
-    })));
+    }).join(''));
   }
 
   return array_prototype_flat__WEBPACK_IMPORTED_MODULE_1___default()([nextToken, consolidateTextTokens(tokenArray.slice(numberOfTokensProcessed))]);
@@ -725,23 +922,86 @@ function extractKeyAndParagraph(paragraphWithKey) {
 
 /***/ }),
 
-/***/ "./src/parser/helpers/find_and_return_result.js":
-/*!******************************************************!*\
-  !*** ./src/parser/helpers/find_and_return_result.js ***!
-  \******************************************************/
+/***/ "./src/parser/helpers/lines_by_block_of.js":
+/*!*************************************************!*\
+  !*** ./src/parser/helpers/lines_by_block_of.js ***!
+  \*************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-function findAndReturnResult(array, callback) {
-  var foundItem = array.find(function (item) {
-    return callback(item);
+/* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
+
+
+function linesByBlockOf(string) {
+  var lines = string.split(/\n/);
+  var blocks = [];
+  var footnoteLines = [];
+  lines.forEach(function (line) {
+    var lastBlock = blocks[blocks.length - 1];
+
+    if (line.match(/^\s*`/) && line.match(/`/g).length % 2 === 1) {
+      if (lastBlock && lastBlock.type === 'code') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push({
+          type: 'code',
+          lines: [line]
+        });
+      }
+    } else if (line.match(/^\s*>/)) {
+      if (lastBlock && lastBlock.type === 'quote') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push({
+          type: 'quote',
+          lines: [line]
+        });
+      }
+    } else if (line.match(/^\s*(\S+\.|[+*-])(\s|$)/)) {
+      if (lastBlock && lastBlock.type === 'list') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push({
+          type: 'list',
+          lines: [line]
+        });
+      }
+    } else if (line.match(/^\|([^|\n]*\|)+/)) {
+      if (lastBlock && lastBlock.type === 'table') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push({
+          type: 'table',
+          lines: [line]
+        });
+      }
+    } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
+      footnoteLines.push(line);
+    } else {
+      if (lastBlock && lastBlock.type === 'text') {
+        lastBlock.lines.push(line);
+      } else {
+        blocks.push({
+          type: 'text',
+          lines: [line]
+        });
+      }
+    }
   });
-  return foundItem && callback(foundItem);
+
+  if (footnoteLines.length > 0) {
+    blocks.push({
+      type: 'footnote',
+      lines: footnoteLines
+    });
+  }
+
+  return blocks;
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (findAndReturnResult);
+/* harmony default export */ __webpack_exports__["default"] = (linesByBlockOf);
 
 /***/ }),
 
@@ -828,6 +1088,7 @@ function topicKeyOfFile(path) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 function unitsOf(string) {
+  if (!string) return [];
   return string.split(/\b|(?=\W)/);
 }
 
@@ -859,25 +1120,14 @@ Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"
 
 /***/ }),
 
-/***/ "define-properties":
-/*!************************************!*\
-  !*** external "define-properties" ***!
-  \************************************/
+/***/ "array.prototype.flat":
+/*!***************************************!*\
+  !*** external "array.prototype.flat" ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("define-properties");
-
-/***/ }),
-
-/***/ "es-abstract/es2017":
-/*!*************************************!*\
-  !*** external "es-abstract/es2017" ***!
-  \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("es-abstract/es2017");
+module.exports = require("array.prototype.flat");
 
 /***/ }),
 
@@ -889,17 +1139,6 @@ module.exports = require("es-abstract/es2017");
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ "function-bind":
-/*!********************************!*\
-  !*** external "function-bind" ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("function-bind");
 
 /***/ }),
 

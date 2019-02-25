@@ -1,4 +1,4 @@
-import blocksOfParagraph from './blocks_of_paragraph';
+import linesByBlockOf from './lines_by_block_of';
 
 test('splits lines into blocks', () => {
   let data =
@@ -6,10 +6,12 @@ test('splits lines into blocks', () => {
     Line of text.
     > Quote
     > Quote
-    Line of text.
-    # Code
-    # Code
-    Line of text.
+    Line of[^1] text.
+    \` Code
+    \` Code
+    Line of [^2]text.
+    [^1]: This is a footnote.
+    [^2]: This is a second footnote.
     1. Outline
       a. Outline
       b. Outline
@@ -17,9 +19,9 @@ test('splits lines into blocks', () => {
       a. Outline
     Ordinary line of Text`;
 
-  let result = blocksOfParagraph(data);
+  let result = linesByBlockOf(data);
 
-  expect(result.length).toEqual(7);
+  expect(result.length).toEqual(8);
 
   expect(result[0].type).toEqual('text');
   expect(result[0].lines.length).toEqual(2);
@@ -36,11 +38,14 @@ test('splits lines into blocks', () => {
   expect(result[4].type).toEqual('text');
   expect(result[4].lines.length).toEqual(1);
 
-  expect(result[5].type).toEqual('outline');
+  expect(result[5].type).toEqual('list');
   expect(result[5].lines.length).toEqual(5);
 
-  expect(result[4].type).toEqual('text');
-  expect(result[4].lines.length).toEqual(1);
+  expect(result[6].type).toEqual('text');
+  expect(result[6].lines.length).toEqual(1);
+
+  expect(result[7].type).toEqual('footnote');
+  expect(result[7].lines.length).toEqual(2);
 });
 
 test('splits lines into blocks', () => {
@@ -48,7 +53,7 @@ test('splits lines into blocks', () => {
    `Line of text.
     Line of text.`;
 
-  let result = blocksOfParagraph(data);
+  let result = linesByBlockOf(data);
 
   expect(result.length).toEqual(1);
 

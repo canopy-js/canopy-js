@@ -1,7 +1,7 @@
-function TextToken(text, units) {
+function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
-  this.units = units;
+  this.escaped = escaped;
 }
 
 function LocalReferenceToken(
@@ -10,7 +10,6 @@ function LocalReferenceToken(
     enclosingTopic,
     enclosingSubtopic,
     text,
-    units
   ) {
   this.text = text;
   this.type = 'local';
@@ -18,7 +17,6 @@ function LocalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.units = units;
 }
 
 function GlobalReferenceToken(
@@ -27,7 +25,6 @@ function GlobalReferenceToken(
     enclosingTopic,
     enclosingSubtopic,
     text,
-    units
   ) {
   this.text = text;
   this.type = 'global';
@@ -35,11 +32,33 @@ function GlobalReferenceToken(
   this.targetSubtopic = targetSubtopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.units = units;
+}
+
+function markdownUrlToken(url, text) {
+  this.type = 'url-token';
+  this.text = text;
+  this.url = url;
+}
+
+function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
+  this.type = 'image-token';
+  this.text = text;
+  this.resourceUrl = resourceUrl;
+  this.title = title;
+  this.anchorUrl = anchorUrl;
+}
+
+function markdownFootnoteToken(superscript) {
+  this.type = 'footnote';
+  this.superscript = superscript;
 }
 
 export {
   LocalReferenceToken,
   GlobalReferenceToken,
-  TextToken
+  TextToken,
+  markdownUrlToken,
+  markdownImageToken,
+  markdownFootnoteToken
 };
+

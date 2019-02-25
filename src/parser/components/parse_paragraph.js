@@ -1,30 +1,41 @@
-import clausesWithPunctutionOf from 'helpers/clauses_with_punctuation_of';
-import parseClause from 'components/parse_clause';
+import linesByBlockOf from 'helpers/lines_by_block_of';
+import { textToken } from 'components/tokens';
+import {
+  textBlockFor,
+  codeBlockFor,
+  quoteBlockFor,
+  listBlockFor,
+  tableBlockFor,
+  footnoteBlockFor
+} from 'components/block_parsers';
 
-function parseParagraph(textWithoutKey, namespaceObject, currentSubtopic, currentTopic) {
-  let lines = textWithoutKey.split(/\n/);
+function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, currentTopic) {
+  let parsingContext = {
+    topicSubtopics,
+    currentSubtopic,
+    currentTopic,
+    avaliableNamespaces: [],
+    markdownOnly: false
+  }
+  let linesContainerObjects = linesByBlockOf(textWithoutKey);
 
-  let tokensOfParagraph = [];
-  lines.forEach(function(line){
-    let clausesOfParagraph = clausesWithPunctutionOf(line);
-    let avaliableNamespaces = [];
-
-    let tokensOfParagraphByClause = clausesOfParagraph.map(function(clause) {
-      return parseClause(
-        clause,
-        namespaceObject,
-        currentTopic,
-        currentSubtopic,
-        avaliableNamespaces
-      );
-    });
-
-    let tokensOfLine = [].concat.apply([], tokensOfParagraphByClause);
-
-    tokensOfParagraph.push(tokensOfLine);
+  let blockObjects = linesContainerObjects.map((linesContainerObject) => {
+    if (linesContainerObject.type === 'text') {
+      return textBlockFor(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'code') {
+      return codeBlockFor(linesContainerObject.lines);
+    } else if (linesContainerObject.type === 'quote') {
+      return quoteBlockFor(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'list') {
+      return listBlockFor(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'table') {
+      return tableBlockFor(linesContainerObject.lines, parsingContext);
+    } else if (linesContainerObject.type === 'footnote') {
+      return footnoteBlockFor(linesContainerObject.lines);
+    }
   });
 
-  return tokensOfParagraph;
+  return blockObjects;
 }
 
 export default parseParagraph;

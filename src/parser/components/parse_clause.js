@@ -1,60 +1,50 @@
 import unitsOf from 'helpers/units_of';
 import capitalize from 'helpers/capitalize';
 import consolidateTextTokens from 'helpers/consolidate_text_tokens';
-import Matchers from 'components/matchers';
-import findAndReturnResult from 'helpers/find_and_return_result';
+import {
+  ReferenceMatchers,
+  MarkdownMatchers,
+  BaseMatchers
+} from 'components/matchers';
 
-function parseClause(
-  clauseWithPunctuation,
-  topicSubtopics,
-  currentTopic,
-  currentSubtopic,
-  avaliableNamespaces
-) {
+function parseClause(clauseWithPunctuation, parsingContext) {
   let units = unitsOf(clauseWithPunctuation);
 
   return consolidateTextTokens(
-    tokensOfSuffix(
-      units,
-      topicSubtopics,
-      currentTopic,
-      currentSubtopic,
-      avaliableNamespaces
-    )
+    tokensOfSuffix(units, parsingContext)
   );
 }
 
-function tokensOfSuffix(
-  units,
-  topicSubtopics,
-  currentTopic,
-  currentSubtopic,
-  avaliableNamespaces
-) {
+function tokensOfSuffix(units, parsingContext) {
   if (units.length === 0) { return []; }
-  let prefixObjects = prefixesOf(units);
 
-  let token = findAndReturnResult(prefixObjects,
-    (prefixObject) => findAndReturnResult(Matchers,
-      (matcher) => matcher(
-        prefixObject,
-        topicSubtopics,
-        currentTopic,
-        currentSubtopic,
-        avaliableNamespaces
-      )
-    )
+  let prefixObjects = prefixesOf(units);
+  let [token, prefixObject] = findMatch(
+    prefixObjects,
+    parsingContext
   );
 
   return [].concat(
     token,
     tokensOfSuffix(
-      units.slice(token.units.length),
-      topicSubtopics,
-      currentTopic,
-      currentSubtopic,
-      avaliableNamespaces
+      units.slice(prefixObject.units.length),
+      parsingContext
     ));
+}
+
+function findMatch(prefixObjects, parsingContext) {
+  let Matchers = MarkdownMatchers.
+    concat(parsingContext.markdownOnly ? [] : ReferenceMatchers).
+    concat(BaseMatchers);
+
+  for (let i = 0; i < prefixObjects.length; i++) {
+    for (let j = 0; j < Matchers.length; j++) {
+      let matcher = Matchers[j];
+      let prefixObject = prefixObjects[i];
+      let token = matcher(prefixObject, parsingContext);
+      if (token) return [token, prefixObject];
+    }
+  }
 }
 
 function prefixesOf(units) {

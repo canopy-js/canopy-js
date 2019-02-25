@@ -15,8 +15,7 @@ function consolidateTextTokens(tokenArray) {
     numberOfTokensProcessed = indexAfterLastTextToken > -1 ? indexAfterLastTextToken : tokenArray.length;
 
     nextToken = new TextToken(
-      tokenArray.slice(0, numberOfTokensProcessed).map((token) => token.text).join(''),
-      flat(tokenArray.slice(0, numberOfTokensProcessed).map((token) => token.units))
+      tokenArray.slice(0, numberOfTokensProcessed).map((token) => token.text).join('')
     )
   }
 
