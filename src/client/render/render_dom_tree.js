@@ -24,8 +24,8 @@ function renderDomTree(
     pathArray,
     currentSubtopicName,
     promises,
-    subtopicAlreadyRenderedCallback(renderedSubtopics),
-    generateOnParentLinkTokenRequiringSubtreeCallback(
+    generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics),
+    generateOnCreatingParentLinkTokenRequiringSubtreeCallback(
       pathArray,
       paragraphsBySubtopic,
       renderedSubtopics,
@@ -33,7 +33,7 @@ function renderDomTree(
       sectionElement,
       promises
     ),
-    generateOnGlobalLinkTokenRequiringSubtreeCallback(
+    generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(
       pathArray,
       pathDepth,
       sectionElement,
@@ -48,11 +48,11 @@ function renderDomTree(
   return Promise.all(promises).then((_) => sectionElement);
 }
 
-function subtopicAlreadyRenderedCallback (renderedSubtopics) {
+function generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics) {
   return (targetSubtopic) => renderedSubtopics.hasOwnProperty(targetSubtopic);
 }
 
-function generateOnParentLinkTokenRequiringSubtreeCallback(
+function generateOnCreatingParentLinkTokenRequiringSubtreeCallback(
   pathArray,
   paragraphsBySubtopic,
   renderedSubtopics,
@@ -77,7 +77,7 @@ function generateOnParentLinkTokenRequiringSubtreeCallback(
     }
   }
 
-function generateOnGlobalLinkTokenRequiringSubtreeCallback(
+function generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(
   pathArray,
   pathDepth,
   sectionElement,
