@@ -11,8 +11,27 @@ function parseClause(clauseWithPunctuation, parsingContext) {
   let units = unitsOf(clauseWithPunctuation);
 
   return consolidateTextTokens(
-    tokensOfSuffix(units, parsingContext)
+    doWithBacktracking(
+      () => [unitsOf(clauseWithPunctuation), parsingContext],
+      tokensOfSuffix
+    )
   );
+}
+
+function doWithBacktracking(generateArguments, callback) {
+  let result;
+  while(!result) {
+    try {
+      let argumentsArray = generateArguments();
+      result = callback.apply(null, argumentsArray);
+    } catch(e) {
+      if (e.name !== 'clauseReparseRequired') {
+        throw e;
+      }
+    }
+  }
+
+  return result;
 }
 
 function tokensOfSuffix(units, parsingContext) {
@@ -41,6 +60,7 @@ function findMatch(prefixObjects, parsingContext) {
     for (let j = 0; j < Matchers.length; j++) {
       let matcher = Matchers[j];
       let prefixObject = prefixObjects[i];
+      // console.log([matcher, prefixObject.substringAsKey])
       let token = matcher(prefixObject, parsingContext);
       if (token) return [token, prefixObject];
     }

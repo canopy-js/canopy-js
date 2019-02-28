@@ -1,7 +1,7 @@
 function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
-  this.escaped = escaped;
+  this.escaped = escaped || false;
 }
 
 function LocalReferenceToken(
@@ -35,17 +35,16 @@ function GlobalReferenceToken(
 }
 
 function markdownUrlToken(url, text) {
-  this.type = 'url-token';
-  this.text = text;
+  this.type = 'url';
+  this.text = text || url;
   this.url = url;
 }
 
 function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
-  this.type = 'image-token';
-  this.text = text;
+  this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title;
-  this.anchorUrl = anchorUrl;
+  this.anchorUrl = anchorUrl || null;
 }
 
 function markdownFootnoteToken(superscript) {

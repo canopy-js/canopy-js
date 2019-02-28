@@ -21,8 +21,9 @@ const MarkdownMatchers = [
   escapedCharacterMatcher,
   markdownFootnoteMatcher,
   markdownHyperlinkMatcher,
+  markdownUrlMatcher,
   markdownImageMatcher,
-  textMatcher
+  markdownLinkedImageMatcher
 ];
 
 const BaseMatchers = [
@@ -46,7 +47,7 @@ function markdownFootnoteMatcher(prefixObject) {
 }
 
 function markdownHyperlinkMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\((.*)\))$/);
+  let match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\(([^)]*)\))$/);
   if (match) {
     return new markdownUrlToken(
       match[1],
@@ -56,7 +57,7 @@ function markdownHyperlinkMatcher(prefixObject) {
 }
 
 function markdownUrlMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^(\S+\b.*:\/\/.*\b\S+)$/);
+  let match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.])$/);
   if (match) {
     return new markdownUrlToken(
       match[1],
@@ -66,7 +67,7 @@ function markdownUrlMatcher(prefixObject) {
 }
 
 function markdownImageMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)$/);
+  let match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*["']([^)]*)["']\)$/);
   if (match) {
     return new markdownImageToken(
       match[1],
@@ -77,7 +78,7 @@ function markdownImageMatcher(prefixObject) {
 }
 
 function markdownLinkedImageMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)\]\(([^)]*)\)$/);
+  let match = prefixObject.substring.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)$/);
   if (match) {
     return new markdownImageToken(
       match[1],
@@ -108,13 +109,16 @@ function localReferenceMatcher(prefixObject, parsingContext) {
 }
 
 function globalReferenceMatcher(prefixObject, parsingContext) {
-  let {topicSubtopics, currentTopic, currentSubtopic} = parsingContext;
-
+  let {topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces} = parsingContext;
   if (
     topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
     currentTopic !== prefixObject.substringAsKey
   ) {
-    avaliableNamespaces.push(prefixObject.substringAsKey);
+
+    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)){
+      avaliableNamespaces.push(prefixObject.substringAsKey);
+      throw { name: 'clauseReparseRequired' }
+    }
 
     return new GlobalReferenceToken(
       prefixObject.substringAsKey,

@@ -467,7 +467,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ReferenceMatchers = [localReferenceMatcher, globalReferenceMatcher, importReferenceMatcher];
-var MarkdownMatchers = [escapedCharacterMatcher, markdownFootnoteMatcher, markdownHyperlinkMatcher, markdownImageMatcher, textMatcher];
+var MarkdownMatchers = [escapedCharacterMatcher, markdownFootnoteMatcher, markdownHyperlinkMatcher, markdownUrlMatcher, markdownImageMatcher, markdownLinkedImageMatcher];
 var BaseMatchers = [textMatcher];
 
 function escapedCharacterMatcher(prefixObject) {
@@ -487,15 +487,15 @@ function markdownFootnoteMatcher(prefixObject) {
 }
 
 function markdownHyperlinkMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^\[([^\]]+)\](?:\((.*)\))?$/);
+  var match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\(([^)]*)\))$/);
 
   if (match) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[2] || match[1]);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[2]);
   }
 }
 
 function markdownUrlMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^(\S+\b.*:\/\/.*\b\S+)$/);
+  var match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.])$/);
 
   if (match) {
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[1]);
@@ -503,7 +503,7 @@ function markdownUrlMatcher(prefixObject) {
 }
 
 function markdownImageMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)$/);
+  var match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*["']([^)]*)["']\)$/);
 
   if (match) {
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3]);
@@ -511,7 +511,7 @@ function markdownImageMatcher(prefixObject) {
 }
 
 function markdownLinkedImageMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*([^)]*)\)\]\(([^)]*)\)$/);
+  var match = prefixObject.substring.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)$/);
 
   if (match) {
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3], match[4]);
@@ -531,10 +531,17 @@ function localReferenceMatcher(prefixObject, parsingContext) {
 function globalReferenceMatcher(prefixObject, parsingContext) {
   var topicSubtopics = parsingContext.topicSubtopics,
       currentTopic = parsingContext.currentTopic,
-      currentSubtopic = parsingContext.currentSubtopic;
+      currentSubtopic = parsingContext.currentSubtopic,
+      avaliableNamespaces = parsingContext.avaliableNamespaces;
 
   if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
-    avaliableNamespaces.push(prefixObject.substringAsKey);
+    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)) {
+      avaliableNamespaces.push(prefixObject.substringAsKey);
+      throw {
+        name: 'clauseReparseRequired'
+      };
+    }
+
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["GlobalReferenceToken"](prefixObject.substringAsKey, prefixObject.substringAsKey, currentTopic, currentSubtopic, prefixObject.substring);
   }
 }
@@ -624,7 +631,26 @@ function _arrayWithHoles(arr) {
 
 function parseClause(clauseWithPunctuation, parsingContext) {
   var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
-  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(tokensOfSuffix(units, parsingContext));
+  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(doWithBacktracking(function () {
+    return [Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation), parsingContext];
+  }, tokensOfSuffix));
+}
+
+function doWithBacktracking(generateArguments, callback) {
+  var result;
+
+  while (!result) {
+    try {
+      var argumentsArray = generateArguments();
+      result = callback.apply(null, argumentsArray);
+    } catch (e) {
+      if (e.name !== 'clauseReparseRequired') {
+        throw e;
+      }
+    }
+  }
+
+  return result;
 }
 
 function tokensOfSuffix(units, parsingContext) {
@@ -648,7 +674,8 @@ function findMatch(prefixObjects, parsingContext) {
   for (var i = 0; i < prefixObjects.length; i++) {
     for (var j = 0; j < Matchers.length; j++) {
       var matcher = Matchers[j];
-      var prefixObject = prefixObjects[i];
+      var prefixObject = prefixObjects[i]; // console.log([matcher, prefixObject.substringAsKey])
+
       var token = matcher(prefixObject, parsingContext);
       if (token) return [token, prefixObject];
     }
@@ -741,7 +768,7 @@ __webpack_require__.r(__webpack_exports__);
 function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
-  this.escaped = escaped;
+  this.escaped = escaped || false;
 }
 
 function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
@@ -763,17 +790,16 @@ function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclo
 }
 
 function markdownUrlToken(url, text) {
-  this.type = 'url-token';
-  this.text = text;
+  this.type = 'url';
+  this.text = text || url;
   this.url = url;
 }
 
 function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
-  this.type = 'image-token';
-  this.text = text;
+  this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title;
-  this.anchorUrl = anchorUrl;
+  this.anchorUrl = anchorUrl || null;
 }
 
 function markdownFootnoteToken(superscript) {
