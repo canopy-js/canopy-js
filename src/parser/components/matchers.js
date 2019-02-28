@@ -46,11 +46,11 @@ function markdownFootnoteMatcher(prefixObject) {
 }
 
 function markdownHyperlinkMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^\[([^\]]+)\](?:\((.*)\))?$/);
+  let match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\((.*)\))$/);
   if (match) {
     return new markdownUrlToken(
       match[1],
-      match[2] || match[1],
+      match[2]
     )
   }
 }
