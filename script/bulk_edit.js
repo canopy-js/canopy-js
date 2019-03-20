@@ -3,7 +3,7 @@ let rimraf = require('rimraf');
 let fs = require('fs');
 let child_process = require('child_process');
 let editor = require('editor');
-let mkdirp = require('mkdirp');
+let mkdirp = require('mkdirp-sync');
 
 let argumentArray = process.argv.slice(3);
 if (argumentArray.length === 0) { argumentArray = ['/'] }
@@ -34,8 +34,13 @@ let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
     // argument is directory with no trailing slash, just its contents
     return fs.readdirSync(pathToArgument).filter(function(path){
       return path.endsWith('.dgs');
-    });
+    }).map(function(fileName) { return pathToArgument + '/' + fileName });
   }
+});
+
+let filesToErase = {};
+[].concat.apply([], selectedFilesPerArgument).map(function(path){
+  filesToErase[path.match(/(topics.+)/)[1]] = true;
 });
 
 let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
@@ -47,12 +52,6 @@ let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
 }).join('');
 
 fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
-
-selectedFilesPerArgument.forEach(function(filePathArray) {
-  filePathArray.forEach(function(filePath) {
-    fs.unlinkSync(filePath);
-  });
-})
 
 editor('.canopy_bulk_tmp', function (code, sig) {
   if (code === 0) {
@@ -71,14 +70,33 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
     if (dgsFileContentsWithExtraSpacing.slice(-2) !== "\n\n") {
       dgsFileContentsWithExtraSpacing = dgsFileContentsWithExtraSpacing + "\n";
     }
-    let dgsFileContentsWithOutExtraSpacing =
-      dgsFileContentsWithExtraSpacing.split("\n").slice(0, -2).join("\n");
+    let dgsFileContentsWithOutExtraSpacing = dgsFileContentsWithExtraSpacing.split("\n").slice(0, -2).join("\n");
     let fileTopicKey = dgsFileContentsWithOutExtraSpacing.match(/^([^:.,;]+):\s+/)[1];
     let filenameString = removeMarkdownTokens(fileTopicKey).replace(/ /g, '_').toLowerCase().trim();
     let finalPath = pathToFile + filenameString + '.dgs';
+    filesToErase[finalPath] = false;
+
     mkdirp(pathToFile, function() {
       fs.writeFileSync(finalPath, dgsFileContentsWithOutExtraSpacing);
       console.log('Wrote to file: ' + finalPath);
     })
   });
+
+  for (let path in filesToErase) {
+    if (filesToErase[path]) {
+      console.log('Deleting file: ' + path);
+      fs.unlinkSync(path);
+
+      let pathSegments = path.split('/');
+      for (let i = pathSegments.length; i > 2; i--) {
+        pathSegments = pathSegments.slice(0, -1);
+        let path = pathSegments.join('/');
+        if (fs.readdirSync(path).length === 0) {
+          console.log('Deleting directory: ' + path);
+          fs.rmdirSync(path);
+        }
+      }
+    }
+  }
 }
+
