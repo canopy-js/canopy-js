@@ -5,8 +5,11 @@ import {
   childSectionElementOfParentLink,
   parentLinkOfSection,
   lastLinkOfSectionElement,
-  selectedLink
+  selectedLink,
+  linksOfSectionLike
 } from 'helpers/getters';
+
+import renderStyledText from 'render/render_styled_text';
 
 function newNodeAlreadyPresent(anchorElement, domTree) {
   return Array.from(anchorElement.childNodes)
@@ -51,10 +54,9 @@ function lastPathSegmentIsATopicRoot(pathArray) {
 function createOrReplaceHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
   if (existingHeader) { existingHeader.remove(); }
-
-  let headerTextNode = document.createTextNode(topicName)
   let headerDomElement = document.createElement('h1');
-  headerDomElement.appendChild(headerTextNode);
+  let styleElements = renderStyledText(topicName);
+  styleElements.forEach((element) => {headerDomElement.appendChild(element)});
   canopyContainer.prepend(headerDomElement);
 };
 
@@ -97,11 +99,12 @@ function addOpenLinkClass(linkToSelect) {
 }
 
 function addOpenClassToRedundantSiblings(parentLink) {
-  Array.from(parentLink.parentNode.childNodes).filter((linkElement) => {
-    return linkElement.dataset &&
-           linkElement.dataset.targetTopic === parentLink.dataset.targetTopic &&
-           linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic;
-  }).forEach((redundantParentLink) => {
+  linksOfSectionLike(
+    sectionElementOfLink(parentLink),
+    (linkElement) => linkElement.dataset &&
+        linkElement.dataset.targetTopic === parentLink.dataset.targetTopic &&
+        linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic
+  ).forEach((redundantParentLink) => {
     redundantParentLink.classList.add('canopy-open-link');
   });
 }

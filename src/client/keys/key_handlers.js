@@ -23,7 +23,7 @@ import {
 } from 'helpers/getters';
 import {
   isATopicRootSection,
-  isTreeRootSection,
+  isPageRootSection,
   sectionHasNoChildLinks
 } from 'helpers/booleans';
 import pathForSectionElement from 'path/path_for_section_element';
@@ -38,7 +38,11 @@ function moveUpward() {
   let pathArray = parsePathString();
   let linkElement;
 
-  if (isTreeRootSection(sectionElementOfLink(selectedLink()))) {
+  if (selectedLinkIsOpenGlobalLink()) {
+    // Handle global link with inlined child with no links
+    pathArray.pop();
+    linkElement = selectedLink();
+  } else if (isPageRootSection(sectionElementOfLink(selectedLink()))) {
     let sectionElement = sectionElementOfLink(selectedLink());
     pathArray = [[
       sectionElement.dataset.topicName,
@@ -48,16 +52,7 @@ function moveUpward() {
     linkElement = null;
   } else if (isATopicRootSection(sectionElementOfLink(selectedLink()))) {
     pathArray.pop();
-
     linkElement = parentLinkOf(selectedLink());
-    let currentSectionElement = currentSection();
-    let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
-
-    // Handle global link with inlined child with no links
-    if (currentSectionElement !== sectionElementOfSelectedLink &&
-      selectedLink().dataset.type === 'global') {
-      linkElement = selectedLink();
-    }
   } else {
     linkElement = parentLinkOf(selectedLink());
     let finalTuple = pathArray.pop();
@@ -69,6 +64,14 @@ function moveUpward() {
     pathArray,
     metadataFromLink(linkElement)
   );
+}
+
+function selectedLinkIsOpenGlobalLink() {
+  let currentSectionElement = currentSection();
+  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+
+  return currentSectionElement !== sectionElementOfSelectedLink &&
+      selectedLink().dataset.type === 'global'
 }
 
 function moveDownward(cycle) {
@@ -105,7 +108,7 @@ function moveDownward(cycle) {
     );
   }
 
-  if (selectedLink().dataset.type ==='redundant-local') {
+  if (selectedLink().dataset.type === 'redundant-local') {
     let finalTuple = pathArray.pop();
     let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
@@ -185,6 +188,15 @@ function moveDownOrRedirect(newTab) {
       null,
       true
     );
+  } else if (selectedLink().dataset.type === 'url') {
+    if (newTab) {
+      return window.open(
+        selectedLink().href,
+        '_blank'
+      );
+    } else {
+      window.location = selectedLink().href;
+    }
   }
 }
 

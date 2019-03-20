@@ -8,8 +8,16 @@ const htmlIdFor = (topicName, subtopicName) => {
   return '_canopy_' + slugFor(topicName + '_' + subtopicName);
 }
 
+function removeMarkdownTokens(string) {
+  return string.
+    replace(/([^\\]|^)_/g, '$1').
+    replace(/([^\\]|^)\*/g, '$1').
+    replace(/([^\\]|^)~/g, '$1');
+}
+
 export {
   slugFor,
-  htmlIdFor
+  htmlIdFor,
+  removeMarkdownTokens
 };
 

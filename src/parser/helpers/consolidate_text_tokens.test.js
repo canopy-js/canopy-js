@@ -7,11 +7,11 @@ import {
 
 test('it consolidates text tokens in a mixed array', () => {
   let tokenArray = [
-    new GlobalReferenceToken(),
+    new GlobalReferenceToken('', '', '', '', ''),
     new TextToken('Hello', ['Hello']),
     new TextToken(' ', [' ']),
     new TextToken('World', ['World']),
-    new LocalReferenceToken(),
+    new LocalReferenceToken('', '', '', '', ''),
     new TextToken('!', ['!']),
   ];
 
@@ -40,8 +40,8 @@ test('it consolidates text tokens in a text array', () => {
 test('it handles consecutive link tokens', () => {
   let tokenArray = [
     new TextToken('Hello'),
-    new GlobalReferenceToken(),
-    new GlobalReferenceToken(),
+    new GlobalReferenceToken('', '', '', '', ''),
+    new GlobalReferenceToken('', '', '', '', ''),
     new TextToken('World')
   ];
 

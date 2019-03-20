@@ -4,7 +4,7 @@ import { TextToken } from './tokens';
 
 function textBlockFor(lines, parsingContext) {
   let tokensByLine = lines.map(
-    (line) => linkifyMatches(line, parsingContext)
+    (line) => parseTokens(line, parsingContext)
   )
 
   return {
@@ -14,13 +14,13 @@ function textBlockFor(lines, parsingContext) {
 }
 
 function codeBlockFor(lines) {
-  let linesWithoutInitialBackticks = lines.map(
-    (line) => line.match(/^\s*`(.*)/)[1]
+  let linesWithoutInitialPoundSigns = lines.map(
+    (line) => line.match(/^\s*#\s?(.*)/)[1]
   );
 
   return {
     type: 'code',
-    lines: linesWithoutInitialBackticks
+    lines: linesWithoutInitialPoundSigns
   }
 }
 
@@ -42,13 +42,13 @@ function listBlockFor(lines, parsingContext) {
 
   lines.forEach((line) => {
     let initialWhitespace = line.match(/^(\s*)/)[1];
-    let orderedListMatch = line.match(/^\s*(\S+)\.(.*$)/);
-    let unorderedListMatch = line.match(/^\s*([+*-])(.*$)/);
+    let orderedListMatch = line.match(/^\s*(\S+)\.\s?(.*$)/);
+    let unorderedListMatch = line.match(/^\s*([+*-])\s?(.*$)/);
     let match = orderedListMatch || unorderedListMatch;
 
     let ordinal = match[1];
     let lineContents = match[2];
-    let tokensOfLine = linkifyMatches(lineContents, parsingContext);
+    let tokensOfLine = parseTokens(lineContents, parsingContext);
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -88,7 +88,7 @@ function listBlockFor(lines, parsingContext) {
     lastNode = newNode;
   });
 
-  topLevelNodes.forEach(removeParentNodes);
+  topLevelNodes.forEach(removeExtraKeys);
 
   return {
     type: 'list',
@@ -96,9 +96,10 @@ function listBlockFor(lines, parsingContext) {
   }
 }
 
-function removeParentNodes(node) {
+function removeExtraKeys(node) {
   delete node.parentNode;
-  node.children.forEach(removeParentNodes);
+  delete node.indentation;
+  node.children.forEach(removeExtraKeys);
 }
 
 function tableBlockFor(lines, parsingContext) {
@@ -115,7 +116,7 @@ function tableBlockFor(lines, parsingContext) {
   let tokensByCellByRow = rows.map((cellsOfRow) =>
     cellsOfRow.map(
       (cell) => Array.prototype.concat.apply(
-        [], linkifyMatches(cell, parsingContext)
+        [], parseTokens(cell, parsingContext)
       )
     )
   );
@@ -126,15 +127,17 @@ function tableBlockFor(lines, parsingContext) {
   }
 }
 
-function footnoteBlockFor(lines) {
+function footnoteBlockFor(lines, parsingContext) {
   let footnoteObjects = lines.map((footnote) => {
     let match = footnote.match(/^\[\^([^\]]+)]\:(.*$)/);
     let superscript = match[1];
     let text = match[2];
 
+    let tokens = parseTokens(text, parsingContext);
+
     return {
-      text,
-      superscript
+      superscript,
+      tokens
     }
   });
 
@@ -144,7 +147,7 @@ function footnoteBlockFor(lines) {
   }
 }
 
-function linkifyMatches(line, parsingContext) {
+function parseTokens(line, parsingContext) {
   return Array.prototype.concat.apply([], clausesWithPunctuationOf(line).map(
     (clauseString) => parseClause(
       clauseString,

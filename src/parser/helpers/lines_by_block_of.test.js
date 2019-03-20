@@ -7,8 +7,8 @@ test('splits lines into blocks', () => {
     > Quote
     > Quote
     Line of[^1] text.
-    \` Code
-    \` Code
+    # Code
+    # Code
     Line of [^2]text.
     [^1]: This is a footnote.
     [^2]: This is a second footnote.

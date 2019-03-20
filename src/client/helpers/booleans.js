@@ -9,7 +9,7 @@ function isATopicRootSection(sectionElement) {
   return sectionElement.dataset.topicName === sectionElement.dataset.subtopicName;
 }
 
-function isTreeRootSection(sectionElement) {
+function isPageRootSection(sectionElement) {
   return sectionElement.parentNode === canopyContainer;
 }
 
@@ -23,7 +23,7 @@ function sectionHasNoChildLinks(sectionElement) {
 export {
   isInRootSection,
   isATopicRootSection,
-  isTreeRootSection,
+  isPageRootSection,
   sectionHasNoChildLinks,
   sectionElementOfPathVisible
 };

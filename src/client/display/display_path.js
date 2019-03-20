@@ -2,8 +2,9 @@ import setPath from 'path/set_path';
 import {
   canopyContainer,
   sectionElementOfPath,
-  parentLinkOfSection,
+  parentLinksOfSection,
   documentTitleFor,
+  sectionElementOfLink
 } from 'helpers/getters';
 
 import {
@@ -26,7 +27,8 @@ const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFro
   if (!originatesFromPopStateEvent) { setPath(pathArray); }
   document.title = documentTitleFor(topicName);
 
-  createOrReplaceHeader(topicName);
+  let displayTopicName = sectionElementOfPath([[pathArray[0][0], pathArray[0][0]]]).dataset.topicDisplayName;
+  createOrReplaceHeader(displayTopicName);
   updateDfsClasses(dfsDirectionInteger);
   deselectAllLinks();
   hideAllSectionElements();
@@ -47,11 +49,9 @@ const displayPathTo = (sectionElement) => {
     return;
   }
 
-  let parentLink = parentLinkOfSection(sectionElement);
-  parentLink.classList.add('canopy-open-link');
-  addOpenClassToRedundantSiblings(parentLink);
-  let parentSectionElement = parentLink.parentNode.parentNode;
-
+  let parentLinks = parentLinksOfSection(sectionElement);
+  parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
+  let parentSectionElement = sectionElementOfLink(parentLinks[0]);
   displayPathTo(parentSectionElement);
 }
 

@@ -90,13 +90,14 @@
 /*!*******************************************!*\
   !*** ./src/client/helpers/identifiers.js ***!
   \*******************************************/
-/*! exports provided: slugFor, htmlIdFor */
+/*! exports provided: slugFor, htmlIdFor, removeMarkdownTokens */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "slugFor", function() { return slugFor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "htmlIdFor", function() { return htmlIdFor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeMarkdownTokens", function() { return removeMarkdownTokens; });
 var slugFor = function slugFor(string) {
   if (!string) {
     return string;
@@ -108,6 +109,10 @@ var slugFor = function slugFor(string) {
 var htmlIdFor = function htmlIdFor(topicName, subtopicName) {
   return '_canopy_' + slugFor(topicName + '_' + subtopicName);
 };
+
+function removeMarkdownTokens(string) {
+  return string.replace(/([^\\]|^)_/g, '$1').replace(/([^\\]|^)\*/g, '$1').replace(/([^\\]|^)~/g, '$1');
+}
 
 
 
@@ -171,7 +176,7 @@ function _defineProperty(obj, key, value) {
 
 function textBlockFor(lines, parsingContext) {
   var tokensByLine = lines.map(function (line) {
-    return linkifyMatches(line, parsingContext);
+    return parseTokens(line, parsingContext);
   });
   return {
     type: 'text',
@@ -180,12 +185,12 @@ function textBlockFor(lines, parsingContext) {
 }
 
 function codeBlockFor(lines) {
-  var linesWithoutInitialBackticks = lines.map(function (line) {
-    return line.match(/^\s*`(.*)/)[1];
+  var linesWithoutInitialPoundSigns = lines.map(function (line) {
+    return line.match(/^\s*#\s?(.*)/)[1];
   });
   return {
     type: 'code',
-    lines: linesWithoutInitialBackticks
+    lines: linesWithoutInitialPoundSigns
   };
 }
 
@@ -210,12 +215,12 @@ function listBlockFor(lines, parsingContext) {
   var lastNode;
   lines.forEach(function (line) {
     var initialWhitespace = line.match(/^(\s*)/)[1];
-    var orderedListMatch = line.match(/^\s*(\S+)\.(.*$)/);
-    var unorderedListMatch = line.match(/^\s*([+*-])(.*$)/);
+    var orderedListMatch = line.match(/^\s*(\S+)\.\s?(.*$)/);
+    var unorderedListMatch = line.match(/^\s*([+*-])\s?(.*$)/);
     var match = orderedListMatch || unorderedListMatch;
     var ordinal = match[1];
     var lineContents = match[2];
-    var tokensOfLine = linkifyMatches(lineContents, parsingContext);
+    var tokensOfLine = parseTokens(lineContents, parsingContext);
     var newNode = {
       indentation: initialWhitespace.length,
       ordinal: ordinal,
@@ -255,16 +260,17 @@ function listBlockFor(lines, parsingContext) {
 
     lastNode = newNode;
   });
-  topLevelNodes.forEach(removeParentNodes);
+  topLevelNodes.forEach(removeExtraKeys);
   return {
     type: 'list',
     topLevelNodes: topLevelNodes
   };
 }
 
-function removeParentNodes(node) {
+function removeExtraKeys(node) {
   delete node.parentNode;
-  node.children.forEach(removeParentNodes);
+  delete node.indentation;
+  node.children.forEach(removeExtraKeys);
 }
 
 function tableBlockFor(lines, parsingContext) {
@@ -278,7 +284,7 @@ function tableBlockFor(lines, parsingContext) {
 
   var tokensByCellByRow = rows.map(function (cellsOfRow) {
     return cellsOfRow.map(function (cell) {
-      return Array.prototype.concat.apply([], linkifyMatches(cell, parsingContext));
+      return Array.prototype.concat.apply([], parseTokens(cell, parsingContext));
     });
   });
   return {
@@ -287,14 +293,15 @@ function tableBlockFor(lines, parsingContext) {
   };
 }
 
-function footnoteBlockFor(lines) {
+function footnoteBlockFor(lines, parsingContext) {
   var footnoteObjects = lines.map(function (footnote) {
     var match = footnote.match(/^\[\^([^\]]+)]\:(.*$)/);
     var superscript = match[1];
     var text = match[2];
+    var tokens = parseTokens(text, parsingContext);
     return {
-      text: text,
-      superscript: superscript
+      superscript: superscript,
+      tokens: tokens
     };
   });
   return {
@@ -303,7 +310,7 @@ function footnoteBlockFor(lines) {
   };
 }
 
-function linkifyMatches(line, parsingContext) {
+function parseTokens(line, parsingContext) {
   return Array.prototype.concat.apply([], Object(_helpers_clauses_with_punctuation_of__WEBPACK_IMPORTED_MODULE_1__["default"])(line).map(function (clauseString) {
     return Object(_parse_clause__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseString, parsingContext);
   }));
@@ -364,6 +371,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
 /* harmony import */ var rimraf__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! rimraf */ "rimraf");
 /* harmony import */ var rimraf__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(rimraf__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! helpers/remove_markdown_tokens */ "./src/parser/helpers/remove_markdown_tokens.js");
+
 
 
 
@@ -391,7 +400,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
     console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(destinationPath, json);
-    var capitalizedKeySlug = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["slugFor"])(Object(helpers_topic_key_of_file__WEBPACK_IMPORTED_MODULE_5__["default"])(path));
+    var capitalizedKeySlug = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["slugFor"])(Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_8__["default"])(Object(helpers_topic_key_of_file__WEBPACK_IMPORTED_MODULE_5__["default"])(path)));
     var topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
     rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(topicFolderPath);
     fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
@@ -417,6 +426,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var components_parse_paragraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! components/parse_paragraph */ "./src/parser/components/parse_paragraph.js");
 /* harmony import */ var helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/paragraphs_of_file */ "./src/parser/helpers/paragraphs_of_file.js");
 /* harmony import */ var helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/extract_key_and_paragraph */ "./src/parser/helpers/extract_key_and_paragraph.js");
+/* harmony import */ var helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! helpers/remove_markdown_tokens */ "./src/parser/helpers/remove_markdown_tokens.js");
+
 
 
 
@@ -441,9 +452,13 @@ function jsonForDgsFile(path, namespaceObject) {
     var currentSubtopic = paragraphData.key;
     var textWithoutKey = paragraphData.paragraph;
     var tokensOfParagraph = Object(components_parse_paragraph__WEBPACK_IMPORTED_MODULE_1__["default"])(textWithoutKey, namespaceObject, currentSubtopic, topicOfFile);
-    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
+    tokenizedParagraphsByKey[Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_4__["default"])(currentSubtopic)] = tokensOfParagraph;
   });
-  return JSON.stringify(tokenizedParagraphsByKey, null, process.env.CANOPY_DEBUG ? 1 : 0);
+  var jsonObject = {
+    topicDisplayName: topicOfFile,
+    paragraphsBySubtopic: tokenizedParagraphsByKey
+  };
+  return JSON.stringify(jsonObject, null, process.env.CANOPY_DEBUG ? 1 : 0);
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (jsonForDgsFile);
@@ -467,7 +482,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ReferenceMatchers = [localReferenceMatcher, globalReferenceMatcher, importReferenceMatcher];
-var MarkdownMatchers = [escapedCharacterMatcher, markdownFootnoteMatcher, markdownHyperlinkMatcher, markdownUrlMatcher, markdownImageMatcher, markdownLinkedImageMatcher];
+var MarkdownMatchers = [escapedCharacterMatcher, markdownFootnoteMatcher, markdownImageMatcher, markdownHyperlinkMatcher, markdownUrlMatcher, markdownLinkedImageMatcher, markdownHtmlMatcher];
 var BaseMatchers = [textMatcher];
 
 function escapedCharacterMatcher(prefixObject) {
@@ -486,24 +501,24 @@ function markdownFootnoteMatcher(prefixObject) {
   }
 }
 
-function markdownHyperlinkMatcher(prefixObject) {
+function markdownHyperlinkMatcher(prefixObject, parsingContext) {
   var match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\(([^)]*)\))$/);
 
   if (match) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[2]);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[2], parsingContext.currentSubtopic);
   }
 }
 
-function markdownUrlMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.])$/);
+function markdownUrlMatcher(prefixObject, parsingContext) {
+  var match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.\s])$/);
 
   if (match) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[1]);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownUrlToken"](match[1], match[1], parsingContext.currentSubtopic);
   }
 }
 
 function markdownImageMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*["']([^)]*)["']\)$/);
+  var match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)$/);
 
   if (match) {
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3]);
@@ -515,6 +530,14 @@ function markdownLinkedImageMatcher(prefixObject) {
 
   if (match) {
     return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownImageToken"](match[1], match[2], match[3], match[4]);
+  }
+}
+
+function markdownHtmlMatcher(prefixObject) {
+  var match = prefixObject.substring.match(/^<([^>]+)>[\s\S]*<\/([^>]+)>$/);
+
+  if (match && match[1] === match[2]) {
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["markdownHtmlToken"](prefixObject.substring);
   }
 }
 
@@ -674,8 +697,7 @@ function findMatch(prefixObjects, parsingContext) {
   for (var i = 0; i < prefixObjects.length; i++) {
     for (var j = 0; j < Matchers.length; j++) {
       var matcher = Matchers[j];
-      var prefixObject = prefixObjects[i]; // console.log([matcher, prefixObject.substringAsKey])
-
+      var prefixObject = prefixObjects[i];
       var token = matcher(prefixObject, parsingContext);
       if (token) return [token, prefixObject];
     }
@@ -740,7 +762,7 @@ function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, current
     } else if (linesContainerObject.type === 'table') {
       return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["tableBlockFor"])(linesContainerObject.lines, parsingContext);
     } else if (linesContainerObject.type === 'footnote') {
-      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["footnoteBlockFor"])(linesContainerObject.lines);
+      return Object(components_block_parsers__WEBPACK_IMPORTED_MODULE_2__["footnoteBlockFor"])(linesContainerObject.lines, parsingContext);
     }
   });
   return blockObjects;
@@ -754,7 +776,7 @@ function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, current
 /*!*****************************************!*\
   !*** ./src/parser/components/tokens.js ***!
   \*****************************************/
-/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken, markdownUrlToken, markdownImageToken, markdownFootnoteToken */
+/*! exports provided: LocalReferenceToken, GlobalReferenceToken, TextToken, markdownUrlToken, markdownImageToken, markdownFootnoteToken, markdownHtmlToken */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -765,6 +787,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownUrlToken", function() { return markdownUrlToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownImageToken", function() { return markdownImageToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownFootnoteToken", function() { return markdownFootnoteToken; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownHtmlToken", function() { return markdownHtmlToken; });
+/* harmony import */ var helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/remove_markdown_tokens */ "./src/parser/helpers/remove_markdown_tokens.js");
+
+
 function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
@@ -774,37 +800,44 @@ function TextToken(text, escaped) {
 function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'local';
-  this.targetSubtopic = targetSubtopic;
-  this.targetTopic = targetTopic;
-  this.enclosingTopic = enclosingTopic;
-  this.enclosingSubtopic = enclosingSubtopic;
+  this.targetSubtopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(targetSubtopic);
+  this.targetTopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(targetTopic);
+  this.enclosingTopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(enclosingTopic);
+  this.enclosingSubtopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(enclosingSubtopic);
 }
 
 function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'global';
-  this.targetTopic = targetTopic;
-  this.targetSubtopic = targetSubtopic;
-  this.enclosingTopic = enclosingTopic;
-  this.enclosingSubtopic = enclosingSubtopic;
+  this.targetSubtopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(targetSubtopic);
+  this.targetTopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(targetTopic);
+  this.enclosingTopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(enclosingTopic);
+  this.enclosingSubtopic = Object(helpers_remove_markdown_tokens__WEBPACK_IMPORTED_MODULE_0__["default"])(enclosingSubtopic);
 }
 
-function markdownUrlToken(url, text) {
+function markdownUrlToken(url, text, urlSubtopic) {
   this.type = 'url';
   this.text = text || url;
   this.url = url;
+  this.urlSubtopic = urlSubtopic;
 }
 
 function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
-  this.title = title;
+  this.title = title || null;
+  this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
 }
 
 function markdownFootnoteToken(superscript) {
   this.type = 'footnote';
-  this.superscript = superscript;
+  this.text = superscript;
+}
+
+function markdownHtmlToken(html) {
+  this.type = 'html';
+  this.html = html;
 }
 
 
@@ -967,7 +1000,7 @@ function linesByBlockOf(string) {
   lines.forEach(function (line) {
     var lastBlock = blocks[blocks.length - 1];
 
-    if (line.match(/^\s*`/) && line.match(/`/g).length % 2 === 1) {
+    if (line.match(/^\s*#/)) {
       if (lastBlock && lastBlock.type === 'code') {
         lastBlock.lines.push(line);
       } else {
@@ -1078,6 +1111,23 @@ function paragraphsOfFile(path) {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (paragraphsOfFile);
+
+/***/ }),
+
+/***/ "./src/parser/helpers/remove_markdown_tokens.js":
+/*!******************************************************!*\
+  !*** ./src/parser/helpers/remove_markdown_tokens.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function removeMarkdownTokens(string) {
+  return string.replace(/([^\\]|^)_/g, '$1').replace(/([^\\]|^)\*/g, '$1').replace(/([^\\]|^)~/g, '$1');
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (removeMarkdownTokens);
 
 /***/ }),
 

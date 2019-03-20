@@ -8,7 +8,7 @@ function linesByBlockOf(string) {
   lines.forEach((line) => {
     let lastBlock = blocks[blocks.length - 1];
 
-    if (line.match(/^\s*`/) && line.match(/`/g).length % 2 === 1) {
+    if (line.match(/^\s*#/)) {
       if (lastBlock && lastBlock.type === 'code') {
         lastBlock.lines.push(line);
       } else {
