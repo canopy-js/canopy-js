@@ -31,7 +31,7 @@ function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, current
     } else if (linesContainerObject.type === 'table') {
       return tableBlockFor(linesContainerObject.lines, parsingContext);
     } else if (linesContainerObject.type === 'footnote') {
-      return footnoteBlockFor(linesContainerObject.lines);
+      return footnoteBlockFor(linesContainerObject.lines, parsingContext);
     }
   });
 

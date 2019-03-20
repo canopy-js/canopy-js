@@ -7,7 +7,8 @@ import {
   markdownCodeMarkerToken,
   markdownUrlToken,
   markdownImageToken,
-  markdownFootnoteToken
+  markdownFootnoteToken,
+  markdownHtmlToken
 } from 'components/tokens';
 import unitsOf from 'helpers/units_of';
 
@@ -20,10 +21,11 @@ const ReferenceMatchers = [
 const MarkdownMatchers = [
   escapedCharacterMatcher,
   markdownFootnoteMatcher,
+  markdownImageMatcher,
   markdownHyperlinkMatcher,
   markdownUrlMatcher,
-  markdownImageMatcher,
-  markdownLinkedImageMatcher
+  markdownLinkedImageMatcher,
+  markdownHtmlMatcher
 ];
 
 const BaseMatchers = [
@@ -46,28 +48,30 @@ function markdownFootnoteMatcher(prefixObject) {
   }
 }
 
-function markdownHyperlinkMatcher(prefixObject) {
+function markdownHyperlinkMatcher(prefixObject, parsingContext) {
   let match = prefixObject.substring.match(/^\[([^\s\]]+)\](?:\(([^)]*)\))$/);
   if (match) {
     return new markdownUrlToken(
       match[1],
-      match[2]
+      match[2],
+      parsingContext.currentSubtopic
     )
   }
 }
 
-function markdownUrlMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.])$/);
+function markdownUrlMatcher(prefixObject, parsingContext) {
+  let match = prefixObject.substring.match(/^(\S+:\/\/\S+[^.\s])$/);
   if (match) {
     return new markdownUrlToken(
       match[1],
-      match[1]
+      match[1],
+      parsingContext.currentSubtopic
     )
   }
 }
 
 function markdownImageMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*["']([^)]*)["']\)$/);
+  let match = prefixObject.substring.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)$/);
   if (match) {
     return new markdownImageToken(
       match[1],
@@ -85,6 +89,15 @@ function markdownLinkedImageMatcher(prefixObject) {
       match[2],
       match[3],
       match[4]
+    )
+  }
+}
+
+function markdownHtmlMatcher(prefixObject) {
+  let match = prefixObject.substring.match(/^<([^>]+)>[\s\S]*<\/([^>]+)>$/);
+  if (match && match[1] === match[2]) {
+    return new markdownHtmlToken(
+      prefixObject.substring,
     )
   }
 }

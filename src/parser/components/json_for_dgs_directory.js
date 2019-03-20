@@ -6,6 +6,7 @@ import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import topicKeyOfFile from 'helpers/topic_key_of_file';
 import { slugFor } from 'helpers/identifiers';
 import rimraf from 'rimraf';
+import removeMarkdownTokens from 'helpers/remove_markdown_tokens';
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -32,7 +33,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);
 
-    let capitalizedKeySlug = slugFor(topicKeyOfFile(path));
+    let capitalizedKeySlug = slugFor(removeMarkdownTokens(topicKeyOfFile(path)));
     let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
 
     rimraf.sync(topicFolderPath);

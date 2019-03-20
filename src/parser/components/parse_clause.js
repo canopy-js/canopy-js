@@ -60,7 +60,6 @@ function findMatch(prefixObjects, parsingContext) {
     for (let j = 0; j < Matchers.length; j++) {
       let matcher = Matchers[j];
       let prefixObject = prefixObjects[i];
-      // console.log([matcher, prefixObject.substringAsKey])
       let token = matcher(prefixObject, parsingContext);
       if (token) return [token, prefixObject];
     }

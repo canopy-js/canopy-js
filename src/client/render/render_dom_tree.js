@@ -1,88 +1,60 @@
-import { htmlIdFor } from 'helpers/identifiers';
+import { htmlIdFor, removeMarkdownTokens } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
 import setPath from 'path/set_path';
-import { slugFor } from 'helpers/identifiers';
 import { paragraphElementOfSection, linkOfSectionByTarget } from 'helpers/getters';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
-import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
+import BlockRenderers from 'render/block_renderers';
 
-function renderDomTree(
-  currentSubtopicName,
-  pathArray,
-  paragraphsBySubtopic,
-  renderedSubtopics,
-  pathDepth
-  ) {
-  let topicName = pathArray[0][0];
-  let sectionElement = createNewSectionElement(topicName, currentSubtopicName, pathDepth);
-  let linesOfParagraph = paragraphsBySubtopic[currentSubtopicName];
-  let promises = [];
-  renderedSubtopics[currentSubtopicName] = true;
+function renderDomTree(renderContext) {
+  let {
+    subtopicName,
+    paragraphsBySubtopic
+  } = renderContext;
 
-  let tokenElements = renderElementsForTokens(
-    linesOfParagraph,
-    pathArray,
-    currentSubtopicName,
-    promises,
-    generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics),
-    generateOnCreatingParentLinkTokenRequiringSubtreeCallback(
-      pathArray,
-      paragraphsBySubtopic,
-      renderedSubtopics,
-      pathDepth,
-      sectionElement,
-      promises
-    ),
-    generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(
-      pathArray,
-      pathDepth,
-      sectionElement,
-      promises
-    )
-  )
+  let sectionElement = createNewSectionElement(renderContext);
 
-  tokenElements.forEach((tokenElement) => {
-    paragraphElementOfSection(sectionElement).appendChild(tokenElement);
+  renderContext.subtopicsAlreadyRendered[subtopicName] = true;
+  renderContext.promises = [];
+  renderContext.parentLinkSubtreeCallback = generateParentLinkSubtreeCallback(sectionElement, renderContext);
+  renderContext.globalLinkSubtreeCallback = generateGlobalLinkSubtreeCallback(sectionElement, renderContext);
+
+  let blocksOfParagraph = paragraphsBySubtopic[subtopicName];
+  let blockElements = renderElementsForBlocks(blocksOfParagraph, renderContext);
+
+  blockElements.forEach((blockElement) => {
+    paragraphElementOfSection(sectionElement).appendChild(blockElement);
   });
 
-  return Promise.all(promises).then((_) => sectionElement);
+  return Promise.all(renderContext.promises).then((_) => sectionElement);
 }
 
-function generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics) {
-  return (targetSubtopic) => renderedSubtopics.hasOwnProperty(targetSubtopic);
+function generateIsSubtopicAlreadyRenderedCallback(subtopicsAlreadyRendered) {
+  return (targetSubtopic) => subtopicsAlreadyRendered.hasOwnProperty(targetSubtopic);
 }
 
-function generateOnCreatingParentLinkTokenRequiringSubtreeCallback(
-  pathArray,
-  paragraphsBySubtopic,
-  renderedSubtopics,
-  pathDepth,
-  sectionElement,
-  promises
-  ) {
-    return (token) => {
-      let promisedSubtree = renderDomTree(
-        token.targetSubtopic,
-        pathArray,
-        paragraphsBySubtopic,
-        renderedSubtopics,
-        pathDepth
-      );
+function generateParentLinkSubtreeCallback(sectionElement, renderContext) {
+  return (token) => {
+    let promisedSubtree = renderDomTree(
+      Object.assign({}, renderContext, {
+        subtopicName: token.targetSubtopic
+      })
+    );
 
-      promisedSubtree.then((subtree) => {
-        sectionElement.appendChild(subtree);
-      });
+    promisedSubtree.then((subtree) => {
+      sectionElement.appendChild(subtree);
+    });
 
-      promises.push(promisedSubtree);
-    }
+    renderContext.promises.push(promisedSubtree);
   }
+}
 
-function generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(
-  pathArray,
-  pathDepth,
-  sectionElement,
-  promises
-  ) {
+function generateGlobalLinkSubtreeCallback(sectionElement, renderContext) {
+  let {
+    pathArray,
+    pathDepth,
+    promises
+  } = renderContext;
+
   return (token) => {
     if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
       return;
@@ -100,13 +72,18 @@ function generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(
   }
 }
 
-function createNewSectionElement(topicName, currentSubtopicName, pathDepth) {
+function createNewSectionElement(renderContext) {
+  let {
+    topicName, subtopicName, topicDisplayName, pathDepth
+  } = renderContext;
+
   let sectionElement = document.createElement('section');
   let paragraphElement = document.createElement('p');
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
   sectionElement.dataset.topicName = topicName;
-  sectionElement.dataset.subtopicName = currentSubtopicName;
+  sectionElement.dataset.topicDisplayName = topicDisplayName;
+  sectionElement.dataset.subtopicName = subtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
   return sectionElement;
 }
@@ -118,148 +95,21 @@ function subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, tok
   );
 }
 
-function renderElementsForTokens(
-  linesOfParagraph,
-  pathArray,
-  currentSubtopicName,
-  promises,
-  subtopicAlreadyRendered,
-  onParentLinkTokenRequiringSubtree,
-  onGlobalLinkTokenRequiringSubtree) {
-  let tokenArray = [];
+function renderElementsForBlocks(blocksOfParagraph, renderContext) {
+  let elementArray = [];
 
-  linesOfParagraph.forEach((tokensOfLine, lineNumber) => {
-    lineNumber > 0 && tokenArray.push(document.createElement('br'));
-    let newElements = tokensOfLine.map((token) => {
-      return generateTokenElement(
-        token,
-        pathArray,
-        currentSubtopicName,
-        promises,
-        subtopicAlreadyRendered,
-        onParentLinkTokenRequiringSubtree,
-        onGlobalLinkTokenRequiringSubtree,
-      );
-    });
-
-    tokenArray = tokenArray.concat(newElements);
-  });
-
-  return tokenArray;
-}
-
-function generateTokenElement(
-  token,
-  pathArray,
-  currentSubtopicName,
-  promises,
-  subtopicAlreadyRendered,
-  onParentLinkTokenRequiringSubtree,
-  onGlobalLinkTokenRequiringSubtree,
-  ) {
-  if (token.type === 'text') {
-    return document.createTextNode(token.text);
-  } else if (token.type === 'local') {
-    return generateParentLink(
-      token,
-      subtopicAlreadyRendered,
-      onParentLinkTokenRequiringSubtree
-    );
-  } else if (token.type === 'global') {
-    return generateGlobalLink(
-      token,
-      pathArray,
-      currentSubtopicName,
-      onGlobalLinkTokenRequiringSubtree
-    );
-  }
-}
-
-function generateParentLink(token, subtopicAlreadyRendered, onParentLinkTokenRequiringSubtree) {
-  if (!subtopicAlreadyRendered(token.targetSubtopic)) {
-    onParentLinkTokenRequiringSubtree(token);
-    return generateRegularParentLink(token);
-  } else {
-    return generateRedundantParentLink(token);
-  }
-}
-
-function generateRegularParentLink(token) {
-  let tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-local-link');
-  tokenElement.dataset.type = 'local';
-  tokenElement.dataset.targetTopic = token.targetTopic;
-  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-  tokenElement.dataset.urlSubtopic = token.targetSubtopic;
-  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
-  return tokenElement;
-}
-
-function generateRedundantParentLink(token) {
-  let tokenElement = generateSharedParentLinkBase(token);
-  tokenElement.classList.add('canopy-redundant-local-link');
-  tokenElement.dataset.type = 'redundant-local';
-  tokenElement.dataset.targetTopic = token.targetTopic;
-  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
-  tokenElement.href = `/${slugFor(token.enclosingTopic)}#${slugFor(token.enclosingSubtopic)}`;
-  return tokenElement;
-}
-
-function generateSharedParentLinkBase(token) {
-  let textElement = document.createTextNode(token.text);
-  let tokenElement = document.createElement('a');
-  tokenElement.appendChild(textElement);
-  tokenElement.addEventListener(
-    'click',
-    onParentLinkClick(token.targetTopic, token.targetSubtopic, tokenElement)
+  blocksOfParagraph.forEach(
+    (blockObject) => {
+      let renderer = BlockRenderers[blockObject.type];
+      let blockElements = renderer(
+        blockObject,
+        renderContext
+      )
+      elementArray = elementArray.concat(blockElements);
+    }
   );
-  return tokenElement;
-}
 
-function generateGlobalLink(token, pathArray, currentSubtopicName, onGlobalLinkTokenRequiringSubtree) {
-  let tokenElement = createGlobalLinkElement(token, pathArray);
-
-  if (globalLinkIsOpen(tokenElement, pathArray, currentSubtopicName)) {
-    onGlobalLinkTokenRequiringSubtree(token);
-  }
-
-  return tokenElement;
-}
-
-function createGlobalLinkElement(token) {
-  let textElement = document.createTextNode(token.text);
-  let tokenElement = document.createElement('a');
-  tokenElement.appendChild(textElement);
-  tokenElement.dataset.type = 'global';
-  tokenElement.dataset.targetTopic = token.targetTopic;
-  tokenElement.dataset.targetSubtopic = token.targetSubtopic;
-  tokenElement.dataset.urlSubtopic = token.enclosingSubtopic;
-  tokenElement.dataset.enclosingTopic = token.enclosingTopic;
-  tokenElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  tokenElement.classList.add('canopy-global-link');
-  tokenElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
-  tokenElement.addEventListener(
-    'click',
-    onGlobalLinkClick(token.targetTopic, token.targetSubtopic, tokenElement)
-  );
-  return tokenElement
-}
-
-function globalLinkIsOpen(tokenElement, pathArray, currentSubtopicName) {
-  let subtopicContainingOpenGlobalReference = pathArray[0][1];
-  let openGlobalLinkExists = pathArray[1];
-  let openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
-  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-
-  return openGlobalLinkExists &&
-    tokenElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
-    tokenElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic &&
-    currentSubtopicName === subtopicContainingOpenGlobalReference;
+  return elementArray;
 }
 
 export default renderDomTree;

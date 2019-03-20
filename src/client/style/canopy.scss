@@ -10,12 +10,18 @@
   }
 
   hr {
-    width: 20%;
+    width: 9%;
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 5px solid #ccc;
+    margin: 0px auto;
+    padding: 10px 0;
   }
 
   p {
     padding-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 30px;
     font-size: 23px;
     max-width: 700px;
     margin: auto;
@@ -60,7 +66,7 @@
     }
     */
 
-    &.canopy-global-link {
+    &.canopy-global-link, &.canopy-url-link {
       &:hover {
         color: #4078c0;
       }
@@ -74,5 +80,73 @@
         color: #4078c0;
       }
     }
+  }
+
+  // Markdown styles
+
+  hr.footnote-rule {
+    width: 700px;
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 12px 0;
+    padding: 0;
+  }
+
+  sup {
+    font-size: 60%;
+    padding: 2px;
+  }
+
+  .footnote-span {
+    font-size: 80%;
+  }
+
+  blockquote {
+    margin: 7px 10px;
+    background-color: #eff0f1;
+    padding: 5px;
+    font-size: 90%;
+  }
+
+  pre {
+    margin: 7px 10px;
+    background-color: #eff0f1;
+    padding: 5px;
+    font-size: 85%;
+  }
+
+  table {
+    margin: 7px auto;
+    table-layout: fixed;
+    width: 70%;
+    border-collapse: collapse;
+    border: 2px solid black;
+
+    td, th {
+      border: 2px solid black;
+      text-align: center;
+      padding: 6px;
+    }
+  }
+
+  img {
+    width: 700px;
+  }
+
+  .canopy-url-link-span > svg {
+    height: 15px;
+    width: 12px;
+    display: none;
+  }
+
+  .canopy-selected-link + svg, .canopy-url-link-span:hover > svg {
+    display: inline;
+    vertical-align: middle;
+  }
+
+  ol, ul {
+    margin: 7px 10px;
   }
 }

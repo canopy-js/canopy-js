@@ -36,7 +36,7 @@ const currentSection = () => {
 }
 
 const selectedLink = () => {
-  return document.querySelector('.canopy-selected-link');
+  return document.querySelector('a.canopy-selected-link');
 }
 
 const currentRootSection = () => {
@@ -48,6 +48,16 @@ const parentLinkOfSection = (sectionElement) => {
   if (sectionElement.parentNode === canopyContainer) { return null; }
 
   return linkOfSectionByTarget(
+    sectionElement.parentNode,
+    sectionElement.dataset.topicName,
+    sectionElement.dataset.subtopicName
+  );
+}
+
+const parentLinksOfSection = (sectionElement) => {
+  if (sectionElement.parentNode === canopyContainer) { return null; }
+
+  return linksOfSectionByTarget(
     sectionElement.parentNode,
     sectionElement.dataset.topicName,
     sectionElement.dataset.subtopicName
@@ -69,7 +79,9 @@ function sectionElementOfLink(linkElement) {
     return null;
   }
 
-  return linkElement.parentNode.parentNode;
+  let sectionElement = parentElementOfLink(linkElement, 'SECTION');
+
+  return sectionElement;
 }
 
 function documentTitleFor(topicName) {
@@ -83,16 +95,14 @@ function metadataFromLink(linkElement) {
 
   let relativeLinkNumber = Array.from(
     sectionElement.querySelectorAll(
-    ` a[data-target-topic="${linkElement.dataset.targetTopic}"]` +
-    `[data-target-subtopic="${linkElement.dataset.targetSubtopic}"]`
+    ` a[data-text="${linkElement.dataset.text}"]`
   )).indexOf(linkElement);
 
   return {
     sectionElementTopicName: sectionElement.dataset.topicName,
     sectionElementSubtopicName: sectionElement.dataset.subtopicName,
     sectionElementPathDepth: sectionElement.dataset.pathDepth,
-    targetTopic: linkElement.dataset.targetTopic,
-    targetSubtopic: linkElement.dataset.targetSubtopic,
+    linkText: linkElement.dataset.text,
     relativeLinkNumber: relativeLinkNumber
   };
 }
@@ -102,8 +112,7 @@ function findLinkFromMetadata(linkSelectionData) {
     `section[data-topic-name="${linkSelectionData.sectionElementTopicName}"]` +
     `[data-subtopic-name="${linkSelectionData.sectionElementSubtopicName}"]` +
     `[data-path-depth="${linkSelectionData.sectionElementPathDepth}"]` +
-    ` a[data-target-topic="${linkSelectionData.targetTopic}"]` +
-    `[data-target-subtopic="${linkSelectionData.targetSubtopic}"]`
+    ` a[data-text="${linkSelectionData.linkText}"]`
   )[linkSelectionData.relativeLinkNumber];
 }
 
@@ -152,8 +161,10 @@ function linkAfter(linkElement) {
     return null;
   }
 
-  let links = linkElement.parentNode.querySelectorAll('a');
-  if (linkElement !== links[links.length - 1]){
+  let paragraphElement = paragraphElementOfLink(linkElement);
+
+  let links = paragraphElement.querySelectorAll('.canopy-selectable-link');
+  if (linkElement !== links[links.length - 1]) {
     return links[
       Array.prototype.slice.call(links).indexOf(linkElement) + 1
     ];
@@ -162,12 +173,30 @@ function linkAfter(linkElement) {
   }
 }
 
+function parentElementOfLink(linkElement, tagName) {
+  let parentElement = linkElement.parentNode;
+  while (parentElement.tagName !== tagName) {
+    parentElement = parentElement.parentNode;
+  }
+  return parentElement;
+}
+
+function paragraphElementOfLink(linkElement) {
+  if (!linkElement) {
+    return null;
+  }
+
+  return parentElementOfLink(linkElement, 'P');
+}
+
 function linkBefore(linkElement) {
   if (!linkElement) {
     return null;
   }
 
-  let links = linkElement.parentNode.querySelectorAll('a');
+  let paragraphElement = paragraphElementOfLink(linkElement);
+
+  let links = paragraphElement.querySelectorAll('a.canopy-selectable-link');
   if (linkElement !== links[0]){
     return links[
       Array.prototype.slice.call(links).indexOf(linkElement) - 1
@@ -205,6 +234,7 @@ function linksOfSectionElement(sectionElement) {
   if (!sectionElement) {
     return null;
   }
+
   return linksOfParagraph(paragraphElementOfSection(sectionElement));
 }
 
@@ -213,9 +243,7 @@ function linksOfParagraph(paragraphElement) {
     return null;
   }
 
-  return Array.
-    from(paragraphElement.childNodes).
-    filter((linkElement) => linkElement.tagName === 'A');
+  return Array.from(paragraphElement.querySelectorAll('a.canopy-selectable-link'));
 }
 
 function firstLinkOfSectionElement(sectionElement) {
@@ -255,7 +283,7 @@ function firstSiblingOf(linkElement) {
     return null;
   }
 
-  let links = linkElement.parentNode.querySelectorAll('a');
+  let links = linksOfSectionElement(sectionElementOfLink(linkElement));
   return links[0] || linkElement;
 }
 
@@ -264,7 +292,7 @@ function lastSiblingOf(linkElement) {
     return null;
   }
 
-  let links = linkElement.parentNode.querySelectorAll('a');
+  let links = linksOfSectionElement(sectionElementOfLink(linkElement));
   return links[links.length - 1] || null;
 }
 
@@ -291,8 +319,19 @@ function linkOfSectionLike(sectionElement, condition) {
   return linksOfSectionElement(sectionElement).find(condition);
 }
 
+function linksOfSectionLike(sectionElement, condition) {
+  return linksOfSectionElement(sectionElement).filter(condition);
+}
+
 function linkOfSectionByTarget(sectionElement, topicName, subtopicName) {
   return linkOfSectionLike(sectionElement, (linkElement) =>
+    linkElement.dataset.targetTopic === topicName &&
+    linkElement.dataset.targetSubtopic === subtopicName
+  )
+}
+
+function linksOfSectionByTarget(sectionElement, topicName, subtopicName) {
+  return linksOfSectionLike(sectionElement, (linkElement) =>
     linkElement.dataset.targetTopic === topicName &&
     linkElement.dataset.targetSubtopic === subtopicName
   )
@@ -306,6 +345,7 @@ export {
   currentRootSection,
   selectedLink,
   parentLinkOfSection,
+  parentLinksOfSection,
   childSectionElementOfParentLink,
   sectionElementOfLink,
   metadataFromLink,
@@ -327,5 +367,9 @@ export {
   parentLinkOf,
   siblingOfLinkLike,
   linkOfSectionLike,
+  linksOfSectionLike,
   linkOfSectionByTarget,
+  linksOfSectionByTarget,
+  parentElementOfLink,
+  paragraphElementOfLink
 };

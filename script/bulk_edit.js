@@ -12,6 +12,13 @@ if (!fs.existsSync('./topics')) {
   throw "Must be in a projects directory with a topics folder"
 }
 
+function removeMarkdownTokens(string) {
+  return string.
+    replace(/([^\\]|^)_/g, '$1').
+    replace(/([^\\]|^)\*/g, '$1').
+    replace(/([^\\]|^)~/g, '$1');
+}
+
 let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
   let pathToArgument = process.cwd() + '/topics' + argumentString;
 
@@ -61,10 +68,13 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
   tempFileContents.split(/(?=topics\/)/).forEach(function(textForFile) {
     let pathToFile = textForFile.match(/(topics(\/[^\n\/]+)*)\/?/)[1] + '/';
     let dgsFileContentsWithExtraSpacing = textForFile.split("\n\n").slice(1).join("\n\n");
+    if (dgsFileContentsWithExtraSpacing.slice(-2) !== "\n\n") {
+      dgsFileContentsWithExtraSpacing = dgsFileContentsWithExtraSpacing + "\n";
+    }
     let dgsFileContentsWithOutExtraSpacing =
       dgsFileContentsWithExtraSpacing.split("\n").slice(0, -2).join("\n");
     let fileTopicKey = dgsFileContentsWithOutExtraSpacing.match(/^([^:.,;]+):\s+/)[1];
-    let filenameString = fileTopicKey.replace(/ /g, '_').toLowerCase().trim();
+    let filenameString = removeMarkdownTokens(fileTopicKey).replace(/ /g, '_').toLowerCase().trim();
     let finalPath = pathToFile + filenameString + '.dgs';
     mkdirp(pathToFile, function() {
       fs.writeFileSync(finalPath, dgsFileContentsWithOutExtraSpacing);
