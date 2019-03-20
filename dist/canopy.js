@@ -2024,7 +2024,7 @@ function renderDomTree(currentSubtopicName, pathArray, paragraphsBySubtopic, ren
   var linesOfParagraph = paragraphsBySubtopic[currentSubtopicName];
   var promises = [];
   renderedSubtopics[currentSubtopicName] = true;
-  var tokenElements = renderElementsForTokens(linesOfParagraph, pathArray, currentSubtopicName, promises, subtopicAlreadyRenderedCallback(renderedSubtopics), generateOnParentLinkTokenRequiringSubtreeCallback(pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth, sectionElement, promises), generateOnGlobalLinkTokenRequiringSubtreeCallback(pathArray, pathDepth, sectionElement, promises));
+  var tokenElements = renderElementsForTokens(linesOfParagraph, pathArray, currentSubtopicName, promises, generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics), generateOnCreatingParentLinkTokenRequiringSubtreeCallback(pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth, sectionElement, promises), generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(pathArray, pathDepth, sectionElement, promises));
   tokenElements.forEach(function (tokenElement) {
     Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["paragraphElementOfSection"])(sectionElement).appendChild(tokenElement);
   });
@@ -2033,13 +2033,13 @@ function renderDomTree(currentSubtopicName, pathArray, paragraphsBySubtopic, ren
   });
 }
 
-function subtopicAlreadyRenderedCallback(renderedSubtopics) {
+function generateIsSubtopicAlreadyRenderedCallback(renderedSubtopics) {
   return function (targetSubtopic) {
     return renderedSubtopics.hasOwnProperty(targetSubtopic);
   };
 }
 
-function generateOnParentLinkTokenRequiringSubtreeCallback(pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth, sectionElement, promises) {
+function generateOnCreatingParentLinkTokenRequiringSubtreeCallback(pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth, sectionElement, promises) {
   return function (token) {
     var promisedSubtree = renderDomTree(token.targetSubtopic, pathArray, paragraphsBySubtopic, renderedSubtopics, pathDepth);
     promisedSubtree.then(function (subtree) {
@@ -2049,7 +2049,7 @@ function generateOnParentLinkTokenRequiringSubtreeCallback(pathArray, paragraphs
   };
 }
 
-function generateOnGlobalLinkTokenRequiringSubtreeCallback(pathArray, pathDepth, sectionElement, promises) {
+function generateOnCreatingGlobalLinkTokenRequiringSubtreeCallback(pathArray, pathDepth, sectionElement, promises) {
   return function (token) {
     if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
       return;
