@@ -65,19 +65,20 @@ editor('.canopy_bulk_tmp', function (code, sig) {
 
 function reconstructDgsFilesFromTempFile(tempFileContents) {
   tempFileContents.split(/(?=topics\/)/).forEach(function(textForFile) {
+    if (!textForFile) { return; }
     let pathToFile = textForFile.match(/(topics(\/[^\n\/]+)*)\/?/)[1] + '/';
-    let dgsFileContentsWithExtraSpacing = textForFile.split("\n\n").slice(1).join("\n\n");
-    if (dgsFileContentsWithExtraSpacing.slice(-2) !== "\n\n") {
-      dgsFileContentsWithExtraSpacing = dgsFileContentsWithExtraSpacing + "\n";
+    let dgsFileContentsWithDisplaySpacing = textForFile.split("\n\n").slice(1).join("\n\n");
+    if (dgsFileContentsWithDisplaySpacing.slice(-2) !== "\n\n") {
+      dgsFileContentsWithDisplaySpacing = dgsFileContentsWithDisplaySpacing + "\n";
     }
-    let dgsFileContentsWithOutExtraSpacing = dgsFileContentsWithExtraSpacing.split("\n").slice(0, -2).join("\n");
-    let fileTopicKey = dgsFileContentsWithOutExtraSpacing.match(/^([^:.,;]+):\s+/)[1];
+    let dgsFileContentsWithOutDisplaySpacing = dgsFileContentsWithDisplaySpacing.split("\n").slice(0, -2).join("\n");
+    let fileTopicKey = dgsFileContentsWithOutDisplaySpacing.match(/^([^:.,;]+):\s+/)[1];
     let filenameString = removeMarkdownTokens(fileTopicKey).replace(/ /g, '_').toLowerCase().trim();
     let finalPath = pathToFile + filenameString + '.dgs';
     filesToErase[finalPath] = false;
 
     mkdirp(pathToFile, function() {
-      fs.writeFileSync(finalPath, dgsFileContentsWithOutExtraSpacing);
+      fs.writeFileSync(finalPath, dgsFileContentsWithOutDisplaySpacing);
       console.log('Wrote to file: ' + finalPath);
     })
   });
