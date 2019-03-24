@@ -32,6 +32,69 @@ const BaseMatchers = [
   textMatcher
 ]
 
+function localReferenceMatcher(prefixObject, parsingContext) {
+  let {topicSubtopics, currentTopic, currentSubtopic} = parsingContext;
+
+  if (
+    topicSubtopics[currentTopic].
+      hasOwnProperty(prefixObject.substringAsKey) &&
+    currentSubtopic !== prefixObject.substringAsKey &&
+    currentTopic !== prefixObject.substringAsKey
+  ){
+    return new LocalReferenceToken(
+      currentTopic,
+      prefixObject.substringAsKey,
+      currentTopic,
+      currentSubtopic,
+      prefixObject.substring,
+    );
+  }
+}
+
+function globalReferenceMatcher(prefixObject, parsingContext) {
+  let {topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces} = parsingContext;
+  if (
+    topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
+    currentTopic !== prefixObject.substringAsKey
+  ) {
+
+    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)){
+      avaliableNamespaces.push(prefixObject.substringAsKey);
+      throw { name: 'clauseReparseRequired' }
+    }
+
+    return new GlobalReferenceToken(
+      prefixObject.substringAsKey,
+      prefixObject.substringAsKey,
+      currentTopic,
+      currentSubtopic,
+      prefixObject.substring,
+    );
+  }
+}
+
+function importReferenceMatcher(prefixObject, parsingContext) {
+  let {
+    topicSubtopics,
+    currentTopic,
+    currentSubtopic,
+    avaliableNamespaces
+  } = parsingContext;
+
+  for (let i = 0; i < avaliableNamespaces.length; i++) {
+    let namespaceNameAsKey = avaliableNamespaces[i];
+    if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
+      return new GlobalReferenceToken(
+        namespaceNameAsKey,
+        prefixObject.substringAsKey,
+        currentTopic,
+        currentSubtopic,
+        prefixObject.substring,
+      );
+    }
+  }
+}
+
 function escapedCharacterMatcher(prefixObject) {
   let match = prefixObject.substring.match(/^\\(.)$/);
   if (match) {
@@ -99,69 +162,6 @@ function markdownHtmlMatcher(prefixObject) {
     return new markdownHtmlToken(
       prefixObject.substring,
     )
-  }
-}
-
-function localReferenceMatcher(prefixObject, parsingContext) {
-  let {topicSubtopics, currentTopic, currentSubtopic} = parsingContext;
-
-  if (
-    topicSubtopics[currentTopic].
-      hasOwnProperty(prefixObject.substringAsKey) &&
-    currentSubtopic !== prefixObject.substringAsKey &&
-    currentTopic !== prefixObject.substringAsKey
-  ){
-    return new LocalReferenceToken(
-      currentTopic,
-      prefixObject.substringAsKey,
-      currentTopic,
-      currentSubtopic,
-      prefixObject.substring,
-    );
-  }
-}
-
-function globalReferenceMatcher(prefixObject, parsingContext) {
-  let {topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces} = parsingContext;
-  if (
-    topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
-    currentTopic !== prefixObject.substringAsKey
-  ) {
-
-    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)){
-      avaliableNamespaces.push(prefixObject.substringAsKey);
-      throw { name: 'clauseReparseRequired' }
-    }
-
-    return new GlobalReferenceToken(
-      prefixObject.substringAsKey,
-      prefixObject.substringAsKey,
-      currentTopic,
-      currentSubtopic,
-      prefixObject.substring,
-    );
-  }
-}
-
-function importReferenceMatcher(prefixObject, parsingContext) {
-  let {
-    topicSubtopics,
-    currentTopic,
-    currentSubtopic,
-    avaliableNamespaces
-  } = parsingContext;
-
-  for (let i = 0; i < avaliableNamespaces.length; i++) {
-    let namespaceNameAsKey = avaliableNamespaces[i];
-    if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
-      return new GlobalReferenceToken(
-        namespaceNameAsKey,
-        prefixObject.substringAsKey,
-        currentTopic,
-        currentSubtopic,
-        prefixObject.substring,
-      );
-    }
   }
 }
 

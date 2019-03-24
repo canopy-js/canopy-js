@@ -6,7 +6,7 @@ import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import topicKeyOfFile from 'helpers/topic_key_of_file';
 import { slugFor } from 'helpers/identifiers';
 import rimraf from 'rimraf';
-import removeMarkdownTokens from 'helpers/remove_markdown_tokens';
+import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
