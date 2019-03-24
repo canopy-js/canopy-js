@@ -6,6 +6,7 @@ import {
   MarkdownMatchers,
   BaseMatchers
 } from 'components/matchers';
+import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function parseClause(clauseWithPunctuation, parsingContext) {
   let units = unitsOf(clauseWithPunctuation);
@@ -72,7 +73,7 @@ function prefixesOf(units) {
   for (let i = units.length - 1; i >= 0; i--) {
     let prefixUnits = units.slice(0, i + 1);
     let substring = prefixUnits.join('');
-    let substringAsKey = capitalize(substring);
+    let substringAsKey = removeMarkdownTokens(capitalize(substring));
 
     prefixObjects.push({units: prefixUnits, substring, substringAsKey});
   }

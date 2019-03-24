@@ -1,7 +1,7 @@
 function extractKeyAndParagraph(paragraphWithKey) {
   let match = paragraphWithKey.match(/^([^:.,;]+):\s+/);
 
-  if(!match) {
+  if (!match) {
     return {
       key: null,
       paragraph: paragraphWithKey

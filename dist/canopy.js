@@ -1456,7 +1456,7 @@ var htmlIdFor = function htmlIdFor(topicName, subtopicName) {
 };
 
 function removeMarkdownTokens(string) {
-  return string.replace(/([^\\]|^)_/g, '$1').replace(/([^\\]|^)\*/g, '$1').replace(/([^\\]|^)~/g, '$1');
+  return string.replace(/([^\\]|^)_/g, '$1').replace(/([^\\]|^)\*/g, '$1').replace(/([^\\]|^)`/g, '$1').replace(/([^\\]|^)~/g, '$1');
 }
 
 

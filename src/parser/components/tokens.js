@@ -1,5 +1,3 @@
-import removeMarkdownTokens from 'helpers/remove_markdown_tokens';
-
 function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
@@ -15,10 +13,10 @@ function LocalReferenceToken(
   ) {
   this.text = text;
   this.type = 'local';
-  this.targetSubtopic = removeMarkdownTokens(targetSubtopic);
-  this.targetTopic = removeMarkdownTokens(targetTopic);
-  this.enclosingTopic = removeMarkdownTokens(enclosingTopic);
-  this.enclosingSubtopic = removeMarkdownTokens(enclosingSubtopic);
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
 function GlobalReferenceToken(
@@ -30,10 +28,10 @@ function GlobalReferenceToken(
   ) {
   this.text = text;
   this.type = 'global';
-  this.targetSubtopic = removeMarkdownTokens(targetSubtopic);
-  this.targetTopic = removeMarkdownTokens(targetTopic);
-  this.enclosingTopic = removeMarkdownTokens(enclosingTopic);
-  this.enclosingSubtopic = removeMarkdownTokens(enclosingSubtopic);
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
 function markdownUrlToken(url, text, urlSubtopic) {

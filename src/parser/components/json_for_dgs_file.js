@@ -2,7 +2,7 @@ import fs from 'fs';
 import parseParagraph from 'components/parse_paragraph';
 import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
-import removeMarkdownTokens from 'helpers/remove_markdown_tokens';
+import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
@@ -14,7 +14,7 @@ function jsonForDgsFile(path, namespaceObject) {
     let paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if (!paragraphData.key) { return; }
 
-    let currentSubtopic = paragraphData.key;
+    let currentSubtopic = removeMarkdownTokens(paragraphData.key);
     let textWithoutKey = paragraphData.paragraph;
 
     let tokensOfParagraph = parseParagraph(
@@ -24,7 +24,7 @@ function jsonForDgsFile(path, namespaceObject) {
       topicOfFile
     );
 
-    tokenizedParagraphsByKey[removeMarkdownTokens(currentSubtopic)] = tokensOfParagraph;
+    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
 
   let jsonObject = {
