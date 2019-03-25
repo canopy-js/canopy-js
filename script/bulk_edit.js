@@ -77,10 +77,9 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
     let finalPath = pathToFile + filenameString + '.dgs';
     filesToErase[finalPath] = false;
 
-    mkdirp(pathToFile, function() {
-      fs.writeFileSync(finalPath, dgsFileContentsWithOutDisplaySpacing);
-      console.log('Wrote to file: ' + finalPath);
-    })
+    mkdirp(pathToFile);
+    fs.writeFileSync(finalPath, dgsFileContentsWithOutDisplaySpacing);
+    console.log('Wrote to file: ' + finalPath);
   });
 
   for (let path in filesToErase) {
