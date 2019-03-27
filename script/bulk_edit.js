@@ -6,7 +6,6 @@ let editor = require('editor');
 let mkdirp = require('mkdirp-sync');
 
 let argumentArray = process.argv.slice(3);
-if (argumentArray.length === 0) { argumentArray = ['/'] }
 
 if (!fs.existsSync('./topics')) {
   throw "Must be in a projects directory with a topics folder"
@@ -50,6 +49,23 @@ let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
     return tempFileString = displayPath + "\n\n" + fileContents + "\n\n";
   }).join('');
 }).join('');
+
+if (!tempFileData) {
+  tempFileData =
+`topics/
+
+Here is a topic name: Here is a paragraph for that topic.
+
+Here is a subtopic name: Here is a paragraph for that subtopic.
+
+
+topics/
+
+Here is another topic name: Here is a paragraph for that topic.
+
+Here is another subtopic name: Here is a paragraph for that subtopic.
+`
+}
 
 fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
 
