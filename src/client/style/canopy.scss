@@ -16,12 +16,18 @@
     border: 0;
     border-top: 5px solid #ccc;
     margin: 0px auto;
-    padding: 10px 0;
+    padding-bottom: 30px;
+  }
+
+  section.canopy-topic-section {
+    padding-top: 30px;
+  }
+
+  section {
+    padding-top: 20px;
   }
 
   p {
-    padding-top: 10px;
-    padding-bottom: 30px;
     font-size: 23px;
     max-width: 700px;
     margin: auto;
