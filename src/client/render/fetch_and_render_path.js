@@ -8,7 +8,7 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
   let topicName = pathArray[0][0];
   let uponResponsePromise = requestJson(topicName);
 
-  let promisedDomTree = uponResponsePromise.then((dataObject) => {
+  return uponResponsePromise.then((dataObject) => {
     let { paragraphsBySubtopic, topicDisplayName } = dataObject;
 
     return renderDomTree(
@@ -23,11 +23,6 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
       }
     );
   })
-
-  return promisedDomTree.then((domTree) => {
-    pathDepth > 0 && domTree.prepend(document.createElement('hr'));
-    return domTree;
-  });
 }
 
 export default fetchAndRenderPath;

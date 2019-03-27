@@ -85,6 +85,12 @@ function createNewSectionElement(renderContext) {
   sectionElement.dataset.topicDisplayName = topicDisplayName;
   sectionElement.dataset.subtopicName = subtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
+
+  if (topicName === subtopicName) {
+    pathDepth > 0 && sectionElement.prepend(document.createElement('hr'));
+    sectionElement.classList.add('canopy-topic-section');
+  }
+
   return sectionElement;
 }
 
