@@ -65,9 +65,8 @@ const parentLinksOfSection = (sectionElement) => {
 }
 
 const childSectionElementOfParentLink = (linkElement) => {
-  return Array.from(linkElement.
-    parentNode.
-    parentNode.
+  return Array.from(
+    parentElementOfLink(linkElement, 'SECTION').
     childNodes).
     find((sectionElement) =>
       sectionElement.dataset.topicName === linkElement.dataset.targetTopic &&
