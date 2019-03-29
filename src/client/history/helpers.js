@@ -1,8 +1,5 @@
 import { metadataFromLink } from 'helpers/getters';
-
-function linkSelectionPresentInEvent(e) {
-  return e.state && e.state.targetTopic;
-}
+import { parsePathString, pathStringFor } from 'path/helpers';
 
 function saveCurrentLinkSelectionInHistoryStack(linkElement) {
   history.replaceState(
@@ -12,7 +9,43 @@ function saveCurrentLinkSelectionInHistoryStack(linkElement) {
   );
 }
 
+function linkSelectionPresentInEvent(e) {
+  return e.state && e.state.targetTopic;
+}
+
+function priorLinkSelectionFromSession() {
+  return JSON.parse(
+    sessionStorage.getItem(
+      pathStringFor(
+        parsePathString()
+      )
+    )
+  );
+}
+
+function stateIfPresentInHistoryStack() {
+  return history.state && history.state.targetTopic && history.state;
+}
+
+function priorLinkSelection() {
+  return stateIfPresentInHistoryStack() || JSON.parse(
+    sessionStorage.getItem(
+      pathStringFor(
+        parsePathString()
+      )
+    )
+  );
+}
+
+function storeLinkSelectionInSession(linkElement) {
+  let linkData = linkElement && JSON.stringify(metadataFromLink(linkElement));
+  linkData && sessionStorage.setItem(location.pathname + location.hash, linkData);
+}
+
 export {
   linkSelectionPresentInEvent,
-  saveCurrentLinkSelectionInHistoryStack
+  saveCurrentLinkSelectionInHistoryStack,
+  priorLinkSelectionFromSession,
+  priorLinkSelection,
+  storeLinkSelectionInSession
 };

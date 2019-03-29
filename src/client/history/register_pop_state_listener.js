@@ -2,9 +2,9 @@ import {
   saveCurrentLinkSelectionInHistoryStack,
   linkSelectionPresentInEvent
 } from 'history/helpers';
-
+import { priorLinkSelectionFromSession } from 'history/helpers';
 import updateView from 'display/update_view';
-import parsePathString from 'path/parse_path_string';
+import { parsePathString } from 'path/helpers';
 import { selectedLink } from 'helpers/getters';
 
 function registerPopStateListener() {
@@ -15,7 +15,7 @@ function registerPopStateListener() {
 
     updateView(
       parsePathString(),
-      newLinkSelectionData,
+      newLinkSelectionData || priorLinkSelectionFromSession(),
       null,
       true
     );

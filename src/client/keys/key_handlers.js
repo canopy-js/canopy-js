@@ -26,11 +26,11 @@ import {
   isPageRootSection,
   sectionHasNoChildLinks
 } from 'helpers/booleans';
-import pathForSectionElement from 'path/path_for_section_element';
+import { pathForSectionElement } from 'path/helpers';
 import updateView from 'display/update_view';
 import setPath from 'path/set_path';
 import displayPath from 'display/display_path';
-import parsePathString from 'path/parse_path_string';
+import { parsePathString } from 'path/helpers';
 import { deselectAllLinks } from 'display/helpers';
 import pathStringFor from 'path/path_string_for';
 

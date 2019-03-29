@@ -20,6 +20,8 @@ import {
   updateDfsClasses
 } from 'display/helpers';
 
+import { storeLinkSelectionInSession } from 'history/helpers';
+
 const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) => {
   let topicName = pathArray[0][0];
   const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
@@ -37,6 +39,7 @@ const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFro
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath);
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);
+  storeLinkSelectionInSession(linkToSelect);
 
   displayPathTo(sectionElementToDisplay);
   window.scrollTo(0, canopyContainer.scrollHeight);

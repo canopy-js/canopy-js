@@ -2,7 +2,7 @@ import parsePathString from 'path/parse_path_string';
 import displayPath from 'display/display_path';
 import updateView from 'display/update_view';
 import { sectionElementOfLink } from 'helpers/getters';
-import pathForSectionElement from 'path/path_for_section_element'
+import { pathForSectionElement } from 'path/helpers'
 
 const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
   return (e) => {
