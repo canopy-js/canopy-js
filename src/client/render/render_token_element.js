@@ -145,7 +145,9 @@ function renderLinkLiteral(token) {
 }
 
 function renderImage(token) {
-  let divElement = document.createElement('DIV')
+  let divElement = document.createElement('DIV');
+  divElement.classList.add('canopy-image-div');
+
   let imageElement = document.createElement('IMG');
   divElement.appendChild(imageElement);
 
@@ -153,6 +155,13 @@ function renderImage(token) {
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
+    let captionElement = document.createElement('SUP');
+    let captionDiv = document.createElement('DIV');
+    captionElement.appendChild(document.createTextNode(token.title));
+    captionElement.classList.add('canopy-image-caption');
+    captionDiv.classList.add('canopy-caption-div');
+    captionDiv.appendChild(captionElement);
+    divElement.appendChild(captionDiv);
   }
 
   if (token.altText) {
