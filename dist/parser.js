@@ -437,7 +437,8 @@ __webpack_require__.r(__webpack_exports__);
 function jsonForDgsFile(path, namespaceObject) {
   var paragraphsWithKeys = Object(helpers_paragraphs_of_file__WEBPACK_IMPORTED_MODULE_2__["default"])(path);
   var tokenizedParagraphsByKey = {};
-  var topicOfFile = Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphsWithKeys[0]).key;
+  var displayTopicOfFile = Object(helpers_extract_key_and_paragraph__WEBPACK_IMPORTED_MODULE_3__["default"])(paragraphsWithKeys[0]).key;
+  var topicOfFile = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_4__["removeMarkdownTokens"])(displayTopicOfFile);
 
   if (!topicOfFile) {
     return '';
@@ -456,7 +457,7 @@ function jsonForDgsFile(path, namespaceObject) {
     tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
   var jsonObject = {
-    topicDisplayName: topicOfFile,
+    topicDisplayName: displayTopicOfFile,
     paragraphsBySubtopic: tokenizedParagraphsByKey
   };
   return JSON.stringify(jsonObject, null, process.env.CANOPY_DEBUG ? 1 : 0);
@@ -480,8 +481,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseMatchers", function() { return BaseMatchers; });
 /* harmony import */ var components_tokens__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! components/tokens */ "./src/parser/components/tokens.js");
 /* harmony import */ var helpers_units_of__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/units_of */ "./src/parser/helpers/units_of.js");
-/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
-
 
 
 var ReferenceMatchers = [localReferenceMatcher, globalReferenceMatcher, importReferenceMatcher];
@@ -793,9 +792,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownImageToken", function() { return markdownImageToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownFootnoteToken", function() { return markdownFootnoteToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownHtmlToken", function() { return markdownHtmlToken; });
-/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
-
-
 function TextToken(text, escaped) {
   this.text = text;
   this.type = 'text';
@@ -805,19 +801,19 @@ function TextToken(text, escaped) {
 function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'local';
-  this.targetSubtopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(targetSubtopic);
-  this.targetTopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(targetTopic);
-  this.enclosingTopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(enclosingTopic);
-  this.enclosingSubtopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(enclosingSubtopic);
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
 function GlobalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
   this.text = text;
   this.type = 'global';
-  this.targetSubtopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(targetSubtopic);
-  this.targetTopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(targetTopic);
-  this.enclosingTopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(enclosingTopic);
-  this.enclosingSubtopic = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["removeMarkdownTokens"])(enclosingSubtopic);
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
 function markdownUrlToken(url, text, urlSubtopic) {
@@ -1023,7 +1019,7 @@ function linesByBlockOf(string) {
           lines: [line]
         });
       }
-    } else if (line.match(/^\s*(\S+\.|[+*-])(\s|$)/)) {
+    } else if (line.match(/^\s*(\S+\.|[+*-])\s+\S/)) {
       if (lastBlock && lastBlock.type === 'list') {
         lastBlock.lines.push(line);
       } else {
