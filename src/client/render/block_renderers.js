@@ -10,22 +10,24 @@ let BlockRenderers = {
 };
 
 function renderTextBlock(blockObject, renderContext) {
-  let newElements = [];
+  let lineSpans = [];
 
   blockObject.tokensByLine.forEach(
     (tokensOfLine, lineNumber) => {
-      lineNumber > 0 && newElements.push(document.createElement('BR'));
+      let lineSpan = document.createElement('SPAN');
+      lineSpan.classList.add('canopy-text-span');
+      lineSpans.push(lineSpan);
 
       tokensOfLine.forEach(
         (token) => {
           let tokenElement = renderTokenElement(token, renderContext);
-          newElements.push(tokenElement);
+          lineSpan.appendChild(tokenElement);
         }
       )
     }
   );
 
-  return newElements;
+  return lineSpans;
 }
 
 function renderCodeBlock(blockObject, renderContext) {
