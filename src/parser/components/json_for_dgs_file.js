@@ -7,7 +7,8 @@ import { removeMarkdownTokens } from 'helpers/identifiers';
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
-  let topicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
+  let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
+  let topicOfFile = removeMarkdownTokens(displayTopicOfFile);
   if (!topicOfFile) { return ''; }
 
   paragraphsWithKeys.forEach(function(paragraphWithKey){
@@ -28,7 +29,7 @@ function jsonForDgsFile(path, namespaceObject) {
   });
 
   let jsonObject = {
-    topicDisplayName: topicOfFile,
+    topicDisplayName: displayTopicOfFile,
     paragraphsBySubtopic: tokenizedParagraphsByKey
   }
 
