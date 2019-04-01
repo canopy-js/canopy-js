@@ -96,9 +96,9 @@ function importReferenceMatcher(prefixObject, parsingContext) {
 }
 
 function escapedCharacterMatcher(prefixObject) {
-  let match = prefixObject.substring.match(/^\\(.)$/);
+  let match = prefixObject.substring.match(/^(\\.)$/);
   if (match) {
-    return new TextToken(match[1], true);
+    return new TextToken(match[1]);
   }
 }
 
