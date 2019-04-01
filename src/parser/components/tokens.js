@@ -1,7 +1,6 @@
-function TextToken(text, escaped) {
+function TextToken(text) {
   this.text = text;
   this.type = 'text';
-  this.escaped = escaped || false;
 }
 
 function LocalReferenceToken(

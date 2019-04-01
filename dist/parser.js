@@ -531,10 +531,10 @@ function importReferenceMatcher(prefixObject, parsingContext) {
 }
 
 function escapedCharacterMatcher(prefixObject) {
-  var match = prefixObject.substring.match(/^\\(.)$/);
+  var match = prefixObject.substring.match(/^(\\.)$/);
 
   if (match) {
-    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["TextToken"](match[1], true);
+    return new components_tokens__WEBPACK_IMPORTED_MODULE_0__["TextToken"](match[1]);
   }
 }
 
@@ -792,10 +792,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownImageToken", function() { return markdownImageToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownFootnoteToken", function() { return markdownFootnoteToken; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markdownHtmlToken", function() { return markdownHtmlToken; });
-function TextToken(text, escaped) {
+function TextToken(text) {
   this.text = text;
   this.type = 'text';
-  this.escaped = escaped || false;
 }
 
 function LocalReferenceToken(targetTopic, targetSubtopic, enclosingTopic, enclosingSubtopic, text) {
