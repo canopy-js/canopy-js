@@ -153,6 +153,11 @@ function renderImage(token) {
 
   imageElement.setAttribute('src', token.resourceUrl);
 
+  let anchorElement = document.createElement('A');
+  anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
+  anchorElement.appendChild(imageElement);
+  divElement.appendChild(anchorElement);
+
   if (token.title) {
     imageElement.setAttribute('title', token.title);
     let captionElement = document.createElement('SUP');
@@ -160,19 +165,13 @@ function renderImage(token) {
     captionElement.appendChild(document.createTextNode(token.title));
     captionElement.classList.add('canopy-image-caption');
     captionDiv.classList.add('canopy-caption-div');
-    captionDiv.appendChild(captionElement);
-    divElement.appendChild(captionDiv);
+    divElement.appendChild(captionElement);
+  } else {
+    divElement.appendChild(anchorElement);
   }
 
   if (token.altText) {
     imageElement.setAttribute('alt', token.altText);
-  }
-
-  if (token.anchorUrl) {
-    let anchorElement = document.createElement('A');
-    anchorElement.setAttribute('href', token.anchorUrl);
-    anchorElement.appendChild(imageElement);
-    return anchorElement;
   }
 
   return divElement;
@@ -181,6 +180,7 @@ function renderImage(token) {
 function renderHtml(token) {
   let divElement = document.createElement('DIV');
   divElement.innerHTML = token.html;
+  divElement.classList.add('canopy-raw-html');
   return divElement;
 }
 

@@ -1,5 +1,5 @@
 #_canopy {
-  padding-top: 25px;
+  padding-top: 15px;
   padding-bottom: 55px;
 
   h1 {
@@ -20,11 +20,11 @@
   }
 
   section.canopy-topic-section {
-    padding-top: 35px;
+    padding-top: 40px;
   }
 
   section {
-    padding-top: 25px;
+    padding-top: 30px;
   }
 
   p {
@@ -39,7 +39,7 @@
 
 ///////////// Link styles /////////////////
 
-  a {
+  a.canopy-selectable-link {
     text-decoration: underline #F0F0F0;
     color: black;
     cursor: pointer;
@@ -149,17 +149,24 @@
   }
 
   img {
-    max-width: 700px;
+    max-width: 200px;
   }
 
   div.canopy-image-div {
-    display: inline;
+    float: right;
+    border: 1px solid #c8ccd1;
+    padding: 3px;
+    background-color: #f8f9fa;
+    font-size: 94%;
+    text-align: center;
+    overflow: hidden;
+    min-width: 172px;
+    min-height: 230px;
+    margin: 10px;
   }
 
-  div.canopy-caption-div {
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
-    border-left: 1px solid black;
+  div.canopy-image-div > sup {
+    display: block;
   }
 
   .canopy-url-link-span > svg {
@@ -175,5 +182,9 @@
 
   ol, ul {
     margin: 7px 10px;
+  }
+
+  div.canopy-raw-html {
+    display: inline;
   }
 }
