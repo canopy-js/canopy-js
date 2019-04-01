@@ -27,7 +27,8 @@ build)
   </html>
 EOF
 
-  CANOPY_DEBUG=true node $(npm root -g)/canopy-js/dist/parser.js .
+  CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
+  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js .
 
   for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
     cp build/index.html $D
