@@ -1,8 +1,6 @@
-import parsePathString from 'path/parse_path_string';
-import displayPath from 'display/display_path';
 import updateView from 'display/update_view';
 import { sectionElementOfLink } from 'helpers/getters';
-import { pathForSectionElement } from 'path/helpers'
+import { pathForSectionElement, parsePathString } from 'path/helpers'
 
 const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
   return (e) => {
@@ -15,13 +13,13 @@ const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
       let newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
       pathArray.push(newTuple);
 
-      displayPath(pathArray);
+      updateView(pathArray);
     } else {
       pathArray.pop();
       let newTuple = [topicName, targetSubtopic];
       pathArray.push(newTuple);
 
-      displayPath(pathArray);
+      updateView(pathArray);
     }
   }
 }

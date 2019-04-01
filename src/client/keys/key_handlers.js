@@ -19,7 +19,8 @@ import {
   firstChildLinkOfParentLink,
   lastChildLinkOfParentLink,
   enclosingTopicSectionOfLink,
-  childSectionElementOfParentLink
+  childSectionElementOfParentLink,
+  forEach
 } from 'helpers/getters';
 import {
   isATopicRootSection,
@@ -29,10 +30,8 @@ import {
 import { pathForSectionElement } from 'path/helpers';
 import updateView from 'display/update_view';
 import setPath from 'path/set_path';
-import displayPath from 'display/display_path';
-import { parsePathString } from 'path/helpers';
+import { parsePathString, pathStringFor } from 'path/helpers';
 import { deselectAllLinks } from 'display/helpers';
-import pathStringFor from 'path/path_string_for';
 
 function moveUpward() {
   let pathArray = parsePathString();
@@ -62,7 +61,7 @@ function moveUpward() {
 
   updateView(
     pathArray,
-    metadataFromLink(linkElement)
+    { linkSelectionData: metadataFromLink(linkElement) }
   );
 }
 
@@ -88,8 +87,7 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      null,
-      true
+      { selectALink: true }
     );
   }
 
@@ -104,7 +102,7 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      metadataFromLink(linkElement)
+      { linkSelectionData: metadataFromLink(linkElement) }
     );
   }
 
@@ -116,7 +114,7 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      metadataFromLink(linkElement)
+      { linkSelectionData: metadataFromLink(linkElement) }
     );
   }
 }
@@ -137,9 +135,9 @@ function moveLeftward() {
   let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
 
-  displayPath(
+  updateView(
     pathArray,
-    linkElement
+    { linkSelectionData: metadataFromLink(linkElement) }
   );
 }
 
@@ -159,9 +157,9 @@ function moveRightward() {
   let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
   pathArray.push(newTuple);
 
-  displayPath(
+  updateView(
     pathArray,
-    linkElement
+    { linkSelectionData: metadataFromLink(linkElement) }
   );
 }
 
@@ -185,8 +183,7 @@ function moveDownOrRedirect(newTab) {
 
     updateView(
       pathArray,
-      null,
-      true
+      { selectALink: true }
     );
   } else if (selectedLink().dataset.type === 'url') {
     if (newTab) {
@@ -218,6 +215,9 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
   let alreadyVisitedGlobalLinkIfNoChildren = previouslySelectedLink !== selectedLink();
   let alreadyVisitedGlobalLink = alreadyVisitedGlobalLinkIfChildren && alreadyVisitedGlobalLinkIfNoChildren;
   let childSectionIsNotAlreadyVisible = !sectionElement || !openLinkOfSection(sectionElement);
+  let nextChildLink = dfsDirectionInteger === 1 ?
+    firstLinkOfSectionElement(sectionElement) :
+    lastLinkOfSectionElement(sectionElement);
 
   if (
     selectedLink().dataset.type === 'global' &&
@@ -227,10 +227,10 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
   ) {
     return updateView(
       newPathArray,
-      null,
-      true,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: nextChildLink,
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
   }
 
@@ -243,10 +243,10 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
   ) {
     return updateView(
       parsePathString().slice(0, -1),
-      metadataFromLink(selectedLink()),
-      false,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: metadataFromLink(selectedLink()),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
   }
 
@@ -268,10 +268,10 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     let nextLink = firstChildToVisit;
     return updateView(
       pathForSectionElement(sectionElementOfLink(nextLink)),
-      metadataFromLink(nextLink),
-      null,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: metadataFromLink(nextLink),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
   }
 
@@ -284,10 +284,10 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     let nextLink = nextSiblingToVisit;
     return updateView(
       pathForSectionElement(sectionElementOfLink(nextLink)),
-      metadataFromLink(nextLink),
-      null,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: metadataFromLink(nextLink),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
   }
 
@@ -297,10 +297,10 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     let nextLink = parentLink;
     return updateView(
       pathForSectionElement(sectionElementOfLink(nextLink)),
-      metadataFromLink(nextLink),
-      null,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: metadataFromLink(nextLink),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
   }
 
@@ -314,11 +314,32 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     let nextLink = globalParentLink;
     return updateView(
       pathForSectionElement(sectionElementOfLink(nextLink)),
-      metadataFromLink(nextLink),
-      null,
-      null,
-      dfsDirectionInteger
+      {
+        linkSelectionData: metadataFromLink(nextLink),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
     );
+  }
+}
+
+function updateDfsClassesCallback(dfsDirectionInteger) {
+  return () => {
+    let previouslySelectedLinkClassName = dfsDirectionInteger === 1 ?
+    'canopy-dfs-previously-selected-link' :
+    'canopy-reverse-dfs-previously-selected-link';
+    let previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
+
+    if (previouslySelectedLink) {
+      previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
+    }
+    selectedLink() && selectedLink().classList.add(previouslySelectedLinkClassName);
+    let preserveForwardDfsClass = dfsDirectionInteger === 1;
+    let preserveBackwardsDfsClass = dfsDirectionInteger === 2;
+
+    forEach(document.getElementsByTagName("a"), function(linkElement) {
+      !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
+      !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+    });
   }
 }
 
@@ -328,7 +349,7 @@ function goToEnclosingTopic() {
 
   updateView(
     pathForSectionElement(sectionElement),
-    metadataFromLink(linkElement)
+    { linkSelectionData: metadataFromLink(linkElement) }
   );
 }
 
@@ -341,7 +362,7 @@ function goToParentOfEnclosingTopic() {
 
   updateView(
     pathForSectionElement(sectionElement),
-    metadataFromLink(linkElement)
+    { linkSelectionData: metadataFromLink(linkElement) }
   );
 }
 

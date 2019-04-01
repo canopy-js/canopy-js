@@ -22,21 +22,21 @@ import {
 
 import { storeLinkSelectionInSession } from 'history/helpers';
 
-const displayPath = (pathArray, providedLinkToSelect, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) => {
+const displayPath = (pathArray, displayOptions) => {
   let topicName = pathArray[0][0];
-  const sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
-  if (!sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }
-  if (!originatesFromPopStateEvent) { setPath(pathArray); }
+  displayOptions.sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
+  if (!displayOptions.sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }
+  if (!displayOptions.originatesFromPopStateEvent) { setPath(pathArray); }
   document.title = documentTitleFor(topicName);
 
-  let displayTopicName = sectionElementOfPath([[pathArray[0][0], pathArray[0][0]]]).dataset.topicDisplayName;
+  let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.topicDisplayName;
   createOrReplaceHeader(displayTopicName);
-  updateDfsClasses(dfsDirectionInteger);
+  displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
   deselectAllLinks();
   hideAllSectionElements();
 
-  let linkToSelect = determineLinkToSelect(providedLinkToSelect, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger);
-  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath);
+  let linkToSelect = determineLinkToSelect(pathArray, displayOptions);
+  let sectionElementToDisplay = determineSectionElementToDisplay(displayOptions);
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);
   storeLinkSelectionInSession(linkToSelect);

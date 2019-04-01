@@ -1,4 +1,4 @@
-import { defaultTopic } from 'helpers/getters';
+import { defaultTopic, canopyContainer } from 'helpers/getters';
 import { slugFor } from 'helpers/identifiers';
 
 function pathOrDefaultTopic() {
