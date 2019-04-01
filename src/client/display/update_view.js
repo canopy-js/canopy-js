@@ -4,13 +4,12 @@ import {
   defaultTopic,
   canopyContainer,
   findLowestExtantSectionElementOfPath,
-  findLinkFromMetadata,
   childSectionElementOfParentLink
 } from 'helpers/getters';
 
 import { newNodeAlreadyPresent } from 'display/helpers';
 
-const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopStateEvent, dfsDirectionInteger) => {
+const updateView = (pathArray, updateOptions) => {
   let {
     lowestExtantSectionElementOfPath,
     pathSuffixToRender
@@ -31,10 +30,7 @@ const updateView = (pathArray, selectedLinkData, selectALink, originatesFromPopS
 
     displayPath(
       pathArray,
-      selectedLinkData && findLinkFromMetadata(selectedLinkData),
-      selectALink,
-      originatesFromPopStateEvent,
-      dfsDirectionInteger
+      updateOptions
     );
   });
 }

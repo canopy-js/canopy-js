@@ -13,7 +13,7 @@ function linkSelectionPresentInEvent(e) {
   return e.state && e.state.targetTopic;
 }
 
-function priorLinkSelectionFromSession() {
+function priorLinkSelectionDataFromSession() {
   return JSON.parse(
     sessionStorage.getItem(
       pathStringFor(
@@ -27,14 +27,8 @@ function stateIfPresentInHistoryStack() {
   return history.state && history.state.targetTopic && history.state;
 }
 
-function priorLinkSelection() {
-  return stateIfPresentInHistoryStack() || JSON.parse(
-    sessionStorage.getItem(
-      pathStringFor(
-        parsePathString()
-      )
-    )
-  );
+function priorLinkSelectionData() {
+  return stateIfPresentInHistoryStack() || priorLinkSelectionDataFromSession();
 }
 
 function storeLinkSelectionInSession(linkElement) {
@@ -45,7 +39,7 @@ function storeLinkSelectionInSession(linkElement) {
 export {
   linkSelectionPresentInEvent,
   saveCurrentLinkSelectionInHistoryStack,
-  priorLinkSelectionFromSession,
-  priorLinkSelection,
+  priorLinkSelectionDataFromSession,
+  priorLinkSelectionData,
   storeLinkSelectionInSession
 };

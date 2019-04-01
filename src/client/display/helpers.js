@@ -6,7 +6,9 @@ import {
   parentLinkOfSection,
   lastLinkOfSectionElement,
   selectedLink,
-  linksOfSectionLike
+  linksOfSectionLike,
+  forEach,
+  findLinkFromMetadata
 } from 'helpers/getters';
 
 import renderStyledText from 'render/render_styled_text';
@@ -20,24 +22,21 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
     }).length > 0;
 }
 
-function determineLinkToSelect(providedLink, selectALink, pathArray, sectionElementOfCurrentPath, dfsDirectionInteger) {
-  if (providedLink) {
-    return providedLink;
-  }
+function determineLinkToSelect(pathArray, displayOptions) {
+  let {
+    linkSelectionData,
+    selectALink,
+    sectionElementOfCurrentPath
+  } = displayOptions;
 
-  let nextChildLink;
-  if (dfsDirectionInteger === 1) {
-    nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
-  } else if (dfsDirectionInteger === 2) {
-    nextChildLink = lastLinkOfSectionElement(sectionElementOfCurrentPath);
-  } else {
-    nextChildLink = firstLinkOfSectionElement(sectionElementOfCurrentPath);
+  if (linkSelectionData) {
+    return findLinkFromMetadata(linkSelectionData);
   }
 
   if (selectALink) {
     if (lastPathSegmentIsATopicRoot(pathArray)) {
-      return nextChildLink ||
-      parentLinkOfSection(sectionElementOfCurrentPath);
+      return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
+        parentLinkOfSection(sectionElementOfCurrentPath);
     } else {
       return parentLinkOfSection(sectionElementOfCurrentPath);
     }
@@ -60,7 +59,9 @@ function createOrReplaceHeader(topicName) {
   canopyContainer.prepend(headerDomElement);
 };
 
-function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath) {
+function determineSectionElementToDisplay(displayOptions) {
+  let { linkToSelect, sectionElementOfCurrentPath } = displayOptions;
+
   if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
     return childSectionElementOfParentLink(linkToSelect);
   } else {
@@ -109,13 +110,6 @@ function addOpenClassToRedundantSiblings(parentLink) {
   });
 }
 
-
-function forEach(list, callback) {
-  for (let i = 0; i < list.length; i++) {
-    callback(list[i]);
-  }
-}
-
 function moveSelectedSectionClass(sectionElement) {
   forEach(document.getElementsByTagName("section"), function(sectionElement) {
     sectionElement.classList.remove('canopy-selected-section');
@@ -150,26 +144,6 @@ function showSectionElementOfLink(linkElement) {
 
 function underlineLink(linkElement) {
   linkElement.classList.add('canopy-open-link');
-}
-
-function updateDfsClasses(dfsDirectionInteger) {
-  let previouslySelectedLinkClassName = dfsDirectionInteger === 1 ?
-    'canopy-dfs-previously-selected-link' :
-    'canopy-reverse-dfs-previously-selected-link';
-  let previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
-
-  if (previouslySelectedLink) {
-    previouslySelectedLink.classList.remove(previouslySelectedLinkClassName);
-  }
-  selectedLink() && selectedLink().classList.add(previouslySelectedLinkClassName);
-
-  let preserveForwardDfsClass = dfsDirectionInteger === 1;
-  let preserveBackwardsDfsClass = dfsDirectionInteger === 2;
-
-  forEach(document.getElementsByTagName("a"), function(linkElement) {
-    !preserveForwardDfsClass && linkElement.classList.remove('canopy-dfs-previously-selected-link');
-    !preserveBackwardsDfsClass && linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
-  });
 }
 
 export {

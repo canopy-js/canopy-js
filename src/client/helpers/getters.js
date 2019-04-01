@@ -68,9 +68,10 @@ const childSectionElementOfParentLink = (linkElement) => {
   return Array.from(
     parentElementOfLink(linkElement, 'SECTION').
     childNodes).
-    find((sectionElement) =>
-      sectionElement.dataset.topicName === linkElement.dataset.targetTopic &&
-      sectionElement.dataset.subtopicName === linkElement.dataset.targetSubtopic);
+    find((childElement) =>
+      childElement.tagName === 'SECTION' &&
+      childElement.dataset.topicName === linkElement.dataset.targetTopic &&
+      childElement.dataset.subtopicName === linkElement.dataset.targetSubtopic);
 }
 
 function sectionElementOfLink(linkElement) {
@@ -336,6 +337,12 @@ function linksOfSectionByTarget(sectionElement, topicName, subtopicName) {
   )
 }
 
+function forEach(list, callback) {
+  for (let i = 0; i < list.length; i++) {
+    callback(list[i]);
+  }
+}
+
 export {
   canopyContainer,
   defaultTopic,
@@ -370,5 +377,6 @@ export {
   linkOfSectionByTarget,
   linksOfSectionByTarget,
   parentElementOfLink,
-  paragraphElementOfLink
+  paragraphElementOfLink,
+  forEach
 };

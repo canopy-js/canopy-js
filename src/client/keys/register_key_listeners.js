@@ -10,7 +10,7 @@ import {
   goToEnclosingTopic,
   goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
-import displayPath from 'display/display_path';
+import updateView from 'display/update_view';
 import { parsePathString } from 'path/helpers';
 
 const registerKeyListeners = () => {
@@ -31,10 +31,9 @@ const registerKeyListeners = () => {
     if (selectedLink()) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
-      displayPath(
+      updateView(
         parsePathString(),
-        null,
-        true
+        { selectALink: true }
       );
     }
   });
