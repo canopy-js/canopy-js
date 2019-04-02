@@ -1,4 +1,4 @@
-import parsePathString from './parse_path_string';
+import { parsePathString, pathStringFor } from './helpers';
 
 test('just topic', () => {
   let path = '/Topic';
@@ -61,8 +61,6 @@ test('Real life example', () => {
 });
 
 ///////////////////////
-
-import pathStringFor from './path_string_for';
 
 test('Topic and subtopic', () => {
   let pathArray = [['Topic', 'Subtopic']]
