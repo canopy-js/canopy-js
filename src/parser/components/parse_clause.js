@@ -52,6 +52,20 @@ function tokensOfSuffix(units, parsingContext) {
     ));
 }
 
+function prefixesOf(units) {
+  let prefixObjects = [];
+
+  for (let i = units.length - 1; i >= 0; i--) {
+    let prefixUnits = units.slice(0, i + 1);
+    let substring = prefixUnits.join('');
+    let substringAsKey = withoutArticle(removeMarkdownTokens(capitalize(substring)));
+
+    prefixObjects.push({ units: prefixUnits, substring, substringAsKey });
+  }
+
+  return prefixObjects;
+}
+
 function findMatch(prefixObjects, parsingContext) {
   let Matchers = MarkdownMatchers.
     concat(parsingContext.markdownOnly ? [] : ReferenceMatchers).
@@ -65,20 +79,6 @@ function findMatch(prefixObjects, parsingContext) {
       if (token) return [token, prefixObject];
     }
   }
-}
-
-function prefixesOf(units) {
-  let prefixObjects = [];
-
-  for (let i = units.length - 1; i >= 0; i--) {
-    let prefixUnits = units.slice(0, i + 1);
-    let substring = prefixUnits.join('');
-    let substringAsKey = removeMarkdownTokens(capitalize(substring));
-
-    prefixObjects.push({units: prefixUnits, substring, substringAsKey});
-  }
-
-  return prefixObjects;
 }
 
 export default parseClause;
