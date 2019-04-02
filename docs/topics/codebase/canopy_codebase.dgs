@@ -1,0 +1,9 @@
+Canopy codebase: The Canopy codebase contains the Canopy front-end library, the Canopy parser library, and the Canopy command-line interface.
+
+Canopy front-end library: The Canopy codebase contains a front-end library for rendering and presenting an interactive browser given a diagraph script server. The code for the Canopy.js library is in the Canopy repo under the `src/client` path. The front-end library consumes JSON produced by the parser library.
+
+Canopy parser library: The Canopy codebase contains the backend code for the parser that Canopy uses to convert diagraph script into the JSON that is consumed by the front-end library.
+
+Canopy command-line interface: Canopy has a command-line interface that you can use to set up a Canopy project, convert dgs files into JSON, and run a Canopy server.
+
+Canopy server: A Canopy server is a server that serves and supports the Canopy.js library. The Canopy server can be a static assets server or a node.js script. The server delivers the Canopy.js library on the first request, and then handles subsequent requests from the browser for JSON data files.
