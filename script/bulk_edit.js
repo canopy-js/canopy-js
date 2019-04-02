@@ -42,8 +42,24 @@ let filesToErase = {};
   filesToErase[path.match(/(topics.+)/)[1]] = true;
 });
 
+function pathComparator(item1, item2) {
+  let pathLength1 = item1.split('/').length;
+  let pathLength2 = item2.split('/').length;
+  if (pathLength1 > pathLength2) {
+    return 1;
+  } else if (pathLength1 < pathLength2) {
+    return -1;
+  } else if (item1 > item2) {
+    return 1;
+  } else if (item1 < item2) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
 let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
-  return filePathArray.map(function(filePath) {
+  return filePathArray.sort(pathComparator).map(function(filePath) {
     let fileContents = fs.readFileSync(filePath, 'utf8');
     let displayPath = filePath.match(/(topics.*\/)\w+\.dgs/)[1];
     return tempFileString = displayPath + "\n\n" + fileContents + "\n\n";
