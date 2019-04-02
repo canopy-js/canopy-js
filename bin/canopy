@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -ex
-
 case $1 in
 build)
   if [ ! -d ./topics ]; then
@@ -113,14 +111,16 @@ serve)
 bulk)
   node $(npm root -g)/canopy-js/script/bulk_edit.js "$@"
   ;;
+
 ?|usage)
-echo  "Usage:"
-echo  "  canopy update"
-echo  "  canopy init"
-echo  "  canopy build"
-echo  "  canopy watch"
-echo  "  canopy watch stop"
-echo  "  canopy serve [PORT]"
+echo "Usage:"
+echo "  canopy update"
+echo "  canopy init"
+echo "  canopy build"
+echo "  canopy watch"
+echo "  canopy watch stop"
+echo "  canopy serve [PORT]"
+echo "  canopy bulk [PATHS]"
 ;;
 *)
   echo Unknown command;;
