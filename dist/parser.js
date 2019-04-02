@@ -695,19 +695,6 @@ function tokensOfSuffix(units, parsingContext) {
   return [].concat(token, tokensOfSuffix(units.slice(prefixObject.units.length), parsingContext));
 }
 
-function findMatch(prefixObjects, parsingContext) {
-  var Matchers = components_matchers__WEBPACK_IMPORTED_MODULE_3__["MarkdownMatchers"].concat(parsingContext.markdownOnly ? [] : components_matchers__WEBPACK_IMPORTED_MODULE_3__["ReferenceMatchers"]).concat(components_matchers__WEBPACK_IMPORTED_MODULE_3__["BaseMatchers"]);
-
-  for (var i = 0; i < prefixObjects.length; i++) {
-    for (var j = 0; j < Matchers.length; j++) {
-      var matcher = Matchers[j];
-      var prefixObject = prefixObjects[i];
-      var token = matcher(prefixObject, parsingContext);
-      if (token) return [token, prefixObject];
-    }
-  }
-}
-
 function prefixesOf(units) {
   var prefixObjects = [];
 
@@ -723,6 +710,19 @@ function prefixesOf(units) {
   }
 
   return prefixObjects;
+}
+
+function findMatch(prefixObjects, parsingContext) {
+  var Matchers = components_matchers__WEBPACK_IMPORTED_MODULE_3__["MarkdownMatchers"].concat(parsingContext.markdownOnly ? [] : components_matchers__WEBPACK_IMPORTED_MODULE_3__["ReferenceMatchers"]).concat(components_matchers__WEBPACK_IMPORTED_MODULE_3__["BaseMatchers"]);
+
+  for (var i = 0; i < prefixObjects.length; i++) {
+    for (var j = 0; j < Matchers.length; j++) {
+      var matcher = Matchers[j];
+      var prefixObject = prefixObjects[i];
+      var token = matcher(prefixObject, parsingContext);
+      if (token) return [token, prefixObject];
+    }
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (parseClause);

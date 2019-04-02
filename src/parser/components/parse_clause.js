@@ -58,7 +58,7 @@ function prefixesOf(units) {
   for (let i = units.length - 1; i >= 0; i--) {
     let prefixUnits = units.slice(0, i + 1);
     let substring = prefixUnits.join('');
-    let substringAsKey = withoutArticle(removeMarkdownTokens(capitalize(substring)));
+    let substringAsKey = removeMarkdownTokens(capitalize(substring));
 
     prefixObjects.push({ units: prefixUnits, substring, substringAsKey });
   }
