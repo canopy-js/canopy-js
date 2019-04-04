@@ -36,7 +36,7 @@ const displayPath = (pathArray, displayOptions) => {
   hideAllSectionElements();
 
   let linkToSelect = determineLinkToSelect(pathArray, displayOptions);
-  let sectionElementToDisplay = determineSectionElementToDisplay(displayOptions);
+  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, displayOptions);
   addSelectedLinkClass(linkToSelect);
   addOpenLinkClass(linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
