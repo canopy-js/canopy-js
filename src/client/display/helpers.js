@@ -59,13 +59,11 @@ function createOrReplaceHeader(topicName) {
   canopyContainer.prepend(headerDomElement);
 };
 
-function determineSectionElementToDisplay(displayOptions) {
-  let { linkToSelect, sectionElementOfCurrentPath } = displayOptions;
-
+function determineSectionElementToDisplay(linkToSelect, displayOptions) {
   if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
     return childSectionElementOfParentLink(linkToSelect);
   } else {
-    return sectionElementOfCurrentPath;
+    return displayOptions.sectionElementOfCurrentPath;
   }
 }
 
