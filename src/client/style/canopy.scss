@@ -64,16 +64,6 @@
       }
     }
 
-    /*
-    &.canopy-dfs-previously-selected-link {
-      color: #ff0000;
-    }
-
-    &.canopy-reverse-dfs-previously-selected-link {
-      color: #0000ff;
-    }
-    */
-
     &.canopy-global-link, &.canopy-url-link {
       &:hover {
         color: #4078c0;
@@ -85,9 +75,19 @@
       }
 
       &.canopy-open-link {
-        color: #2f5689;
+        color: #4078c0;
       }
     }
+
+    /*
+    &.canopy-dfs-previously-selected-link {
+      color: #ff0000;
+    }
+
+    &.canopy-reverse-dfs-previously-selected-link {
+      color: #0000ff;
+    }
+    */
   }
 
 ///////////// Markdown styles /////////////////
@@ -190,5 +190,5 @@
 }
 
 #_canopy > section.canopy-topic-section {
-  padding-top: 10px;
+  padding-top: 25px;
 }
