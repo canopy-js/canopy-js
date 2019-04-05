@@ -2700,10 +2700,11 @@ var requestJson = function requestJson(topicName) {
       return json;
     });
   }).catch(function (e) {
-    if (helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].childNodes.length === 0) {
+    if (helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].childNodes.length === 0 && topicName !== helpers_getters__WEBPACK_IMPORTED_MODULE_1__["defaultTopic"]) {
       Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])([[helpers_getters__WEBPACK_IMPORTED_MODULE_1__["defaultTopic"], helpers_getters__WEBPACK_IMPORTED_MODULE_1__["defaultTopic"]]]);
-      return Promise.reject("Unrecognized path, redirected to default topic");
     }
+
+    return Promise.reject("Unrecognized path");
   });
 };
 
