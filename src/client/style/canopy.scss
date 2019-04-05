@@ -52,10 +52,8 @@
       outline:0;
     }
 
-    /* Open links that are not local links being previewed */
-    &.canopy-open-link.canopy-global-link, &.canopy-open-link.canopy-local-link:not(.canopy-selected-link),
-    &.canopy-open-link.canopy-redundant-local-link:not(.canopy-selected-link) {
-      background-color: #ecebff;
+    &.canopy-open-link {
+      background-color: #f5ebff;
       text-decoration: underline;
     }
 
@@ -73,10 +71,6 @@
         text-decoration: underline #4078c0;
         color: #4078c0;
         text-shadow: .8px 0px 0px #4078c0;
-      }
-
-      &.canopy-open-link {
-        color: #4078c0;
       }
     }
 
