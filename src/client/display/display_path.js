@@ -16,7 +16,7 @@ import {
   addSelectedLinkClass,
   hideAllSectionElements,
   deselectAllLinks,
-  updateDfsClasses
+  removeDfsClasses
 } from 'display/helpers';
 
 import { storeLinkSelectionInSession } from 'history/helpers';
@@ -34,6 +34,7 @@ const displayPath = (pathArray, displayOptions) => {
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
   deselectAllLinks();
   hideAllSectionElements();
+  removeDfsClasses();
 
   let linkToSelect = determineLinkToSelect(pathArray, displayOptions);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, displayOptions);
