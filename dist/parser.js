@@ -383,7 +383,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
+function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, noFolders) {
   var destinationDataDirectory = destinationBuildDirectory + '/_data';
   var dgsFilePaths = Object(helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__["default"])(sourceDirectory);
   var namespaceObject = Object(components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
@@ -401,11 +401,14 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
     console.log();
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(destinationPath, json);
-    var capitalizedKeySlug = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["slugFor"])(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["removeMarkdownTokens"])(Object(helpers_topic_key_of_file__WEBPACK_IMPORTED_MODULE_5__["default"])(path)));
-    var topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
-    rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(topicFolderPath);
-    fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-    console.log('Created directory: ' + topicFolderPath);
+
+    if (!noFolders) {
+      var capitalizedKeySlug = Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["slugFor"])(Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__["removeMarkdownTokens"])(Object(helpers_topic_key_of_file__WEBPACK_IMPORTED_MODULE_5__["default"])(path)));
+      var topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
+      rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(topicFolderPath);
+      fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
+      console.log('Created directory: ' + topicFolderPath);
+    }
   });
 }
 
@@ -1175,7 +1178,7 @@ if (process.argv.length < 2) {
 }
 
 var projectDir = process.argv[2].replace(/\/$/, '');
-Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build');
+Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build', process.env.CANOPY_BUILD_WITHOUT_FOLDERS);
 
 /***/ }),
 
