@@ -52,12 +52,14 @@
       outline:0;
     }
 
-    &.canopy-open-link {
+    &.canopy-open-link.canopy-global-link, &.canopy-open-link.canopy-local-link:not(.canopy-selected-link) {
+      background-color: #ecebff;
       text-decoration: underline;
     }
 
-    &.canopy-selected-link {
+    &.canopy-selected-link.canopy-local-link {
       text-shadow: .8px 0px 0px black;
+      text-decoration: underline black;
 
       &.canopy-redundant-local-link {
         text-decoration: underline black;
@@ -72,6 +74,7 @@
       &.canopy-selected-link {
         text-decoration: underline #4078c0;
         color: #4078c0;
+        text-shadow: .8px 0px 0px #4078c0;
       }
 
       &.canopy-open-link {
