@@ -773,6 +773,7 @@ var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
+  Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeDfsClasses"])();
   var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineLinkToSelect"])(pathArray, displayOptions);
   var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, displayOptions);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addSelectedLinkClass"])(linkToSelect);
@@ -813,7 +814,7 @@ var displayPathTo = function displayPathTo(sectionElement, linkToSelect) {
 /*!***************************************!*\
   !*** ./src/client/display/helpers.js ***!
   \***************************************/
-/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, updateDfsClasses */
+/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, removeDfsClasses */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -827,7 +828,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "moveSelectedSectionClass", function() { return moveSelectedSectionClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hideAllSectionElements", function() { return hideAllSectionElements; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deselectAllLinks", function() { return deselectAllLinks; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateDfsClasses", function() { return updateDfsClasses; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeDfsClasses", function() { return removeDfsClasses; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 /* harmony import */ var render_render_styled_text__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/render_styled_text */ "./src/client/render/render_styled_text.js");
 
@@ -935,6 +936,13 @@ function showSectionElement(sectionElement) {
 
 function showSectionElementOfLink(linkElement) {
   showSectionElement(sectionElementOfLink(linkElement));
+}
+
+function removeDfsClasses() {
+  Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["forEach"])(document.getElementsByTagName("a"), function (linkElement) {
+    linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+  });
 }
 
 

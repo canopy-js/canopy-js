@@ -123,6 +123,13 @@ function showSectionElementOfLink(linkElement) {
   showSectionElement(sectionElementOfLink(linkElement));
 }
 
+function removeDfsClasses() {
+  forEach(document.getElementsByTagName("a"), function(linkElement) {
+    linkElement.classList.remove('canopy-dfs-previously-selected-link');
+    linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
+  });
+}
+
 export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
@@ -133,5 +140,5 @@ export {
   moveSelectedSectionClass,
   hideAllSectionElements,
   deselectAllLinks,
-  updateDfsClasses
+  removeDfsClasses
 };
