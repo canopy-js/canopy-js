@@ -91,23 +91,6 @@ function addSelectedLinkClass(linkToSelect) {
   }
 }
 
-function addOpenLinkClass(linkToSelect) {
-  if (linkToSelect && linkToSelect.dataset.type === 'local') {
-    linkToSelect.classList.add('canopy-open-link');
-  }
-}
-
-function addOpenClassToRedundantSiblings(parentLink) {
-  linksOfSectionLike(
-    sectionElementOfLink(parentLink),
-    (linkElement) => linkElement.dataset &&
-        linkElement.dataset.targetTopic === parentLink.dataset.targetTopic &&
-        linkElement.dataset.targetSubtopic === parentLink.dataset.targetSubtopic
-  ).forEach((redundantParentLink) => {
-    redundantParentLink.classList.add('canopy-open-link');
-  });
-}
-
 function moveSelectedSectionClass(sectionElement) {
   forEach(document.getElementsByTagName("section"), function(sectionElement) {
     sectionElement.classList.remove('canopy-selected-section');
@@ -140,10 +123,6 @@ function showSectionElementOfLink(linkElement) {
   showSectionElement(sectionElementOfLink(linkElement));
 }
 
-function underlineLink(linkElement) {
-  linkElement.classList.add('canopy-open-link');
-}
-
 export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
@@ -151,8 +130,6 @@ export {
   createOrReplaceHeader,
   displaySectionBelowLink,
   addSelectedLinkClass,
-  addOpenLinkClass,
-  addOpenClassToRedundantSiblings,
   moveSelectedSectionClass,
   hideAllSectionElements,
   deselectAllLinks,
