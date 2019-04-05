@@ -16,10 +16,10 @@ const requestJson = (topicName) => {
         return json;
       });
     }).catch((e) => {
-      if (canopyContainer.childNodes.length === 0) {
+      if (canopyContainer.childNodes.length === 0 && topicName !== defaultTopic) {
         updateView([[defaultTopic, defaultTopic]])
-        return Promise.reject("Unrecognized path, redirected to default topic");
       }
+      return Promise.reject("Unrecognized path");
     });
 }
 
