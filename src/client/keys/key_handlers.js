@@ -30,7 +30,8 @@ import {
 import { pathForSectionElement } from 'path/helpers';
 import updateView from 'display/update_view';
 import setPath from 'path/set_path';
-import { parsePathString, pathStringFor } from 'path/helpers';
+import parsePathString from 'path/parse_path_string';
+import pathStringFor from 'path/path_string_for';
 import { deselectAllLinks } from 'display/helpers';
 
 function moveUpward() {

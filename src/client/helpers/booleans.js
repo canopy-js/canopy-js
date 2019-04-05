@@ -24,6 +24,5 @@ export {
   isInRootSection,
   isATopicRootSection,
   isPageRootSection,
-  sectionHasNoChildLinks,
-  sectionElementOfPathVisible
+  sectionHasNoChildLinks
 };
