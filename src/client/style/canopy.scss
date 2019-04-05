@@ -72,6 +72,10 @@
         color: #4078c0;
         text-shadow: .8px 0px 0px #4078c0;
       }
+
+      &.canopy-open-link {
+        color: #4078c0;
+      }
     }
 
     /*
@@ -190,5 +194,5 @@
 }
 
 #_canopy > section.canopy-topic-section {
-  padding-top: 25px;
+  padding-top: 30px;
 }
