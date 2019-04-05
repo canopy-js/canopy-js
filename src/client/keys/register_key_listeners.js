@@ -11,7 +11,7 @@ import {
   goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
-import { parsePathString } from 'path/helpers';
+import parsePathString from 'path/parse_path_string';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {

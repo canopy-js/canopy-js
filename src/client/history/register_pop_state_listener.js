@@ -4,7 +4,7 @@ import {
 } from 'history/helpers';
 import { priorLinkSelectionDataFromSession } from 'history/helpers';
 import updateView from 'display/update_view';
-import { parsePathString } from 'path/helpers';
+import parsePathString from 'path/parse_path_string';
 import { selectedLink } from 'helpers/getters';
 
 function registerPopStateListener() {

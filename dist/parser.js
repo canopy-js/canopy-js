@@ -661,9 +661,9 @@ function _arrayWithHoles(arr) {
 
 function parseClause(clauseWithPunctuation, parsingContext) {
   var units = Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation);
-  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(doWithBacktracking(function () {
+  return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(validateGlobalLinks(doWithBacktracking(function () {
     return [Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation), parsingContext];
-  }, tokensOfSuffix));
+  }, tokensOfSuffix)));
 }
 
 function doWithBacktracking(generateArguments, callback) {
@@ -726,6 +726,19 @@ function findMatch(prefixObjects, parsingContext) {
       if (token) return [token, prefixObject];
     }
   }
+}
+
+function validateGlobalLinks(tokenArray) {
+  tokenArray.forEach(function (token1) {
+    if (token1.type === 'global') {
+      if (!tokenArray.find(function (token2) {
+        return token2.type === 'global' && token1.targetTopic === token2.targetSubtopic;
+      })) {
+        throw "Import reference missing global link found";
+      }
+    }
+  });
+  return tokenArray;
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (parseClause);

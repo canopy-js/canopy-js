@@ -986,7 +986,7 @@ var updateView = function updateView(pathArray, updateOptions) {
 /*!****************************************!*\
   !*** ./src/client/helpers/booleans.js ***!
   \****************************************/
-/*! exports provided: isInRootSection, isATopicRootSection, isPageRootSection, sectionHasNoChildLinks, sectionElementOfPathVisible */
+/*! exports provided: isInRootSection, isATopicRootSection, isPageRootSection, sectionHasNoChildLinks */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -995,7 +995,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isATopicRootSection", function() { return isATopicRootSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isPageRootSection", function() { return isPageRootSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionHasNoChildLinks", function() { return sectionHasNoChildLinks; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionElementOfPathVisible", function() { return sectionElementOfPathVisible; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
 
@@ -1451,7 +1450,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "priorLinkSelectionData", function() { return priorLinkSelectionData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "storeLinkSelectionInSession", function() { return storeLinkSelectionInSession; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var path_helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/helpers */ "./src/client/path/helpers.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+
 
 
 
@@ -1464,7 +1465,7 @@ function linkSelectionPresentInEvent(e) {
 }
 
 function priorLinkSelectionDataFromSession() {
-  return JSON.parse(sessionStorage.getItem(Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["pathStringFor"])(Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["parsePathString"])())));
+  return JSON.parse(sessionStorage.getItem(Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__["default"])())));
 }
 
 function stateIfPresentInHistoryStack() {
@@ -1495,7 +1496,7 @@ function storeLinkSelectionInSession(linkElement) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var history_helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! history/helpers */ "./src/client/history/helpers.js");
 /* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
-/* harmony import */ var path_helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/helpers */ "./src/client/path/helpers.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 
 
@@ -1507,7 +1508,7 @@ function registerPopStateListener() {
   window.addEventListener('popstate', function (e) {
     Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["saveCurrentLinkSelectionInHistoryStack"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_3__["selectedLink"])());
     var newLinkSelectionData = Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["linkSelectionPresentInEvent"])(e) ? e.state : null;
-    Object(display_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])(), {
+    Object(display_update_view__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_2__["default"])(), {
       linkSelectionData: newLinkSelectionData || Object(history_helpers__WEBPACK_IMPORTED_MODULE_0__["priorLinkSelectionDataFromSession"])(),
       originatesFromPopStateEvent: true
     });
@@ -1541,7 +1542,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var path_helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/helpers */ "./src/client/path/helpers.js");
 /* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
 /* harmony import */ var path_set_path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! path/set_path */ "./src/client/path/set_path.js");
-/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+/* harmony import */ var display_helpers__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! display/helpers */ "./src/client/display/helpers.js");
+
 
 
 
@@ -1551,7 +1555,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function moveUpward() {
-  var pathArray = Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
   var linkElement;
 
   if (selectedLinkIsOpenGlobalLink()) {
@@ -1584,7 +1588,7 @@ function selectedLinkIsOpenGlobalLink() {
 }
 
 function moveDownward(cycle) {
-  var pathArray = Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])();
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])();
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global') {
     // Handle open global link with no children
@@ -1625,7 +1629,7 @@ function moveDownward(cycle) {
 function moveLeftward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])(); // handle left on opened global link with no child links
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])(); // handle left on opened global link with no child links
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
@@ -1643,7 +1647,7 @@ function moveLeftward() {
 function moveRightward() {
   var currentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["currentSection"])();
   var sectionElementOfSelectedLink = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["sectionElementOfLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])());
-  var pathArray = Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])(); // handle right on opened global link with no child links
+  var pathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])(); // handle right on opened global link with no child links
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && currentSectionElement !== sectionElementOfSelectedLink) {
     pathArray.pop();
@@ -1665,7 +1669,7 @@ function moveDownOrRedirect(newTab) {
     var pathArray = [[Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetTopic, Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.targetSubtopic]];
 
     if (newTab) {
-      var pathString = Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["pathStringFor"])(pathArray);
+      var pathString = Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_6__["default"])(pathArray);
       return window.open(location.origin + pathString, '_blank');
     }
 
@@ -1705,7 +1709,7 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
 
 
   if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().dataset.type === 'global' && closeGlobalLinks && Object(helpers_booleans__WEBPACK_IMPORTED_MODULE_1__["sectionHasNoChildLinks"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])())) && Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])().classList.contains('canopy-open-link')) {
-    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_helpers__WEBPACK_IMPORTED_MODULE_2__["parsePathString"])().slice(0, -1), {
+    return Object(display_update_view__WEBPACK_IMPORTED_MODULE_3__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_5__["default"])().slice(0, -1), {
       linkSelectionData: Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()),
       postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
     });
@@ -1813,7 +1817,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 /* harmony import */ var keys_key_handlers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! keys/key_handlers */ "./src/client/keys/key_handlers.js");
 /* harmony import */ var display_update_view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/update_view */ "./src/client/display/update_view.js");
-/* harmony import */ var path_helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/helpers */ "./src/client/path/helpers.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
 
 
 
@@ -1832,7 +1836,7 @@ var registerKeyListeners = function registerKeyListeners() {
     if (Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()) {
       (shortcutRelationships[shortcutName] || function () {})();
     } else if (shortcutRelationships[shortcutName]) {
-      Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(path_helpers__WEBPACK_IMPORTED_MODULE_3__["parsePathString"])(), {
+      Object(display_update_view__WEBPACK_IMPORTED_MODULE_2__["default"])(Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_3__["default"])(), {
         selectALink: true
       });
     }
@@ -1898,8 +1902,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parsePathString", function() { return parsePathString; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pathStringFor", function() { return pathStringFor; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
-
 
 
 function pathOrDefaultTopic() {
@@ -1932,6 +1934,19 @@ function pathForSectionElement(sectionElement) {
   return pathArray;
 }
 
+
+
+/***/ }),
+
+/***/ "./src/client/path/parse_path_string.js":
+/*!**********************************************!*\
+  !*** ./src/client/path/parse_path_string.js ***!
+  \**********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 var parsePathString = function parsePathString(pathStringArg) {
   var pathString = pathStringArg || window.location.pathname + window.location.hash;
   var slashSeparatedUnits = pathString.replace(/_/g, ' ').split('/').filter(function (string) {
@@ -1971,13 +1986,29 @@ function fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUni
   return slashSeparatedUnits;
 }
 
+/* harmony default export */ __webpack_exports__["default"] = (parsePathString);
+
+/***/ }),
+
+/***/ "./src/client/path/path_string_for.js":
+/*!********************************************!*\
+  !*** ./src/client/path/path_string_for.js ***!
+  \********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
+
+
 function pathStringFor(pathArray) {
   return '/' + pathArray.map(function (tuple) {
-    return Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_1__["slugFor"])(tuple[0]) + (tuple[1] && tuple[1] !== tuple[0] ? '#' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_1__["slugFor"])(tuple[1]) : '');
+    return Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(tuple[0]) + (tuple[1] && tuple[1] !== tuple[0] ? '#' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(tuple[1]) : '');
   }).join('/');
 }
 
-
+/* harmony default export */ __webpack_exports__["default"] = (pathStringFor);
 
 /***/ }),
 
@@ -1991,15 +2022,17 @@ function pathStringFor(pathArray) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
-/* harmony import */ var path_helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/helpers */ "./src/client/path/helpers.js");
+/* harmony import */ var path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path/parse_path_string */ "./src/client/path/parse_path_string.js");
+/* harmony import */ var path_path_string_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! path/path_string_for */ "./src/client/path/path_string_for.js");
+
 
 
 
 var setPath = function setPath(newPathArray) {
-  var oldPathArray = Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["parsePathString"])();
+  var oldPathArray = Object(path_parse_path_string__WEBPACK_IMPORTED_MODULE_1__["default"])();
   var documentTitle = newPathArray[0][0];
-  var historyApiFunction = Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["pathStringFor"])(newPathArray) === Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["pathStringFor"])(oldPathArray) ? replaceState : pushState;
-  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), documentTitle, Object(path_helpers__WEBPACK_IMPORTED_MODULE_1__["pathStringFor"])(newPathArray));
+  var historyApiFunction = Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_2__["default"])(newPathArray) === Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_2__["default"])(oldPathArray) ? replaceState : pushState;
+  historyApiFunction(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["metadataFromLink"])(Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["selectedLink"])()), documentTitle, Object(path_path_string_for__WEBPACK_IMPORTED_MODULE_2__["default"])(newPathArray));
 };
 
 function replaceState(a, b, c) {
