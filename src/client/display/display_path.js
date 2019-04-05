@@ -23,6 +23,7 @@ import {
 import { storeLinkSelectionInSession } from 'history/helpers';
 
 const displayPath = (pathArray, displayOptions) => {
+  displayOptions = displayOptions || {};
   let topicName = pathArray[0][0];
   displayOptions.sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
   if (!displayOptions.sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }

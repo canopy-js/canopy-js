@@ -22,7 +22,7 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
         pathDepth
       }
     );
-  })
+  });
 }
 
 export default fetchAndRenderPath;

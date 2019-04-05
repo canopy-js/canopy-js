@@ -1,4 +1,6 @@
 import { slugFor } from 'helpers/identifiers';
+import { canopyContainer, defaultTopic } from 'helpers/getters';
+import updateView from 'display/update_view';
 
 let cache = {};
 
@@ -15,7 +17,8 @@ const requestJson = (topicName) => {
       });
     }).catch((e) => {
       if (canopyContainer.childNodes.length === 0) {
-        return updateView([[defaultTopic, defaultTopic]]);
+        updateView([[defaultTopic, defaultTopic]])
+        return Promise.reject("Unrecognized path, redirected to default topic");
       }
     });
 }
