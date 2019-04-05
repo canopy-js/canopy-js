@@ -4,7 +4,8 @@ import {
   sectionElementOfPath,
   parentLinksOfSection,
   documentTitleFor,
-  sectionElementOfLink
+  sectionElementOfLink,
+  paragraphElementOfSection
 } from 'helpers/getters';
 
 import {
@@ -12,9 +13,7 @@ import {
   determineSectionElementToDisplay,
   createOrReplaceHeader,
   displaySectionBelowLink,
-  addOpenClassToRedundantSiblings,
   addSelectedLinkClass,
-  addOpenLinkClass,
   hideAllSectionElements,
   deselectAllLinks,
   updateDfsClasses
@@ -39,14 +38,13 @@ const displayPath = (pathArray, displayOptions) => {
   let linkToSelect = determineLinkToSelect(pathArray, displayOptions);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  addOpenLinkClass(linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
 
-  displayPathTo(sectionElementToDisplay);
+  displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
-const displayPathTo = (sectionElement) => {
+const displayPathTo = (sectionElement, linkToSelect) => {
   sectionElement.style.display = 'block';
 
   if (sectionElement.parentNode === canopyContainer) {
@@ -54,9 +52,19 @@ const displayPathTo = (sectionElement) => {
   }
 
   let parentLinks = parentLinksOfSection(sectionElement);
-  parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
+  let isPreviewParagraph = linkToSelect &&
+    linkToSelect.dataset.type === 'local' &&
+    paragraphElementOfSection(sectionElement.parentNode).
+    contains(linkToSelect);
+
+  if (isPreviewParagraph) {
+    parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-preview-link'));
+  } else {
+    parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
+  }
+
   let parentSectionElement = sectionElementOfLink(parentLinks[0]);
-  displayPathTo(parentSectionElement);
+  displayPathTo(parentSectionElement, linkToSelect);
 }
 
 export default displayPath;

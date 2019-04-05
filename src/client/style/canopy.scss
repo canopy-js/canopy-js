@@ -52,18 +52,16 @@
       outline:0;
     }
 
-    &.canopy-open-link.canopy-global-link, &.canopy-open-link.canopy-local-link:not(.canopy-selected-link) {
+    /* Open links that are not local links being previewed */
+    &.canopy-open-link.canopy-global-link, &.canopy-open-link.canopy-local-link:not(.canopy-selected-link),
+    &.canopy-open-link.canopy-redundant-local-link:not(.canopy-selected-link) {
       background-color: #ecebff;
       text-decoration: underline;
     }
 
-    &.canopy-selected-link.canopy-local-link {
+    &.canopy-selected-link.canopy-local-link, &.canopy-selected-link.canopy-redundant-local-link {
       text-shadow: .8px 0px 0px black;
       text-decoration: underline black;
-
-      &.canopy-redundant-local-link {
-        text-decoration: underline black;
-      }
     }
 
     &.canopy-global-link, &.canopy-url-link {
