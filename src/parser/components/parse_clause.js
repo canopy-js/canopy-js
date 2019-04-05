@@ -12,9 +12,11 @@ function parseClause(clauseWithPunctuation, parsingContext) {
   let units = unitsOf(clauseWithPunctuation);
 
   return consolidateTextTokens(
-    doWithBacktracking(
-      () => [unitsOf(clauseWithPunctuation), parsingContext],
-      tokensOfSuffix
+    validateGlobalLinks(
+      doWithBacktracking(
+        () => [unitsOf(clauseWithPunctuation), parsingContext],
+        tokensOfSuffix
+      )
     )
   );
 }
@@ -79,6 +81,18 @@ function findMatch(prefixObjects, parsingContext) {
       if (token) return [token, prefixObject];
     }
   }
+}
+
+function validateGlobalLinks(tokenArray) {
+  tokenArray.forEach((token1) => {
+    if (token1.type === 'global') {
+      if (!tokenArray.find((token2) => token2.type === 'global' && token1.targetTopic === token2.targetSubtopic)) {
+        throw "Import reference missing global link found";
+      }
+    }
+  });
+
+  return tokenArray;
 }
 
 export default parseClause;
