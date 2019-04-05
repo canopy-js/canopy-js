@@ -122,7 +122,7 @@ echo "  canopy build"
 echo "  canopy watch"
 echo "  canopy watch stop"
 echo "  canopy serve [PORT]"
-echo "  canopy bulk [PATHS]"
+echo "  canopy bulk [--start|--stop] [PATHS]"
 ;;
 *)
   echo Unknown command;;

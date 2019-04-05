@@ -4,8 +4,18 @@ let fs = require('fs');
 let child_process = require('child_process');
 let editor = require('editor');
 let mkdirp = require('mkdirp-sync');
-
+let startArgument;
+let finishArgument;
 let argumentArray = process.argv.slice(3);
+
+if (argumentArray[0] === '--start') {
+  startArgument = true;
+  argumentArray = argumentArray.slice(1);
+}
+if (argumentArray[0] === '--finish') {
+  finishArgument = true;
+  argumentArray = argumentArray.slice(1);
+}
 
 if (!fs.existsSync('./topics')) {
   throw "Must be in a projects directory with a topics folder"
@@ -85,15 +95,21 @@ Here is another subtopic name: Here is a paragraph for that subtopic.
 
 fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
 
-editor('.canopy_bulk_tmp', function (code, sig) {
-  if (code === 0) {
-    let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
-    reconstructDgsFilesFromTempFile(tempFileContents);
-    fs.unlinkSync('.canopy_bulk_tmp');
-  } else {
-    throw "Error occured when editing canopy bulk temp file";
-  }
-});
+if (!startArgument && !finishArgument) {
+  editor('.canopy_bulk_tmp', function (code, sig) {
+    if (code === 0) {
+      let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
+      reconstructDgsFilesFromTempFile(tempFileContents);
+      fs.unlinkSync('.canopy_bulk_tmp');
+    } else {
+      throw "Error occured when editing canopy bulk temp file";
+    }
+  });
+} else if (finishArgument) {
+  let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
+  reconstructDgsFilesFromTempFile(tempFileContents);
+  fs.unlinkSync('.canopy_bulk_tmp');
+}
 
 function reconstructDgsFilesFromTempFile(tempFileContents) {
   tempFileContents.split(/(?=topics\/)/).forEach(function(textForFile) {
