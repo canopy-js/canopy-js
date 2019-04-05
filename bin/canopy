@@ -26,26 +26,28 @@ build)
 EOF
 
   CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
-  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js .
+  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $CANOPY_NODE_SERVER
 
-  for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
-    cp build/index.html $D
-  done
-
-  cd build
-  ls
-  for CURRENT_TOPIC_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
-    for TOPIC_TO_ALIAS_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
-      echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-      rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-      cd $CURRENT_TOPIC_PATH
-      pwd
-      echo ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-      ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $(basename $TOPIC_TO_ALIAS_PATH)
-      cd ..
+  if [[ -z "${CANOPY_BUILD_WITHOUT_FOLDERS}" ]]; then
+    for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
+      cp build/index.html $D
     done
-  done
-  cd ..
+
+    cd build
+    ls
+    for CURRENT_TOPIC_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
+      for TOPIC_TO_ALIAS_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
+        echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
+        rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
+        cd $CURRENT_TOPIC_PATH
+        pwd
+        echo ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
+        ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $(basename $TOPIC_TO_ALIAS_PATH)
+        cd ..
+      done
+    done
+    cd ..
+  fi
 
   cp $(npm root -g)/canopy-js/dist/canopy.js build/canopy.js
 ;;
@@ -104,8 +106,8 @@ watch)
 
   canopy build;;
 serve)
-  canopy build
-  $(npm root -g)/canopy-js/node_modules/http-server/bin/http-server build -p ${2:-3000}
+  CANOPY_BUILD_WITHOUT_FOLDERS=true canopy build
+  node $(npm root -g)/canopy-js/dist/server.js ${2:-3000}
   ;;
 
 bulk)

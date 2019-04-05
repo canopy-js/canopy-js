@@ -11,5 +11,6 @@ let projectDir = process.argv[2].replace(/\/$/, '');
 
 jsonForProjectDirectory(
   projectDir + '/topics',
-  projectDir + '/build'
+  projectDir + '/build',
+  process.env.CANOPY_BUILD_WITHOUT_FOLDERS
 );

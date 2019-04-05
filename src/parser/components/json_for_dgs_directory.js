@@ -8,7 +8,7 @@ import { slugFor } from 'helpers/identifiers';
 import rimraf from 'rimraf';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
-function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
+function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, noFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
   let namespaceObject = buildNamespaceObject(dgsFilePaths);
@@ -33,12 +33,13 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory) {
     console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);
 
-    let capitalizedKeySlug = slugFor(removeMarkdownTokens(topicKeyOfFile(path)));
-    let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
-
-    rimraf.sync(topicFolderPath);
-    fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-    console.log('Created directory: ' + topicFolderPath);
+    if (!noFolders) {
+      let capitalizedKeySlug = slugFor(removeMarkdownTokens(topicKeyOfFile(path)));
+      let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
+      rimraf.sync(topicFolderPath);
+      fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
+      console.log('Created directory: ' + topicFolderPath);
+    }
   });
 }
 
