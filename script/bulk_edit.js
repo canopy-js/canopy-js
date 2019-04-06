@@ -7,77 +7,58 @@ let mkdirp = require('mkdirp-sync');
 let startArgument;
 let finishArgument;
 let argumentArray = process.argv.slice(3);
+let filesToErase;
 
-if (argumentArray[0] === '--start') {
+if (argumentArray.includes('--start')) {
   startArgument = true;
-  argumentArray = argumentArray.slice(1);
+  let index = argumentArray.indexOf('--start');
+  argumentArray.splice(index, 1);
 }
-if (argumentArray[0] === '--finish') {
+if (argumentArray.includes('--finish')) {
   finishArgument = true;
-  argumentArray = argumentArray.slice(1);
+  let index = argumentArray.indexOf('--finish');
+  argumentArray.splice(index, 1);
 }
 
 if (!fs.existsSync('./topics')) {
   throw "Must be in a projects directory with a topics folder"
 }
 
-function removeMarkdownTokens(string) {
-  return string.
-    replace(/([^\\]|^)_/g, '$1').
-    replace(/([^\\]|^)\*/g, '$1').
-    replace(/([^\\]|^)~/g, '$1');
-}
+if (!finishArgument) {
+  let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
+    let pathToArgument = process.cwd() + '/topics' + argumentString;
 
-let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
-  let pathToArgument = process.cwd() + '/topics' + argumentString;
+    if (argumentString.match(/\/$/)) {
+      // argument is directory with trailing slash, recursive
+      return recursiveReadSync(pathToArgument).filter(function(path){
+        return path.endsWith('.dgs');
+      });
+    } else if (pathToArgument.endsWith('.dgs')) {
+      // argument is single file
+      return [pathToArgument];
+    } else {
+      // argument is directory with no trailing slash, just its contents
+      return fs.readdirSync(pathToArgument).filter(function(path){
+        return path.endsWith('.dgs');
+      }).map(function(fileName) { return pathToArgument + '/' + fileName });
+    }
+  });
 
-  if (argumentString.match(/\/$/)) {
-    // argument is directory with trailing slash, recursive
-    return recursiveReadSync(pathToArgument).filter(function(path){
-      return path.endsWith('.dgs');
-    });
-  } else if (pathToArgument.endsWith('.dgs')) {
-    // argument is single file
-    return [pathToArgument];
-  } else {
-    // argument is directory with no trailing slash, just its contents
-    return fs.readdirSync(pathToArgument).filter(function(path){
-      return path.endsWith('.dgs');
-    }).map(function(fileName) { return pathToArgument + '/' + fileName });
-  }
-});
+  filesToErase = {};
+  [].concat.apply([], selectedFilesPerArgument).map(function(path){
+    filesToErase[path.match(/(topics.+)/)[1]] = true;
+  });
 
-let filesToErase = {};
-[].concat.apply([], selectedFilesPerArgument).map(function(path){
-  filesToErase[path.match(/(topics.+)/)[1]] = true;
-});
-
-function pathComparator(item1, item2) {
-  let pathLength1 = item1.split('/').length;
-  let pathLength2 = item2.split('/').length;
-  if (pathLength1 > pathLength2) {
-    return 1;
-  } else if (pathLength1 < pathLength2) {
-    return -1;
-  } else if (item1 > item2) {
-    return 1;
-  } else if (item1 < item2) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-
-let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
-  return filePathArray.sort(pathComparator).map(function(filePath) {
-    let fileContents = fs.readFileSync(filePath, 'utf8');
-    let displayPath = filePath.match(/(topics.*\/)\w+\.dgs/)[1];
-    return tempFileString = displayPath + "\n\n" + fileContents + "\n\n";
+  let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
+    return filePathArray.sort(pathComparator).map(function(filePath) {
+      let fileContents = fs.readFileSync(filePath, 'utf8');
+      let displayPath = filePath.match(/(topics.*\/)\w+\.dgs/)[1];
+      return tempFileString = displayPath + "\n\n" + fileContents + "\n\n";
+    }).join('');
   }).join('');
-}).join('');
 
-if (!tempFileData) {
-  tempFileData =
+  if (!tempFileData) {
+    tempFileData =
 `topics/
 
 Here is a topic name: Here is a paragraph for that topic.
@@ -91,9 +72,12 @@ Here is another topic name: Here is a paragraph for that topic.
 
 Here is another subtopic name: Here is a paragraph for that subtopic.
 `
+  }
+
+  fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
 }
 
-fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
+if (startArgument) fs.writeFileSync('.files_to_erase', JSON.stringify(filesToErase));
 
 if (!startArgument && !finishArgument) {
   editor('.canopy_bulk_tmp', function (code, sig) {
@@ -105,10 +89,16 @@ if (!startArgument && !finishArgument) {
       throw "Error occured when editing canopy bulk temp file";
     }
   });
+} else if (startArgument) {
+  console.log();
+  console.log('  Now edit `.canopy_bulk_tmp`, and when finished run `canopy bulk --finish`');
+  console.log();
 } else if (finishArgument) {
   let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
+  filesToErase = JSON.parse(fs.readFileSync('.files_to_erase', 'utf8'));
   reconstructDgsFilesFromTempFile(tempFileContents);
   fs.unlinkSync('.canopy_bulk_tmp');
+  fs.unlinkSync('.files_to_erase');
 }
 
 function reconstructDgsFilesFromTempFile(tempFileContents) {
@@ -148,3 +138,26 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
   }
 }
 
+
+function removeMarkdownTokens(string) {
+  return string.
+    replace(/([^\\]|^)_/g, '$1').
+    replace(/([^\\]|^)\*/g, '$1').
+    replace(/([^\\]|^)~/g, '$1');
+}
+
+function pathComparator(item1, item2) {
+  let pathLength1 = item1.split('/').length;
+  let pathLength2 = item2.split('/').length;
+  if (pathLength1 > pathLength2) {
+    return 1;
+  } else if (pathLength1 < pathLength2) {
+    return -1;
+  } else if (item1 > item2) {
+    return 1;
+  } else if (item1 < item2) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
