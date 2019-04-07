@@ -1,0 +1,48 @@
+topics/
+
+The Canopy project: Canopy.js is a javascript library for creating and browsing diagraph. There are problems Canopy is intended to solve. There are design principles of Canopy. There are many potential applications of Canopy. There are instructions how to use canopy. Canopy is implemented by the Canopy codebase. Canopy can be compared to alternative solutions.
+
+
+topics/alternatives/
+
+Alternative solutions: There are alternative solutions to the problems canopy is intended to solve.
+
+
+topics/applications/
+
+Applications of Canopy: The Canopy library has many potential applications.
+
+
+topics/codebase/
+
+The Canopy codebase: The Canopy codebase contains the Canopy front-end library, the Canopy parser library, and the Canopy command-line interface.
+
+Canopy front-end library: The Canopy codebase contains a front-end library for rendering and presenting an interactive browser given a diagraph script server. The code for the Canopy.js front-end library is in the Canopy repo under the `src/client` path. The front-end library consumes JSON produced by the parser library.
+
+Canopy parser library: The Canopy codebase contains the backend code for the parser that Canopy uses to convert diagraph script into the JSON that is consumed by the front-end library.
+
+Canopy command-line interface: Canopy has a command-line interface that you can use to set up a Canopy project, convert dgs files into JSON, and run a Canopy server.
+
+Canopy server: A Canopy server is a server that serves and supports the Canopy.js library. The Canopy server can be a static assets server or a node.js script. The server delivers the Canopy.js library on the first request, and then handles subsequent requests from the browser for JSON data files.
+
+
+topics/design/
+
+Design principles of Canopy: There are certain design principles of canopy.
+
+
+topics/diagraph/
+
+Diagraph: Diagraph is a graph data structure traversals of which are valid prose explanations. A diagraph is composed of a global namespace of topics. Each topic contains a local namespace of subtopic names belonging to that topic, one of which must match the topic itself.
+
+
+topics/problems/
+
+Problems Canopy is intended to solve: There are certain inefficiencies in the current creation and consumption of explanation that motivate the creation and use of Canopy.
+
+
+topics/usage/
+
+How to use canopy: Here is how to use canopy.
+
+
