@@ -7,24 +7,27 @@ let mkdirp = require('mkdirp-sync');
 let startArgument;
 let finishArgument;
 let argumentArray = process.argv.slice(3);
-let filesToErase;
 
 if (argumentArray.includes('--start')) {
-  startArgument = true;
   let index = argumentArray.indexOf('--start');
   argumentArray.splice(index, 1);
-}
-if (argumentArray.includes('--finish')) {
-  finishArgument = true;
+  generateBulkFile(false);
+  storeFilesToErase();
+  logEditInstructions();
+} else if (argumentArray.includes('--finish')) {
   let index = argumentArray.indexOf('--finish');
   argumentArray.splice(index, 1);
+  readTempfileAndUpdateDgs()
+} else {
+  let filesToErase = generateBulkFile(true);
+  openEditorAndWriteOnSave(filesToErase);
 }
 
-if (!fs.existsSync('./topics')) {
-  throw "Must be in a projects directory with a topics folder"
-}
+function generateBulkFile(useDotfile) {
+  if (!fs.existsSync('./topics')) {
+    throw "Must be in a projects directory with a topics folder"
+  }
 
-if (!finishArgument) {
   let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
     let pathToArgument = process.cwd() + '/topics' + argumentString;
 
@@ -59,49 +62,57 @@ if (!finishArgument) {
 
   if (!tempFileData) {
     tempFileData =
-`topics/
+      `topics/
 
-Here is a topic name: Here is a paragraph for that topic.
+      Here is a topic name: Here is a paragraph for that topic.
 
-Here is a subtopic name: Here is a paragraph for that subtopic.
+      Here is a subtopic name: Here is a paragraph for that subtopic.
 
 
-topics/
+      topics/
 
-Here is another topic name: Here is a paragraph for that topic.
+      Here is another topic name: Here is a paragraph for that topic.
 
-Here is another subtopic name: Here is a paragraph for that subtopic.
-`
+      Here is another subtopic name: Here is a paragraph for that subtopic.
+      `.replace(/\n[ ]+/g, "\n");
   }
 
-  fs.writeFileSync('.canopy_bulk_tmp', tempFileData);
+  fs.writeFileSync((useDotfile ? '.' : '') + 'canopy_bulk_temp', tempFileData);
+
+  return filesToErase;
 }
 
-if (startArgument) fs.writeFileSync('.files_to_erase', JSON.stringify(filesToErase));
+function storeFilesToErase() {
+  fs.writeFileSync('.files_to_erase', JSON.stringify(filesToErase));
+}
 
-if (!startArgument && !finishArgument) {
-  editor('.canopy_bulk_tmp', function (code, sig) {
+function openEditorAndWriteOnSave(filesToErase) {
+  editor('.canopy_bulk_temp', function (code, sig) {
     if (code === 0) {
-      let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
-      reconstructDgsFilesFromTempFile(tempFileContents);
-      fs.unlinkSync('.canopy_bulk_tmp');
+      let tempFileContents = fs.readFileSync('.canopy_bulk_temp', 'utf8');
+      reconstructDgsFilesFromTempFile(tempFileContents, filesToErase);
+      fs.unlinkSync('.canopy_bulk_temp');
     } else {
       throw "Error occured when editing canopy bulk temp file";
     }
   });
-} else if (startArgument) {
+}
+
+function logEditInstructions() {
   console.log();
-  console.log('  Now edit `.canopy_bulk_tmp`, and when finished run `canopy bulk --finish`');
+  console.log('  Now edit `canopy_bulk_temp`, and when finished run `canopy bulk --finish`');
   console.log();
-} else if (finishArgument) {
-  let tempFileContents = fs.readFileSync('.canopy_bulk_tmp', 'utf8');
-  filesToErase = JSON.parse(fs.readFileSync('.files_to_erase', 'utf8'));
-  reconstructDgsFilesFromTempFile(tempFileContents);
-  fs.unlinkSync('.canopy_bulk_tmp');
+}
+
+function readTempfileAndUpdateDgs() {
+  let tempFileContents = fs.readFileSync('canopy_bulk_temp', 'utf8');
+  let filesToErase = JSON.parse(fs.readFileSync('.files_to_erase', 'utf8'));
+  reconstructDgsFilesFromTempFile(tempFileContents, filesToErase);
+  fs.unlinkSync('canopy_bulk_temp');
   fs.unlinkSync('.files_to_erase');
 }
 
-function reconstructDgsFilesFromTempFile(tempFileContents) {
+function reconstructDgsFilesFromTempFile(tempFileContents, filesToErase) {
   tempFileContents.split(/(?=topics\/)/).forEach(function(textForFile) {
     if (!textForFile) { return; }
     let pathToFile = textForFile.match(/(topics(\/[^\n\/]+)*)\/?/)[1] + '/';
@@ -116,8 +127,18 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
     filesToErase[finalPath] = false;
 
     mkdirp(pathToFile);
-    fs.writeFileSync(finalPath, dgsFileContentsWithOutDisplaySpacing);
-    console.log('Wrote to file: ' + finalPath);
+
+    let previousValue;
+    if (fs.existsSync(finalPath)) {
+      previousValue = fs.readFileSync(finalPath, 'utf8');
+    }
+
+    if (previousValue === dgsFileContentsWithOutDisplaySpacing) {
+      console.log('No changes to file: ' + finalPath);
+    } else {
+      fs.writeFileSync(finalPath, dgsFileContentsWithOutDisplaySpacing);
+      console.log('Wrote to file: ' + finalPath);
+    }
   });
 
   for (let path in filesToErase) {
@@ -137,7 +158,6 @@ function reconstructDgsFilesFromTempFile(tempFileContents) {
     }
   }
 }
-
 
 function removeMarkdownTokens(string) {
   return string.
