@@ -167,15 +167,12 @@ function removeMarkdownTokens(string) {
 }
 
 function pathComparator(item1, item2) {
-  let pathLength1 = item1.split('/').length;
-  let pathLength2 = item2.split('/').length;
-  if (pathLength1 > pathLength2) {
+  let path1WithoutFilename = item1.match(/(.+)\/.+\.dgs/)[1];
+  let path2WithoutFilename = item2.match(/(.+)\/.+\.dgs/)[1];
+
+  if (path1WithoutFilename > path2WithoutFilename) {
     return 1;
-  } else if (pathLength1 < pathLength2) {
-    return -1;
-  } else if (item1 > item2) {
-    return 1;
-  } else if (item1 < item2) {
+  } else if (path1WithoutFilename < path2WithoutFilename) {
     return -1;
   } else {
     return 0;
