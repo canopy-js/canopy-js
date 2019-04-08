@@ -26,9 +26,9 @@ build)
 EOF
 
   CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
-  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $CANOPY_NODE_SERVER
+  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
 
-  if [[ -z "${CANOPY_BUILD_WITHOUT_FOLDERS}" ]]; then
+  if [[ -n "${CANOPY_BUILD_FOLDERS}" ]]; then
     for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
       cp build/index.html $D
     done
@@ -106,7 +106,7 @@ watch)
 
   canopy build;;
 serve)
-  CANOPY_BUILD_WITHOUT_FOLDERS=true canopy build
+  canopy build
   node $(npm root -g)/canopy-js/dist/server.js ${2:-3000}
   ;;
 
