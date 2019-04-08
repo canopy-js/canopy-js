@@ -36,6 +36,10 @@ function generateBulkFile(useDotfile) {
     let pathToArgument = process.cwd() + '/topics' + argumentString;
 
     if (argumentString.match(/\/$/)) {
+      if (argumentString === './') {
+        pathToArgument = process.cwd() + '/topics';
+      }
+
       // argument is directory with trailing slash, recursive
       return recursiveReadSync(pathToArgument).filter(function(path){
         return path.endsWith('.dgs');
@@ -44,6 +48,9 @@ function generateBulkFile(useDotfile) {
       // argument is single file
       return [pathToArgument];
     } else {
+      // Dot, is root directory non-recursive
+      if (argumentString === '.') pathToArgument = process.cwd() + '/topics';
+
       // argument is directory with no trailing slash, just its contents
       return fs.readdirSync(pathToArgument).filter(function(path){
         return path.endsWith('.dgs');
