@@ -695,16 +695,16 @@ function _arrayWithHoles(arr) {
 function parseClause(clauseWithPunctuation, parsingContext) {
   var tokensOfClause;
   var callbacks = {
-    resultCallback: function resultCallback(result, newParsingContext) {
-      tokensOfClause = tokensOfClause || result;
-      parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
-    },
     parseAllTokens: function parseAllTokens(callbacks, parsingContext) {
       var tokens = tokensOfSuffix(Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation), callbacks, parsingContext);
 
       if (tokenSetValid(tokens)) {
         callbacks.resultCallback(tokens, parsingContext);
       }
+    },
+    resultCallback: function resultCallback(result, newParsingContext) {
+      tokensOfClause = tokensOfClause || result;
+      parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
     }
   };
   callbacks.parseAllTokens(callbacks, parsingContext);
