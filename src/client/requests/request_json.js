@@ -19,7 +19,7 @@ const requestJson = (topicName) => {
       if (canopyContainer.childNodes.length === 0 && topicName !== defaultTopic) {
         updateView([[defaultTopic, defaultTopic]])
       }
-      return Promise.reject("Unrecognized path");
+      return Promise.reject("Unrecognized path: " + topicName);
     });
 }
 

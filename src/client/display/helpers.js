@@ -22,11 +22,10 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
     }).length > 0;
 }
 
-function determineLinkToSelect(pathArray, displayOptions) {
+function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
   let {
     linkSelectionData,
     selectALink,
-    sectionElementOfCurrentPath
   } = displayOptions;
 
   if (linkSelectionData) {
@@ -59,11 +58,11 @@ function createOrReplaceHeader(topicName) {
   canopyContainer.prepend(headerDomElement);
 };
 
-function determineSectionElementToDisplay(linkToSelect, displayOptions) {
+function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath, displayOptions) {
   if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
     return childSectionElementOfParentLink(linkToSelect);
   } else {
-    return displayOptions.sectionElementOfCurrentPath;
+    return sectionElementOfCurrentPath;
   }
 }
 
@@ -130,6 +129,19 @@ function removeDfsClasses() {
   });
 }
 
+function removeLastPathElement(pathArray) {
+  let lastItem = pathArray[pathArray.length - 1];
+  if (lastItem[0] === lastItem[1]) {
+    return JSON.parse(JSON.stringify(pathArray.slice(0, -1)));
+  } else {
+    let newArray = JSON.parse(JSON.stringify(pathArray));
+    let item = newArray.pop();
+    item[1] = item[0];
+    newArray.push(item);
+    return newArray;
+  }
+}
+
 export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
@@ -140,5 +152,6 @@ export {
   moveSelectedSectionClass,
   hideAllSectionElements,
   deselectAllLinks,
-  removeDfsClasses
+  removeDfsClasses,
+  removeLastPathElement
 };
