@@ -8,14 +8,14 @@ let startArgument;
 let finishArgument;
 let argumentArray = process.argv.slice(3);
 
-if (argumentArray.includes('--start')) {
-  let index = argumentArray.indexOf('--start');
+if (argumentArray.includes('--start') || argumentArray.includes('-s')) {
+  let index = Math.max(argumentArray.indexOf('--start'), argumentArray.indexOf('-s')) ;
   argumentArray.splice(index, 1);
   generateBulkFile(false);
   storeFilesToErase();
   logEditInstructions();
-} else if (argumentArray.includes('--finish')) {
-  let index = argumentArray.indexOf('--finish');
+} else if (argumentArray.includes('--finish') || argumentArray.includes('-f')) {
+  let index = Math.max(argumentArray.indexOf('--finish'), argumentArray.indexOf('-f')) ;
   argumentArray.splice(index, 1);
   readTempfileAndUpdateDgs()
 } else {
@@ -69,7 +69,7 @@ function generateBulkFile(useDotfile) {
       Here is a subtopic name: Here is a paragraph for that subtopic.
 
 
-      topics/
+      topics/subdirectory
 
       Here is another topic name: Here is a paragraph for that topic.
 
