@@ -182,7 +182,7 @@ test('it matches import references in any order within a clause', () => {
   expect(result.length).toEqual(5);
 
   expect(result[0].type).toEqual('text');
-  expect(result[0].text).toEqual('Idaho\'s state capital is near ');
+  expect(result[0].text).toEqual("Idaho's state capital is near ");
 
   expect(result[1].type).toEqual('global');
   expect(result[1].text).toEqual('Yellowstone National Park');
@@ -260,12 +260,25 @@ test('A global link cannot cause recognition of an earlier import reference that
     markdownOnly: false
   }
 
-  let clauseWithPunctuation = "I can't reference a subtopic ending in Wyoming.";
+  let clauseWithPunctuation = "There is a subtopic ending in Wyoming.";
 
-  expect(() => {
-    parseClause(
-      clauseWithPunctuation,
-      parsingContext
-    )
-  }).toThrowError("Import reference missing global link found");
+  let result = parseClause(
+    clauseWithPunctuation,
+    parsingContext
+  )
+
+  expect(result.length).toEqual(3);
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('There is a subtopic ending in ');
+
+  expect(result[1].type).toEqual('global');
+  expect(result[1].text).toEqual('Wyoming');
+  expect(result[1].targetTopic).toEqual('Wyoming');
+  expect(result[1].targetSubtopic).toEqual('Wyoming');
+  expect(result[1].enclosingTopic).toEqual('Idaho');
+  expect(result[1].enclosingSubtopic).toEqual('The state capital');
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual('.');
 });
