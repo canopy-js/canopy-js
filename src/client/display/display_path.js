@@ -16,28 +16,30 @@ import {
   addSelectedLinkClass,
   hideAllSectionElements,
   deselectAllLinks,
-  removeDfsClasses
+  removeDfsClasses,
+  removeLastPathElement
 } from 'display/helpers';
 
 import { storeLinkSelectionInSession } from 'history/helpers';
 
 const displayPath = (pathArray, displayOptions) => {
   displayOptions = displayOptions || {};
-  let topicName = pathArray[0][0];
-  displayOptions.sectionElementOfCurrentPath = sectionElementOfPath(pathArray);
-  if (!displayOptions.sectionElementOfCurrentPath) { throw "No section element found for path: " + pathArray }
+  let sectionElement = sectionElementOfPath(pathArray);
+  if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
   if (!displayOptions.originatesFromPopStateEvent) { setPath(pathArray); }
-  document.title = documentTitleFor(topicName);
 
+  let topicName = pathArray[0][0];
+  document.title = documentTitleFor(topicName);
   let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.topicDisplayName;
   createOrReplaceHeader(displayTopicName);
+
+  removeDfsClasses();
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
   deselectAllLinks();
   hideAllSectionElements();
-  removeDfsClasses();
 
-  let linkToSelect = determineLinkToSelect(pathArray, displayOptions);
-  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, displayOptions);
+  let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
+  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
 
@@ -66,6 +68,12 @@ const displayPathTo = (sectionElement, linkToSelect) => {
 
   let parentSectionElement = sectionElementOfLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
+}
+
+function tryPathPrefix(pathArray, displayOptions) {
+  console.log("No section element found for path: ", pathArray);
+  console.log("Trying: ", removeLastPathElement(pathArray))
+  return displayPath(removeLastPathElement(pathArray), displayOptions);
 }
 
 export default displayPath;
