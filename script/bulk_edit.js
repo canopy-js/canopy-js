@@ -28,6 +28,10 @@ function generateBulkFile(useDotfile) {
     throw "Must be in a projects directory with a topics folder"
   }
 
+  if (argumentArray.length === 0) {
+    argumentArray = ['/'];
+  }
+
   let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
     let pathToArgument = process.cwd() + '/topics' + argumentString;
 
