@@ -534,7 +534,7 @@ function localReferenceMatcher(prefixObject, parsingContext) {
   }
 }
 
-function globalReferenceMatcher(prefixObject, parsingContext, callbacks) {
+function globalReferenceMatcher(prefixObject, parsingContext, parseAllTokens) {
   var topicSubtopics = parsingContext.topicSubtopics,
       currentTopic = parsingContext.currentTopic,
       currentSubtopic = parsingContext.currentSubtopic,
@@ -542,7 +542,7 @@ function globalReferenceMatcher(prefixObject, parsingContext, callbacks) {
 
   if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) && currentTopic !== prefixObject.substringAsKey) {
     if (!avaliableNamespaces.includes(prefixObject.substringAsKey)) {
-      callbacks.parseAllTokens(callbacks, _objectSpread({}, parsingContext, {
+      parseAllTokens(_objectSpread({}, parsingContext, {
         avaliableNamespaces: avaliableNamespaces.slice().concat([prefixObject.substringAsKey])
       }));
     }
@@ -694,36 +694,35 @@ function _arrayWithHoles(arr) {
 
 function parseClause(clauseWithPunctuation, parsingContext) {
   var tokensOfClause;
-  var callbacks = {
-    parseAllTokens: function parseAllTokens(callbacks, parsingContext) {
-      var tokens = tokensOfSuffix(Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation), callbacks, parsingContext);
 
-      if (tokenSetValid(tokens)) {
-        callbacks.resultCallback(tokens, parsingContext);
+  var parseAllTokens = function parseAllTokens(newParsingContext) {
+    var result = tokensOfSuffix(Object(helpers_units_of__WEBPACK_IMPORTED_MODULE_0__["default"])(clauseWithPunctuation), newParsingContext, parseAllTokens);
+
+    if (tokenSetValid(result)) {
+      if (!tokensOfClause) {
+        tokensOfClause = result;
+        parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
       }
-    },
-    resultCallback: function resultCallback(result, newParsingContext) {
-      tokensOfClause = tokensOfClause || result;
-      parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
     }
   };
-  callbacks.parseAllTokens(callbacks, parsingContext);
+
+  parseAllTokens(parsingContext);
   return Object(helpers_consolidate_text_tokens__WEBPACK_IMPORTED_MODULE_2__["default"])(tokensOfClause);
 }
 
-function tokensOfSuffix(units, callbacks, parsingContext) {
+function tokensOfSuffix(units, parsingContext, parseAllTokens) {
   if (units.length === 0) {
     return [];
   }
 
   var prefixObjects = prefixesOf(units);
 
-  var _findMatch = findMatch(prefixObjects, callbacks, parsingContext),
+  var _findMatch = findMatch(prefixObjects, parsingContext, parseAllTokens),
       _findMatch2 = _slicedToArray(_findMatch, 2),
       token = _findMatch2[0],
       prefixObject = _findMatch2[1];
 
-  return [].concat(token, tokensOfSuffix(units.slice(prefixObject.units.length), callbacks, parsingContext));
+  return [].concat(token, tokensOfSuffix(units.slice(prefixObject.units.length), parsingContext, parseAllTokens));
 }
 
 function prefixesOf(units) {
@@ -743,14 +742,14 @@ function prefixesOf(units) {
   return prefixObjects;
 }
 
-function findMatch(prefixObjects, callbacks, parsingContext) {
+function findMatch(prefixObjects, parsingContext, parseAllTokens) {
   var Matchers = components_matchers__WEBPACK_IMPORTED_MODULE_3__["MarkdownMatchers"].concat(parsingContext.markdownOnly ? [] : components_matchers__WEBPACK_IMPORTED_MODULE_3__["ReferenceMatchers"]).concat(components_matchers__WEBPACK_IMPORTED_MODULE_3__["BaseMatchers"]);
 
   for (var i = 0; i < prefixObjects.length; i++) {
     for (var j = 0; j < Matchers.length; j++) {
       var matcher = Matchers[j];
       var prefixObject = prefixObjects[i];
-      var token = matcher(prefixObject, parsingContext, callbacks);
+      var token = matcher(prefixObject, parsingContext, parseAllTokens);
       if (token) return [token, prefixObject];
     }
   }

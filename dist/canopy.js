@@ -98,7 +98,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#_canopy {\n  padding-top: 15px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin: auto;\n    width: 40%;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 9%;\n    display: block;\n    height: 1px;\n    border: 0;\n    border-top: 5px solid #ccc;\n    margin: 0px auto;\n    padding-bottom: 30px; }\n  #_canopy section.canopy-topic-section {\n    padding-top: 40px; }\n  #_canopy section {\n    padding-top: 30px; }\n  #_canopy p {\n    font-size: 23px;\n    max-width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a.canopy-selectable-link {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }\n    */ }\n    #_canopy a.canopy-selectable-link:hover {\n      text-decoration: underline; }\n    #_canopy a.canopy-selectable-link:focus {\n      outline: 0; }\n    #_canopy a.canopy-selectable-link.canopy-open-link {\n      background-color: #f5ebff;\n      text-decoration: underline; }\n    #_canopy a.canopy-selectable-link.canopy-selected-link.canopy-local-link, #_canopy a.canopy-selectable-link.canopy-selected-link.canopy-redundant-local-link {\n      text-shadow: .8px 0px 0px black;\n      text-decoration: underline black; }\n    #_canopy a.canopy-selectable-link.canopy-global-link:hover, #_canopy a.canopy-selectable-link.canopy-url-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-selectable-link.canopy-global-link.canopy-selected-link, #_canopy a.canopy-selectable-link.canopy-url-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0;\n      text-shadow: .8px 0px 0px #4078c0; }\n    #_canopy a.canopy-selectable-link.canopy-global-link.canopy-open-link, #_canopy a.canopy-selectable-link.canopy-url-link.canopy-open-link {\n      color: #4078c0; }\n  #_canopy span.canopy-text-span {\n    display: block; }\n  #_canopy hr.footnote-rule {\n    width: 700px;\n    display: block;\n    height: 1px;\n    border: 0;\n    border-top: 1px solid #ccc;\n    margin: 12px 0;\n    padding: 0; }\n  #_canopy sup {\n    font-size: 60%;\n    padding: 2px; }\n  #_canopy .footnote-span {\n    font-size: 80%; }\n  #_canopy blockquote {\n    margin: 7px 10px;\n    background-color: #eff0f1;\n    padding: 5px;\n    font-size: 90%; }\n    #_canopy blockquote a.canopy-selectable-link {\n      text-decoration: underline #D3D3D3; }\n  #_canopy pre {\n    margin: 7px 10px;\n    background-color: #eff0f1;\n    padding: 5px;\n    font-size: 85%; }\n  #_canopy code {\n    background-color: #eff0f1;\n    font-size: 90%; }\n  #_canopy table {\n    margin: 7px auto;\n    table-layout: fixed;\n    width: 70%;\n    border-collapse: collapse;\n    border: 2px solid black; }\n    #_canopy table td, #_canopy table th {\n      border: 2px solid black;\n      text-align: center;\n      padding: 6px; }\n  #_canopy img {\n    max-width: 200px;\n    max-height: 275px; }\n  #_canopy div.canopy-image-div {\n    float: right;\n    border: 1px solid #c8ccd1;\n    padding: 3px;\n    background-color: #f8f9fa;\n    font-size: 94%;\n    text-align: center;\n    overflow: hidden;\n    min-width: 172px;\n    min-height: 230px;\n    margin: 10px; }\n  #_canopy div.canopy-image-div > sup {\n    display: block; }\n  #_canopy .canopy-url-link-span > svg {\n    height: 15px;\n    width: 12px;\n    display: none; }\n  #_canopy .canopy-selected-link + svg, #_canopy .canopy-url-link-span:hover > svg {\n    display: inline;\n    vertical-align: middle; }\n  #_canopy ol, #_canopy ul {\n    margin: 7px 10px; }\n  #_canopy div.canopy-raw-html {\n    display: inline; }\n\n#_canopy > section.canopy-topic-section {\n  padding-top: 30px; }\n", ""]);
+exports.push([module.i, "#_canopy {\n  padding-top: 15px;\n  padding-bottom: 55px; }\n  #_canopy h1 {\n    text-align: center;\n    margin: auto;\n    width: 40%;\n    margin-top: 10px; }\n  #_canopy hr {\n    width: 9%;\n    display: block;\n    height: 1px;\n    border: 0;\n    border-top: 5px solid #ccc;\n    margin: 0px auto;\n    padding-bottom: 30px; }\n  #_canopy section.canopy-topic-section {\n    padding-top: 40px; }\n  #_canopy section {\n    padding-top: 30px; }\n  #_canopy p {\n    font-size: 23px;\n    max-width: 700px;\n    margin: auto;\n    line-height: 1.3;\n    letter-spacing: -.003em;\n    font-weight: 400; }\n  #_canopy a.canopy-selectable-link {\n    text-decoration: underline #F0F0F0;\n    color: black;\n    cursor: pointer;\n    /*\n    &.canopy-dfs-previously-selected-link {\n      color: #ff0000;\n    }\n\n    &.canopy-reverse-dfs-previously-selected-link {\n      color: #0000ff;\n    }\n    */ }\n    #_canopy a.canopy-selectable-link:hover {\n      text-decoration: underline; }\n    #_canopy a.canopy-selectable-link:focus {\n      outline: 0; }\n    #_canopy a.canopy-selectable-link.canopy-open-link {\n      background-color: #f5ebff; }\n    #_canopy a.canopy-selectable-link.canopy-selected-link.canopy-local-link, #_canopy a.canopy-selectable-link.canopy-selected-link.canopy-redundant-local-link {\n      text-shadow: .8px 0px 0px black;\n      text-decoration: underline black; }\n    #_canopy a.canopy-selectable-link.canopy-global-link:hover, #_canopy a.canopy-selectable-link.canopy-url-link:hover {\n      color: #4078c0; }\n    #_canopy a.canopy-selectable-link.canopy-global-link.canopy-selected-link, #_canopy a.canopy-selectable-link.canopy-url-link.canopy-selected-link {\n      text-decoration: underline #4078c0;\n      color: #4078c0;\n      text-shadow: .8px 0px 0px #4078c0; }\n    #_canopy a.canopy-selectable-link.canopy-global-link.canopy-open-link, #_canopy a.canopy-selectable-link.canopy-url-link.canopy-open-link {\n      color: #4078c0; }\n  #_canopy span.canopy-text-span {\n    display: block; }\n  #_canopy hr.footnote-rule {\n    width: 700px;\n    display: block;\n    height: 1px;\n    border: 0;\n    border-top: 1px solid #ccc;\n    margin: 12px 0;\n    padding: 0; }\n  #_canopy sup {\n    font-size: 60%;\n    padding: 2px; }\n  #_canopy .footnote-span {\n    font-size: 80%; }\n  #_canopy blockquote {\n    margin: 7px 10px;\n    background-color: #eff0f1;\n    padding: 5px;\n    font-size: 90%; }\n    #_canopy blockquote a.canopy-selectable-link {\n      text-decoration: underline #D3D3D3; }\n  #_canopy pre {\n    margin: 7px 10px;\n    background-color: #eff0f1;\n    padding: 5px;\n    font-size: 85%; }\n  #_canopy code {\n    background-color: #eff0f1;\n    font-size: 90%; }\n  #_canopy table {\n    margin: 7px auto;\n    table-layout: fixed;\n    width: 70%;\n    border-collapse: collapse;\n    border: 2px solid black; }\n    #_canopy table td, #_canopy table th {\n      border: 2px solid black;\n      text-align: center;\n      padding: 6px; }\n  #_canopy img {\n    max-width: 200px;\n    max-height: 275px; }\n  #_canopy div.canopy-image-div {\n    float: right;\n    border: 1px solid #c8ccd1;\n    padding: 3px;\n    background-color: #f8f9fa;\n    font-size: 94%;\n    text-align: center;\n    overflow: hidden;\n    min-width: 172px;\n    min-height: 230px;\n    margin: 10px; }\n  #_canopy div.canopy-image-div > sup {\n    display: block; }\n  #_canopy .canopy-url-link-span > svg {\n    height: 15px;\n    width: 12px;\n    display: none; }\n  #_canopy .canopy-selected-link + svg, #_canopy .canopy-url-link-span:hover > svg {\n    display: inline;\n    vertical-align: middle; }\n  #_canopy ol, #_canopy ul {\n    margin: 7px 10px; }\n  #_canopy div.canopy-raw-html {\n    display: inline; }\n\n#_canopy > section.canopy-topic-section {\n  padding-top: 30px; }\n", ""]);
 
 // exports
 
@@ -756,19 +756,14 @@ __webpack_require__.r(__webpack_exports__);
 
 var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions = displayOptions || {};
-  var topicName = pathArray[0][0];
-  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
-
-  if (!sectionElementOfCurrentPath) {
-    console.log("No section element found for path: ", pathArray);
-    console.log("Trying: ", Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray));
-    return displayPath(Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray), displayOptions);
-  }
+  var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
+  if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
 
   if (!displayOptions.originatesFromPopStateEvent) {
     Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
   }
 
+  var topicName = pathArray[0][0];
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
   var displayTopicName = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])([[topicName, topicName]]).dataset.topicDisplayName;
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["createOrReplaceHeader"])(displayTopicName);
@@ -776,8 +771,8 @@ var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["deselectAllLinks"])();
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["hideAllSectionElements"])();
-  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineLinkToSelect"])(pathArray, sectionElementOfCurrentPath, displayOptions);
-  var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, displayOptions);
+  var linkToSelect = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineLinkToSelect"])(pathArray, sectionElement, displayOptions);
+  var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, sectionElement, displayOptions);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addSelectedLinkClass"])(linkToSelect);
   Object(history_helpers__WEBPACK_IMPORTED_MODULE_3__["storeLinkSelectionInSession"])(linkToSelect);
   displayPathTo(sectionElementToDisplay, linkToSelect);
@@ -807,6 +802,12 @@ var displayPathTo = function displayPathTo(sectionElement, linkToSelect) {
   var parentSectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfLink"])(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
 };
+
+function tryPathPrefix(pathArray, displayOptions) {
+  console.log("No section element found for path: ", pathArray);
+  console.log("Trying: ", Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray));
+  return displayPath(Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray), displayOptions);
+}
 
 /* harmony default export */ __webpack_exports__["default"] = (displayPath);
 
@@ -884,11 +885,11 @@ function createOrReplaceHeader(topicName) {
 
 ;
 
-function determineSectionElementToDisplay(linkToSelect, displayOptions) {
+function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath, displayOptions) {
   if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
     return Object(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["childSectionElementOfParentLink"])(linkToSelect);
   } else {
-    return displayOptions.sectionElementOfCurrentPath;
+    return sectionElementOfCurrentPath;
   }
 }
 
