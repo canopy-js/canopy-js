@@ -17,7 +17,9 @@ import {
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  removeLastPathElement
+  removeLastPathElement,
+  tryPathPrefix,
+  addLinkSelection
 } from 'display/helpers';
 
 import { storeLinkSelectionInSession } from 'history/helpers';
@@ -68,24 +70,6 @@ const displayPathTo = (sectionElement, linkToSelect) => {
 
   let parentSectionElement = sectionElementOfLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
-}
-
-function tryPathPrefix(pathArray, displayOptions) {
-  console.log("No section element found for path: ", pathArray);
-  console.log("Trying: ", removeLastPathElement(pathArray))
-  return displayPath(removeLastPathElement(pathArray), displayOptions);
-}
-
-function addLinkSelection(pathArray, linkToSelect) {
-  if (linkToSelect && linkToSelect.dataset.type === 'local') {
-    let newArray = JSON.parse(JSON.stringify(pathArray));
-    let item = newArray.pop();
-    item[1] = linkToSelect.dataset.targetSubtopic
-    newArray.push(item);
-    return newArray;
-  } else {
-    return pathArray;
-  }
 }
 
 export default displayPath;

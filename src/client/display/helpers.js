@@ -12,6 +12,7 @@ import {
 } from 'helpers/getters';
 
 import renderStyledText from 'render/render_styled_text';
+import displayPath from 'display/display_path';
 
 function newNodeAlreadyPresent(anchorElement, domTree) {
   return Array.from(anchorElement.childNodes)
@@ -142,6 +143,24 @@ function removeLastPathElement(pathArray) {
   }
 }
 
+function tryPathPrefix(pathArray, displayOptions) {
+  console.log("No section element found for path: ", pathArray);
+  console.log("Trying: ", removeLastPathElement(pathArray))
+  return displayPath(removeLastPathElement(pathArray), displayOptions);
+}
+
+function addLinkSelection(pathArray, linkToSelect) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
+    let newArray = JSON.parse(JSON.stringify(pathArray));
+    let item = newArray.pop();
+    item[1] = linkToSelect.dataset.targetSubtopic
+    newArray.push(item);
+    return newArray;
+  } else {
+    return pathArray;
+  }
+}
+
 export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
@@ -153,5 +172,7 @@ export {
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  removeLastPathElement
+  removeLastPathElement,
+  tryPathPrefix,
+  addLinkSelection
 };

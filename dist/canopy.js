@@ -757,7 +757,7 @@ __webpack_require__.r(__webpack_exports__);
 var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions = displayOptions || {};
   var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
-  if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
+  if (!sectionElement) return Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["tryPathPrefix"])(pathArray, displayOptions);
   var topicName = pathArray[0][0];
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
   var displayTopicName = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])([[topicName, topicName]]).dataset.topicDisplayName;
@@ -770,7 +770,7 @@ var displayPath = function displayPath(pathArray, displayOptions) {
   var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, sectionElement, displayOptions);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addSelectedLinkClass"])(linkToSelect);
   Object(history_helpers__WEBPACK_IMPORTED_MODULE_3__["storeLinkSelectionInSession"])(linkToSelect);
-  if (!displayOptions.originatesFromPopStateEvent) Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(addLinkSelection(pathArray, linkToSelect));
+  if (!displayOptions.originatesFromPopStateEvent) Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addLinkSelection"])(pathArray, linkToSelect));
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].scrollHeight);
 };
@@ -799,24 +799,6 @@ var displayPathTo = function displayPathTo(sectionElement, linkToSelect) {
   displayPathTo(parentSectionElement, linkToSelect);
 };
 
-function tryPathPrefix(pathArray, displayOptions) {
-  console.log("No section element found for path: ", pathArray);
-  console.log("Trying: ", Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray));
-  return displayPath(Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray), displayOptions);
-}
-
-function addLinkSelection(pathArray, linkToSelect) {
-  if (linkToSelect && linkToSelect.dataset.type === 'local') {
-    var newArray = JSON.parse(JSON.stringify(pathArray));
-    var item = newArray.pop();
-    item[1] = linkToSelect.dataset.targetSubtopic;
-    newArray.push(item);
-    return newArray;
-  } else {
-    return pathArray;
-  }
-}
-
 /* harmony default export */ __webpack_exports__["default"] = (displayPath);
 
 /***/ }),
@@ -825,7 +807,7 @@ function addLinkSelection(pathArray, linkToSelect) {
 /*!***************************************!*\
   !*** ./src/client/display/helpers.js ***!
   \***************************************/
-/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, removeDfsClasses, removeLastPathElement */
+/*! exports provided: newNodeAlreadyPresent, determineLinkToSelect, determineSectionElementToDisplay, createOrReplaceHeader, displaySectionBelowLink, addSelectedLinkClass, moveSelectedSectionClass, hideAllSectionElements, deselectAllLinks, removeDfsClasses, removeLastPathElement, tryPathPrefix, addLinkSelection */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -841,8 +823,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deselectAllLinks", function() { return deselectAllLinks; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeDfsClasses", function() { return removeDfsClasses; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeLastPathElement", function() { return removeLastPathElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "tryPathPrefix", function() { return tryPathPrefix; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addLinkSelection", function() { return addLinkSelection; });
 /* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
 /* harmony import */ var render_render_styled_text__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! render/render_styled_text */ "./src/client/render/render_styled_text.js");
+/* harmony import */ var display_display_path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! display/display_path */ "./src/client/display/display_path.js");
+
 
 
 
@@ -967,6 +953,24 @@ function removeLastPathElement(pathArray) {
     item[1] = item[0];
     newArray.push(item);
     return newArray;
+  }
+}
+
+function tryPathPrefix(pathArray, displayOptions) {
+  console.log("No section element found for path: ", pathArray);
+  console.log("Trying: ", removeLastPathElement(pathArray));
+  return Object(display_display_path__WEBPACK_IMPORTED_MODULE_2__["default"])(removeLastPathElement(pathArray), displayOptions);
+}
+
+function addLinkSelection(pathArray, linkToSelect) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
+    var newArray = JSON.parse(JSON.stringify(pathArray));
+    var item = newArray.pop();
+    item[1] = linkToSelect.dataset.targetSubtopic;
+    newArray.push(item);
+    return newArray;
+  } else {
+    return pathArray;
   }
 }
 
