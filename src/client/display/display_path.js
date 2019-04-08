@@ -26,7 +26,6 @@ const displayPath = (pathArray, displayOptions) => {
   displayOptions = displayOptions || {};
   let sectionElement = sectionElementOfPath(pathArray);
   if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
-  if (!displayOptions.originatesFromPopStateEvent) { setPath(pathArray); }
 
   let topicName = pathArray[0][0];
   document.title = documentTitleFor(topicName);
@@ -42,6 +41,7 @@ const displayPath = (pathArray, displayOptions) => {
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
+  if (!displayOptions.originatesFromPopStateEvent) setPath(addLinkSelection(pathArray, linkToSelect));
 
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
@@ -74,6 +74,18 @@ function tryPathPrefix(pathArray, displayOptions) {
   console.log("No section element found for path: ", pathArray);
   console.log("Trying: ", removeLastPathElement(pathArray))
   return displayPath(removeLastPathElement(pathArray), displayOptions);
+}
+
+function addLinkSelection(pathArray, linkToSelect) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
+    let newArray = JSON.parse(JSON.stringify(pathArray));
+    let item = newArray.pop();
+    item[1] = linkToSelect.dataset.targetSubtopic
+    newArray.push(item);
+    return newArray;
+  } else {
+    return pathArray;
+  }
 }
 
 export default displayPath;

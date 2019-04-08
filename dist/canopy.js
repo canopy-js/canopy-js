@@ -758,11 +758,6 @@ var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions = displayOptions || {};
   var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
   if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
-
-  if (!displayOptions.originatesFromPopStateEvent) {
-    Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(pathArray);
-  }
-
   var topicName = pathArray[0][0];
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);
   var displayTopicName = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])([[topicName, topicName]]).dataset.topicDisplayName;
@@ -775,6 +770,7 @@ var displayPath = function displayPath(pathArray, displayOptions) {
   var sectionElementToDisplay = Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["determineSectionElementToDisplay"])(linkToSelect, sectionElement, displayOptions);
   Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["addSelectedLinkClass"])(linkToSelect);
   Object(history_helpers__WEBPACK_IMPORTED_MODULE_3__["storeLinkSelectionInSession"])(linkToSelect);
+  if (!displayOptions.originatesFromPopStateEvent) Object(path_set_path__WEBPACK_IMPORTED_MODULE_0__["default"])(addLinkSelection(pathArray, linkToSelect));
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, helpers_getters__WEBPACK_IMPORTED_MODULE_1__["canopyContainer"].scrollHeight);
 };
@@ -807,6 +803,18 @@ function tryPathPrefix(pathArray, displayOptions) {
   console.log("No section element found for path: ", pathArray);
   console.log("Trying: ", Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray));
   return displayPath(Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["removeLastPathElement"])(pathArray), displayOptions);
+}
+
+function addLinkSelection(pathArray, linkToSelect) {
+  if (linkToSelect && linkToSelect.dataset.type === 'local') {
+    var newArray = JSON.parse(JSON.stringify(pathArray));
+    var item = newArray.pop();
+    item[1] = linkToSelect.dataset.targetSubtopic;
+    newArray.push(item);
+    return newArray;
+  } else {
+    return pathArray;
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (displayPath);
