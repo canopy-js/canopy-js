@@ -757,6 +757,7 @@ __webpack_require__.r(__webpack_exports__);
 var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions = displayOptions || {};
   var sectionElement = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
+  if (!sectionElement && pathArray.length === 1 && pathArray[0][0] === pathArray[0][1]) throw 'Unknown path';
   if (!sectionElement) return Object(display_helpers__WEBPACK_IMPORTED_MODULE_2__["tryPathPrefix"])(pathArray, displayOptions);
   var topicName = pathArray[0][0];
   document.title = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["documentTitleFor"])(topicName);

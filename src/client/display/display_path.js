@@ -17,7 +17,6 @@ import {
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  removeLastPathElement,
   tryPathPrefix,
   addLinkSelection
 } from 'display/helpers';
@@ -27,6 +26,7 @@ import { storeLinkSelectionInSession } from 'history/helpers';
 const displayPath = (pathArray, displayOptions) => {
   displayOptions = displayOptions || {};
   let sectionElement = sectionElementOfPath(pathArray);
+  if (!sectionElement && pathArray.length === 1 && pathArray[0][0] === pathArray[0][1]) throw 'Unknown path';
   if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
 
   let topicName = pathArray[0][0];
