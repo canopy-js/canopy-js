@@ -33,7 +33,7 @@ const BaseMatchers = [
 ]
 
 function localReferenceMatcher(prefixObject, parsingContext) {
-  let {topicSubtopics, currentTopic, currentSubtopic} = parsingContext;
+  let { topicSubtopics, currentTopic, currentSubtopic } = parsingContext;
 
   if (
     topicSubtopics[currentTopic].
@@ -51,16 +51,18 @@ function localReferenceMatcher(prefixObject, parsingContext) {
   }
 }
 
-function globalReferenceMatcher(prefixObject, parsingContext) {
-  let {topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces} = parsingContext;
+function globalReferenceMatcher(prefixObject, parsingContext, parseAllTokens) {
+  let { topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces } = parsingContext;
   if (
     topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
     currentTopic !== prefixObject.substringAsKey
   ) {
 
-    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)){
-      avaliableNamespaces.push(prefixObject.substringAsKey);
-      throw { name: 'clauseReparseRequired' }
+    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)) {
+      parseAllTokens({
+        ...parsingContext,
+        avaliableNamespaces: avaliableNamespaces.slice().concat([prefixObject.substringAsKey])
+      });
     }
 
     return new GlobalReferenceToken(

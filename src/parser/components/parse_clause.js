@@ -9,48 +9,44 @@ import {
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function parseClause(clauseWithPunctuation, parsingContext) {
-  let units = unitsOf(clauseWithPunctuation);
+  let tokensOfClause;
 
-  return consolidateTextTokens(
-    validateGlobalLinks(
-      doWithBacktracking(
-        () => [unitsOf(clauseWithPunctuation), parsingContext],
-        tokensOfSuffix
-      )
+  let parseAllTokens = (newParsingContext) => {
+    let result = tokensOfSuffix(
+      unitsOf(clauseWithPunctuation),
+      newParsingContext,
+      parseAllTokens
     )
-  );
-}
 
-function doWithBacktracking(generateArguments, callback) {
-  let result;
-  while(!result) {
-    try {
-      let argumentsArray = generateArguments();
-      result = callback.apply(null, argumentsArray);
-    } catch(e) {
-      if (e.name !== 'clauseReparseRequired') {
-        throw e;
+    if (tokenSetValid(result)) {
+      if (!tokensOfClause) {
+        tokensOfClause = result;
+        parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
       }
     }
   }
 
-  return result;
+  parseAllTokens(parsingContext);
+
+  return consolidateTextTokens(tokensOfClause);
 }
 
-function tokensOfSuffix(units, parsingContext) {
+function tokensOfSuffix(units, parsingContext, parseAllTokens) {
   if (units.length === 0) { return []; }
 
   let prefixObjects = prefixesOf(units);
   let [token, prefixObject] = findMatch(
     prefixObjects,
-    parsingContext
+    parsingContext,
+    parseAllTokens
   );
 
   return [].concat(
     token,
     tokensOfSuffix(
       units.slice(prefixObject.units.length),
-      parsingContext
+      parsingContext,
+      parseAllTokens
     ));
 }
 
@@ -68,7 +64,7 @@ function prefixesOf(units) {
   return prefixObjects;
 }
 
-function findMatch(prefixObjects, parsingContext) {
+function findMatch(prefixObjects, parsingContext, parseAllTokens) {
   let Matchers = MarkdownMatchers.
     concat(parsingContext.markdownOnly ? [] : ReferenceMatchers).
     concat(BaseMatchers);
@@ -77,22 +73,25 @@ function findMatch(prefixObjects, parsingContext) {
     for (let j = 0; j < Matchers.length; j++) {
       let matcher = Matchers[j];
       let prefixObject = prefixObjects[i];
-      let token = matcher(prefixObject, parsingContext);
+      let token = matcher(prefixObject, parsingContext, parseAllTokens);
       if (token) return [token, prefixObject];
     }
   }
+
+  throw "No token matched";
 }
 
-function validateGlobalLinks(tokenArray) {
+function tokenSetValid(tokenArray) {
+  let result = true;
   tokenArray.forEach((token1) => {
     if (token1.type === 'global') {
       if (!tokenArray.find((token2) => token2.type === 'global' && token1.targetTopic === token2.targetSubtopic)) {
-        throw "Import reference missing global link found";
+        result = false;
       }
     }
   });
 
-  return tokenArray;
+  return result;
 }
 
 export default parseClause;
