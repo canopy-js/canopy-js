@@ -757,7 +757,7 @@ __webpack_require__.r(__webpack_exports__);
 var displayPath = function displayPath(pathArray, displayOptions) {
   displayOptions = displayOptions || {};
   var topicName = pathArray[0][0];
-  sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
+  var sectionElementOfCurrentPath = Object(helpers_getters__WEBPACK_IMPORTED_MODULE_1__["sectionElementOfPath"])(pathArray);
 
   if (!sectionElementOfCurrentPath) {
     console.log("No section element found for path: ", pathArray);
