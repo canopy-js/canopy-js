@@ -1998,7 +1998,7 @@ var parsePathString = function parsePathString(pathStringArg) {
   var pathString = pathStringArg || window.location.pathname + window.location.hash;
 
   if (pathString.indexOf(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["pathPrefix"]) === 0) {
-    pathString = pathString.slice(0, helpers_getters__WEBPACK_IMPORTED_MODULE_0__["pathPrefix"].length);
+    pathString = pathString.slice(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["pathPrefix"].length);
   }
 
   var slashSeparatedUnits = pathString.replace(/_/g, ' ').split('/').filter(function (string) {

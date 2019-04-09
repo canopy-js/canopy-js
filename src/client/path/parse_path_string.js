@@ -3,7 +3,7 @@ import { pathPrefix } from 'helpers/getters';
 const parsePathString = (pathStringArg) => {
   let pathString = pathStringArg || window.location.pathname + window.location.hash;
   if (pathString.indexOf(pathPrefix) === 0) {
-    pathString = pathString.slice(0, pathPrefix.length);
+    pathString = pathString.slice(pathPrefix.length);
   }
 
   let slashSeparatedUnits = pathString.
