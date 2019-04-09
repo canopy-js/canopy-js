@@ -7,7 +7,6 @@ import topicKeyOfFile from 'helpers/topic_key_of_file';
 import { slugFor } from 'helpers/identifiers';
 import rimraf from 'rimraf';
 import { removeMarkdownTokens } from 'helpers/identifiers';
-import mkdirp from 'mkdirp-sync';
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -15,7 +14,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
   let namespaceObject = buildNamespaceObject(dgsFilePaths);
 
   rimraf.sync(destinationDataDirectory);
-  mkdirp(destinationDataDirectory);
+  fs.mkdirSync(destinationDataDirectory);
 
   dgsFilePaths.forEach(function(path) {
     let json = jsonForDgsFile(path, namespaceObject);
