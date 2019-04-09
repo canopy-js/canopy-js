@@ -33,7 +33,10 @@ function generateBulkFile(useDotfile) {
   }
 
   let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
-    let pathToArgument = process.cwd() + '/topics' + argumentString;
+    let pathToArgument = process.cwd() +
+      '/topics' +
+      (argumentString.match(/\/$/) ? '' : '/') +
+      argumentString;
 
     if (argumentString.match(/\/$/)) {
       if (argumentString === './') {
