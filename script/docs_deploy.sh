@@ -20,6 +20,7 @@ git remote add upstream "https://$GH_TOKEN@github.com/canopy-js/canopy-js.git"
 git fetch upstream
 git reset upstream/gh-pages
 
+touch .nojekyll
 touch .
 
 git add -A .
