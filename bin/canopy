@@ -28,7 +28,7 @@ EOF
   CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
   CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
 
-  if [[ -n "${CANOPY_BUILD_FOLDERS}" ]]; then
+  if [[ $2 = "--folders" ]]; then
     for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
       cp build/index.html $D
     done
@@ -118,7 +118,7 @@ bulk)
 echo "Usage:"
 echo "  canopy update"
 echo "  canopy init"
-echo "  canopy build"
+echo "  canopy build [--folders]"
 echo "  canopy watch"
 echo "  canopy watch stop"
 echo "  canopy serve [PORT]"
