@@ -7,23 +7,13 @@ build)
     exit 1
   fi
 
-  PROJECT_DIRECTORY_PATH=$PWD
   DEFAULT_TOPIC=`cat .canopy_default_topic`
   PATH_PREFIX=`cat .canopy_path_prefix`
-  PATH_TO_BUILD=build
 
   rm -rf build
+  mkdir build
 
-  if [ -s .canopy_path_prefix ]; then
-    if [ "$CREATE_LOCAL_DIRECTORY_NAMESPACE" == true ]; then
-      PATH_TO_BUILD=build/$PATH_PREFIX
-    fi
-  fi
-
-  mkdir -p $PATH_TO_BUILD
-  cd $PATH_TO_BUILD
-
-  cat << EOF > index.html
+  cat << EOF > build/index.html
   <html>
   <head>
   <meta charset="utf-8">
@@ -37,16 +27,14 @@ build)
 EOF
 
   CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
-
-  CANOPY_DEBUG=true \
-    PATH_TO_BUILD=$PATH_TO_BUILD \
-    node $CANOPY_LOCATION/canopy-js/dist/parser.js $PROJECT_DIRECTORY_PATH $2
+  CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
 
   if [[ $2 = "--with-folders" ]]; then
     for D in `find "build" ! -name '*_data' -type d -mindepth 1`; do
-      cp $PATH_TO_BUILD/index.html $D
+      cp build/index.html $D
     done
 
+    cd build
     for CURRENT_TOPIC_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
       for TOPIC_TO_ALIAS_PATH in `find "." ! -name '*_data' -type d -mindepth 1`; do
         echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
@@ -61,7 +49,7 @@ EOF
     cd ..
   fi
 
-  cp $(npm root -g)/canopy-js/dist/canopy.js $PROJECT_DIRECTORY_PATH/$PATH_TO_BUILD/canopy.js
+  cp $(npm root -g)/canopy-js/dist/canopy.js build/canopy.js
 ;;
 update)
   cd /usr/local/lib/canopy
@@ -80,13 +68,7 @@ init)
   echo $DEFAULT_TOPIC > .canopy_default_topic
   echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js
   echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js)
-  echo "Canopy supports hosting on a static assets server."
-  echo "However, Canopy must know if it is being served from a path besides the hostname"
-  echo "(eg, example.com/your_name/Topic, as opposed to example.com/Topic )"
-  echo "So, if you will be hosting with a namespace, type it below."
-  echo "Otherwise, just press enter."
-  read PATH_PREFIX
-  echo $PATH_PREFIX > .canopy_path_prefix
+  touch .canopy_path_prefix
   ;;
 watch)
   command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}

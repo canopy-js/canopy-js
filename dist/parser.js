@@ -373,9 +373,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
 /* harmony import */ var rimraf__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! rimraf */ "rimraf");
 /* harmony import */ var rimraf__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(rimraf__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var mkdirp_sync__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! mkdirp-sync */ "mkdirp-sync");
-/* harmony import */ var mkdirp_sync__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(mkdirp_sync__WEBPACK_IMPORTED_MODULE_8__);
-
 
 
 
@@ -391,7 +388,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
   var dgsFilePaths = Object(helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__["default"])(sourceDirectory);
   var namespaceObject = Object(components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
   rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(destinationDataDirectory);
-  mkdirp_sync__WEBPACK_IMPORTED_MODULE_8___default()(destinationDataDirectory);
+  fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationDataDirectory);
   dgsFilePaths.forEach(function (path) {
     var json = Object(components_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__["default"])(path, namespaceObject);
     var dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
@@ -1223,8 +1220,8 @@ if (process.argv.length < 2) {
   throw 'Missing commandline argument';
 }
 
-var projectDir = process.argv[2];
-Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/' + process.env['PATH_TO_BUILD'], process.argv[3] === '--with-folders');
+var projectDir = process.argv[2].replace(/\/$/, '');
+Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build', process.argv[3] === '--with-folders');
 
 /***/ }),
 
@@ -1247,17 +1244,6 @@ module.exports = require("array.prototype.flat");
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ "mkdirp-sync":
-/*!******************************!*\
-  !*** external "mkdirp-sync" ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("mkdirp-sync");
 
 /***/ }),
 
