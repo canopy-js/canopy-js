@@ -1,0 +1,153 @@
+{
+ "topicDisplayName": "Canopy codebase",
+ "paragraphsBySubtopic": {
+  "Canopy codebase": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "The Canopy codebase contains the ",
+       "type": "text"
+      },
+      {
+       "text": "Canopy front-end library",
+       "type": "local",
+       "targetSubtopic": "Canopy front-end library",
+       "targetTopic": "Canopy codebase",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy codebase"
+      },
+      {
+       "text": ",",
+       "type": "text"
+      },
+      {
+       "text": " the ",
+       "type": "text"
+      },
+      {
+       "text": "Canopy parser library",
+       "type": "local",
+       "targetSubtopic": "Canopy parser library",
+       "targetTopic": "Canopy codebase",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy codebase"
+      },
+      {
+       "text": ",",
+       "type": "text"
+      },
+      {
+       "text": " and the ",
+       "type": "text"
+      },
+      {
+       "text": "Canopy command-line interface",
+       "type": "local",
+       "targetSubtopic": "Canopy command-line interface",
+       "targetTopic": "Canopy codebase",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy codebase"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ],
+  "Canopy front-end library": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "The Canopy codebase contains a front-end library for rendering and presenting an interactive browser given a ",
+       "type": "text"
+      },
+      {
+       "text": "diagraph",
+       "type": "global",
+       "targetSubtopic": "Diagraph",
+       "targetTopic": "Diagraph",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy front-end library"
+      },
+      {
+       "text": " script server.",
+       "type": "text"
+      },
+      {
+       "text": " The code for the Canopy.js front-end library is in the Canopy repo under the `src/client` path.",
+       "type": "text"
+      },
+      {
+       "text": " The front-end library consumes JSON produced by the parser library.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ],
+  "Canopy parser library": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "The Canopy codebase contains the backend code for the parser that Canopy uses to convert ",
+       "type": "text"
+      },
+      {
+       "text": "diagraph",
+       "type": "global",
+       "targetSubtopic": "Diagraph",
+       "targetTopic": "Diagraph",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy parser library"
+      },
+      {
+       "text": " script into the JSON that is consumed by the front-end library.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ],
+  "Canopy command-line interface": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "Canopy has a command-line interface that you can use to set up a Canopy project,",
+       "type": "text"
+      },
+      {
+       "text": " convert dgs files into JSON,",
+       "type": "text"
+      },
+      {
+       "text": " and run a ",
+       "type": "text"
+      },
+      {
+       "text": "Canopy server",
+       "type": "global",
+       "targetSubtopic": "Canopy server",
+       "targetTopic": "Canopy server",
+       "enclosingTopic": "Canopy codebase",
+       "enclosingSubtopic": "Canopy command-line interface"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

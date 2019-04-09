@@ -1,0 +1,18 @@
+{
+ "topicDisplayName": "Applications of Canopy",
+ "paragraphsBySubtopic": {
+  "Applications of Canopy": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "The Canopy library has many potential applications.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

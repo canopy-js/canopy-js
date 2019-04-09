@@ -1,0 +1,18 @@
+{
+ "topicDisplayName": "Design principles of Canopy",
+ "paragraphsBySubtopic": {
+  "Design principles of Canopy": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "There are certain design principles of canopy.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

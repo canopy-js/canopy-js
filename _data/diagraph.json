@@ -1,0 +1,34 @@
+{
+ "topicDisplayName": "Diagraph",
+ "paragraphsBySubtopic": {
+  "Diagraph": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "Diagraph is a graph data structure.",
+       "type": "text"
+      },
+      {
+       "text": " Traversals of diagraph are valid prose explanations.",
+       "type": "text"
+      },
+      {
+       "text": " A diagraph is composed of a global namespace of topics.",
+       "type": "text"
+      },
+      {
+       "text": " Each topic contains a local namespace of subtopic names belonging to that topic,",
+       "type": "text"
+      },
+      {
+       "text": " one of which must match the topic itself.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

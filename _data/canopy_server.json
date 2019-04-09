@@ -1,0 +1,30 @@
+{
+ "topicDisplayName": "Canopy server",
+ "paragraphsBySubtopic": {
+  "Canopy server": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "A Canopy server is a server that serves and supports the Canopy.js library.",
+       "type": "text"
+      },
+      {
+       "text": " The Canopy server can be a static assets server or a node.js script.",
+       "type": "text"
+      },
+      {
+       "text": " The server delivers the Canopy.js library on the first request,",
+       "type": "text"
+      },
+      {
+       "text": " and then handles subsequent requests from the browser for JSON data files.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,18 @@
+{
+ "topicDisplayName": "How to use a Canopy website",
+ "paragraphsBySubtopic": {
+  "How to use a Canopy website": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "Here is how.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

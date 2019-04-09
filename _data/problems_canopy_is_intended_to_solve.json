@@ -1,0 +1,18 @@
+{
+ "topicDisplayName": "Problems Canopy is intended to solve",
+ "paragraphsBySubtopic": {
+  "Problems Canopy is intended to solve": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "There are certain inefficiencies in the current creation and consumption of explanation that motivate the creation and use of Canopy.",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

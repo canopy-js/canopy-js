@@ -1,0 +1,46 @@
+{
+ "topicDisplayName": "How to use canopy",
+ "paragraphsBySubtopic": {
+  "How to use canopy": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "Here are instructions for how to use Canopy to produce ",
+       "type": "text"
+      },
+      {
+       "text": "diagraph",
+       "type": "global",
+       "targetSubtopic": "Diagraph",
+       "targetTopic": "Diagraph",
+       "enclosingTopic": "How to use canopy",
+       "enclosingSubtopic": "How to use canopy"
+      },
+      {
+       "text": ",",
+       "type": "text"
+      },
+      {
+       "text": " and ",
+       "type": "text"
+      },
+      {
+       "text": "how to use a Canopy website",
+       "type": "global",
+       "targetSubtopic": "How to use a Canopy website",
+       "targetTopic": "How to use a Canopy website",
+       "enclosingTopic": "How to use canopy",
+       "enclosingSubtopic": "How to use canopy"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}

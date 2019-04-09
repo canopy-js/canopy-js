@@ -1,0 +1,102 @@
+{
+ "topicDisplayName": "The Canopy project",
+ "paragraphsBySubtopic": {
+  "The Canopy project": [
+   {
+    "type": "text",
+    "tokensByLine": [
+     [
+      {
+       "text": "Canopy is a Javascript library for creating and browsing ",
+       "type": "text"
+      },
+      {
+       "text": "diagraph",
+       "type": "global",
+       "targetSubtopic": "Diagraph",
+       "targetTopic": "Diagraph",
+       "enclosingTopic": "The Canopy project",
+       "enclosingSubtopic": "The Canopy project"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      },
+      {
+       "text": " There are problems that Canopy is intended to solve.",
+       "type": "text"
+      },
+      {
+       "text": " There are ",
+       "type": "text"
+      },
+      {
+       "text": "design principles of Canopy",
+       "type": "global",
+       "targetSubtopic": "Design principles of Canopy",
+       "targetTopic": "Design principles of Canopy",
+       "enclosingTopic": "The Canopy project",
+       "enclosingSubtopic": "The Canopy project"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      },
+      {
+       "text": " There are potential ",
+       "type": "text"
+      },
+      {
+       "text": "applications of Canopy",
+       "type": "global",
+       "targetSubtopic": "Applications of Canopy",
+       "targetTopic": "Applications of Canopy",
+       "enclosingTopic": "The Canopy project",
+       "enclosingSubtopic": "The Canopy project"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      },
+      {
+       "text": " These are instructions on how to use Canopy.",
+       "type": "text"
+      },
+      {
+       "text": " This is explanation of the ",
+       "type": "text"
+      },
+      {
+       "text": "Canopy codebase",
+       "type": "global",
+       "targetSubtopic": "Canopy codebase",
+       "targetTopic": "Canopy codebase",
+       "enclosingTopic": "The Canopy project",
+       "enclosingSubtopic": "The Canopy project"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      },
+      {
+       "text": " There are ",
+       "type": "text"
+      },
+      {
+       "text": "best practices for making diagraph",
+       "type": "global",
+       "targetSubtopic": "Best practices for making diagraph",
+       "targetTopic": "Best practices for making diagraph",
+       "enclosingTopic": "The Canopy project",
+       "enclosingSubtopic": "The Canopy project"
+      },
+      {
+       "text": ".",
+       "type": "text"
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}
