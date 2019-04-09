@@ -1,1 +1,3 @@
-Diagraph: Diagraph is a graph data structure traversals of which are valid prose explanations. A diagraph is composed of a global namespace of topics. Each topic contains a local namespace of subtopic names belonging to that topic, one of which must match the topic itself.
+Diagraph: Diagraph is a graph data structure. Traversals of diagraph are valid prose explanations. A diagraph is composed of a global namespace of topics. Each topic contains a local namespace of subtopic names belonging to that topic, one of which must match the topic itself.
+
+Library diagraph and the motivation ie the need for uncontroversial summaries of what views exist without trust for the summarizer.
