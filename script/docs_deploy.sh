@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 set -o errexit -o nounset
 
 if [ "$TRAVIS_BRANCH" != "master" ]
