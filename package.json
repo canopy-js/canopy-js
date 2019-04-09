@@ -1,8 +1,7 @@
 {
   "name": "canopy-js",
   "version": "0.1.0",
-  "description": "",
-  "private": true,
+  "description": "A library for creating and browsing diagraph.",
   "main": "dist/parser.js",
   "scripts": {
     "test": "jest",
