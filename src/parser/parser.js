@@ -7,10 +7,10 @@ if (process.argv.length < 2) {
   throw('Missing commandline argument');
 }
 
-let projectDir = process.argv[2].replace(/\/$/, '');
+let projectDir = process.argv[2];
 
 jsonForProjectDirectory(
   projectDir + '/topics',
-  projectDir + '/build',
+  projectDir + '/' + process.env['PATH_TO_BUILD'],
   process.argv[3] === '--with-folders'
 );
