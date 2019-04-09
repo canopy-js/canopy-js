@@ -20,7 +20,7 @@ build)
   </head>
   <body>
   <div id="_canopy" data-default-topic="$DEFAULT_TOPIC"></div>
-  <script src="/canopy.js"></script>
+  <script src="canopy.js"></script>
   </body>
   </html>
 EOF
