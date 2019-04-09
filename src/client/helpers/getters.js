@@ -11,6 +11,8 @@ if(!defaultTopic) {
   throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
 }
 
+const pathPrefix = document.getElementById('_canopy').dataset.pathPrefix;
+
 const sectionElementOfPath = (pathArray) => {
   let currentNode = canopyContainer;
 
@@ -346,6 +348,7 @@ function forEach(list, callback) {
 export {
   canopyContainer,
   defaultTopic,
+  pathPrefix,
   sectionElementOfPath,
   currentSection,
   currentRootSection,
