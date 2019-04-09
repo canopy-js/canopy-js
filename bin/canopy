@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 case $1 in
 build)
   if [ ! -d ./topics ]; then
@@ -7,7 +7,8 @@ build)
     exit 1
   fi
 
-  DEFAULT_TOPIC=`cat .default_topic`
+  DEFAULT_TOPIC=`cat .canopy_default_topic`
+  PATH_PREFIX=`cat .canopy_path_prefix`
 
   rm -rf build
   mkdir build
@@ -19,7 +20,7 @@ build)
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   </head>
   <body>
-  <div id="_canopy" data-default-topic="$DEFAULT_TOPIC"></div>
+  <div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-path-prefix="$PATH_PREFIX"></div>
   <script src="canopy.js"></script>
   </body>
   </html>
@@ -60,12 +61,14 @@ init)
   touch .gitignore
   echo "build/" >> .gitignore
   echo ".canopy_watch.pid" >> .gitignore
-  echo ".canopy_bulk_tmp" >> .gitignore
+  echo ".canopy_bulk_temp" >> .gitignore
+  echo "canopy_bulk_temp" >> .gitignore
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
-  echo $DEFAULT_TOPIC > .default_topic
+  echo $DEFAULT_TOPIC > .canopy_default_topic
   echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js
   echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $(npm root -g)/canopy-js/script/snake_case.js)
+  touch .canopy_path_prefix
   ;;
 watch)
   command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}

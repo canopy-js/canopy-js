@@ -1065,13 +1065,14 @@ function sectionHasNoChildLinks(sectionElement) {
 /*!***************************************!*\
   !*** ./src/client/helpers/getters.js ***!
   \***************************************/
-/*! exports provided: canopyContainer, defaultTopic, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, parentLinksOfSection, childSectionElementOfParentLink, sectionElementOfLink, metadataFromLink, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection, paragraphElementOfSection, linksOfSectionElement, linkAfter, linkBefore, firstChildLinkOfParentLink, lastChildLinkOfParentLink, firstLinkOfSectionElement, lastLinkOfSectionElement, enclosingTopicSectionOfLink, firstSiblingOf, lastSiblingOf, parentLinkOf, siblingOfLinkLike, linkOfSectionLike, linksOfSectionLike, linkOfSectionByTarget, linksOfSectionByTarget, parentElementOfLink, paragraphElementOfLink, forEach */
+/*! exports provided: canopyContainer, defaultTopic, pathPrefix, sectionElementOfPath, currentSection, currentRootSection, selectedLink, parentLinkOfSection, parentLinksOfSection, childSectionElementOfParentLink, sectionElementOfLink, metadataFromLink, documentTitleFor, findLinkFromMetadata, findLowestExtantSectionElementOfPath, openLinkOfSection, paragraphElementOfSection, linksOfSectionElement, linkAfter, linkBefore, firstChildLinkOfParentLink, lastChildLinkOfParentLink, firstLinkOfSectionElement, lastLinkOfSectionElement, enclosingTopicSectionOfLink, firstSiblingOf, lastSiblingOf, parentLinkOf, siblingOfLinkLike, linkOfSectionLike, linksOfSectionLike, linkOfSectionByTarget, linksOfSectionByTarget, parentElementOfLink, paragraphElementOfLink, forEach */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "canopyContainer", function() { return canopyContainer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "defaultTopic", function() { return defaultTopic; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pathPrefix", function() { return pathPrefix; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sectionElementOfPath", function() { return sectionElementOfPath; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentSection", function() { return currentSection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "currentRootSection", function() { return currentRootSection; });
@@ -1120,6 +1121,8 @@ var defaultTopic = document.getElementById('_canopy').dataset.defaultTopic;
 if (!defaultTopic) {
   throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
 }
+
+var pathPrefix = document.getElementById('_canopy').dataset.pathPrefix;
 
 var sectionElementOfPath = function sectionElementOfPath(pathArray) {
   var currentNode = canopyContainer;
@@ -1988,8 +1991,16 @@ function pathForSectionElement(sectionElement) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
+
 var parsePathString = function parsePathString(pathStringArg) {
   var pathString = pathStringArg || window.location.pathname + window.location.hash;
+
+  if (pathString.indexOf(helpers_getters__WEBPACK_IMPORTED_MODULE_0__["pathPrefix"]) === 0) {
+    pathString = pathString.slice(0, helpers_getters__WEBPACK_IMPORTED_MODULE_0__["pathPrefix"].length);
+  }
+
   var slashSeparatedUnits = pathString.replace(/_/g, ' ').split('/').filter(function (string) {
     return string !== '';
   });
@@ -2041,10 +2052,12 @@ function fixAccidentalSeparationofTopicAndSubtopic(pathString, slashSeparatedUni
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! helpers/identifiers */ "./src/client/helpers/identifiers.js");
+/* harmony import */ var helpers_getters__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! helpers/getters */ "./src/client/helpers/getters.js");
+
 
 
 function pathStringFor(pathArray) {
-  return '/' + pathArray.map(function (tuple) {
+  return helpers_getters__WEBPACK_IMPORTED_MODULE_1__["pathPrefix"] + '/' + pathArray.map(function (tuple) {
     return Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(tuple[0]) + (tuple[1] && tuple[1] !== tuple[0] ? '#' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(tuple[1]) : '');
   }).join('/');
 }
