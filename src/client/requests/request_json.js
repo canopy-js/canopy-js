@@ -1,5 +1,5 @@
 import { slugFor } from 'helpers/identifiers';
-import { canopyContainer, defaultTopic } from 'helpers/getters';
+import { canopyContainer, defaultTopic, pathPrefix } from 'helpers/getters';
 import updateView from 'display/update_view';
 
 let cache = {};
@@ -7,7 +7,7 @@ let cache = {};
 const requestJson = (topicName) => {
   if (cache[topicName]) { return Promise.resolve(cache[topicName]); }
 
-  let dataPath = '/_data/' + slugFor(topicName.toLowerCase()) + '.json';
+  let dataPath = pathPrefix + '/_data/' + slugFor(topicName.toLowerCase()) + '.json';
 
   return fetch(dataPath).
     then(res => {
