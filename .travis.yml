@@ -2,7 +2,7 @@ install:
   - npm install --dev
 script:
   - npm install -g .
-  - npm run develop
+  - npm run build
   - cd docs
   - canopy build --for-static-assets
   - cd ..
