@@ -2736,7 +2736,7 @@ var requestJson = function requestJson(topicName) {
     return Promise.resolve(cache[topicName]);
   }
 
-  var dataPath = helpers_getters__WEBPACK_IMPORTED_MODULE_1__["pathPrefix"] + '/_data/' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName.toLowerCase()) + '.json';
+  var dataPath = helpers_getters__WEBPACK_IMPORTED_MODULE_1__["pathPrefix"] + '/data/' + Object(helpers_identifiers__WEBPACK_IMPORTED_MODULE_0__["slugFor"])(topicName.toLowerCase()) + '.json';
   return fetch(dataPath).then(function (res) {
     return res.json().then(function (json) {
       cache[topicName] = json;

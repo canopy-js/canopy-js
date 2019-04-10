@@ -7,7 +7,7 @@ let cache = {};
 const requestJson = (topicName) => {
   if (cache[topicName]) { return Promise.resolve(cache[topicName]); }
 
-  let dataPath = pathPrefix + '/_data/' + slugFor(topicName.toLowerCase()) + '.json';
+  let dataPath = pathPrefix + '/data/' + slugFor(topicName.toLowerCase()) + '.json';
 
   return fetch(dataPath).
     then(res => {

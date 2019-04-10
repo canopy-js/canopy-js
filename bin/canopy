@@ -30,8 +30,6 @@ EOF
   CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
-    pwd
-    ls
     for D in `find "build" -mindepth 1 ! -name '*_data' -type d`; do
       cp build/index.html $D
     done
