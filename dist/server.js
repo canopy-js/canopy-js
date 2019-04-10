@@ -11,7 +11,8 @@ if (!process.cwd().match(/build\/?$/)){
 // static file serve
 app.use('/canopy.js', express.static(buildPath + 'canopy.js'));
 app.use('/canopy.js.map', express.static(buildPath + 'canopy.js.map'));
-app.use('/_data', express.static(buildPath + '_data'));
+app.use('/data', express.static(buildPath + 'data'));
+app.use('/assets', express.static(buildPath + 'assets'));
 
 // not found in static files, so default to index.html
 app.use((req, res) => res.sendFile(buildPath + 'index.html'));
