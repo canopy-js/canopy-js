@@ -1221,7 +1221,7 @@ if (process.argv.length < 2) {
 }
 
 var projectDir = process.argv[2].replace(/\/$/, '');
-Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build', process.argv[3] === '--with-folders');
+Object(_components_json_for_dgs_directory__WEBPACK_IMPORTED_MODULE_0__["default"])(projectDir + '/topics', projectDir + '/build', process.argv[3] === '--for-static-assets');
 
 /***/ }),
 
