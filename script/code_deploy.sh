@@ -10,6 +10,8 @@ fi
 
 rev=$(git rev-parse --short HEAD)
 
+git status
+git remote -v
 rm -rf .git
 git init
 git config user.name "CanopyJS"
