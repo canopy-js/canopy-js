@@ -1,15 +1,21 @@
 install:
-  - npm install --dev
+- npm install --dev
 script:
-  - npm install -g .
-  - mkdir dist
-  - npm run build
-  - cd docs
-  - canopy build --for-static-assets
-  - cd ..
+- npm install -g .
+- cd docs
+- canopy build --for-static-assets
+- cd ..
 after_success:
-  - bash script/code_deploy.sh
-  - bash script/docs_deploy.sh
+- bash script/code_deploy.sh
+- bash script/docs_deploy.sh
 env:
   global:
-    - secure: "wjhMDS7LHlJbw882I6eNN6UnIi4UsmlWuqNdGPbzShJAi7Q9nlxakkRXI+WkmmLZc4QF+1dyaT0HXr/v29G/vsjk36N1/CokJSQM6eNKt5CMW2wbCoTdgqCOP7cw1Cg1EHfkrq/YwCeqemfnpLfd1fx/LEab6Jhlp5IpQGMtrQYC+OyMIw3yrkEEseIhilKvrND0iXCLDiBwPySiRHN+i8NLtQGzOnn/LiUj915025IH4lMj/NeRZ6r6d89hBWudaXsrNJZZnwV4AbJEKBK3RQc6N32bHldnw/R7lrIfK+le90CWAFTCBHSvxr2FweSSn5QOz2+kUlXzwx0fhAWpHEyqPX5Bj1cBhePg9Y3mS1Tb/IDLiHsydNZlyxwsfOLgop85RACB9XYFHa8aTAbk70k6HJC650Wi/0LhtrGz9s7/tIV/giu3aYZPJQi70EZcvQa5KcFCr0ZzUQGJAotwrPye8w1K3Hx6vO1IvvwgSiT6NzSec2Q9WKRhEYz76+5HhMMXTWBK4atkYZQiZ1HFpAVYYhThTScEP9690IJgMJ3sju7kyk2F1dY1DI6HLSaoAvVUq5ZUYEQRJYJmQWUHNuvDONusjAaTP7fzsh8vGwJveC6hgg2VuZtBBcqqB9TmJ1diR1QSiCg/m/yGnyTSiCr1CqDZmpaukzmihGKHyXA="
+  - secure: wjhMDS7LHlJbw882I6eNN6UnIi4UsmlWuqNdGPbzShJAi7Q9nlxakkRXI+WkmmLZc4QF+1dyaT0HXr/v29G/vsjk36N1/CokJSQM6eNKt5CMW2wbCoTdgqCOP7cw1Cg1EHfkrq/YwCeqemfnpLfd1fx/LEab6Jhlp5IpQGMtrQYC+OyMIw3yrkEEseIhilKvrND0iXCLDiBwPySiRHN+i8NLtQGzOnn/LiUj915025IH4lMj/NeRZ6r6d89hBWudaXsrNJZZnwV4AbJEKBK3RQc6N32bHldnw/R7lrIfK+le90CWAFTCBHSvxr2FweSSn5QOz2+kUlXzwx0fhAWpHEyqPX5Bj1cBhePg9Y3mS1Tb/IDLiHsydNZlyxwsfOLgop85RACB9XYFHa8aTAbk70k6HJC650Wi/0LhtrGz9s7/tIV/giu3aYZPJQi70EZcvQa5KcFCr0ZzUQGJAotwrPye8w1K3Hx6vO1IvvwgSiT6NzSec2Q9WKRhEYz76+5HhMMXTWBK4atkYZQiZ1HFpAVYYhThTScEP9690IJgMJ3sju7kyk2F1dY1DI6HLSaoAvVUq5ZUYEQRJYJmQWUHNuvDONusjAaTP7fzsh8vGwJveC6hgg2VuZtBBcqqB9TmJ1diR1QSiCg/m/yGnyTSiCr1CqDZmpaukzmihGKHyXA=
+deploy:
+  provider: npm
+  email: canopyjs@gmail.com
+  on:
+    tags: true
+    branch: build
+  api_key:
+    secure: HMTD8Tafm0BPPn2BcJ1F86o+Z5MWRXqBXqS85L2g4VQeEBBUz/XD1ct5lyrY7bHq3ikfiXon5XAujuBNaA0Db3GUchZMvF9KW1OHQE+ziIC2sqIL0bS4EIWOREs04i4r4hfEmgVuNPklKAeTdwVJ8P7GXchEgCCZrhcouT1Ck8QgTyNnnMhiNHtvdA59q2aOswPkjN9WuJ1RW8PDzl00l9GH0A9InYLsm85Ltt+w79+DB9YVyXmTK0c5HFOpN/Z7U7GlhrtF0lRh15gAaBk2cRoHmnV50lr/yZdnU/PNkhwI8C76ohjN7sqyuQ55vLl/33H9H97DXaUSAVdXY5mLjQCBUPmahvV4c7IqQ063rHC7N/IrWAclmODS/za8jAIvMSdXv+kl75EFWlrisG9jdHmRSR/IEZsf4ulkBxed9xTj7fzDOfgvSSapUx+FxYETl/kd1KHUL5ZyUV266kz0SyNc5/5feIcQZCU2co70kKaYHpTWB6rTgmXeyCuVZYcah+nQBo1lwCdlCWZrjufKvO+PbJMRWYIXTb9MjWrjjUXmMg04qs0e88OO5Z/Ee2pqVLjqFZykLPl/yL8YEbRZ/InRG66Vxh0o/+/E94u+m+sOWCObhBuIan7U7eiDN9p7bVVoPuZJMYXMYs5bZ+62RKxuDNL1ZZOzJKB1xJzgqi4=
