@@ -11,7 +11,6 @@ fi
 rev=$(git rev-parse --short HEAD)
 
 # cd dist
-
 # git init
 # git config user.name "CanopyJS"
 # git config user.email "canopyjs@gmail.com"
