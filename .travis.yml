@@ -1,11 +1,13 @@
 install:
-  - npm install
+  - npm install --dev
 script:
   - npm install -g .
+  - npm run develop
   - cd docs
   - canopy build --for-static-assets
   - cd ..
 after_success:
+  - bash script/code_deploy.sh
   - bash script/docs_deploy.sh
 env:
   global:
