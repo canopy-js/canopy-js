@@ -22,4 +22,4 @@ git reset upstream/build
 npm run build
 git add -A
 git commit -m "Code built at ${rev}"
-git push -f -q upstream HEAD:build
+git push -q upstream HEAD:build
