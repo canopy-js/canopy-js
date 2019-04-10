@@ -389,6 +389,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
   var namespaceObject = Object(components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
   rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(destinationDataDirectory);
   fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationDataDirectory);
+  console.log(311);
   dgsFilePaths.forEach(function (path) {
     var json = Object(components_json_for_dgs_file_js__WEBPACK_IMPORTED_MODULE_3__["default"])(path, namespaceObject);
     var dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
@@ -398,8 +399,13 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
     }
 
     var destinationPath = destinationDataDirectory + '/' + dgsFileNameWithoutExtension + '.json';
-    console.log();
-    console.log("WRITING TO " + destinationPath + ": " + json);
+    console.log(313, process.env['CANOPY_LOGGING']);
+
+    if (process.env['CANOPY_LOGGING']) {
+      console.log();
+      if (process.env['CANOPY_LOGGING']) console.log("WRITING TO " + destinationPath + ": " + json);
+    }
+
     fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(destinationPath, json);
 
     if (makeFolders) {
@@ -407,7 +413,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
       var topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
       rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(topicFolderPath);
       fs__WEBPACK_IMPORTED_MODULE_0___default.a.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-      console.log('Created directory: ' + topicFolderPath);
+      if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });
 }

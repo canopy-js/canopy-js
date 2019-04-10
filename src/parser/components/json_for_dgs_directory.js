@@ -16,6 +16,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
   rimraf.sync(destinationDataDirectory);
   fs.mkdirSync(destinationDataDirectory);
 
+  console.log(311)
   dgsFilePaths.forEach(function(path) {
     let json = jsonForDgsFile(path, namespaceObject);
     let dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
@@ -29,8 +30,11 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
       dgsFileNameWithoutExtension +
       '.json';
 
-    if (process.env['CANOPY_LOGGING']) console.log();
-    if (process.env['CANOPY_LOGGING']) console.log("WRITING TO " + destinationPath + ": " + json);
+    console.log(313, process.env['CANOPY_LOGGING']);
+    if (process.env['CANOPY_LOGGING']) {
+      console.log();
+      if (process.env['CANOPY_LOGGING']) console.log("WRITING TO " + destinationPath + ": " + json);
+    }
     fs.writeFileSync(destinationPath, json);
 
     if (makeFolders) {
