@@ -40,7 +40,6 @@ EOF
         echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
         rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
         cd $CURRENT_TOPIC_PATH
-        pwd
         echo ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
         ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $(basename $TOPIC_TO_ALIAS_PATH)
         cd ..
