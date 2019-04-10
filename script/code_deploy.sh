@@ -10,16 +10,9 @@ fi
 
 rev=$(git rev-parse --short HEAD)
 
-git status
-git remote -v
-rm -rf .git
-git init
-git config user.name "CanopyJS"
-git config user.email "canopyjs@gmail.com"
-git remote add upstream "https://$GH_TOKEN@github.com/canopy-js/canopy-js.git"
-git fetch upstream
-git reset upstream/build
+git fetch origin
+git reset origin/build
 npm run build
 git add -A
 git commit -m "Code built at ${rev}"
-git push -q upstream HEAD:build
+git push -q origin HEAD:build
