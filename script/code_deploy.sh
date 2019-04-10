@@ -19,7 +19,7 @@ git remote add upstream "https://$GH_TOKEN@github.com/canopy-js/canopy-js.git"
 git fetch upstream
 git reset --hard
 git checkout build
-git cherry-pick ${rev}
+git cherry-pick master
 npm run build
 
 git add -f dist
