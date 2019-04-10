@@ -384,7 +384,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
-  var destinationDataDirectory = destinationBuildDirectory + '/_data';
+  var destinationDataDirectory = destinationBuildDirectory + '/data';
   var dgsFilePaths = Object(helpers_list_dgs_files_recursive_js__WEBPACK_IMPORTED_MODULE_1__["default"])(sourceDirectory);
   var namespaceObject = Object(components_build_namespace_object_js__WEBPACK_IMPORTED_MODULE_2__["default"])(dgsFilePaths);
   rimraf__WEBPACK_IMPORTED_MODULE_7___default.a.sync(destinationDataDirectory);

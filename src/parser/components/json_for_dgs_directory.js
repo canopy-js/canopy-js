@@ -9,7 +9,7 @@ import rimraf from 'rimraf';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
-  let destinationDataDirectory = destinationBuildDirectory + '/_data';
+  let destinationDataDirectory = destinationBuildDirectory + '/data';
   let dgsFilePaths = listDgsFilesRecursive(sourceDirectory);
   let namespaceObject = buildNamespaceObject(dgsFilePaths);
 
