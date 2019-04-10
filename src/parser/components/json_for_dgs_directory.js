@@ -29,8 +29,8 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
       dgsFileNameWithoutExtension +
       '.json';
 
-    console.log();
-    console.log("WRITING TO " + destinationPath + ": " + json);
+    if (process.env['CANOPY_LOGGING']) console.log();
+    if (process.env['CANOPY_LOGGING']) console.log("WRITING TO " + destinationPath + ": " + json);
     fs.writeFileSync(destinationPath, json);
 
     if (makeFolders) {
@@ -38,7 +38,7 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
       let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
       rimraf.sync(topicFolderPath);
       fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
-      console.log('Created directory: ' + topicFolderPath);
+      if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });
 }
