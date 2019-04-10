@@ -3,7 +3,7 @@ install:
 script:
   - npm install -g .
   - cd docs
-  - canopy build --with-folders
+  - canopy build --for-static-assets
   - cd ..
 after_success:
   - bash script/docs_deploy.sh
