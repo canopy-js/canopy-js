@@ -10,18 +10,20 @@ fi
 
 rev=$(git rev-parse --short HEAD)
 
-cd dist
+# cd dist
 
-git init
-git config user.name "CanopyJS"
-git config user.email "canopyjs@gmail.com"
+# git init
+# git config user.name "CanopyJS"
+# git config user.email "canopyjs@gmail.com"
 
 git remote add upstream "https://$GH_TOKEN@github.com/canopy-js/canopy-js.git"
 git fetch upstream
-git reset upstream/build
+git reset --hard
+git checkout build
+git cherry-pick ${rev}
+npm run build
 
-touch .
-
-git add -A .
-git commit -m "rebuild pages at ${rev}"
+# touch .
+git add -f dist
+git commit -m "Code built at ${rev}"
 git push -q upstream HEAD:build
