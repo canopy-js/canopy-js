@@ -13,18 +13,22 @@ build)
   rm -rf build
   mkdir build
 
-  cat << EOF > build/index.html
-  <html>
-  <head>
-  <meta charset="utf-8">
-  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-  </head>
-  <body>
-  <div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-path-prefix="$PATH_PREFIX"></div>
-  <script src="$PATH_PREFIX/canopy.js"></script>
-  </body>
-  </html>
+  if [ -e index.html ]; then
+    cp index.html build
+  else
+    cat << EOF > build/index.html
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    </head>
+    <body>
+    <div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-path-prefix="$PATH_PREFIX"></div>
+    <script src="$PATH_PREFIX/canopy.js"></script>
+    </body>
+    </html>
 EOF
+  fi
 
   CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
   CANOPY_DEBUG=true node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
