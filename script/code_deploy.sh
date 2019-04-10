@@ -22,7 +22,6 @@ git checkout build
 git cherry-pick ${rev}
 npm run build
 
-# touch .
 git add -f dist
 git commit -m "Code built at ${rev}"
 git push -q upstream HEAD:build
