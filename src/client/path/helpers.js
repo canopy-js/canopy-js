@@ -32,4 +32,4 @@ function pathForSectionElement(sectionElement) {
   return pathArray;
 }
 
-export { pathOrDefaultTopic, pathForSectionElement, parsePathString, pathStringFor};
+export { pathOrDefaultTopic, pathForSectionElement };
