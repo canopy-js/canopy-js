@@ -55,6 +55,7 @@ const shortcutRelationships = {
 
   'return': moveDownOrRedirect,
   'command-return': moveDownOrRedirect.bind(null, true),
+  'command-alt-return': moveDownOrRedirect.bind(null, true, true),
 
   'tab': depthFirstSearch.bind(null, 1, false, false),
   'alt-tab': depthFirstSearch.bind(null, 1, true, true),
