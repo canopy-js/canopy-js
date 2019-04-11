@@ -42,11 +42,7 @@ module.exports = {
   },
 
   stats: { colors: true },
-  node: {
-   fs: "empty"
-  },
   target: 'node',
-  externals: [nodeExternals()],
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
