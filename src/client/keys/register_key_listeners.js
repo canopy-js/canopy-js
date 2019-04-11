@@ -6,7 +6,6 @@ import {
   moveRightward,
   moveDownOrRedirect,
   depthFirstSearch,
-  reverseDepthFirstSearch,
   goToEnclosingTopic,
   goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
