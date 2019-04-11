@@ -40,8 +40,8 @@ EOF
     done
 
     cd build
-    for CURRENT_TOPIC_PATH in `find "." -mindepth 1 ! -name '*_data' -type d`; do
-      for TOPIC_TO_ALIAS_PATH in `find "." -mindepth 1 ! -name '*_data' -type d`; do
+    for CURRENT_TOPIC_PATH in `find "." -mindepth 1 ! -name '*data' -type d`; do
+      for TOPIC_TO_ALIAS_PATH in `find "." -mindepth 1 ! -name '*data' -type d`; do
         if [ "$CANOPY_LOGGING" ]; then
           echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
         fi
