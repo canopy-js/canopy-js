@@ -25,4 +25,4 @@ deploy:
 branches:
     only:
     - master
-    - /\d+\.\d+[a-z]/
+    - /\d+\.\d+\.\d+[a-z]?/
