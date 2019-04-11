@@ -76,7 +76,6 @@ init)
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .canopy_default_topic
-  echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/canopy-js/script/snake_case.js
   echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/canopy-js/script/snake_case.js)
   echo
   echo "If you will be hosting Canopy with a static assets server,"
@@ -86,6 +85,7 @@ init)
   echo "Otherwise, just press return."
   read PATH_PREFIX
   echo $PATH_PREFIX > .canopy_path_prefix
+  echo "All done. You might want to initialize a git repository with \`git init\`"
   ;;
 watch)
   command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
