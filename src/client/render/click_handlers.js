@@ -1,6 +1,8 @@
 import updateView from 'display/update_view';
 import { sectionElementOfLink } from 'helpers/getters';
-import { pathForSectionElement, parsePathString } from 'path/helpers'
+import { pathForSectionElement } from 'path/helpers';
+import parsePathString from 'path/parse_path_string';
+import pathStringFor from 'path/path_string_for';
 
 const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
   return (e) => {
@@ -12,43 +14,43 @@ const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
       pathArray.pop();
       let newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
       pathArray.push(newTuple);
-
-      updateView(pathArray);
     } else {
       pathArray.pop();
       let newTuple = [topicName, targetSubtopic];
       pathArray.push(newTuple);
-
-      updateView(pathArray);
     }
+
+    updateView(pathArray);
   }
 }
 
 const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
   return (e) => {
+    debugger;
+
     e.preventDefault();
 
+    let pathArray
     if (e.altKey) {
-      let pathArray = pathForSectionElement(sectionElementOfLink(linkElement))
+      pathArray = pathForSectionElement(sectionElementOfLink(linkElement))
 
-      if (linkElement.classList.contains('canopy-open-link')) {
-        return updateView(
-          pathArray,
-        );
-      } else {
+      if (!linkElement.classList.contains('canopy-open-link')) {
         pathArray.push([
           linkElement.dataset.targetTopic,
           linkElement.dataset.targetSubtopic
         ]);
-
-        return updateView(
-          pathArray,
-        );
       }
     } else {
-      updateView(
-        [[targetTopic, targetSubtopic]]
+      pathArray = [[targetTopic, targetSubtopic]];
+    }
+
+    if (e.metaKey) {
+      window.open(
+        location.origin + pathStringFor(pathArray),
+        '_blank'
       );
+    } else {
+      updateView(pathArray)
     }
   }
 }
