@@ -164,15 +164,23 @@ function moveRightward() {
   );
 }
 
-function moveDownOrRedirect(newTab) {
+function moveDownOrRedirect(newTab, altKey) {
   if (selectedLink().dataset.type === 'local' ||
       selectedLink().dataset.type === 'redundant-parent') {
     return moveDownward(false);
   } else if (selectedLink().dataset.type === 'global') {
-    let pathArray = [[
-      selectedLink().dataset.targetTopic,
-      selectedLink().dataset.targetSubtopic
-    ]];
+    let pathArray;
+    if (altKey) {
+      pathArray = parsePathString().concat([[
+        selectedLink().dataset.targetTopic,
+        selectedLink().dataset.targetSubtopic
+      ]])
+    } else {
+      pathArray= [[
+        selectedLink().dataset.targetTopic,
+        selectedLink().dataset.targetSubtopic
+      ]];
+    }
 
     if (newTab) {
       let pathString = pathStringFor(pathArray);
@@ -374,7 +382,6 @@ export {
   moveRightward,
   moveDownOrRedirect,
   depthFirstSearch,
-  reverseDepthFirstSearch,
   goToEnclosingTopic,
   goToParentOfEnclosingTopic
 };
