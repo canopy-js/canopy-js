@@ -70,6 +70,10 @@
         text-decoration: underline #4078c0;
         color: #4078c0;
         text-shadow: .8px 0px 0px #4078c0;
+
+        &.canopy-open-link {
+          text-decoration: none;
+        }
       }
 
       &.canopy-open-link {
