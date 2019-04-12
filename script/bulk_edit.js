@@ -33,16 +33,21 @@ function generateBulkFile(useDotfile) {
   }
 
   let selectedFilesPerArgument = argumentArray.map(function(argumentString) {
+    if (argumentString.match(/^\/?topics/)) {
+      argumentString = argumentString.match(/^\/?topics(.*$)/)[1];
+    }
+
     let pathToArgument = process.cwd() +
       '/topics' +
-      (argumentString.match(/\/$/) ? '' : '/') +
+      (argumentString.match(/^\//) ? '' : '/') +
       argumentString;
+
+    console.log(pathToArgument);
 
     if (argumentString.match(/\/$/)) {
       if (argumentString === './') {
         pathToArgument = process.cwd() + '/topics';
       }
-
       // argument is directory with trailing slash, recursive
       return recursiveReadSync(pathToArgument).filter(function(path){
         return path.endsWith('.dgs');
@@ -57,7 +62,11 @@ function generateBulkFile(useDotfile) {
       // argument is directory with no trailing slash, just its contents
       return fs.readdirSync(pathToArgument).filter(function(path){
         return path.endsWith('.dgs');
-      }).map(function(fileName) { return pathToArgument + '/' + fileName });
+      }).map(function(fileName) {
+        return pathToArgument +
+          (pathToArgument.endsWith('/') ? '' : '/') +
+          fileName;
+      })
     }
   });
 
@@ -66,10 +75,18 @@ function generateBulkFile(useDotfile) {
     filesToErase[path.match(/(topics.+)/)[1]] = true;
   });
 
+  console.log(selectedFilesPerArgument);
+
   let tempFileData = selectedFilesPerArgument.map(function(filePathArray) {
     return filePathArray.sort(pathComparator).map(function(filePath) {
       let fileContents = fs.readFileSync(filePath, 'utf8');
-      let displayPath = filePath.match(/(topics.*\/)\w+\.dgs/)[1];
+      let keyMatch = fileContents.match(/^([^:.,;]+):\s+/);
+      let displayPath;
+      if (keyMatch) {
+        displayPath = filePath.match(/(topics.*\/)\w+\.dgs/)[1]; // topic without filename
+      } else {
+        displayPath = filePath.match(/(topics.*\/\w+)\.dgs/)[1]; // category/note, filename in path
+      }
       return tempFileString = displayPath + "\n\n" + fileContents + "\n\n";
     }).join('');
   }).join('');
@@ -135,11 +152,19 @@ function reconstructDgsFilesFromTempFile(tempFileContents, filesToErase) {
       dgsFileContentsWithDisplaySpacing = dgsFileContentsWithDisplaySpacing + "\n";
     }
     let dgsFileContentsWithOutDisplaySpacing = dgsFileContentsWithDisplaySpacing.split("\n").slice(0, -2).join("\n");
-    let fileTopicKey = dgsFileContentsWithOutDisplaySpacing.match(/^([^:.,;]+):\s+/)[1];
-    let filenameString = removeMarkdownTokens(fileTopicKey).replace(/ /g, '_').toLowerCase().trim();
-    let finalPath = pathToFile + filenameString + '.dgs';
-    filesToErase[finalPath] = false;
+    let keyMatch = dgsFileContentsWithOutDisplaySpacing.match(/^([^:.,;]+):\s+[^a-z]*[A-Z]/);
+    let filenameString;
 
+    if (keyMatch) { // If key, name the file for the key of the first paragraph
+      let fileTopicKey = keyMatch[1];
+      filenameString = removeMarkdownTokens(fileTopicKey).replace(/ /g, '_').toLowerCase().trim();
+      finalPath = pathToFile + filenameString + '.dgs';
+    } else { // Otherwise, the last path segment is the filename
+      let pathWithoutTrailingSlash = pathToFile.match(/((?:.(?!\/$))+.)/)[0];
+      finalPath = pathWithoutTrailingSlash + '.dgs';
+    }
+
+    filesToErase[finalPath] = false;
     mkdirp(pathToFile);
 
     let previousValue;
