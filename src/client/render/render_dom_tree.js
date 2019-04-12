@@ -4,6 +4,7 @@ import setPath from 'path/set_path';
 import { paragraphElementOfSection, linkOfSectionByTarget } from 'helpers/getters';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import BlockRenderers from 'render/block_renderers';
+import eagerLoad from 'requests/eager_load';
 
 function renderDomTree(renderContext) {
   let {
@@ -15,8 +16,8 @@ function renderDomTree(renderContext) {
 
   renderContext.subtopicsAlreadyRendered[subtopicName] = true;
   renderContext.promises = [];
-  renderContext.parentLinkSubtreeCallback = generateParentLinkSubtreeCallback(sectionElement, renderContext);
-  renderContext.globalLinkSubtreeCallback = generateGlobalLinkSubtreeCallback(sectionElement, renderContext);
+  renderContext.parentLinkSubtreeCallback = parentLinkSubtreeCallback(sectionElement, renderContext);
+  renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
   let blocksOfParagraph = paragraphsBySubtopic[subtopicName];
   let blockElements = renderElementsForBlocks(blocksOfParagraph, renderContext);
@@ -32,7 +33,7 @@ function generateIsSubtopicAlreadyRenderedCallback(subtopicsAlreadyRendered) {
   return (targetSubtopic) => subtopicsAlreadyRendered.hasOwnProperty(targetSubtopic);
 }
 
-function generateParentLinkSubtreeCallback(sectionElement, renderContext) {
+function parentLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
@@ -48,7 +49,7 @@ function generateParentLinkSubtreeCallback(sectionElement, renderContext) {
   }
 }
 
-function generateGlobalLinkSubtreeCallback(sectionElement, renderContext) {
+function globalLinkSubtreeCallback(sectionElement, renderContext) {
   let {
     pathArray,
     pathDepth,

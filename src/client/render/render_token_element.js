@@ -2,6 +2,7 @@ import { slugFor } from 'helpers/identifiers';
 import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
+import eagerLoad from 'requests/eager_load';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -84,6 +85,8 @@ function renderGlobalLink(token, renderContext) {
     subtopicName,
     globalLinkSubtreeCallback
   } = renderContext;
+
+  window.setTimeout(() => eagerLoad(token.targetTopic), 0);
 
   let linkElement = createGlobalLinkElement(token, pathArray);
 
