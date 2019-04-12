@@ -26,8 +26,6 @@ const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
 
 const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
   return (e) => {
-    debugger;
-
     e.preventDefault();
 
     let pathArray
