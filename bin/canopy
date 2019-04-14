@@ -128,7 +128,7 @@ watch)
     exit 1
   fi
 
-  canopy build;;
+  canopy build $2;;
 serve)
   canopy build
   node $CANOPY_LOCATION/canopy-js/script/server.js ${2:-3000}
