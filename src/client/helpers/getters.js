@@ -2,10 +2,16 @@ import { slugFor } from 'helpers/identifiers';
 import { isInRootSection } from 'helpers/booleans';
 
 const canopyContainer = document.getElementById('_canopy');
+if(!canopyContainer) {
+  throw new Error('Page must have an html element with id "_canopy"');
+}
 
-const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
+const defaultTopic = document.getElementById('_canopy').dataset.defaultTopic;
+if(!defaultTopic) {
+  throw new Error('HTML element with id "_canopy" must have a default topic data attribute');
+}
 
-const pathPrefix = canopyContainer && canopyContainer.dataset.pathPrefix;
+const pathPrefix = document.getElementById('_canopy').dataset.pathPrefix;
 
 const sectionElementOfPath = (pathArray) => {
   let currentNode = canopyContainer;
