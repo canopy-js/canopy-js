@@ -7,15 +7,18 @@ function buildNamespaceObject(pathList) {
 
   pathList.forEach(function(path){
     let paragraphsWithKeys = paragraphsOfFile(path);
-    let currentTopic = removeMarkdownTokens(
-      extractKeyAndParagraph(paragraphsWithKeys[0]).key
-    );
+    let topicKeyAndParagraph = extractKeyAndParagraph(paragraphsWithKeys[0]);
+    if (!topicKeyAndParagraph.key) return;
 
+    let currentTopic = removeMarkdownTokens(topicKeyAndParagraph.key);
     namespacesObject[currentTopic] = {};
 
     paragraphsWithKeys.forEach(function(paragraphWithKey) {
-      let key = removeMarkdownTokens(paragraphWithKey.split(':')[0]);
-      namespacesObject[currentTopic][key] = true;
+      let keyAndParagraph = extractKeyAndParagraph(paragraphWithKey);
+      if (keyAndParagraph.key) {
+        let key = removeMarkdownTokens(keyAndParagraph.key);
+        namespacesObject[currentTopic][key] = true;
+      }
     });
   });
 

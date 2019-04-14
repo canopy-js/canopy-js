@@ -2,7 +2,6 @@ import fs from 'fs';
 import listDgsFilesRecursive from 'helpers/list_dgs_files_recursive.js';
 import buildNamespaceObject from 'components/build_namespace_object.js';
 import jsonForDgsFile from 'components/json_for_dgs_file.js';
-import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import topicKeyOfFile from 'helpers/topic_key_of_file';
 import { slugFor } from 'helpers/identifiers';
 import rimraf from 'rimraf';
@@ -17,6 +16,8 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
   fs.mkdirSync(destinationDataDirectory);
 
   dgsFilePaths.forEach(function(path) {
+    if (!topicKeyOfFile(path)) return; // For note files
+
     let json = jsonForDgsFile(path, namespaceObject);
     let dgsFileNameWithoutExtension = path.match(/\/(\w+)\.\w+$/)[1];
 
