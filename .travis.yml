@@ -4,6 +4,7 @@ install:
 - npm run build-prod
 - npm install -g .
 script:
+- npm run test
 - ls $(npm root -g)/canopy-js/dist
 - cd docs
 - canopy build --for-static-assets
