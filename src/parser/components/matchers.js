@@ -53,6 +53,7 @@ function localReferenceMatcher(prefixObject, parsingContext) {
 
 function globalReferenceMatcher(prefixObject, parsingContext, parseAllTokens) {
   let { topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces } = parsingContext;
+
   if (
     topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
     currentTopic !== prefixObject.substringAsKey
