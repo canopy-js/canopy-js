@@ -12,5 +12,5 @@ let projectDir = process.argv[2].replace(/\/$/, '');
 jsonForProjectDirectory(
   projectDir + '/topics',
   projectDir + '/build',
-  process.argv[3] !== '--without-folders'
+  process.argv[3] === '--for-static-assets'
 );
