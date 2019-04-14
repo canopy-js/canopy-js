@@ -282,3 +282,43 @@ test('A global link cannot cause recognition of an earlier import reference that
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');
 });
+
+test('it matches import references whose topics were in earlier clauses', () => {
+  let parsingContext = {
+    topicSubtopics: {
+      'Idaho': {
+        'The state capital': true,
+        'The state flower': true
+      },
+      'Wyoming': {
+        'Yellowstone National Park': true
+      }
+    },
+    currentTopic: 'Idaho',
+    currentSubtopic: 'The state capital',
+    avaliableNamespaces: ['Wyoming'],
+    markdownOnly: false
+  }
+
+  let clauseWithPunctuation = "I like Yellowstone National Park.";
+
+  let result = parseClause(
+    clauseWithPunctuation,
+    parsingContext
+  )
+
+  expect(result.length).toEqual(3);
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('I like ');
+
+  expect(result[1].type).toEqual('global');
+  expect(result[1].text).toEqual('Yellowstone National Park');
+  expect(result[1].targetTopic).toEqual('Wyoming');
+  expect(result[1].targetSubtopic).toEqual('Yellowstone National Park');
+  expect(result[1].enclosingTopic).toEqual('Idaho');
+  expect(result[1].enclosingSubtopic).toEqual('The state capital');
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual('.');
+});

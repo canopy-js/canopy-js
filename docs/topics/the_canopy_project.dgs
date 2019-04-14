@@ -1,4 +1,6 @@
-The Canopy project: Canopy is a Javascript library for creating and browsing diagraph. There are problems that Canopy is intended to solve. There are design principles of Canopy. There are potential applications of Canopy. These are instructions on how to use Canopy. This is explanation of the Canopy codebase. There are best practices for making diagraph.
+The Canopy project: Canopy is a Javascript library for creating and browsing diagraph. There are motivations for Canopy. There are design principles of Canopy. There are potential applications of Canopy. These are instructions on how to use Canopy. There is a Canopy codebase.
+
+-
 
 Should this ^ be about canopy, or diagraph?
 
