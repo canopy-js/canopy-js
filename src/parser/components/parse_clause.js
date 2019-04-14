@@ -18,7 +18,7 @@ function parseClause(clauseWithPunctuation, parsingContext) {
       parseAllTokens
     )
 
-    if (tokenSetValid(result)) {
+    if (tokenSetValid(result, parsingContext)) {
       if (!tokensOfClause) {
         tokensOfClause = result;
         parsingContext.avaliableNamespaces = newParsingContext.avaliableNamespaces;
@@ -81,11 +81,17 @@ function findMatch(prefixObjects, parsingContext, parseAllTokens) {
   throw "No token matched";
 }
 
-function tokenSetValid(tokenArray) {
+function tokenSetValid(tokenArray, parsingContext) {
   let result = true;
   tokenArray.forEach((token1) => {
     if (token1.type === 'global') {
-      if (!tokenArray.find((token2) => token2.type === 'global' && token1.targetTopic === token2.targetSubtopic)) {
+      if (!tokenArray.find(
+        (token2) =>
+          (token2.type === 'global' &&
+            token1.targetTopic === token2.targetSubtopic) ||
+            parsingContext.avaliableNamespaces.includes(token1.targetTopic)
+        )
+      ) {
         result = false;
       }
     }
