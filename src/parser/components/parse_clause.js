@@ -83,14 +83,14 @@ function findMatch(prefixObjects, parsingContext, parseAllTokens) {
 
 function tokenSetValid(tokenArray, parsingContext) {
   let result = true;
+
   tokenArray.forEach((token1) => {
     if (token1.type === 'global') {
       if (!tokenArray.find(
-        (token2) =>
-          (token2.type === 'global' &&
-            token1.targetTopic === token2.targetSubtopic) ||
-            parsingContext.avaliableNamespaces.includes(token1.targetTopic)
-        )
+        (token2) => token2.type === 'global' &&
+          token1.targetTopic === token2.targetTopic &&
+          token1.targetTopic === token2.targetSubtopic
+        ) && !parsingContext.avaliableNamespaces.includes(token1.targetTopic)
       ) {
         result = false;
       }
