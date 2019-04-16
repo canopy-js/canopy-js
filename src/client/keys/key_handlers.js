@@ -88,7 +88,7 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      { selectALink: true }
+      { selectALink: false }
     );
   }
 
