@@ -170,13 +170,21 @@ function moveDownOrRedirect(newTab, altKey) {
     return moveDownward(false);
   } else if (selectedLink().dataset.type === 'global') {
     let pathArray;
+    let options;
+
     if (altKey) {
-      pathArray = parsePathString().concat([[
-        selectedLink().dataset.targetTopic,
-        selectedLink().dataset.targetSubtopic
-      ]])
+      if (selectedLinkIsOpenGlobalLink()) {
+        let linkElement = parentLinkOfSection(currentSection());
+        options = { linkSelectionData: metadataFromLink(linkElement) }
+        pathArray = parsePathString().slice(0, -1);
+      } else {
+        pathArray = parsePathString().concat([[
+          selectedLink().dataset.targetTopic,
+          selectedLink().dataset.targetSubtopic
+        ]])
+      }
     } else {
-      pathArray= [[
+      pathArray = [[
         selectedLink().dataset.targetTopic,
         selectedLink().dataset.targetSubtopic
       ]];
@@ -192,7 +200,7 @@ function moveDownOrRedirect(newTab, altKey) {
 
     updateView(
       pathArray,
-      { selectALink: true }
+      options || { selectALink: true }
     );
   } else if (selectedLink().dataset.type === 'url') {
     if (newTab) {
