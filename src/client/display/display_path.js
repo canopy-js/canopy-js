@@ -42,8 +42,8 @@ const displayPath = (pathArray, displayOptions) => {
   let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  storeLinkSelectionInSession(linkToSelect);
   if (!displayOptions.originatesFromPopStateEvent) setPath(addLinkSelection(pathArray, linkToSelect));
+  storeLinkSelectionInSession(linkToSelect);
 
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
