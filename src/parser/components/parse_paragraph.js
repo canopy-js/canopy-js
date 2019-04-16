@@ -9,13 +9,14 @@ import {
   footnoteBlockFor
 } from 'components/block_parsers';
 
-function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, currentTopic) {
+function parseParagraph(textWithoutKey, topicSubtopics, currentSubtopic, currentTopic, localReferenceGraph) {
   let parsingContext = {
     topicSubtopics,
     currentSubtopic,
     currentTopic,
     avaliableNamespaces: [],
-    markdownOnly: false
+    markdownOnly: false,
+    localReferenceGraph
   }
   let linesContainerObjects = linesByBlockOf(textWithoutKey);
 

@@ -3,10 +3,12 @@ import parseParagraph from 'components/parse_paragraph';
 import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import { removeMarkdownTokens } from 'helpers/identifiers';
+import subsumingPathExists from 'helpers/subsuming_path_exists';
 
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
+  let localReferenceGraph = {};
   let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
   let topicOfFile = removeMarkdownTokens(displayTopicOfFile);
   if (!topicOfFile) { return ''; }
@@ -22,10 +24,15 @@ function jsonForDgsFile(path, namespaceObject) {
       textWithoutKey,
       namespaceObject,
       currentSubtopic,
-      topicOfFile
+      topicOfFile,
+      localReferenceGraph,
     );
 
-    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
+    if (subsumingPathExists(topicOfFile, currentSubtopic, localReferenceGraph)) {
+      tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
+    } else {
+      throw `No local path exists from topic "${topicOfFile}" to "${currentSubtopic}"`;
+    }
   });
 
   let jsonObject = {
