@@ -88,7 +88,10 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      { selectALink: false }
+      {
+        selectALink: false,
+        selectLinkIfGlobalParentHasNoChildren: true
+      }
     );
   }
 

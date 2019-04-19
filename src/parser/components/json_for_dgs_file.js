@@ -8,12 +8,10 @@ import subsumingPathExists from 'helpers/subsuming_path_exists';
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
-  let localReferenceGraph = {};
   let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
   let topicOfFile = removeMarkdownTokens(displayTopicOfFile);
-  if (!topicOfFile) { return ''; }
 
-  paragraphsWithKeys.forEach(function(paragraphWithKey){
+  paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if (!paragraphData.key) { return; }
 
@@ -22,17 +20,15 @@ function jsonForDgsFile(path, namespaceObject) {
 
     let tokensOfParagraph = parseParagraph(
       textWithoutKey,
-      namespaceObject,
-      currentSubtopic,
-      topicOfFile,
-      localReferenceGraph,
+      {
+        topicSubtopics: namespaceObject,
+        currentSubtopic,
+        currentTopic: topicOfFile,
+        avaliableNamespaces: [],
+      }
     );
 
-    if (subsumingPathExists(topicOfFile, currentSubtopic, localReferenceGraph)) {
-      tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
-    } else {
-      throw `No local path exists from topic "${topicOfFile}" to "${currentSubtopic}"`;
-    }
+    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
   });
 
   let jsonObject = {

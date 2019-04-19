@@ -34,15 +34,16 @@ const BaseMatchers = [
 
 function localReferenceMatcher(prefixObject, parsingContext) {
   let { topicSubtopics, currentTopic, currentSubtopic, localReferenceGraph } = parsingContext;
-
   if (
     topicSubtopics[currentTopic].
       hasOwnProperty(prefixObject.substringAsKey) &&
     currentSubtopic !== prefixObject.substringAsKey &&
     currentTopic !== prefixObject.substringAsKey
   ){
-    localReferenceGraph[currentSubtopic] = localReferenceGraph[currentSubtopic] || [];
-    localReferenceGraph[currentSubtopic].push(prefixObject.substringAsKey);
+    if (localReferenceGraph) {
+      localReferenceGraph[currentSubtopic] = localReferenceGraph[currentSubtopic] || [];
+      localReferenceGraph[currentSubtopic].push(prefixObject.substringAsKey);
+    }
 
     return new LocalReferenceToken(
       currentTopic,
@@ -86,6 +87,7 @@ function importReferenceMatcher(prefixObject, parsingContext) {
     currentSubtopic,
     avaliableNamespaces
   } = parsingContext;
+
 
   for (let i = 0; i < avaliableNamespaces.length; i++) {
     let namespaceNameAsKey = avaliableNamespaces[i];
