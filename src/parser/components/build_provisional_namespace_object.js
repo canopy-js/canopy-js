@@ -2,7 +2,7 @@ import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
-function buildNamespaceObject(pathList) {
+function buildProvisionalNamespaceObject(pathList) {
   let namespacesObject = {};
 
   pathList.forEach(function(path){
@@ -25,4 +25,4 @@ function buildNamespaceObject(pathList) {
   return namespacesObject;
 }
 
-export default buildNamespaceObject;
+export default buildProvisionalNamespaceObject;

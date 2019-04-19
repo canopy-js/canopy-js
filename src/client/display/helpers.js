@@ -11,6 +11,8 @@ import {
   findLinkFromMetadata
 } from 'helpers/getters';
 
+import { sectionHasNoChildLinks } from 'helpers/booleans';
+
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 
@@ -27,6 +29,7 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
   let {
     linkSelectionData,
     selectALink,
+    selectLinkIfGlobalParentHasNoChildren
   } = displayOptions;
 
   if (linkSelectionData) {
@@ -38,6 +41,10 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
       return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
         parentLinkOfSection(sectionElementOfCurrentPath);
     } else {
+      return parentLinkOfSection(sectionElementOfCurrentPath);
+    }
+  } else if (selectLinkIfGlobalParentHasNoChildren) {
+    if (sectionHasNoChildLinks(sectionElementOfCurrentPath)) {
       return parentLinkOfSection(sectionElementOfCurrentPath);
     }
   } else {
