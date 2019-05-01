@@ -1,1 +1,0 @@
-What the Canopy library does: The Canopy library takes diagraph script files and turns them into JSON that is made availiable by a Canopy server that is then consumed by a Javascript web application.

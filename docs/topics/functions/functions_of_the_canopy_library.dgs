@@ -1,0 +1,5 @@
+Functions of the Canopy library: There are certain functions the Canopy library performs, like run a Canopy server.
+
+Canopy server: A Canopy server is a server that serves and supports the Canopy.js library. The Canopy server can be a static assets server or a node.js script. The server delivers the Canopy.js library on the first request, and then handles subsequent requests from the browser for JSON data files. The Canopy server is necessary to view an example of the Canopy project.
+
+Diagraph script: Diagraph script is a natural language text format that Canopy uses to construct a Canopy website.

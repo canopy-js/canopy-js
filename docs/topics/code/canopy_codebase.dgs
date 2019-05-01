@@ -6,4 +6,4 @@ The front-end code can be found in the repository: The front-end code can be fou
 
 Canopy parser library: The Canopy codebase contains the backend code for the parser that Canopy uses to convert diagraph script into the JSON that is consumed by the front-end library.
 
-Canopy command-line interface: Canopy has a command-line interface that you can use to set up a Canopy project, convert dgs files into JSON, and run a Canopy server.
+Canopy command-line interface: Canopy has a command-line interface that you can use to set up a Canopy project, convert dgs files into JSON, and run a Canopy server!
