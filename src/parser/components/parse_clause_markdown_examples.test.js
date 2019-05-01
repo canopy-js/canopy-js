@@ -19,7 +19,6 @@ test('it creates markdown urls', () => {
   expect(result[1].type).toEqual('url');
   expect(result[1].text).toEqual('a markdown link');
   expect(result[1].url).toEqual('google.com');
-  expect(result[1].urlSubtopic).toEqual('The state capital');
 
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');
@@ -44,7 +43,6 @@ test('markdown urls with empty parens use url as link', () => {
   expect(result[1].type).toEqual('url');
   expect(result[1].text).toEqual('google.com');
   expect(result[1].url).toEqual('google.com');
-  expect(result[1].urlSubtopic).toEqual('The state capital');
 
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');
@@ -85,7 +83,6 @@ test('it creates markdown automatic urls', () => {
   expect(result[1].type).toEqual('url');
   expect(result[1].text).toEqual('http://google.com');
   expect(result[1].url).toEqual('http://google.com');
-  expect(result[1].urlSubtopic).toEqual('The state capital');
 
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');
