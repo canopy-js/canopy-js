@@ -114,12 +114,17 @@ function storeFilesToErase() {
   fs.writeFileSync('.files_to_erase', JSON.stringify(filesToErase));
 }
 
+function eraseTempFiles() {
+  fs.unlinkSync('canopy_bulk_temp');
+  fs.unlinkSync('.files_to_erase');
+}
+
 function openEditorAndWriteOnSave(filesToErase, trailingNewlinesPerFile) {
   editor('.canopy_bulk_temp', function (code, sig) {
     if (code === 0) {
       let tempFileContents = fs.readFileSync('.canopy_bulk_temp', 'utf8');
       reconstructDgsFilesFromTempFile(tempFileContents, filesToErase, trailingNewlinesPerFile);
-      fs.unlinkSync('.canopy_bulk_temp');
+      eraseTempFiles();
     } else {
       throw "Error occured when editing canopy bulk temp file";
     }
@@ -136,8 +141,7 @@ function readTempfileAndUpdateDgs() {
   let tempFileContents = fs.readFileSync('canopy_bulk_temp', 'utf8');
   let filesToErase = JSON.parse(fs.readFileSync('.files_to_erase', 'utf8'));
   reconstructDgsFilesFromTempFile(tempFileContents, filesToErase);
-  fs.unlinkSync('canopy_bulk_temp');
-  fs.unlinkSync('.files_to_erase');
+  eraseTempFiles();
 }
 
 function reconstructDgsFilesFromTempFile(tempFileContents, filesToErase, trailingNewlinesPerFile) {
