@@ -77,7 +77,6 @@ init)
   echo ".canopy_watch.pid" >> .gitignore
   echo ".canopy_bulk_temp" >> .gitignore
   echo "canopy_bulk_temp" >> .gitignore
-  echo
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .canopy_default_topic
@@ -86,8 +85,8 @@ init)
   echo "If you will be hosting Canopy with a static assets server,"
   echo "and Canopy will be hosted from a subdirectory of the path,"
   echo "(eg, example.com/subdirectory/Topic, as opposed to example.com/Topic),"
-  echo "type the prefix below (without leading or trailing slashes)."
-  echo "Otherwise, just press return."
+  echo "type the prefix (eg, subdirectory) below, without leading or trailing slashes."
+  echo "Otherwise, (or if you're not sure,) just press return."
   read PATH_PREFIX
   echo $PATH_PREFIX > .canopy_path_prefix
   echo "All done. You might want to initialize a git repository with \`git init\`"
