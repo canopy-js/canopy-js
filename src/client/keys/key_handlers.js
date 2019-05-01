@@ -209,12 +209,12 @@ function moveDownOrRedirect(newTab, altKey) {
           selectedLink().dataset.targetSubtopic
         ]])
       }
-    } else { // redirect to new topic page
+    } else { // redirecting to new topic page
       pathArray = [[
         selectedLink().dataset.targetTopic,
         selectedLink().dataset.targetSubtopic
       ]];
-      options = { selectALink: false };
+      options = { selectALink: true };
     }
 
     if (newTab) {
