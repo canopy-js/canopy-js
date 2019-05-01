@@ -33,46 +33,50 @@ const BaseMatchers = [
 ]
 
 function localReferenceMatcher(prefixObject, parsingContext) {
-  let { topicSubtopics, currentTopic, currentSubtopic } = parsingContext;
+  let { topicSubtopics, currentTopic, currentSubtopic, localReferenceGraph } = parsingContext;
+  if (topicSubtopics[currentTopic].hasOwnProperty(prefixObject.substringAsKey)) {
+    if (currentSubtopic !== prefixObject.substringAsKey &&
+        currentTopic !== prefixObject.substringAsKey) {
+      if (localReferenceGraph) {
+        localReferenceGraph[currentSubtopic] = localReferenceGraph[currentSubtopic] || [];
+        localReferenceGraph[currentSubtopic].push(prefixObject.substringAsKey);
+      }
 
-  if (
-    topicSubtopics[currentTopic].
-      hasOwnProperty(prefixObject.substringAsKey) &&
-    currentSubtopic !== prefixObject.substringAsKey &&
-    currentTopic !== prefixObject.substringAsKey
-  ){
-    return new LocalReferenceToken(
-      currentTopic,
-      prefixObject.substringAsKey,
-      currentTopic,
-      currentSubtopic,
-      prefixObject.substring,
-    );
+      return new LocalReferenceToken(
+        currentTopic,
+        prefixObject.substringAsKey,
+        currentTopic,
+        currentSubtopic,
+        prefixObject.substring,
+      );
+    } else {
+      return new TextToken(prefixObject.substring);
+    }
   }
 }
 
 function globalReferenceMatcher(prefixObject, parsingContext, parseAllTokens) {
   let { topicSubtopics, currentTopic, currentSubtopic, avaliableNamespaces } = parsingContext;
 
-  if (
-    topicSubtopics.hasOwnProperty(prefixObject.substringAsKey) &&
-    currentTopic !== prefixObject.substringAsKey
-  ) {
+  if (topicSubtopics.hasOwnProperty(prefixObject.substringAsKey)) {
+    if (currentTopic !== prefixObject.substringAsKey) {
+      if (!avaliableNamespaces.includes(prefixObject.substringAsKey)) {
+        parseAllTokens({
+          ...parsingContext,
+          avaliableNamespaces: avaliableNamespaces.slice().concat([prefixObject.substringAsKey])
+        });
+      }
 
-    if (!avaliableNamespaces.includes(prefixObject.substringAsKey)) {
-      parseAllTokens({
-        ...parsingContext,
-        avaliableNamespaces: avaliableNamespaces.slice().concat([prefixObject.substringAsKey])
-      });
+      return new GlobalReferenceToken(
+        prefixObject.substringAsKey,
+        prefixObject.substringAsKey,
+        currentTopic,
+        currentSubtopic,
+        prefixObject.substring,
+      );
+    } else {
+      return new TextToken(prefixObject.substring);
     }
-
-    return new GlobalReferenceToken(
-      prefixObject.substringAsKey,
-      prefixObject.substringAsKey,
-      currentTopic,
-      currentSubtopic,
-      prefixObject.substring,
-    );
   }
 }
 
@@ -83,6 +87,7 @@ function importReferenceMatcher(prefixObject, parsingContext) {
     currentSubtopic,
     avaliableNamespaces
   } = parsingContext;
+
 
   for (let i = 0; i < avaliableNamespaces.length; i++) {
     let namespaceNameAsKey = avaliableNamespaces[i];
@@ -119,8 +124,7 @@ function markdownHyperlinkMatcher(prefixObject, parsingContext) {
   if (match) {
     return new markdownUrlToken(
       match[1],
-      match[2],
-      parsingContext.currentSubtopic
+      match[2]
     )
   }
 }

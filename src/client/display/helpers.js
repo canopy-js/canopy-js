@@ -11,6 +11,8 @@ import {
   findLinkFromMetadata
 } from 'helpers/getters';
 
+import { sectionHasNoChildLinks } from 'helpers/booleans';
+
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 
@@ -26,7 +28,7 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
 function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
   let {
     linkSelectionData,
-    selectALink,
+    selectALink
   } = displayOptions;
 
   if (linkSelectionData) {
@@ -34,12 +36,8 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
   }
 
   if (selectALink) {
-    if (lastPathSegmentIsATopicRoot(pathArray)) {
-      return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
-        parentLinkOfSection(sectionElementOfCurrentPath);
-    } else {
-      return parentLinkOfSection(sectionElementOfCurrentPath);
-    }
+    return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
+      parentLinkOfSection(sectionElementOfCurrentPath);
   } else {
     return null;
   }
@@ -60,11 +58,11 @@ function createOrReplaceHeader(topicName) {
 };
 
 function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath, displayOptions) {
-  if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
-    return childSectionElementOfParentLink(linkToSelect);
-  } else {
+  // if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
+    // return childSectionElementOfParentLink(linkToSelect);
+  // } else {
     return sectionElementOfCurrentPath;
-  }
+  // }
 }
 
 function displaySectionBelowLink(linkToSelect) {

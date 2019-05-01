@@ -3,15 +3,15 @@ import parseParagraph from 'components/parse_paragraph';
 import paragraphsOfFile from 'helpers/paragraphs_of_file';
 import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import { removeMarkdownTokens } from 'helpers/identifiers';
+import subsumingPathExists from 'helpers/subsuming_path_exists';
 
 function jsonForDgsFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
   let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
   let topicOfFile = removeMarkdownTokens(displayTopicOfFile);
-  if (!topicOfFile) { return ''; }
 
-  paragraphsWithKeys.forEach(function(paragraphWithKey){
+  paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if (!paragraphData.key) { return; }
 
@@ -20,9 +20,12 @@ function jsonForDgsFile(path, namespaceObject) {
 
     let tokensOfParagraph = parseParagraph(
       textWithoutKey,
-      namespaceObject,
-      currentSubtopic,
-      topicOfFile
+      {
+        topicSubtopics: namespaceObject,
+        currentSubtopic,
+        currentTopic: topicOfFile,
+        avaliableNamespaces: [],
+      }
     );
 
     tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
