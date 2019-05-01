@@ -28,8 +28,7 @@ function newNodeAlreadyPresent(anchorElement, domTree) {
 function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
   let {
     linkSelectionData,
-    selectALink,
-    selectLinkIfGlobalParentHasNoChildren
+    selectALink
   } = displayOptions;
 
   if (linkSelectionData) {
@@ -41,10 +40,6 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
       return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
         parentLinkOfSection(sectionElementOfCurrentPath);
     } else {
-      return parentLinkOfSection(sectionElementOfCurrentPath);
-    }
-  } else if (selectLinkIfGlobalParentHasNoChildren) {
-    if (sectionHasNoChildLinks(sectionElementOfCurrentPath)) {
       return parentLinkOfSection(sectionElementOfCurrentPath);
     }
   } else {

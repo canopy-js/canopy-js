@@ -88,10 +88,7 @@ function moveDownward(cycle) {
 
     return updateView(
       pathArray,
-      {
-        selectALink: false,
-        selectLinkIfGlobalParentHasNoChildren: true
-      }
+      { selectALink: true }
     );
   }
 
@@ -175,22 +172,23 @@ function moveDownOrRedirect(newTab, altKey) {
     let pathArray;
     let options;
 
-    if (altKey) {
-      if (selectedLinkIsOpenGlobalLink()) {
+    if (altKey) { // in-line topic mode
+      if (selectedLinkIsOpenGlobalLink()) { // If it is open, close it
         let linkElement = parentLinkOfSection(currentSection());
         options = { linkSelectionData: metadataFromLink(linkElement) }
         pathArray = parsePathString().slice(0, -1);
-      } else {
+      } else { // If it is closed, open it
         pathArray = parsePathString().concat([[
           selectedLink().dataset.targetTopic,
           selectedLink().dataset.targetSubtopic
         ]])
       }
-    } else {
+    } else { // redirect to new topic page
       pathArray = [[
         selectedLink().dataset.targetTopic,
         selectedLink().dataset.targetSubtopic
       ]];
+      options = { selectALink: false };
     }
 
     if (newTab) {
