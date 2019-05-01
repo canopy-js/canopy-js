@@ -33,11 +33,10 @@ function GlobalReferenceToken(
   this.enclosingSubtopic = enclosingSubtopic;
 }
 
-function markdownUrlToken(url, text, urlSubtopic) {
+function markdownUrlToken(url, text) {
   this.type = 'url';
   this.text = text || url;
   this.url = url;
-  this.urlSubtopic = urlSubtopic;
 }
 
 function markdownImageToken(alt, resourceUrl, title, anchorUrl) {

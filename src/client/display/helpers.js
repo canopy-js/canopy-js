@@ -36,12 +36,8 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
   }
 
   if (selectALink) {
-    if (lastPathSegmentIsATopicRoot(pathArray)) {
-      return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
-        parentLinkOfSection(sectionElementOfCurrentPath);
-    } else {
-      return parentLinkOfSection(sectionElementOfCurrentPath);
-    }
+    return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
+      parentLinkOfSection(sectionElementOfCurrentPath);
   } else {
     return null;
   }
@@ -62,11 +58,11 @@ function createOrReplaceHeader(topicName) {
 };
 
 function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath, displayOptions) {
-  if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
-    return childSectionElementOfParentLink(linkToSelect);
-  } else {
+  // if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
+    // return childSectionElementOfParentLink(linkToSelect);
+  // } else {
     return sectionElementOfCurrentPath;
-  }
+  // }
 }
 
 function displaySectionBelowLink(linkToSelect) {

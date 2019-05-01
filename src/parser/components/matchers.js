@@ -124,8 +124,7 @@ function markdownHyperlinkMatcher(prefixObject, parsingContext) {
   if (match) {
     return new markdownUrlToken(
       match[1],
-      match[2],
-      parsingContext.currentSubtopic
+      match[2]
     )
   }
 }

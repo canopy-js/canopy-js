@@ -36,42 +36,73 @@ import { deselectAllLinks } from 'display/helpers';
 
 function moveUpward() {
   let pathArray = parsePathString();
-  let linkElement;
-
-  if (selectedLinkIsOpenGlobalLink()) {
-    // Handle global link with inlined child with no links
+  if (selectedLinkIsOpenGlobalLinkWithNoChildren()) {
     pathArray.pop();
-    linkElement = selectedLink();
-  } else if (isPageRootSection(sectionElementOfLink(selectedLink()))) {
+    let linkElement = selectedLink();
+    return updateView(
+      pathArray,
+      { linkSelectionData: metadataFromLink(linkElement) }
+    );
+  }
+
+  if (selectedLinkIsOpenLocalLinkWithNoChildren()) {
+    let linkElement = selectedLink();
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], linkElement.dataset.enclosingSubtopic];
+    pathArray.push(newTuple);
+
+    return updateView(
+      pathArray,
+      { linkSelectionData: metadataFromLink(linkElement) }
+    );
+  }
+
+  if (isPageRootSection(sectionElementOfLink(selectedLink()))) {
     let sectionElement = sectionElementOfLink(selectedLink());
     pathArray = [[
       sectionElement.dataset.topicName,
       sectionElement.dataset.topicName
     ]];
-
-    linkElement = null;
-  } else if (isATopicRootSection(sectionElementOfLink(selectedLink()))) {
-    pathArray.pop();
-    linkElement = parentLinkOf(selectedLink());
-  } else {
-    linkElement = parentLinkOf(selectedLink());
-    let finalTuple = pathArray.pop();
-    let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
-    pathArray.push(newTuple);
+    return updateView(pathArray);
   }
 
-  updateView(
-    pathArray,
-    { linkSelectionData: metadataFromLink(linkElement) }
-  );
+  if (isATopicRootSection(sectionElementOfPath(pathArray))) {
+    pathArray.pop();
+    let linkElement = parentLinkOf(selectedLink());
+    return updateView(
+      pathArray,
+      { linkSelectionData: metadataFromLink(linkElement) }
+    );
+  }
+
+  if (selectedLink().dataset.type === 'local' ||
+      selectedLink().dataset.type === 'global' ||
+      selectedLink().dataset.type === 'redundant-local') {
+    let linkElement = parentLinkOf(selectedLink());
+    let finalTuple = pathArray.pop();
+    let newTuple = [finalTuple[0], linkElement.dataset.enclosingSubtopic];
+    pathArray.push(newTuple);
+    return updateView(
+      pathArray,
+      { linkSelectionData: metadataFromLink(linkElement) }
+    );
+  }
 }
 
-function selectedLinkIsOpenGlobalLink() {
+function selectedLinkIsOpenGlobalLinkWithNoChildren() {
   let currentSectionElement = currentSection();
   let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
 
   return currentSectionElement !== sectionElementOfSelectedLink &&
       selectedLink().dataset.type === 'global'
+}
+
+function selectedLinkIsOpenLocalLinkWithNoChildren() {
+    let currentSectionElement = currentSection();
+  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+
+  return currentSectionElement !== sectionElementOfSelectedLink &&
+      selectedLink().dataset.type === 'local'
 }
 
 function moveDownward(cycle) {
@@ -93,17 +124,13 @@ function moveDownward(cycle) {
   }
 
   if (selectedLink().dataset.type === 'local') {
-    let linkElement =
-      firstChildLinkOfParentLink(selectedLink()) ||
-      selectedLink();
-
+    let linkElement = selectedLink();
     let finalTuple = pathArray.pop();
-    let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+    let newTuple = [finalTuple[0], linkElement.dataset.targetSubtopic];
     pathArray.push(newTuple);
-
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { selectALink: true }
     );
   }
 
@@ -112,10 +139,9 @@ function moveDownward(cycle) {
     let newTuple = [finalTuple[0], selectedLink().dataset.targetSubtopic];
     pathArray.push(newTuple);
     let linkElement = firstLinkOfSectionElement(sectionElementOfPath(pathArray));
-
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { selectALink: true }
     );
   }
 }
@@ -133,7 +159,7 @@ function moveLeftward() {
 
   let linkElement = linkBefore(selectedLink()) || lastSiblingOf(selectedLink());
   let finalTuple = pathArray.pop();
-  let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  let newTuple = [finalTuple[0], linkElement.dataset.enclosingSubtopic];
   pathArray.push(newTuple);
 
   updateView(
@@ -155,7 +181,7 @@ function moveRightward() {
 
   let linkElement = linkAfter(selectedLink()) || firstSiblingOf(selectedLink());
   let finalTuple = pathArray.pop();
-  let newTuple = [finalTuple[0], linkElement.dataset.urlSubtopic];
+  let newTuple = [finalTuple[0], linkElement.dataset.enclosingSubtopic];
   pathArray.push(newTuple);
 
   updateView(
@@ -173,7 +199,7 @@ function moveDownOrRedirect(newTab, altKey) {
     let options;
 
     if (altKey) { // in-line topic mode
-      if (selectedLinkIsOpenGlobalLink()) { // If it is open, close it
+      if (selectedLinkIsOpenGlobalLinkWithNoChildren()) { // If it is open, close it
         let linkElement = parentLinkOfSection(currentSection());
         options = { linkSelectionData: metadataFromLink(linkElement) }
         pathArray = parsePathString().slice(0, -1);
@@ -183,12 +209,12 @@ function moveDownOrRedirect(newTab, altKey) {
           selectedLink().dataset.targetSubtopic
         ]])
       }
-    } else { // redirect to new topic page
+    } else { // redirecting to new topic page
       pathArray = [[
         selectedLink().dataset.targetTopic,
         selectedLink().dataset.targetSubtopic
       ]];
-      options = { selectALink: false };
+      options = { selectALink: true };
     }
 
     if (newTab) {

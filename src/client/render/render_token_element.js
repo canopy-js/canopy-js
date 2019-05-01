@@ -48,8 +48,7 @@ function renderRegularParentLink(token) {
   let linkElement = renderSharedParentLinkBase(token);
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
-  linkElement.dataset.urlSubtopic = token.targetSubtopic;
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.enclosingSubtopic)}`;
   return linkElement;
 }
 
@@ -57,7 +56,6 @@ function renderRedundantParentLink(token) {
   let linkElement = renderSharedParentLinkBase(token);
   linkElement.classList.add('canopy-redundant-local-link');
   linkElement.dataset.type = 'redundant-local';
-  linkElement.dataset.urlSubtopic = token.enclosingSubtopic;
   linkElement.href = `/${slugFor(token.enclosingTopic)}#${slugFor(token.enclosingSubtopic)}`;
   return linkElement;
 }
@@ -106,7 +104,6 @@ function createGlobalLinkElement(token) {
   linkElement.dataset.type = 'global';
   linkElement.dataset.targetTopic = token.targetTopic;
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.dataset.urlSubtopic = token.enclosingSubtopic;
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
@@ -141,7 +138,6 @@ function renderLinkLiteral(token) {
   appendElementsToParent(styleElements, linkElement);
   linkElement.dataset.type = 'url';
   linkElement.dataset.text = token.text;
-  linkElement.dataset.urlSubtopic = token.urlSubtopic;
   linkSpan.appendChild(linkElement);
   linkSpan.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
   return linkSpan;
