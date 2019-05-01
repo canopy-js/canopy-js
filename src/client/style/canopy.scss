@@ -53,14 +53,13 @@
     }
 
     &.canopy-open-link {
-      background-color: #f2eefe;
+      background-color: #f6eefe;
       text-decoration: none;
     }
 
     &.canopy-selected-link.canopy-local-link, &.canopy-selected-link.canopy-redundant-local-link {
       text-shadow: .8px 0px 0px black;
       text-decoration: underline black;
-      background-color: #f2eefe;
     }
 
     &.canopy-global-link, &.canopy-url-link {

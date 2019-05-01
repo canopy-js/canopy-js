@@ -42,9 +42,8 @@ const displayPath = (pathArray, displayOptions) => {
   let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  if (!displayOptions.originatesFromPopStateEvent) setPath(addLinkSelection(pathArray, linkToSelect));
+  if (!displayOptions.originatesFromPopStateEvent) setPath(pathArray, linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
-
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
@@ -62,11 +61,7 @@ const displayPathTo = (sectionElement, linkToSelect) => {
     paragraphElementOfSection(sectionElement.parentNode).
     contains(linkToSelect);
 
-  if (isPreviewParagraph) {
-    parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-preview-link'));
-  } else {
-    parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
-  }
+  parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
 
   let parentSectionElement = sectionElementOfLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
