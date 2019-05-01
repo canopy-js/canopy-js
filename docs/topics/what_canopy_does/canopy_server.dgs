@@ -1,3 +1,0 @@
-Canopy server: A Canopy server is a server that serves and supports the Canopy.js library. The Canopy server can be a static assets server or a node.js script. The server delivers the Canopy.js library on the first request, and then handles subsequent requests from the browser for JSON data files.
-
-Diagraph script: Diagraph script is a natural language text format that Canopy uses to construct a Canopy website.
