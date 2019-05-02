@@ -1,5 +1,5 @@
 import { TextToken } from './tokens';
-jest.mock('./parse_clause', () => ({
+jest.mock('./parse_sentence', () => ({
   __esModule: true,
   default: jest.fn((clauseString) => [{ type: 'text', text: clauseString }])
 }));

@@ -8,5 +8,5 @@ npm install -g canopy-js
 
 Run tests:
 ```
-yarn test
+npm run test
 ```

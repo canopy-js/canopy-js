@@ -1,5 +1,5 @@
-import parseClause from './parse_clause';
-import clausesWithPunctuationOf from '../helpers/clauses_with_punctuation_of';
+import parseSentence from './parse_sentence';
+import sentencesWithPunctuationOf from '../helpers/clauses_with_punctuation_of';
 import { TextToken } from './tokens';
 
 function textBlockFor(lines, parsingContext) {
@@ -148,8 +148,8 @@ function footnoteBlockFor(lines, parsingContext) {
 }
 
 function parseTokens(line, parsingContext) {
-  return Array.prototype.concat.apply([], clausesWithPunctuationOf(line).map(
-    (clauseString) => parseClause(
+  return Array.prototype.concat.apply([], sentencesWithPunctuationOf(line).map(
+    (clauseString) => parseSentence(
       clauseString,
       parsingContext
     )
