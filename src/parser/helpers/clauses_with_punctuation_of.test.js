@@ -53,3 +53,21 @@ test('if the last clause does not terminate, it includes it as a clause', () => 
 
   expect(result).toEqual(expectation);
 });
+
+test('it parses one word lines', () => {
+  let data = "Is";
+  let expectation = ["Is"];
+
+  let result = clausesWithPunctationOf(data);
+
+  expect(result).toEqual(expectation);
+});
+
+test('it parses one letter lines', () => {
+  let data = "a";
+  let expectation = ["a"];
+
+  let result = clausesWithPunctationOf(data);
+
+  expect(result).toEqual(expectation);
+});
