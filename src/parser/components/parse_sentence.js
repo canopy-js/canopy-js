@@ -8,7 +8,7 @@ import {
 } from 'components/matchers';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
-function parseClause(clauseWithPunctuation, parsingContext) {
+function parseSentence(clauseWithPunctuation, parsingContext) {
   let tokensOfClause;
 
   let parseAllTokens = (newParsingContext) => {
@@ -100,4 +100,4 @@ function tokenSetValid(tokenArray, parsingContext) {
   return result;
 }
 
-export default parseClause;
+export default parseSentence;

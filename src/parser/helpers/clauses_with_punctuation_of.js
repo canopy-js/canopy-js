@@ -1,11 +1,11 @@
-function clausesWithPunctuationOf(string) {
+function sentencesWithPunctuationOf(string) {
   if (!string) return [''];
 //
 //  This function takes a paragraph and divides it into an array of clauses.
 //
 //  Definitions:
 //
-//  [.,:;?!] = clause terminating punctuation
+//  [.,:;?!] = sentence terminating punctuation
 //  ["'()<>{}[\]] = wrapping punctuation
 //
 //  Regex:
@@ -14,14 +14,14 @@ function clausesWithPunctuationOf(string) {
 //   /
 //     (?:
 //       .                      Match one or more characters
-//       (?!                    that are not followed by a clause termination sequence:
-//         [.,:;?!]+            clause-terminal punctuation
+//       (?!                    that are not followed by a sentence termination sequence:
+//         [.?!]+               sentence-terminal punctuation
 //         ["'()<>{}[\]]*       that may be followed by wrapping punctuation
 //         (\s|$)               that is followed by space or end of line.
 //       )
 //     )+
-//     .?                       Match a last character, that _is_ followed by clause termination sequence.
-//     \S+                      Match the clause terminal and wrapping punctuation until the space.
+//     .?                       Match a last character, that _is_ followed by sentence termination sequence.
+//     \S+                      Match the sentence-terminal and wrapping punctuation until the space.
 //     (\s*$)?                  Include any terminal whitespace after all the clauses.
 //   /g
 //
@@ -36,4 +36,4 @@ function clausesWithPunctuationOf(string) {
   return Array.from(match);
 }
 
-export default clausesWithPunctuationOf;
+export default sentencesWithPunctuationOf;

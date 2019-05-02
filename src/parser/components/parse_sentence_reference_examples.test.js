@@ -1,4 +1,4 @@
-import parseClause from './parse_clause';
+import parseSentence from './parse_sentence';
 
 test('it creates text tokens', () => {
   let parsingContext = {
@@ -15,7 +15,7 @@ test('it creates text tokens', () => {
 
   let clauseWithPunctuation = 'This is a clause with no links.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -42,7 +42,7 @@ test('it matches local references', () => {
 
   let clauseWithPunctuation = 'This is a clause about the state flower.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -84,7 +84,7 @@ test('it matches global references', () => {
 
   let clauseWithPunctuation = 'The state of Idaho borders Wyoming.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -124,7 +124,7 @@ test('it matches import references', () => {
 
   let clauseWithPunctuation = "Idaho's state capital is near Wyoming and its Yellowstone National Park.";
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -155,7 +155,7 @@ test('it matches import references', () => {
   expect(result[4].text).toEqual('.');
 });
 
-test('it matches import references in any order within a clause', () => {
+test('it matches import references in any order within a sentence', () => {
   let parsingContext = {
     topicSubtopics: {
       'Idaho': {
@@ -172,9 +172,9 @@ test('it matches import references in any order within a clause', () => {
     markdownOnly: false
   }
 
-  let clauseWithPunctuation = "Idaho's state capital is near Yellowstone National Park of Wyoming.";
+  let clauseWithPunctuation = "Idaho's state capital is near Yellowstone National Park, of Wyoming.";
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -192,7 +192,7 @@ test('it matches import references in any order within a clause', () => {
   expect(result[1].enclosingSubtopic).toEqual('The state capital');
 
   expect(result[2].type).toEqual('text');
-  expect(result[2].text).toEqual(' of ');
+  expect(result[2].text).toEqual(', of ');
 
   expect(result[3].type).toEqual('global');
   expect(result[3].text).toEqual('Wyoming');
@@ -222,7 +222,7 @@ test('it ignores markdown tokens in match finding', () => {
 
   let clauseWithPunctuation = 'This is a clause about the _state_ *flower*.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -262,7 +262,7 @@ test('A global link cannot cause recognition of an earlier import reference that
 
   let clauseWithPunctuation = "There is a subtopic ending in Wyoming.";
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -302,7 +302,7 @@ test('it matches import references whose topics were in earlier clauses', () => 
 
   let clauseWithPunctuation = "I like Yellowstone National Park.";
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )

@@ -1,4 +1,4 @@
-import parseClause from './parse_clause';
+import parseSentence from './parse_sentence';
 
 test('it creates markdown urls', () => {
   let parsingContext = {
@@ -8,7 +8,7 @@ test('it creates markdown urls', () => {
 
   let clauseWithPunctuation = 'This is a clause with [google.com](a markdown link).'
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -32,7 +32,7 @@ test('markdown urls with empty parens use url as link', () => {
 
   let clauseWithPunctuation = 'This is a clause with [google.com]().'
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -55,7 +55,7 @@ test("it doesn't treat square brackets specially", () => {
 
   let clauseWithPunctuation = 'These [brackets] do not imply a hyperlink.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -72,7 +72,7 @@ test('it creates markdown automatic urls', () => {
 
   let clauseWithPunctuation = 'This is a clause with a link to http://google.com.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -95,7 +95,7 @@ test('it creates markdown images', () => {
 
   let clauseWithPunctuation = 'This is an ![image](example.com/image "Title").';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -119,7 +119,7 @@ test('it creates linked markdown images', () => {
 
   let clauseWithPunctuation = 'This is an [![image](example.com/image "Title")](google.com).';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
@@ -143,7 +143,7 @@ test('it parses raw html', () => {
 
   let clauseWithPunctuation = 'This is <b> raw html </b>.';
 
-  let result = parseClause(
+  let result = parseSentence(
     clauseWithPunctuation,
     parsingContext
   )
