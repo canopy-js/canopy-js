@@ -20,16 +20,20 @@ function clausesWithPunctuationOf(string) {
 //         (\s|$)               that is followed by space or end of line.
 //       )
 //     )+
-//     .                        Match the last character, that _is_ followed by clause termination sequence.
+//     .?                       Match a last character, that _is_ followed by clause termination sequence.
 //     \S+                      Match the clause terminal and wrapping punctuation until the space.
 //     (\s*$)?                  Include any terminal whitespace after all the clauses.
 //   /g
 //
 //
 
-  return Array.from(
-    string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.\S+(\s*$)?/g)
-  );
+  let match = string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.?\S*(\s*$)?/g);
+
+  if (!match) {
+    throw "Could not parse string: '" + string + "'";
+  }
+
+  return Array.from(match);
 }
 
 export default clausesWithPunctuationOf;
