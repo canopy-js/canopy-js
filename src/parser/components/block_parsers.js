@@ -1,5 +1,5 @@
 import parseSentence from './parse_sentence';
-import sentencesWithPunctuationOf from '../helpers/clauses_with_punctuation_of';
+import sentencesWithPunctuationOf from '../helpers/sentences_with_punctuation_of';
 import { TextToken } from './tokens';
 
 function textBlockFor(lines, parsingContext) {

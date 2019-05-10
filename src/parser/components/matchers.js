@@ -88,7 +88,6 @@ function importReferenceMatcher(prefixObject, parsingContext) {
     avaliableNamespaces
   } = parsingContext;
 
-
   for (let i = 0; i < avaliableNamespaces.length; i++) {
     let namespaceNameAsKey = avaliableNamespaces[i];
     if (topicSubtopics[namespaceNameAsKey].hasOwnProperty(prefixObject.substringAsKey)){
