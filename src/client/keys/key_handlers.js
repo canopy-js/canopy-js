@@ -20,13 +20,16 @@ import {
   lastChildLinkOfParentLink,
   enclosingTopicSectionOfLink,
   childSectionElementOfParentLink,
-  forEach
+  forEach,
+  linksOfSectionElement
 } from 'helpers/getters';
+
 import {
   isATopicRootSection,
   isPageRootSection,
   sectionHasNoChildLinks
 } from 'helpers/booleans';
+
 import { pathForSectionElement } from 'path/helpers';
 import updateView from 'display/update_view';
 import setPath from 'path/set_path';
@@ -97,12 +100,23 @@ function selectedLinkIsOpenGlobalLinkWithNoChildren() {
       selectedLink().dataset.type === 'global'
 }
 
-function selectedLinkIsOpenLocalLinkWithNoChildren() {
-    let currentSectionElement = currentSection();
-  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+function selectedLinkIsLocalLinkWithNoChildren() {
+  if (selectedLink().dataset.type !== 'local') {
+    return false;
+  }
 
-  return currentSectionElement !== sectionElementOfSelectedLink &&
-      selectedLink().dataset.type === 'local'
+  let links = linksOfSectionElement(
+      childSectionElementOfParentLink(
+        selectedLink()
+      )
+    );
+
+  return links.length === 0;
+}
+
+function selectedLinkIsOpenLocalLinkWithNoChildren() {
+  return selectedLinkIsLocalLinkWithNoChildren() &&
+    selectedLink().classList.contains('canopy-open-link')
 }
 
 function moveDownward(cycle) {
@@ -241,58 +255,11 @@ function moveDownOrRedirect(newTab, altKey) {
   }
 }
 
-function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLinks) {
+function depthFirstSearch(dfsDirectionInteger) {
   let previouslySelectedLinkClassName = dfsDirectionInteger === 1 ?
     'canopy-dfs-previously-selected-link' :
     'canopy-reverse-dfs-previously-selected-link';
   let previouslySelectedLink = document.querySelector('.' + previouslySelectedLinkClassName);
-
-  // Enter a global link
-  let lastChildLink = dfsDirectionInteger === 1 ?
-    lastLinkOfSectionElement(childSectionElementOfParentLink(selectedLink())) :
-    firstLinkOfSectionElement(childSectionElementOfParentLink(selectedLink()));
-  let targetTopic = selectedLink().dataset.targetTopic;
-  let pathToCurrentLink = pathForSectionElement(sectionElementOfLink(selectedLink()));
-  let newPathArray = pathToCurrentLink.concat([[targetTopic, targetTopic]]);
-  let sectionElement = sectionElementOfPath(pathToCurrentLink);
-  let alreadyVisitedGlobalLinkIfChildren = !lastChildLink || !previouslySelectedLink || previouslySelectedLink !== lastChildLink;
-  let alreadyVisitedGlobalLinkIfNoChildren = previouslySelectedLink !== selectedLink();
-  let alreadyVisitedGlobalLink = alreadyVisitedGlobalLinkIfChildren && alreadyVisitedGlobalLinkIfNoChildren;
-  let childSectionIsNotAlreadyVisible = !sectionElement || !openLinkOfSection(sectionElement);
-  let nextChildLink = dfsDirectionInteger === 1 ?
-    firstLinkOfSectionElement(sectionElement) :
-    lastLinkOfSectionElement(sectionElement);
-
-  if (
-    selectedLink().dataset.type === 'global' &&
-    enterGlobalLinks &&
-    (alreadyVisitedGlobalLink) &&
-    (childSectionIsNotAlreadyVisible)
-  ) {
-    return updateView(
-      newPathArray,
-      {
-        linkSelectionData: nextChildLink,
-        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
-      }
-    );
-  }
-
-  // Close a global link with no children
-  if (
-    selectedLink().dataset.type === 'global' &&
-    closeGlobalLinks &&
-    sectionHasNoChildLinks(childSectionElementOfParentLink(selectedLink())) &&
-    selectedLink().classList.contains('canopy-open-link')
-  ) {
-    return updateView(
-      parsePathString().slice(0, -1),
-      {
-        linkSelectionData: metadataFromLink(selectedLink()),
-        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
-      }
-    );
-  }
 
   // Enter a parent link
   let lastChildToVisit = dfsDirectionInteger === 1 ?
@@ -303,17 +270,40 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     firstChildLinkOfParentLink(selectedLink()) :
     lastChildLinkOfParentLink(selectedLink());
 
+  let alreadyVisitedAllDescendantsOfLink = selectedLinkIsLocalLinkWithNoChildren() ?
+    (previouslySelectedLink && selectedLink() && previouslySelectedLink === selectedLink()) :
+    (previouslySelectedLink && lastChildToVisit && previouslySelectedLink === lastChildToVisit);
+
   if (
-    firstChildToVisit &&
-    (!previouslySelectedLink || previouslySelectedLink !== lastChildToVisit) &&
+    (!previouslySelectedLink || !alreadyVisitedAllDescendantsOfLink) &&
     selectedLink().dataset.type !== 'global' &&
     selectedLink().dataset.type !== 'redundant-local'
   ) {
-    let nextLink = firstChildToVisit;
+    let nextLink;
+    let sectionToDisplay;
+    if (firstChildToVisit) {
+      nextLink = firstChildToVisit;
+      sectionToDisplay = sectionElementOfLink(nextLink);
+    } else {
+      nextLink = selectedLink();
+      sectionToDisplay = childSectionElementOfParentLink(selectedLink());
+    }
+
     return updateView(
-      pathForSectionElement(sectionElementOfLink(nextLink)),
+      pathForSectionElement(sectionToDisplay),
       {
         linkSelectionData: metadataFromLink(nextLink),
+        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+      }
+    );
+  }
+
+  // Close a parent link with children
+  if (selectedLinkIsOpenLocalLinkWithNoChildren()) {
+    return updateView(
+      pathForSectionElement(sectionElementOfLink(selectedLink())),
+      {
+        linkSelectionData: metadataFromLink(selectedLink()),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
       }
     );
@@ -348,22 +338,18 @@ function depthFirstSearch(dfsDirectionInteger, enterGlobalLinks, closeGlobalLink
     );
   }
 
-  // Move to parent link that is a global link
-  let globalParentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
-  if (
-    globalParentLink &&
-    globalParentLink.dataset.type === 'global' &&
-    closeGlobalLinks
-  ) {
-    let nextLink = globalParentLink;
-    return updateView(
-      pathForSectionElement(sectionElementOfLink(nextLink)),
-      {
-        linkSelectionData: metadataFromLink(nextLink),
-        postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
-      }
-    );
-  }
+  // Cycle
+  let nextLink = dfsDirectionInteger === 1 ?
+    firstLinkOfSectionElement(sectionElementOfLink(selectedLink())) :
+    lastLinkOfSectionElement(sectionElementOfLink(selectedLink()));
+
+  return updateView(
+    pathForSectionElement(sectionElementOfLink(nextLink)),
+    {
+      linkSelectionData: metadataFromLink(nextLink),
+      postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+    }
+  );
 }
 
 function updateDfsClassesCallback(dfsDirectionInteger) {
