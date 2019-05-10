@@ -9,6 +9,7 @@ const htmlIdFor = (topicName, subtopicName) => {
 }
 
 function removeMarkdownTokens(string) {
+  if (!string) return string;
   return string.
     replace(/([^\\]|^)_/g, '$1').
     replace(/([^\\]|^)\*/g, '$1').
