@@ -337,6 +337,19 @@ function depthFirstSearch(dfsDirectionInteger) {
       }
     );
   }
+
+  // Cycle
+  let nextLink = dfsDirectionInteger === 1 ?
+    firstLinkOfSectionElement(sectionElementOfLink(selectedLink())) :
+    lastLinkOfSectionElement(sectionElementOfLink(selectedLink()));
+
+  return updateView(
+    pathForSectionElement(sectionElementOfLink(nextLink)),
+    {
+      linkSelectionData: metadataFromLink(nextLink),
+      postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
+    }
+  );
 }
 
 function updateDfsClassesCallback(dfsDirectionInteger) {
