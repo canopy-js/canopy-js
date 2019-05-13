@@ -27,7 +27,7 @@ function sentencesWithPunctuationOf(string) {
 //
 //
 
-  let match = string.match(/(?:.(?![.,:;?!]+["'()<>{}[\]]*(\s|$)))+.?\S*(\s*$)?/g);
+  let match = string.match(/(?:.(?![.?!]+["'()<>{}[\]]*(\s|$)))+.?\S*(\s*$)?/g);
 
   if (!match) {
     throw "Could not parse string: '" + string + "'";

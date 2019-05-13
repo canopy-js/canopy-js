@@ -9,6 +9,7 @@ import {
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
 function parseSentence(clauseWithPunctuation, parsingContext) {
+  parsingContext.avaliableNamespaces = [];
   let tokensOfClause;
 
   let parseAllTokens = (newParsingContext) => {
@@ -90,7 +91,7 @@ function tokenSetValid(tokenArray, parsingContext) {
         (token2) => token2.type === 'global' &&
           token1.targetTopic === token2.targetTopic &&
           token1.targetTopic === token2.targetSubtopic
-        ) && !parsingContext.avaliableNamespaces.includes(token1.targetTopic)
+        )
       ) {
         result = false;
       }
