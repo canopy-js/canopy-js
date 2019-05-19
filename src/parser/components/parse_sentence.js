@@ -8,13 +8,14 @@ import {
 } from 'components/matchers';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 
-function parseSentence(clauseWithPunctuation, parsingContext) {
+function parseSentence(sentenceWithPunctuation, parsingContext) {
   parsingContext.avaliableNamespaces = [];
   let tokensOfClause;
+  if (process.env['CANOPY_DEBUG']) warnIfLongSentence(sentenceWithPunctuation, parsingContext);
 
   let parseAllTokens = (newParsingContext) => {
     let result = tokensOfSuffix(
-      unitsOf(clauseWithPunctuation),
+      unitsOf(sentenceWithPunctuation),
       newParsingContext,
       parseAllTokens
     )
@@ -99,6 +100,13 @@ function tokenSetValid(tokenArray, parsingContext) {
   });
 
   return result;
+}
+
+function warnIfLongSentence(sentenceWithPunctuation, parsingContext) {
+  if (sentenceWithPunctuation.split(" ").length > 45) {
+    console.warn(`WARNING: Long sentence in topic "${parsingContext.currentTopic}": ` + '"' + sentenceWithPunctuation + '"');
+    console.warn();
+  }
 }
 
 export default parseSentence;
