@@ -130,6 +130,11 @@ watch)
   canopy build $2;;
 serve)
   canopy build
+  if [ $? -ne 0 ];
+  then
+    exit 1
+  fi
+  echo "Serving on port ${2:-3000}"
   node $CANOPY_LOCATION/canopy-js/script/server.js ${2:-3000}
   ;;
 
