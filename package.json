@@ -1,6 +1,6 @@
 {
   "name": "canopy-js",
-  "version": "0.2.31",
+  "version": "0.2.32",
   "description": "A library for creating and browsing diagraph.",
   "main": "dist/parser.js",
   "scripts": {
@@ -40,6 +40,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "array-flat-polyfill": "^1.0.1",
     "array.prototype.flat": "^1.2.1",
     "dom-shims": "^0.1.4",
     "editor": "^1.0.0",
