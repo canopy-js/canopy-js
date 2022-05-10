@@ -53,6 +53,10 @@
     "rimraf": "^2.6.3",
     "tar": "^4.4.19"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/canopy-js/canopy-js.git"
+  },
   "jestWebpackResolver": {
     "webpackConfig": "./webpack.config.js",
     "silent": true
