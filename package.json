@@ -51,7 +51,7 @@
     "readline": "^1.3.0",
     "recursive-readdir-sync": "1.0.6",
     "rimraf": "^2.6.3",
-    "tar": "~> 4.4.2"
+    "tar": "^4.4.19"
   },
   "jestWebpackResolver": {
     "webpackConfig": "./webpack.config.js",
