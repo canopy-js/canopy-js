@@ -15,7 +15,7 @@
   "preferGlobal": true,
   "keywords": [],
   "author": "CanopyJS",
-  "license": "Apache",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.4.3",
