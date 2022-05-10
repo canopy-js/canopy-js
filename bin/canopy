@@ -142,7 +142,7 @@ bulk)
   node $CANOPY_LOCATION/canopy-js/script/bulk_edit.js "$@"
   ;;
 
-?|usage)
+*)
 echo "Usage:"
 echo "  canopy init"
 echo "  canopy build [--for-static-assets]"
@@ -150,6 +150,5 @@ echo "  canopy watch [stop]"
 echo "  canopy serve [PORT]"
 echo "  canopy bulk [--start|--stop] [PATHS]"
 ;;
-*)
-  echo Unknown command;;
+
 esac
