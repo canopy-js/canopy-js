@@ -54,16 +54,19 @@
     }
 
     &.canopy-open-link {
-      background-color: #f6eefe;
-      text-decoration: none;
+      text-shadow: .8px 0px 0px #000000;
+      text-decoration: underline;
     }
 
-    &.canopy-selected-link.canopy-local-link, &.canopy-selected-link.canopy-redundant-local-link {
-      text-shadow: .8px 0px 0px black;
-      text-decoration: underline black;
+    &.canopy-selected-link {
+      background-color: #edeefc;
     }
 
-    &.canopy-global-link, &.canopy-url-link {
+    &.canopy-selected-link.canopy-open-link {
+      background-color: transparent;
+    }
+
+    &.canopy-url-link {
       &:hover {
         color: #4078c0;
       }
@@ -72,10 +75,6 @@
         text-decoration: underline #4078c0;
         color: #4078c0;
         text-shadow: .8px 0px 0px #4078c0;
-      }
-
-      &.canopy-open-link {
-        color: #4078c0;
       }
     }
 
