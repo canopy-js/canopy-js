@@ -65,7 +65,7 @@ EOF
   fi
 
   cp $CANOPY_LOCATION/dist/canopy.js build/canopy.js
-  if [ "$CANOPY_LOGGING" ]; then
+  if [ -f "$CANOPY_LOCATION/dist/canopy.js.map" ]; then
     cp $CANOPY_LOCATION/dist/canopy.js.map build/canopy.js.map
   fi
   if [ -d "assets" ]; then
