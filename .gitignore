@@ -5,6 +5,7 @@ yarn.lock
 TODO
 build/
 docs/.canopy_watch.pid
+docs/.canopy_watch_dev.pid
 docs/.canopy_bulk_temp
 docs/canopy_bulk_temp
 dist

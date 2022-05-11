@@ -128,6 +128,48 @@ watch)
   fi
 
   canopy build $2;;
+watch-dev)
+  # Watch-dev assumes $CANOPY_LOCATION is pointing to your local development repo.
+  #
+  # When a change to your code triggers a rebuild of the assets in canopy-js/dist,
+  #   watch-dev rebuilds the current canopy project to include the new version of canopy-js
+  #
+  command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
+
+  if [ "$2" == "stop" ]; then
+    kill $(cat .canopy_dev_watch.pid) > /dev/null 2>&1;
+    rm .canopy_watch.pid
+    exit 0;
+  fi
+
+  PIDFILE=.canopy_watch_dev.pid
+  if [ -f $PIDFILE ];
+  then
+    PID=$(cat $PIDFILE)
+    if ps -p $PID > /dev/null 2>&1;
+    then
+      # Canopy watch is already running
+      kill $PID
+    fi
+  fi
+
+  if [ ! -d ./topics ]; then
+    echo "There must be a topics directory at the current path"
+    exit 1
+  fi
+
+  #######
+  fswatch -0 -o $CANOPY_LOCATION/dist | CANOPY_DEBUG=true xargs -0 -n1 -I{} canopy build > /dev/null 2>&1 &
+  #######
+
+  echo $(jobs -p | tail -1) > $PIDFILE
+  if [ $? -ne 0 ];
+  then
+    echo "Could not create PID file"
+    exit 1
+  fi
+
+  canopy build $2;;
 serve)
   canopy build
   if [ $? -ne 0 ];
