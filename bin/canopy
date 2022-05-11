@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
+CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}/canopy-js"
 
 case $1 in
 build)
@@ -37,7 +37,7 @@ build)
 EOF
   fi
 
-  node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
+  node $CANOPY_LOCATION/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
     for D in `find "build" -mindepth 1 ! -name '*_data' -type d`; do
@@ -62,9 +62,9 @@ EOF
     cd ..
   fi
 
-  cp $CANOPY_LOCATION/canopy-js/dist/canopy.js build/canopy.js
+  cp $CANOPY_LOCATION/dist/canopy.js build/canopy.js
   if [ "$CANOPY_LOGGING" ]; then
-    cp $CANOPY_LOCATION/canopy-js/dist/canopy.js.map build/canopy.js.map
+    cp $CANOPY_LOCATION/dist/canopy.js.map build/canopy.js.map
   fi
   if [ -d "assets" ]; then
     cp -r assets build/assets
@@ -80,7 +80,7 @@ init)
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .canopy_default_topic
-  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/canopy-js/script/snake_case.js)
+  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/script/snake_case.js)
   echo
   echo "If you will be hosting Canopy with a static assets server,"
   echo "and Canopy will be hosted from a subdirectory of the path,"
@@ -135,11 +135,11 @@ serve)
     exit 1
   fi
   echo "Serving on port ${2:-3000}"
-  node $CANOPY_LOCATION/canopy-js/script/server.js ${2:-3000}
+  node $CANOPY_LOCATION/script/server.js ${2:-3000}
   ;;
 
 bulk)
-  node $CANOPY_LOCATION/canopy-js/script/bulk_edit.js "$@"
+  node $CANOPY_LOCATION/script/bulk_edit.js "$@"
   ;;
 
 *)
