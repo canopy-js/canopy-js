@@ -1,6 +1,8 @@
 #!/bin/bash
 
-CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}/canopy-js"
+NPM_LOCATION="$(npm root -g)"
+NPM_CANOPY_LOCATION=$(readlink -f "$NPM_LOCATION/canopy-js") # In case the developer is using a symlink
+CANOPY_LOCATION="${CANOPY_LOCATION:-$NPM_CANOPY_LOCATION}"
 
 case $1 in
 build)
