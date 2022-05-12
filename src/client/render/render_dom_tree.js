@@ -16,7 +16,7 @@ function renderDomTree(renderContext) {
 
   renderContext.subtopicsAlreadyRendered[subtopicName] = true;
   renderContext.promises = [];
-  renderContext.parentLinkSubtreeCallback = parentLinkSubtreeCallback(sectionElement, renderContext);
+  renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
   let blocksOfParagraph = paragraphsBySubtopic[subtopicName];
@@ -33,7 +33,7 @@ function generateIsSubtopicAlreadyRenderedCallback(subtopicsAlreadyRendered) {
   return (targetSubtopic) => subtopicsAlreadyRendered.hasOwnProperty(targetSubtopic);
 }
 
-function parentLinkSubtreeCallback(sectionElement, renderContext) {
+function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
