@@ -31,7 +31,7 @@ const displayPath = (pathArray, displayOptions) => {
 
   let topicName = pathArray[0][0];
   document.title = documentTitleFor(topicName);
-  let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.topicDisplayName;
+  let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.displayTopicName;
   createOrReplaceHeader(displayTopicName);
 
   removeDfsClasses();
