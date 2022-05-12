@@ -9,12 +9,12 @@ const fetchAndRenderPath = (pathArray, pathDepth) => {
   let uponResponsePromise = requestJson(topicName);
 
   return uponResponsePromise.then((dataObject) => {
-    let { paragraphsBySubtopic, topicDisplayName } = dataObject;
+    let { paragraphsBySubtopic, displayTopicName } = dataObject;
 
     return renderDomTree(
       {
         topicName: pathArray[0][0],
-        topicDisplayName: topicDisplayName,
+        displayTopicName: displayTopicName,
         subtopicName: pathArray[0][0],
         pathArray,
         paragraphsBySubtopic,

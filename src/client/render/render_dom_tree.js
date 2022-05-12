@@ -75,7 +75,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 
 function createNewSectionElement(renderContext) {
   let {
-    topicName, subtopicName, topicDisplayName, pathDepth
+    topicName, subtopicName, displayTopicName, pathDepth
   } = renderContext;
 
   let sectionElement = document.createElement('section');
@@ -83,7 +83,7 @@ function createNewSectionElement(renderContext) {
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
   sectionElement.dataset.topicName = topicName;
-  sectionElement.dataset.topicDisplayName = topicDisplayName;
+  sectionElement.dataset.displayTopicName = displayTopicName;
   sectionElement.dataset.subtopicName = subtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
 
