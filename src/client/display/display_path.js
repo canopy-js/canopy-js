@@ -33,16 +33,13 @@ const displayPath = (pathArray, displayOptions) => {
   document.title = documentTitleFor(topicName);
   let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.displayTopicName;
   createOrReplaceHeader(displayTopicName);
-
-  removeDfsClasses();
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
-  deselectAllLinks();
-  hideAllSectionElements();
+
+  resetDom();
 
   let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  // We don't need to change the URL if the render was triggered by a history event because the URL has already changed
   if (!displayOptions.preservePath) setPath(pathArray, linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
   displayPathTo(sectionElementToDisplay, linkToSelect);
@@ -66,6 +63,12 @@ const displayPathTo = (sectionElement, linkToSelect) => {
 
   let parentSectionElement = sectionElementOfLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
+}
+
+const resetDom = () => {
+  removeDfsClasses();
+  deselectAllLinks();
+  hideAllSectionElements();
 }
 
 export default displayPath;
