@@ -84,7 +84,7 @@ function renderGlobalLink(token, renderContext) {
     globalLinkSubtreeCallback
   } = renderContext;
 
-  window.setTimeout(() => eagerLoad(token.targetTopic), 0);
+  eagerLoad(token.targetTopic);
 
   let linkElement = createGlobalLinkElement(token, pathArray);
 
