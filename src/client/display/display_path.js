@@ -43,7 +43,7 @@ const displayPath = (pathArray, displayOptions) => {
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
   // We don't need to change the URL if the render was triggered by a history event because the URL has already changed
-  if (!displayOptions.originatesFromPopStateEvent) setPath(pathArray, linkToSelect);
+  if (!displayOptions.preservePath) setPath(pathArray, linkToSelect);
   storeLinkSelectionInSession(linkToSelect);
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
