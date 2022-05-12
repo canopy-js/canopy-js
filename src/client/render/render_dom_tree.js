@@ -56,20 +56,26 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
     promises
   } = renderContext;
 
-  return (token) => {
-    if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
-      return;
+  return (token, globalLinkOpen) => {
+    eagerLoad(token.targetTopic);
+
+    if (globalLinkOpen) {
+      if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
+        return;
+      }
+
+      let pathArrayForSubtree = (pathArray).slice(1);
+      let pathDepthOfSubtree = pathDepth + 1;
+
+      let whenTopicTreeRenders = fetchAndRenderPath(pathArrayForSubtree, pathDepthOfSubtree);
+      let whenTopicTreeAppended = whenTopicTreeRenders.then((topicTree) => {
+        sectionElement.appendChild(topicTree);
+      });
+
+      promises.push(whenTopicTreeAppended);
     }
 
-    let pathArrayForSubtree = (pathArray).slice(1);
-    let pathDepthOfSubtree = pathDepth + 1;
 
-    let whenTopicTreeRenders = fetchAndRenderPath(pathArrayForSubtree, pathDepthOfSubtree);
-    let whenTopicTreeAppended = whenTopicTreeRenders.then((topicTree) => {
-      sectionElement.appendChild(topicTree);
-    });
-
-    promises.push(whenTopicTreeAppended);
   }
 }
 
