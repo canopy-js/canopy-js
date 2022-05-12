@@ -17,7 +17,7 @@ function registerPopStateListener() {
       parsePathString(),
       {
         linkSelectionData: newLinkSelectionData || priorLinkSelectionDataFromSession(),
-        originatesFromPopStateEvent: true
+        pathAlreadyChanged: true
       }
     );
   });
