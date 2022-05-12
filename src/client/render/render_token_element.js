@@ -84,13 +84,9 @@ function renderGlobalLink(token, renderContext) {
     globalLinkSubtreeCallback
   } = renderContext;
 
-  eagerLoad(token.targetTopic);
-
   let linkElement = createGlobalLinkElement(token, pathArray);
 
-  if (globalLinkIsOpen(linkElement, pathArray, subtopicName)) {
-    globalLinkSubtreeCallback(token);
-  }
+  globalLinkSubtreeCallback(token, globalLinkIsOpen(linkElement, pathArray, subtopicName));
 
   return linkElement;
 }
