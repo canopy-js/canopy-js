@@ -48,7 +48,7 @@ function lastPathSegmentIsATopicRoot(pathArray) {
   return lastPathSegment[0] === lastPathSegment[1];
 }
 
-function createOrReplaceHeader(topicName) {
+function setHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
   if (existingHeader) { existingHeader.remove(); }
   let headerDomElement = document.createElement('h1');
@@ -163,7 +163,7 @@ export {
   newNodeAlreadyPresent,
   determineLinkToSelect,
   determineSectionElementToDisplay,
-  createOrReplaceHeader,
+  setHeader,
   displaySectionBelowLink,
   addSelectedLinkClass,
   moveSelectedSectionClass,

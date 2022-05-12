@@ -11,7 +11,7 @@ import {
 import {
   determineLinkToSelect,
   determineSectionElementToDisplay,
-  createOrReplaceHeader,
+  setHeader,
   displaySectionBelowLink,
   addSelectedLinkClass,
   hideAllSectionElements,
@@ -32,7 +32,7 @@ const displayPath = (pathArray, displayOptions) => {
   let topicName = pathArray[0][0];
   document.title = documentTitleFor(topicName);
   let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.displayTopicName;
-  createOrReplaceHeader(displayTopicName);
+  setHeader(displayTopicName);
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
 
   resetDom();
