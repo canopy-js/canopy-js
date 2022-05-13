@@ -53,26 +53,20 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   let {
     pathArray,
     pathDepth,
+    subtopicName,
+    eagerRenderGlobalChildren,
     promises
   } = renderContext;
 
-  return (token, globalLinkOpen) => {
+  return (token, linkElement) => {
     eagerLoad(token.targetTopic);
-
-    if (globalLinkOpen) {
-      if (subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token)) {
-        return;
-      }
-
-      let pathArrayForSubtree = (pathArray).slice(1);
-      let pathDepthOfSubtree = pathDepth + 1;
-
-      let whenTopicTreeAppended = fetchAndRenderPath(pathArrayForSubtree, sectionElement);
-
-      promises.push(whenTopicTreeAppended);
+    if (shouldRenderGlobalChild(linkElement, pathArray, subtopicName, eagerRenderGlobalChildren)) {
+      let pathArrayForSubtree = pathArrayForGlobalChild(linkElement, pathArray, subtopicName);
+      let newEagerRenderGlobalChildren = !sectionIsLastPathSegment(linkElement, pathArray, subtopicName);
+      let whenTopicTreeAppended = fetchAndRenderPath(pathArrayForSubtree, sectionElement, newEagerRenderGlobalChildren);
+      let currentSectionIsEagerRender = !eagerRenderGlobalChildren;
+      if (!currentSectionIsEagerRender) { promises.push(whenTopicTreeAppended); } // eager render shouldn't block UI
     }
-
-
   }
 }
 
@@ -120,6 +114,48 @@ function renderElementsForBlocks(blocksOfParagraph, renderContext) {
   );
 
   return elementArray;
+}
+
+function shouldRenderGlobalChild(linkElement, pathArray, subtopicName, eagerRenderGlobalChildren) {
+  // A global link's children should be rendered if either of the following is true
+  // 1. Is the child of the global link the topic of the next path segment?
+  // 2a. Is the current section containing the global link the final path subtopic element?
+  // 2b. (And the current section element is not itself an eager render?)
+  return globalLinkIsOpen(linkElement, pathArray, subtopicName) ||
+    (sectionIsLastPathSegment(linkElement, pathArray) && eagerRenderGlobalChildren);
+}
+
+function pathArrayForGlobalChild(linkElement, pathArray, subtopicName) {
+  if (globalLinkIsOpen(linkElement, pathArray, subtopicName)) {
+    return pathArray.slice(1);
+  } else if (sectionIsLastPathSegment(linkElement, pathArray)) {
+    return [[linkElement.dataset.targetTopic, linkElement.dataset.targetTopic]];
+  } else {
+    throw "Generating path for global child that shouldn't be rendered";
+  }
+}
+
+function globalLinkIsOpen(linkElement, pathArray, currentlyRenderingSubtopicName) {
+  let subtopicOfPathContainingOpenGlobalReference = pathArray[0][1];
+  let openGlobalLinkExists = pathArray[1];
+  let openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
+  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
+  let thisIsTheOpenGlobalLink = 
+    linkElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
+    linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic;
+  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopicName === 
+    subtopicOfPathContainingOpenGlobalReference;
+
+  return openGlobalLinkExists &&
+    thisIsTheOpenGlobalLink &&
+    thisGlobalLinkIsInCorrectSubtopicToBeOpen;
+    
+}
+
+function sectionIsLastPathSegment(linkElement, pathArray) {
+  return pathArray.length === 1 && 
+    pathArray[0][0] === linkElement.dataset.enclosingTopic &&
+    pathArray[0][1] === linkElement.dataset.enclosingSubtopic;
 }
 
 export default renderDomTree;

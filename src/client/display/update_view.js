@@ -10,7 +10,7 @@ import {
 import { newNodeAlreadyPresent } from 'display/helpers';
 
 const updateView = (pathArray, updateOptions) => {
-  let newTreeAppended = fetchAndRenderPath(pathArray, canopyContainer);
+  let newTreeAppended = fetchAndRenderPath(pathArray, canopyContainer, true);
 
   newTreeAppended.then(() => {
     displayPath(

@@ -86,7 +86,7 @@ function renderGlobalLink(token, renderContext) {
 
   let linkElement = createGlobalLinkElement(token, pathArray);
 
-  globalLinkSubtreeCallback(token, globalLinkIsOpen(linkElement, pathArray, subtopicName));
+  globalLinkSubtreeCallback(token, linkElement);
 
   return linkElement;
 }
@@ -109,18 +109,6 @@ function createGlobalLinkElement(token) {
     onGlobalLinkClick(token.targetTopic, token.targetSubtopic, linkElement)
   );
   return linkElement
-}
-
-function globalLinkIsOpen(linkElement, pathArray, subtopicName) {
-  let subtopicContainingOpenGlobalReference = pathArray[0][1];
-  let openGlobalLinkExists = pathArray[1];
-  let openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
-  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-
-  return openGlobalLinkExists &&
-    linkElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
-    linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic &&
-    subtopicName === subtopicContainingOpenGlobalReference;
 }
 
 function renderLinkLiteral(token) {
