@@ -67,10 +67,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
       let pathArrayForSubtree = (pathArray).slice(1);
       let pathDepthOfSubtree = pathDepth + 1;
 
-      let whenTopicTreeRenders = fetchAndRenderPath(pathArrayForSubtree, pathDepthOfSubtree);
-      let whenTopicTreeAppended = whenTopicTreeRenders.then((topicTree) => {
-        sectionElement.appendChild(topicTree);
-      });
+      let whenTopicTreeAppended = fetchAndRenderPath(pathArrayForSubtree, sectionElement);
 
       promises.push(whenTopicTreeAppended);
     }
