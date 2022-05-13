@@ -16,13 +16,13 @@ import { sectionHasNoChildLinks } from 'helpers/booleans';
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 
-function newNodeAlreadyPresent(anchorElement, domTree) {
+function alreadyPresentNode(anchorElement, childTopicName) {
   return Array.from(anchorElement.childNodes)
     .filter((childNode) => {
       return childNode.dataset &&
-        childNode.dataset.topicName === domTree.dataset.topicName &&
-        childNode.dataset.subtopicName === domTree.dataset.subtopicName;
-    }).length > 0;
+        childNode.dataset.topicName === childTopicName &&
+        childNode.dataset.subtopicName === childTopicName;
+    })[0];
 }
 
 function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
@@ -160,7 +160,7 @@ function addLinkSelection(pathArray, linkToSelect) {
 }
 
 export {
-  newNodeAlreadyPresent,
+  alreadyPresentNode,
   determineLinkToSelect,
   determineSectionElementToDisplay,
   setHeader,

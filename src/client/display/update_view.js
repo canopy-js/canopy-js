@@ -10,24 +10,9 @@ import {
 import { newNodeAlreadyPresent } from 'display/helpers';
 
 const updateView = (pathArray, updateOptions) => {
-  let {
-    lowestExtantSectionElementOfPath,
-    pathSuffixToRender
-  } = findLowestExtantSectionElementOfPath(pathArray);
+  let newTreeAppended = fetchAndRenderPath(pathArray, canopyContainer);
 
-  let promisedDomTree = fetchAndRenderPath(
-    pathSuffixToRender,
-    pathArray.length - pathSuffixToRender.length
-  )
-
-  promisedDomTree.then((domTree) => {
-    if (domTree) {
-      let anchorElement = lowestExtantSectionElementOfPath || canopyContainer;
-      if (!newNodeAlreadyPresent(anchorElement, domTree)) {
-        anchorElement.appendChild(domTree);
-      }
-    }
-
+  newTreeAppended.then(() => {
     displayPath(
       pathArray,
       updateOptions

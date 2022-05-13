@@ -8,18 +8,33 @@ const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
 const pathPrefix = canopyContainer && canopyContainer.dataset.pathPrefix;
 
 const sectionElementOfPath = (pathArray) => {
-  let currentNode = canopyContainer;
+  return sectionElementOfRelativePath(canopyContainer, pathArray);
+}
+
+const sectionElementOfRelativePath = (rootElement, suppliedPathArray) => {
+  let pathArray = JSON.parse(JSON.stringify(suppliedPathArray));
+  let currentNode = rootElement;
+  if (rootElement === canopyContainer) {
+    currentNode = rootElement.querySelector(
+      `[data-topic-name="${pathArray[0][0]}"]` +
+      `[data-subtopic-name="${pathArray[0][1]}"]` +
+      `[data-path-depth="${0}"]`
+    );
+    pathArray = pathArray.slice(1);
+    if (pathArray.length === 0) { return currentNode; }
+  }
 
   for (let i = 0; i < pathArray.length; i++) {
     if (!currentNode) { return null; }
 
     let topicName = pathArray[i][0];
     let subtopicName = pathArray[i][1];
+    let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
 
     currentNode = currentNode.querySelector(
       `[data-topic-name="${topicName}"]` +
       `[data-subtopic-name="${subtopicName}"]` +
-      `[data-path-depth="${i}"]`
+      `[data-path-depth="${newPathDepth}"]`
     );
   }
 
@@ -344,6 +359,7 @@ export {
   defaultTopic,
   pathPrefix,
   sectionElementOfPath,
+  sectionElementOfRelativePath,
   currentSection,
   currentRootSection,
   selectedLink,
