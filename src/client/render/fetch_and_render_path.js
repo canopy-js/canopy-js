@@ -3,7 +3,8 @@ import requestJson from 'requests/request_json';
 import { alreadyPresentNode } from 'display/helpers';
 import { sectionElementOfRelativePath } from 'helpers/getters';
 
-const fetchAndRenderPath = (pathArray, parentElement) => {
+
+const fetchAndRenderPath = (pathArray, parentElement, eagerRenderGlobalChildren) => {
   if (pathArray.length === 0) {
     return Promise.resolve(null);
   }
@@ -28,7 +29,8 @@ const fetchAndRenderPath = (pathArray, parentElement) => {
         pathArray,
         paragraphsBySubtopic,
         subtopicsAlreadyRendered: {},
-        pathDepth
+        pathDepth,
+        eagerRenderGlobalChildren
       }
     );
   });
