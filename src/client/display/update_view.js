@@ -9,13 +9,13 @@ import {
 
 import { newNodeAlreadyPresent } from 'display/helpers';
 
-const updateView = (pathArray, updateOptions) => {
+const updateView = (pathArray, displayOptions) => {
   let newTreeAppended = fetchAndRenderPath(pathArray, canopyContainer, true);
 
   newTreeAppended.then(() => {
     displayPath(
       pathArray,
-      updateOptions
+      displayOptions
     );
   });
 }
