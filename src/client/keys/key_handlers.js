@@ -3,10 +3,10 @@ import {
   selectedLink,
   currentRootSection,
   linkNumberOf,
-  sectionElementOfLink,
+  sectionElementContainingLink,
   parentLinkOfSection,
   sectionElementOfPath,
-  metadataFromLink,
+  metadataForLink,
   openLinkOfSection,
   canopyContainer,
   parentLinkOf,
@@ -43,7 +43,7 @@ function moveUpward() {
     let linkElement = selectedLink();
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { linkSelectionData: metadataForLink(linkElement) }
     );
   }
 
@@ -55,15 +55,15 @@ function moveUpward() {
 
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { linkSelectionData: metadataForLink(linkElement) }
     );
   }
 
-  if (isPageRootSection(sectionElementOfLink(selectedLink()))) {
-    let sectionElement = sectionElementOfLink(selectedLink());
+  if (isPageRootSection(sectionElementContainingLink(selectedLink()))) {
+    let rootSection = sectionElementContainingLink(selectedLink());
     pathArray = [[
-      sectionElement.dataset.topicName,
-      sectionElement.dataset.topicName
+      rootSection.dataset.topicName,
+      rootSection.dataset.topicName
     ]];
     return updateView(pathArray);
   }
@@ -73,7 +73,7 @@ function moveUpward() {
     let linkElement = parentLinkOf(selectedLink());
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { linkSelectionData: metadataForLink(linkElement) }
     );
   }
 
@@ -86,14 +86,14 @@ function moveUpward() {
     pathArray.push(newTuple);
     return updateView(
       pathArray,
-      { linkSelectionData: metadataFromLink(linkElement) }
+      { linkSelectionData: metadataForLink(linkElement) }
     );
   }
 }
 
 function selectedLinkIsOpenGlobalLinkWithNoChildren() {
   let currentSectionElement = currentSection();
-  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+  let sectionElementOfSelectedLink = sectionElementContainingLink(selectedLink());
 
   return currentSectionElement !== sectionElementOfSelectedLink &&
       selectedLink().dataset.type === 'global'
@@ -161,7 +161,7 @@ function moveDownward(cycle) {
 
 function moveLeftward() {
   let currentSectionElement = currentSection();
-  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+  let sectionElementOfSelectedLink = sectionElementContainingLink(selectedLink());
   let pathArray = parsePathString();
 
   // handle left on opened global link with no child links
@@ -177,13 +177,13 @@ function moveLeftward() {
 
   updateView(
     pathArray,
-    { linkSelectionData: metadataFromLink(linkElement) }
+    { linkSelectionData: metadataForLink(linkElement) }
   );
 }
 
 function moveRightward() {
   let currentSectionElement = currentSection();
-  let sectionElementOfSelectedLink = sectionElementOfLink(selectedLink());
+  let sectionElementOfSelectedLink = sectionElementContainingLink(selectedLink());
   let pathArray = parsePathString();
 
   // handle right on opened global link with no child links
@@ -199,7 +199,7 @@ function moveRightward() {
 
   updateView(
     pathArray,
-    { linkSelectionData: metadataFromLink(linkElement) }
+    { linkSelectionData: metadataForLink(linkElement) }
   );
 }
 
@@ -214,7 +214,7 @@ function moveDownOrRedirect(newTab, altKey) {
     if (altKey) { // in-line topic mode
       if (selectedLinkIsOpenGlobalLinkWithNoChildren()) { // If it is open, close it
         let linkElement = parentLinkOfSection(currentSection());
-        options = { linkSelectionData: metadataFromLink(linkElement) }
+        options = { linkSelectionData: metadataForLink(linkElement) }
         pathArray = parsePathString().slice(0, -1);
       } else { // If it is closed, open it
         pathArray = parsePathString().concat([[
@@ -282,7 +282,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     let sectionToDisplay;
     if (firstChildToVisit) {
       nextLink = firstChildToVisit;
-      sectionToDisplay = sectionElementOfLink(nextLink);
+      sectionToDisplay = sectionElementContainingLink(nextLink);
     } else {
       nextLink = selectedLink();
       sectionToDisplay = childSectionElementOfParentLink(selectedLink());
@@ -291,7 +291,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     return updateView(
       pathForSectionElement(sectionToDisplay),
       {
-        linkSelectionData: metadataFromLink(nextLink),
+        linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
       }
     );
@@ -300,9 +300,9 @@ function depthFirstSearch(dfsDirectionInteger) {
   // Close a parent link with children
   if (selectedLinkIsOpenLocalLinkWithNoChildren()) {
     return updateView(
-      pathForSectionElement(sectionElementOfLink(selectedLink())),
+      pathForSectionElement(sectionElementContainingLink(selectedLink())),
       {
-        linkSelectionData: metadataFromLink(selectedLink()),
+        linkSelectionData: metadataForLink(selectedLink()),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
       }
     );
@@ -316,22 +316,22 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (nextSiblingToVisit) {
     let nextLink = nextSiblingToVisit;
     return updateView(
-      pathForSectionElement(sectionElementOfLink(nextLink)),
+      pathForSectionElement(sectionElementContainingLink(nextLink)),
       {
-        linkSelectionData: metadataFromLink(nextLink),
+        linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
       }
     );
   }
 
   // Move to parent
-  let parentLink = parentLinkOfSection(sectionElementOfLink(selectedLink()));
+  let parentLink = parentLinkOfSection(sectionElementContainingLink(selectedLink()));
   if (parentLink && parentLink.dataset.type !== 'global') {
     let nextLink = parentLink;
     return updateView(
-      pathForSectionElement(sectionElementOfLink(nextLink)),
+      pathForSectionElement(sectionElementContainingLink(nextLink)),
       {
-        linkSelectionData: metadataFromLink(nextLink),
+        linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
       }
     );
@@ -339,13 +339,13 @@ function depthFirstSearch(dfsDirectionInteger) {
 
   // Cycle
   let nextLink = dfsDirectionInteger === 1 ?
-    firstLinkOfSectionElement(sectionElementOfLink(selectedLink())) :
-    lastLinkOfSectionElement(sectionElementOfLink(selectedLink()));
+    firstLinkOfSectionElement(sectionElementContainingLink(selectedLink())) :
+    lastLinkOfSectionElement(sectionElementContainingLink(selectedLink()));
 
   return updateView(
-    pathForSectionElement(sectionElementOfLink(nextLink)),
+    pathForSectionElement(sectionElementContainingLink(nextLink)),
     {
-      linkSelectionData: metadataFromLink(nextLink),
+      linkSelectionData: metadataForLink(nextLink),
       postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
     }
   );
@@ -378,7 +378,7 @@ function goToEnclosingTopic() {
 
   updateView(
     pathForSectionElement(sectionElement),
-    { linkSelectionData: metadataFromLink(linkElement) }
+    { linkSelectionData: metadataForLink(linkElement) }
   );
 }
 
@@ -391,7 +391,7 @@ function goToParentOfEnclosingTopic() {
 
   updateView(
     pathForSectionElement(sectionElement),
-    { linkSelectionData: metadataFromLink(linkElement) }
+    { linkSelectionData: metadataForLink(linkElement) }
   );
 }
 

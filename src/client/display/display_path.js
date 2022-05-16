@@ -4,7 +4,7 @@ import {
   sectionElementOfPath,
   parentLinksOfSection,
   documentTitleFor,
-  sectionElementOfLink,
+  sectionElementContainingLink,
   paragraphElementOfSection
 } from 'helpers/getters';
 
@@ -61,7 +61,7 @@ const displayPathTo = (sectionElement, linkToSelect) => {
 
   parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
 
-  let parentSectionElement = sectionElementOfLink(parentLinks[0]);
+  let parentSectionElement = sectionElementContainingLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
 }
 

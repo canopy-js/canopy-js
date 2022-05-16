@@ -77,7 +77,7 @@ const parentLinksOfSection = (sectionElement) => {
 
 const childSectionElementOfParentLink = (linkElement) => {
   return Array.from(
-    parentElementOfLink(linkElement, 'SECTION').
+    ancestorElementOfLink(linkElement, 'SECTION').
     childNodes).
     find((childElement) =>
       childElement.tagName === 'SECTION' &&
@@ -99,10 +99,10 @@ function documentTitleFor(topicName) {
   return topicName;
 }
 
-function metadataFromLink(linkElement) {
+function metadataForLink(linkElement) {
   if (!linkElement) { return null; }
 
-  let sectionElement = sectionElementOfLink(linkElement);
+  let sectionElement = sectionElementContainingLink(linkElement);
 
   let relativeLinkNumber = Array.from(
     sectionElement.querySelectorAll(
@@ -184,7 +184,7 @@ function linkAfter(linkElement) {
   }
 }
 
-function parentElementOfLink(linkElement, tagName) {
+function ancestorElementOfLink(linkElement, tagName) {
   let parentElement = linkElement.parentNode;
   while (parentElement.tagName !== tagName) {
     parentElement = parentElement.parentNode;
@@ -197,7 +197,15 @@ function paragraphElementOfLink(linkElement) {
     return null;
   }
 
-  return parentElementOfLink(linkElement, 'P');
+  return ancestorElementOfLink(linkElement, 'P');
+}
+
+function sectionElementContainingLink(linkElement) {
+    if (!linkElement) {
+    return null;
+  }
+
+  return ancestorElementOfLink(linkElement, 'SECTION');
 }
 
 function linkBefore(linkElement) {
@@ -274,7 +282,7 @@ function lastLinkOfSectionElement(sectionElement) {
 }
 
 function enclosingTopicSectionOfLink(linkElement) {
-  let sectionElement = sectionElementOfLink(linkElement);
+  let sectionElement = sectionElementContainingLink(linkElement);
 
   if (sectionElement.dataset.pathDepth === "0") {
     return currentRootSection();
@@ -294,7 +302,7 @@ function firstSiblingOf(linkElement) {
     return null;
   }
 
-  let links = linksOfSectionElement(sectionElementOfLink(linkElement));
+  let links = linksOfSectionElement(sectionElementContainingLink(linkElement));
   return links[0] || linkElement;
 }
 
@@ -303,7 +311,7 @@ function lastSiblingOf(linkElement) {
     return null;
   }
 
-  let links = linksOfSectionElement(sectionElementOfLink(linkElement));
+  let links = linksOfSectionElement(sectionElementContainingLink(linkElement));
   return links[links.length - 1] || null;
 }
 
@@ -316,7 +324,7 @@ function parentLinkOf(linkElement) {
     return null;
   }
 
-  return parentLinkOfSection(sectionElementOfLink(linkElement));
+  return parentLinkOfSection(sectionElementContainingLink(linkElement));
 }
 
 function siblingOfLinkLike(linkElementArg, condition) {
@@ -366,8 +374,8 @@ export {
   parentLinkOfSection,
   parentLinksOfSection,
   childSectionElementOfParentLink,
-  sectionElementOfLink,
-  metadataFromLink,
+  sectionElementContainingLink,
+  metadataForLink,
   documentTitleFor,
   findLinkFromMetadata,
   findLowestExtantSectionElementOfPath,
@@ -389,7 +397,7 @@ export {
   linksOfSectionLike,
   linkOfSectionByTarget,
   linksOfSectionByTarget,
-  parentElementOfLink,
+  ancestorElementOfLink,
   paragraphElementOfLink,
   forEach
 };

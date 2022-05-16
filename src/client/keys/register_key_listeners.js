@@ -1,4 +1,9 @@
-import { currentSection, selectedLink } from 'helpers/getters';
+import {
+  currentSection,
+  selectedLink,
+  metadataForLink,
+} from 'helpers/getters';
+
 import {
   moveUpward,
   moveDownward,
