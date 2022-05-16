@@ -142,8 +142,8 @@ function removeLastPathElement(pathArray) {
 }
 
 function tryPathPrefix(pathArray, displayOptions) {
-  console.log("No section element found for path: ", pathArray);
-  console.log("Trying: ", removeLastPathElement(pathArray))
+  console.log("No section element found for path: ", JSON.stringify(pathArray));
+  console.log("Trying: ", JSON.stringify(removeLastPathElement(pathArray)));
   return displayPath(removeLastPathElement(pathArray), displayOptions);
 }
 
