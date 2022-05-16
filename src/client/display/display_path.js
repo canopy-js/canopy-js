@@ -26,8 +26,7 @@ import { storeLinkSelectionInSession } from 'history/helpers';
 const displayPath = (pathArray, displayOptions) => {
   displayOptions = displayOptions || {};
   let sectionElement = sectionElementOfPath(pathArray);
-  if (!sectionElement && pathArray.length === 1 && pathArray[0][0] === pathArray[0][1]) throw 'Unknown path';
-  if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
+  if (!pathIsValid(pathArray, sectionElement, displayOptions)) return;
 
   let topicName = pathArray[0][0];
   document.title = documentTitleFor(topicName);
@@ -63,6 +62,23 @@ const displayPathTo = (sectionElement, linkToSelect) => {
 
   let parentSectionElement = sectionElementContainingLink(parentLinks[0]);
   displayPathTo(parentSectionElement, linkToSelect);
+}
+
+function pathIsValid(pathArray, sectionElement, displayOptions) {
+  // If the path is more than one element, try the path prefix.
+  // If the path is one element, there is nothing else to try, so throw error
+  if (!sectionElement) {
+    console.log("Unknown path: " + JSON.stringify(pathArray));
+    console.log("Section Element: ", sectionElement);
+    if (sectionElement) {
+      console.log("Children: ", Array.from(sectionElement.childNodes).slice(1).map((el) => [el.dataset.subtopicName, el]));
+    }
+    if (!sectionElement && pathArray.length === 1) throw 'Unknown path';
+    tryPathPrefix(pathArray, displayOptions);
+    return false;
+  } else {
+    return true;
+  }
 }
 
 const resetDom = () => {
