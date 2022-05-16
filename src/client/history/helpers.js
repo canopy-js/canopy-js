@@ -33,8 +33,8 @@ function priorLinkSelectionData() {
 }
 
 function storeLinkSelectionInSession(linkElement) {
-  let linkData = linkElement && JSON.stringify(metadataFromLink(linkElement));
-  linkData && sessionStorage.setItem(location.pathname + location.hash, linkData);
+  let linkData = linkElement && JSON.stringify(metadataForLink(linkElement));
+  sessionStorage.setItem(location.pathname + location.hash, linkData);
 }
 
 export {
