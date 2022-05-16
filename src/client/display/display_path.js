@@ -37,10 +37,10 @@ const displayPath = (pathArray, displayOptions) => {
   resetDom();
 
   let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
-  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  if (!displayOptions.preservePath) setPath(pathArray, linkToSelect);
-  storeLinkSelectionInSession(linkToSelect);
+  setPathAndStoreLinkInSession(pathArray, linkToSelect, displayOptions);
+
+  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   displayPathTo(sectionElementToDisplay, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
@@ -79,6 +79,13 @@ function pathIsValid(pathArray, sectionElement, displayOptions) {
   } else {
     return true;
   }
+}
+
+function setPathAndStoreLinkInSession(pathArray, linkToSelect, displayOptions) {
+  // These operations must occur in this order so that the URL is updated first
+  // and then the link selection data is stored in the session under that URL
+  if (!displayOptions.pathAlreadyChanged) setPath(pathArray, linkToSelect);
+  storeLinkSelectionInSession(linkToSelect);
 }
 
 const resetDom = () => {
