@@ -1,6 +1,5 @@
 import { htmlIdFor } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
-import setPath from 'path/set_path';
 import { paragraphElementOfSection, linkOfSectionByTarget } from 'helpers/getters';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import BlockRenderers from 'render/block_renderers';
