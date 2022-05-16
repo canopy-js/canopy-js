@@ -11,8 +11,8 @@ const setPath = (newPathArray) => {
   let oldPathArray = parsePathString();
   let documentTitle = newPathArray[0][0];
 
-  let historyApiFunction = pathStringFor(newPathArray) === pathStringFor(oldPathArray) ?
-    replaceState : pushState;
+  let pathUnchanged = pathStringFor(newPathArray) === pathStringFor(oldPathArray);
+  let historyApiFunction = pathUnchanged ? replaceState : pushState;
 
   historyApiFunction(
     metadataFromLink(selectedLink()),
@@ -22,7 +22,7 @@ const setPath = (newPathArray) => {
 }
 
 function replaceState(a, b, c) {
-  history.replaceState(a, b, c)
+  history.replaceState(a, b, c);
 };
 
 function pushState(a, b, c) {
