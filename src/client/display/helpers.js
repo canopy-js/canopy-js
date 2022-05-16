@@ -117,8 +117,8 @@ function showSectionElement(sectionElement) {
   sectionElement.style.display = 'block';
 }
 
-function showSectionElementOfLink(linkElement) {
-  showSectionElement(sectionElementOfLink(linkElement));
+function showsectionElementContainingLink(linkElement) {
+  showSectionElement(sectionElementContainingLink(linkElement));
 }
 
 function removeDfsClasses() {

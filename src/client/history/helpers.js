@@ -1,10 +1,10 @@
-import { metadataFromLink } from 'helpers/getters';
+import { metadataForLink } from 'helpers/getters';
 import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
 
 function saveCurrentLinkSelectionInHistoryStack(linkElement) {
   history.replaceState(
-    metadataFromLink(linkElement),
+    metadataForLink(linkElement),
     document.title,
     window.location.href
   );

@@ -2,7 +2,7 @@ import {
   selectedLink,
   documentTitleFor,
   uniqueSubtopic,
-  metadataFromLink
+  metadataForLink
 } from 'helpers/getters';
 import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
@@ -15,7 +15,7 @@ const setPath = (newPathArray) => {
   let historyApiFunction = pathUnchanged ? replaceState : pushState;
 
   historyApiFunction(
-    metadataFromLink(selectedLink()),
+    metadataForLink(selectedLink()),
     documentTitle,
     pathStringFor(newPathArray)
   );

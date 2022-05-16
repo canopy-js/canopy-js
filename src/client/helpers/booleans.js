@@ -1,8 +1,8 @@
 import { currentRootSection, canopyContainer } from 'helpers/getters';
-import { sectionElementOfLink, linksOfSectionElement, sectionElementOfPath } from 'helpers/getters';
+import { sectionElementContainingLink, linksOfSectionElement, sectionElementOfPath } from 'helpers/getters';
 
 function isInRootSection(linkElement) {
-  return sectionElementOfLink(linkElement) === currentRootSection();
+  return sectionElementContainingLink(linkElement) === currentRootSection();
 }
 
 function isATopicRootSection(sectionElement) {
