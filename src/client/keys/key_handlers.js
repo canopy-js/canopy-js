@@ -30,7 +30,7 @@ import {
   sectionHasNoChildLinks
 } from 'helpers/booleans';
 
-import { pathForSectionElement } from 'path/helpers';
+import { pathArrayForSectionElement } from 'path/helpers';
 import updateView from 'display/update_view';
 import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
@@ -289,7 +289,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     }
 
     return updateView(
-      pathForSectionElement(sectionToDisplay),
+      pathArrayForSectionElement(sectionToDisplay),
       {
         linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
@@ -300,7 +300,7 @@ function depthFirstSearch(dfsDirectionInteger) {
   // Close a parent link with children
   if (selectedLinkIsOpenLocalLinkWithNoChildren()) {
     return updateView(
-      pathForSectionElement(sectionElementContainingLink(selectedLink())),
+      pathArrayForSectionElement(sectionElementContainingLink(selectedLink())),
       {
         linkSelectionData: metadataForLink(selectedLink()),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
@@ -316,7 +316,7 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (nextSiblingToVisit) {
     let nextLink = nextSiblingToVisit;
     return updateView(
-      pathForSectionElement(sectionElementContainingLink(nextLink)),
+      pathArrayForSectionElement(sectionElementContainingLink(nextLink)),
       {
         linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
@@ -329,7 +329,7 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (parentLink && parentLink.dataset.type !== 'global') {
     let nextLink = parentLink;
     return updateView(
-      pathForSectionElement(sectionElementContainingLink(nextLink)),
+      pathArrayForSectionElement(sectionElementContainingLink(nextLink)),
       {
         linkSelectionData: metadataForLink(nextLink),
         postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
@@ -343,7 +343,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     lastLinkOfSectionElement(sectionElementContainingLink(selectedLink()));
 
   return updateView(
-    pathForSectionElement(sectionElementContainingLink(nextLink)),
+    pathArrayForSectionElement(sectionElementContainingLink(nextLink)),
     {
       linkSelectionData: metadataForLink(nextLink),
       postDisplayCallback: updateDfsClassesCallback(dfsDirectionInteger)
@@ -377,7 +377,7 @@ function goToEnclosingTopic() {
   let linkElement = openLinkOfSection(sectionElement) || selectedLink();
 
   updateView(
-    pathForSectionElement(sectionElement),
+    pathArrayForSectionElement(sectionElement),
     { linkSelectionData: metadataForLink(linkElement) }
   );
 }
@@ -390,7 +390,7 @@ function goToParentOfEnclosingTopic() {
   let linkElement = openLinkOfSection(sectionElement);
 
   updateView(
-    pathForSectionElement(sectionElement),
+    pathArrayForSectionElement(sectionElement),
     { linkSelectionData: metadataForLink(linkElement) }
   );
 }
