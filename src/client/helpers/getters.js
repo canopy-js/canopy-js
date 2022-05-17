@@ -5,7 +5,7 @@ const canopyContainer = document.getElementById('_canopy');
 
 const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
 
-const pathPrefix = canopyContainer && canopyContainer.dataset.pathPrefix;
+const projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPathPrefix;
 
 const sectionElementOfPath = (pathArray) => {
   return sectionElementOfRelativePath(canopyContainer, pathArray);
@@ -365,7 +365,7 @@ function forEach(list, callback) {
 export {
   canopyContainer,
   defaultTopic,
-  pathPrefix,
+  projectPathPrefix,
   sectionElementOfPath,
   sectionElementOfRelativePath,
   currentSection,

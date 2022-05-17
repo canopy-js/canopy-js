@@ -1,10 +1,10 @@
-import { pathPrefix } from 'helpers/getters';
+import { projectPathPrefix } from 'helpers/getters';
 import { slugFor } from 'helpers/identifiers';
 import REQUEST_CACHE from 'requests/request_cache';
 
 function eagerLoad(topicName) {
   if (REQUEST_CACHE[topicName]) return;
-  let dataPath = pathPrefix + '/data/' + slugFor(topicName.toLowerCase()) + '.json';
+  let dataPath = projectPathPrefix + '/data/' + slugFor(topicName.toLowerCase()) + '.json';
 
   return fetch(dataPath).
     then(res => {

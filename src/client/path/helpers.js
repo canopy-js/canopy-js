@@ -1,4 +1,4 @@
-import { defaultTopic, canopyContainer, pathPrefix } from 'helpers/getters';
+import { defaultTopic, canopyContainer, projectPathPrefix } from 'helpers/getters';
 import parsePathString from 'path/parse_path_string';
 
 function pathOrDefaultTopic() {

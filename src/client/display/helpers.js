@@ -141,7 +141,7 @@ function removeLastPathElement(pathArray) {
   }
 }
 
-function tryPathPrefix(pathArray, displayOptions) {
+function tryprojectPathPrefix(pathArray, displayOptions) {
   console.log("No section element found for path: ", JSON.stringify(pathArray));
   console.log("Trying: ", JSON.stringify(removeLastPathElement(pathArray)));
   return displayPath(removeLastPathElement(pathArray), displayOptions);
@@ -171,6 +171,6 @@ export {
   deselectAllLinks,
   removeDfsClasses,
   removeLastPathElement,
-  tryPathPrefix,
+  tryprojectPathPrefix,
   addLinkSelection
 };
