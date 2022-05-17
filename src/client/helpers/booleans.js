@@ -1,5 +1,5 @@
 import { currentRootSection, canopyContainer } from 'helpers/getters';
-import { sectionElementContainingLink, linksOfSectionElement, sectionElementOfPath } from 'helpers/getters';
+import { sectionElementContainingLink, linksOfSectionElement } from 'helpers/getters';
 
 function isInRootSection(linkElement) {
   return sectionElementContainingLink(linkElement) === currentRootSection();

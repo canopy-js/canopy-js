@@ -4,8 +4,8 @@ import {
 } from 'history/helpers';
 import { priorLinkSelectionDataFromSession } from 'history/helpers';
 import updateView from 'display/update_view';
-import parsePathString from 'path/parse_path_string';
 import { selectedLink } from 'helpers/getters';
+import Path from 'models/path';
 
 function registerPopStateListener() {
   window.addEventListener('popstate', (e) => {
@@ -14,7 +14,7 @@ function registerPopStateListener() {
     let newLinkSelectionData = linkSelectionPresentInEvent(e) ? e.state : null;
 
     updateView(
-      parsePathString(),
+      Path.current,
       {
         linkSelectionData: newLinkSelectionData || priorLinkSelectionDataFromSession(),
         pathAlreadyChanged: true

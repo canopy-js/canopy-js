@@ -1,16 +1,7 @@
 import { defaultTopic, canopyContainer, projectPathPrefix } from 'helpers/getters';
-import parsePathString from 'path/parse_path_string';
+import Path from 'models/path';
 
-function pathOrDefaultTopic() {
-  let pathArray = parsePathString();
-  if (pathArray.length > 0) {
-    return pathArray
-  } else {
-    return [[defaultTopic, defaultTopic]];
-  }
-}
-
-function pathArrayForSectionElement(sectionElement) {
+function pathForSectionElement(sectionElement) {
   if (!sectionElement) { return null; }
 
   let pathArray = [];
@@ -29,7 +20,7 @@ function pathArrayForSectionElement(sectionElement) {
     }
   }
 
-  return pathArray;
+  return new Path(pathArray);
 }
 
-export { pathOrDefaultTopic, pathArrayForSectionElement };
+export { pathForSectionElement };

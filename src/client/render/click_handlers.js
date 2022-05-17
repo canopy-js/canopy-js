@@ -1,54 +1,54 @@
 import updateView from 'display/update_view';
 import { sectionElementContainingLink } from 'helpers/getters';
-import { pathArrayForSectionElement } from 'path/helpers';
-import parsePathString from 'path/parse_path_string';
-import pathStringFor from 'path/path_string_for';
+import { pathForSectionElement } from 'path/helpers';
+import Path from 'models/path';
 
-const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
+function onParentLinkClick (topicName, targetSubtopic, linkElement) {
   return (e) => {
     e.preventDefault();
     // If the link's child is already selected, display the link's section
-    let pathArray = pathArrayForSectionElement(sectionElementContainingLink(linkElement));
+    let path = pathForSectionElement(sectionElementContainingLink(linkElement));
+    let newPath = path.withoutLastSegment;
 
     if (linkElement.classList.contains('canopy-open-link')) {
-      pathArray.pop();
-      let newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
-      pathArray.push(newTuple);
+      newPath = newPath.
+      addSegment(
+        linkElement.dataset.enclosingTopic,
+        linkElement.dataset.enclosingSubtopic
+      );
     } else {
-      pathArray.pop();
-      let newTuple = [topicName, targetSubtopic];
-      pathArray.push(newTuple);
+      newPath = newPath.addSegment(topicName, targetSubtopic);
     }
 
-    updateView(pathArray);
-  }
-}
+    updateView(newPath);
+  };
+};
 
-const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
+function onGlobalLinkClick (targetTopic, targetSubtopic, linkElement) {
   return (e) => {
     e.preventDefault();
 
-    let pathArray
+    let path;
     if (e.altKey) {
-      pathArray = pathArrayForSectionElement(sectionElementContainingLink(linkElement))
+      path = pathArrayForSectionElement(sectionElementContainingLink(linkElement))
 
       if (!linkElement.classList.contains('canopy-open-link')) {
-        pathArray.push([
+        path = path.addSegment(
           linkElement.dataset.targetTopic,
           linkElement.dataset.targetSubtopic
-        ]);
+        );
       }
     } else {
-      pathArray = [[targetTopic, targetSubtopic]];
+      path = new Path([[targetTopic, targetSubtopic]]);
     }
 
     if (e.metaKey) {
       window.open(
-        location.origin + pathStringFor(pathArray),
+        location.origin + path.string,
         '_blank'
       );
     } else {
-      updateView(pathArray)
+      updateView(path)
     }
   }
 }
