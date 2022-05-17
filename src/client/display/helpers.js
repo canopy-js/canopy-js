@@ -16,16 +16,7 @@ import { sectionHasNoChildLinks } from 'helpers/booleans';
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 
-function alreadyPresentNode(anchorElement, childTopicName) {
-  return Array.from(anchorElement.childNodes)
-    .filter((childNode) => {
-      return childNode.dataset &&
-        childNode.dataset.topicName === childTopicName &&
-        childNode.dataset.subtopicName === childTopicName;
-    })[0];
-}
-
-function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
+function determineLinkToSelect(path, displayOptions) {
   let {
     linkSelectionData,
     selectALink
@@ -36,16 +27,11 @@ function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOp
   }
 
   if (selectALink) {
-    return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
-      parentLinkOfSection(sectionElementOfCurrentPath);
+    return firstLinkOfSectionElement(path.sectionElement) ||
+      parentLinkOfSection(path.sectionElement);
   } else {
     return null;
   }
-}
-
-function lastPathSegmentIsATopicRoot(pathArray) {
-  let lastPathSegment = pathArray[pathArray.length - 1];
-  return lastPathSegment[0] === lastPathSegment[1];
 }
 
 function setHeader(topicName) {
@@ -128,39 +114,17 @@ function removeDfsClasses() {
   });
 }
 
-function removeLastPathElement(pathArray) {
-  let lastItem = pathArray[pathArray.length - 1];
-  if (lastItem[0] === lastItem[1]) {
-    return JSON.parse(JSON.stringify(pathArray.slice(0, -1)));
+function tryPathPrefix(path, displayOptions) {
+  console.log("No section element found for path: ", JSON.stringify(path.toString()));
+  console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
+  if (path.length > 1) {
+    return displayPath(path.withoutLastSegment, displayOptions);
   } else {
-    let newArray = JSON.parse(JSON.stringify(pathArray));
-    let item = newArray.pop();
-    item[1] = item[0];
-    newArray.push(item);
-    return newArray;
-  }
-}
-
-function tryprojectPathPrefix(pathArray, displayOptions) {
-  console.log("No section element found for path: ", JSON.stringify(pathArray));
-  console.log("Trying: ", JSON.stringify(removeLastPathElement(pathArray)));
-  return displayPath(removeLastPathElement(pathArray), displayOptions);
-}
-
-function addLinkSelection(pathArray, linkToSelect) {
-  if (linkToSelect && linkToSelect.dataset.type === 'local') {
-    let newArray = JSON.parse(JSON.stringify(pathArray));
-    let item = newArray.pop();
-    item[1] = linkToSelect.dataset.targetSubtopic
-    newArray.push(item);
-    return newArray;
-  } else {
-    return pathArray;
+    throw "Invalid path: " + path.array;
   }
 }
 
 export {
-  alreadyPresentNode,
   determineLinkToSelect,
   determineSectionElementToDisplay,
   setHeader,
@@ -170,7 +134,5 @@ export {
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  removeLastPathElement,
-  tryprojectPathPrefix,
-  addLinkSelection
+  tryPathPrefix
 };

@@ -15,7 +15,7 @@ import {
   goToParentOfEnclosingTopic
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
-import parsePathString from 'path/parse_path_string';
+import Path from 'models/path';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
@@ -36,7 +36,7 @@ const registerKeyListeners = () => {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
       updateView(
-        parsePathString(),
+        Path.current,
         { selectALink: true }
       );
     }

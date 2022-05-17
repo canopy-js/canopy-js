@@ -1,4 +1,3 @@
-import { slugFor } from 'helpers/identifiers';
 import { isInRootSection } from 'helpers/booleans';
 
 const canopyContainer = document.getElementById('_canopy');
@@ -6,40 +5,6 @@ const canopyContainer = document.getElementById('_canopy');
 const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
 
 const projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPathPrefix;
-
-const sectionElementOfPath = (pathArray) => {
-  return sectionElementOfRelativePath(canopyContainer, pathArray);
-}
-
-const sectionElementOfRelativePath = (rootElement, suppliedPathArray) => {
-  let pathArray = JSON.parse(JSON.stringify(suppliedPathArray));
-  let currentNode = rootElement;
-  if (rootElement === canopyContainer) {
-    currentNode = rootElement.querySelector(
-      `[data-topic-name="${pathArray[0][0]}"]` +
-      `[data-subtopic-name="${pathArray[0][1]}"]` +
-      `[data-path-depth="${0}"]`
-    );
-    pathArray = pathArray.slice(1);
-    if (pathArray.length === 0) { return currentNode; }
-  }
-
-  for (let i = 0; i < pathArray.length; i++) {
-    if (!currentNode) { return null; }
-
-    let topicName = pathArray[i][0];
-    let subtopicName = pathArray[i][1];
-    let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
-
-    currentNode = currentNode.querySelector(
-      `[data-topic-name="${topicName}"]` +
-      `[data-subtopic-name="${subtopicName}"]` +
-      `[data-path-depth="${newPathDepth}"]`
-    );
-  }
-
-  return currentNode;
-}
 
 const currentSection = () => {
   let nodeList = document.querySelectorAll('section[style="display: block;"');
@@ -125,24 +90,6 @@ function findLinkFromMetadata(linkSelectionData) {
     `[data-path-depth="${linkSelectionData.sectionElementPathDepth}"]` +
     ` a[data-text="${linkSelectionData.linkText}"]`
   )[linkSelectionData.relativeLinkNumber];
-}
-
-function findLowestExtantSectionElementOfPath(pathArray) {
-  let lowestExtantSectionElementOfPath = null;
-  let pathSuffixToRender = [];
-
-  for (let i = 0; i < pathArray.length; i++) {
-    let pathSegment = pathArray.slice(0, i + 1);
-    let sectionElement = sectionElementOfPath(pathSegment);
-    if (sectionElement) {
-      lowestExtantSectionElementOfPath = sectionElementOfPath(pathSegment);
-    } else {
-      pathSuffixToRender = pathArray.slice(i);
-      break;
-    }
-  }
-
-  return { lowestExtantSectionElementOfPath, pathSuffixToRender };
 }
 
 function openLinkOfSection(sectionElement) {
@@ -366,8 +313,6 @@ export {
   canopyContainer,
   defaultTopic,
   projectPathPrefix,
-  sectionElementOfPath,
-  sectionElementOfRelativePath,
   currentSection,
   currentRootSection,
   selectedLink,
@@ -378,7 +323,6 @@ export {
   metadataForLink,
   documentTitleFor,
   findLinkFromMetadata,
-  findLowestExtantSectionElementOfPath,
   openLinkOfSection,
   paragraphElementOfSection,
   linksOfSectionElement,
