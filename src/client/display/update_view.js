@@ -3,18 +3,15 @@ import displayPath from 'display/display_path';
 import {
   defaultTopic,
   canopyContainer,
-  findLowestExtantSectionElementOfPath,
   childSectionElementOfParentLink
 } from 'helpers/getters';
 
-import { newNodeAlreadyPresent } from 'display/helpers';
-
-const updateView = (pathArray, displayOptions) => {
-  let newTreeAppended = fetchAndRenderPath(pathArray, canopyContainer, true);
+const updateView = (path, displayOptions) => {
+  let newTreeAppended = fetchAndRenderPath(path, canopyContainer, true);
 
   newTreeAppended.then(() => {
     displayPath(
-      pathArray,
+      path,
       displayOptions
     );
   });

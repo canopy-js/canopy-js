@@ -1,6 +1,5 @@
 import { metadataForLink } from 'helpers/getters';
-import parsePathString from 'path/parse_path_string';
-import pathStringFor from 'path/path_string_for';
+import Path from 'models/path';
 
 function saveCurrentLinkSelectionInHistoryStack(linkElement) {
   history.replaceState(
@@ -15,13 +14,7 @@ function linkSelectionPresentInEvent(e) {
 }
 
 function priorLinkSelectionDataFromSession() {
-  return JSON.parse(
-    sessionStorage.getItem(
-      pathStringFor(
-        parsePathString()
-      )
-    )
-  );
+  return JSON.parse(sessionStorage.getItem(Path.current.string));
 }
 
 function stateIfPresentInHistoryStack() {

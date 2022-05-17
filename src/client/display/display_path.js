@@ -1,7 +1,6 @@
-import setPath from 'path/set_path';
+import Path from 'models/path';
 import {
   canopyContainer,
-  sectionElementOfPath,
   parentLinksOfSection,
   documentTitleFor,
   sectionElementContainingLink,
@@ -12,33 +11,30 @@ import {
   determineLinkToSelect,
   determineSectionElementToDisplay,
   setHeader,
-  displaySectionBelowLink,
   addSelectedLinkClass,
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  tryprojectPathPrefix,
-  addLinkSelection
+  tryPathPrefix
 } from 'display/helpers';
 
 import { storeLinkSelectionInSession } from 'history/helpers';
 
-const displayPath = (pathArray, displayOptions) => {
+const displayPath = (path, displayOptions) => {
   displayOptions = displayOptions || {};
-  let sectionElement = sectionElementOfPath(pathArray);
-  if (!pathIsValid(pathArray, sectionElement, displayOptions)) return;
+  let sectionElement = path.sectionElement;
+  if (!path.sectionElement) return tryPathPrefix(path, displayOptions);
 
-  let topicName = pathArray[0][0];
-  document.title = documentTitleFor(topicName);
-  let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.displayTopicName;
+  document.title = documentTitleFor(path.firstTopic);
+  let displayTopicName = path.firstSegment.sectionElement.dataset.displayTopicName;
   setHeader(displayTopicName);
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
 
   resetDom();
 
-  let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
+  let linkToSelect = determineLinkToSelect(path, displayOptions);
   addSelectedLinkClass(linkToSelect);
-  setPathAndStoreLinkInSession(pathArray, linkToSelect, displayOptions);
+  setPathAndStoreLinkInSession(path, linkToSelect, displayOptions);
 
   let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
   displayPathTo(sectionElementToDisplay, linkToSelect);
@@ -53,10 +49,6 @@ const displayPathTo = (sectionElement, linkToSelect) => {
   }
 
   let parentLinks = parentLinksOfSection(sectionElement);
-  let isPreviewParagraph = linkToSelect &&
-    linkToSelect.dataset.type === 'local' &&
-    paragraphElementOfSection(sectionElement.parentNode).
-    contains(linkToSelect);
 
   parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
 
@@ -64,27 +56,12 @@ const displayPathTo = (sectionElement, linkToSelect) => {
   displayPathTo(parentSectionElement, linkToSelect);
 }
 
-function pathIsValid(pathArray, sectionElement, displayOptions) {
-  // If the path is more than one element, try the path prefix.
-  // If the path is one element, there is nothing else to try, so throw error
-  if (!sectionElement) {
-    console.log("Unknown path: " + JSON.stringify(pathArray));
-    console.log("Section Element: ", sectionElement);
-    if (sectionElement) {
-      console.log("Children: ", Array.from(sectionElement.childNodes).slice(1).map((el) => [el.dataset.subtopicName, el]));
-    }
-    if (!sectionElement && pathArray.length === 1) throw 'Unknown path';
-    tryprojectPathPrefix(pathArray, displayOptions);
-    return false;
-  } else {
-    return true;
-  }
-}
-
-function setPathAndStoreLinkInSession(pathArray, linkToSelect, displayOptions) {
+function setPathAndStoreLinkInSession(path, linkToSelect, displayOptions) {
   // These operations must occur in this order so that the URL is updated first
   // and then the link selection data is stored in the session under that URL
-  if (!displayOptions.pathAlreadyChanged) setPath(pathArray, linkToSelect);
+  if (!displayOptions.pathAlreadyChanged) {
+    Path.setPath(path, linkToSelect);
+  }
   storeLinkSelectionInSession(linkToSelect);
 }
 
