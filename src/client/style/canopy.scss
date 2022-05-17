@@ -41,7 +41,7 @@
 ///////////// Link styles /////////////////
 
   a.canopy-selectable-link {
-    text-decoration: underline #F0F0F0;
+    text-decoration: underline #DDDDDD;
     color: black;
     cursor: pointer;
 
@@ -60,6 +60,7 @@
 
     &.canopy-selected-link {
       background-color: #edeefc;
+      text-decoration: none;
     }
 
     &.canopy-selected-link.canopy-open-link {
