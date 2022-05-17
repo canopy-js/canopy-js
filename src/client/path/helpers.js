@@ -10,7 +10,7 @@ function pathOrDefaultTopic() {
   }
 }
 
-function pathForSectionElement(sectionElement) {
+function pathArrayForSectionElement(sectionElement) {
   if (!sectionElement) { return null; }
 
   let pathArray = [];
@@ -32,4 +32,4 @@ function pathForSectionElement(sectionElement) {
   return pathArray;
 }
 
-export { pathOrDefaultTopic, pathForSectionElement };
+export { pathOrDefaultTopic, pathArrayForSectionElement };

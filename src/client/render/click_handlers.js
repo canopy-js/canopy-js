@@ -1,6 +1,6 @@
 import updateView from 'display/update_view';
 import { sectionElementContainingLink } from 'helpers/getters';
-import { pathForSectionElement } from 'path/helpers';
+import { pathArrayForSectionElement } from 'path/helpers';
 import parsePathString from 'path/parse_path_string';
 import pathStringFor from 'path/path_string_for';
 
@@ -8,7 +8,7 @@ const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
   return (e) => {
     e.preventDefault();
     // If the link's child is already selected, display the link's section
-    let pathArray = pathForSectionElement(sectionElementContainingLink(linkElement));
+    let pathArray = pathArrayForSectionElement(sectionElementContainingLink(linkElement));
 
     if (linkElement.classList.contains('canopy-open-link')) {
       pathArray.pop();
@@ -30,7 +30,7 @@ const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
 
     let pathArray
     if (e.altKey) {
-      pathArray = pathForSectionElement(sectionElementContainingLink(linkElement))
+      pathArray = pathArrayForSectionElement(sectionElementContainingLink(linkElement))
 
       if (!linkElement.classList.contains('canopy-open-link')) {
         pathArray.push([
