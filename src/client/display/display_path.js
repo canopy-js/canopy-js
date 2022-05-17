@@ -17,7 +17,7 @@ import {
   hideAllSectionElements,
   deselectAllLinks,
   removeDfsClasses,
-  tryPathPrefix,
+  tryprojectPathPrefix,
   addLinkSelection
 } from 'display/helpers';
 
@@ -74,7 +74,7 @@ function pathIsValid(pathArray, sectionElement, displayOptions) {
       console.log("Children: ", Array.from(sectionElement.childNodes).slice(1).map((el) => [el.dataset.subtopicName, el]));
     }
     if (!sectionElement && pathArray.length === 1) throw 'Unknown path';
-    tryPathPrefix(pathArray, displayOptions);
+    tryprojectPathPrefix(pathArray, displayOptions);
     return false;
   } else {
     return true;

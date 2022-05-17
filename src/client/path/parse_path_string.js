@@ -1,9 +1,9 @@
-import { pathPrefix } from 'helpers/getters';
+import { projectPathPrefix } from 'helpers/getters';
 
 const parsePathString = (pathStringArg) => {
   let pathString = pathStringArg || window.location.pathname + window.location.hash;
-  if (pathString.indexOf(pathPrefix) === 0) {
-    pathString = pathString.slice(pathPrefix.length);
+  if (pathString.indexOf(projectPathPrefix) === 0) {
+    pathString = pathString.slice(projectPathPrefix.length);
   }
 
   let slashSeparatedUnits = pathString.
