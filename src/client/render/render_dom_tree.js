@@ -1,10 +1,10 @@
 import { htmlIdFor } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
-import { paragraphElementOfSection, linkOfSectionByTarget } from 'helpers/getters';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import BlockRenderers from 'render/block_renderers';
 import eagerLoad from 'requests/eager_load';
 import Path from 'models/path'
+import Paragraph from 'models/paragraph';
 
 function renderDomTree(renderContext) {
   let {
@@ -23,7 +23,8 @@ function renderDomTree(renderContext) {
   let blockElements = renderElementsForBlocks(blocksOfParagraph, renderContext);
 
   blockElements.forEach((blockElement) => {
-    paragraphElementOfSection(sectionElement).appendChild(blockElement);
+    let paragraph = new Paragraph(sectionElement);
+    paragraph.paragraphElement.appendChild(blockElement);
   });
 
   return Promise.all(renderContext.promises).then((_) => sectionElement);
@@ -76,7 +77,9 @@ function createNewSectionElement(renderContext) {
   } = renderContext;
 
   let sectionElement = document.createElement('section');
+  sectionElement.classList.add('canopy-section');
   let paragraphElement = document.createElement('p');
+  paragraphElement.classList.add('canopy-paragraph');
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
   sectionElement.dataset.topicName = topicName;
@@ -90,13 +93,6 @@ function createNewSectionElement(renderContext) {
   }
 
   return sectionElement;
-}
-
-function subtreeAlreadyRenderedForPriorGlobalLinkInParagraph(sectionElement, token) {
-  return linkOfSectionByTarget(sectionElement,
-    token.targetTopic,
-    token.targetSubtopic
-  );
 }
 
 function renderElementsForBlocks(blocksOfParagraph, renderContext) {

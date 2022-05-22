@@ -1,6 +1,8 @@
 import { defaultTopic, canopyContainer, projectPathPrefix } from 'helpers/getters';
 import { selectedLink, metadataForLink } from 'helpers/getters';
 import { slugFor } from 'helpers/identifiers';
+import Paragraph from 'models/paragraph';
+import Link from 'models/link';
 
 class Path {
   constructor(argument) {
@@ -28,13 +30,13 @@ class Path {
     return new Path(this.pathArray.concat([[topic, subtopic]]));
   }
 
-  newTerminalSubtopic(newSubtopic) {
+  replaceTerminalSubtopic(newSubtopic) {
     let lastSegment = this.lastSegment;
     return this.withoutLastSegment.addSegment(lastSegment.topic, newSubtopic);
   }
 
   toString() {
-    return JSON.stringify(this.pathArray);
+    return this.string;
   }
 
   get array() {
@@ -114,18 +116,20 @@ class Path {
         `[data-path-depth="${0}"]`
       );
       if (path.length === 1) { return currentNode; }
+      path = path.withoutFirstSegment;
     }
 
+    let subpath = path.clone;
     for (let i = 0; i < path.length; i++) {
-      if (!currentNode) { return null; }
-      path = path.withoutFirstSegment;
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
 
       currentNode = currentNode.querySelector(
-        `[data-topic-name="${path.firstTopic}"]` +
-        `[data-subtopic-name="${path.firstSubtopic}"]` +
+        `[data-topic-name="${subpath.firstTopic}"]` +
+        `[data-subtopic-name="${subpath.firstSubtopic}"]` +
         `[data-path-depth="${newPathDepth}"]`
       );
+
+      subpath = subpath.withoutFirstSegment;
     }
 
     return currentNode;
@@ -133,6 +137,14 @@ class Path {
 
   get sectionElement() {
     return this.relativeSectionElement(canopyContainer);
+  }
+
+  get paragraph() {
+    if (this.sectionElement) {
+      return new Paragraph(this.sectionElement);
+    } else {
+      return null;
+    }
   }
 
   get empty() {
@@ -160,8 +172,12 @@ class Path {
     }
   }
 
-  static forTopic(topicName) {
-    return new Path([[topicName, topicName]]);
+  static forTopic(topic) {
+    return new Path([[topic, topic]]);
+  }
+
+  static forSegment(topic, subtopic) {
+    return new Path([[topic, subtopic]]);
   }
 
   static stringToArray(pathString) {
@@ -244,13 +260,13 @@ class Path {
     return slashSeparatedUnits;
   }
 
-  static setPath(newPath, displayOptions) {
+  static setPath(newPath) {
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic;
     let historyApiFunction = newPath.equals(oldPath) ? replaceState : pushState;
 
     historyApiFunction(
-      metadataForLink(selectedLink()),
+      history.state, // this will be changed via Link#persistInHistory
       documentTitle,
       newPath.string
     );
