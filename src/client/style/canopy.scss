@@ -61,10 +61,10 @@
     &.canopy-selected-link {
       background-color: #edeefc;
       text-decoration: none;
-    }
 
-    &.canopy-selected-link.canopy-open-link {
-      background-color: transparent;
+      &.canopy-open-link {
+        text-decoration: underline;
+      }
     }
 
     &.canopy-url-link {
