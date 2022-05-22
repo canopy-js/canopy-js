@@ -11,11 +11,12 @@ import {
   moveRightward,
   moveDownOrRedirect,
   depthFirstSearch,
-  goToEnclosingTopic,
-  goToParentOfEnclosingTopic
+  zoomOnLocalPath,
+  removeSelection
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
 import Path from 'models/path';
+import Link from 'models/link';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
@@ -32,7 +33,7 @@ const registerKeyListeners = () => {
       e.preventDefault();
     }
 
-    if (selectedLink()) {
+    if (Link.selection) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
       updateView(
@@ -54,20 +55,16 @@ const shortcutRelationships = {
   'k': moveUpward,
   'l': moveRightward,
 
-  'escape': goToParentOfEnclosingTopic,
-  'shift-escape': goToEnclosingTopic,
+  'escape': removeSelection,
+  'z': zoomOnLocalPath,
 
   'return': moveDownOrRedirect,
   'command-return': moveDownOrRedirect.bind(null, true),
   'alt-return': moveDownOrRedirect.bind(null, false, true),
   'command-alt-return': moveDownOrRedirect.bind(null, true, true),
 
-  'tab': depthFirstSearch.bind(null, 1, false, false),
-  'alt-tab': depthFirstSearch.bind(null, 1, true, true),
-  '`': depthFirstSearch.bind(null, 1, false, true),
-  'shift-tab': depthFirstSearch.bind(null, 2, false, false),
-  'alt-shift-tab': depthFirstSearch.bind(null, 2, true, true),
-  'shift-`': depthFirstSearch.bind(null, 2, false, true),
+  'tab': depthFirstSearch.bind(null, 1),
+  'shift-tab': depthFirstSearch.bind(null, -1)
 }
 
 const keyNames = {
@@ -82,6 +79,7 @@ const keyNames = {
   74: 'j',
   76: 'l',
   186: ';',
+  90: 'z',
 
   13: 'return',
   9: 'tab',
@@ -94,6 +92,7 @@ const keyNames = {
   51: '3',
   52: '4',
   53: '5',
+
 }
 
 export default registerKeyListeners;

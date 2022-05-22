@@ -1,45 +1,36 @@
 import updateView from 'display/update_view';
 import { sectionElementContainingLink } from 'helpers/getters';
-import { pathForSectionElement } from 'path/helpers';
 import Path from 'models/path';
 
-function onParentLinkClick (topicName, targetSubtopic, linkElement) {
+function onParentLinkClick (targetTopic, targetSubtopic, link) {
   return (e) => {
     e.preventDefault();
     // If the link's child is already selected, display the link's section
-    let path = pathForSectionElement(sectionElementContainingLink(linkElement));
+    let path = link.enclosingParagraph.path;
     let newPath = path.withoutLastSegment;
 
-    if (linkElement.classList.contains('canopy-open-link')) {
-      newPath = newPath.
-      addSegment(
-        linkElement.dataset.enclosingTopic,
-        linkElement.dataset.enclosingSubtopic
-      );
+    if (link.isOpen) {
+      newPath = newPath.addSegment(link.enclosingTopic, link.enclosingSubtopic);
     } else {
-      newPath = newPath.addSegment(topicName, targetSubtopic);
+      newPath = newPath.addSegment(link.targetTopic, link.targetSubtopic);
     }
 
     updateView(newPath);
   };
 };
 
-function onGlobalLinkClick (targetTopic, targetSubtopic, linkElement) {
+function onGlobalLinkClick (link) {
   return (e) => {
     e.preventDefault();
 
     let path;
     if (e.altKey) {
-      path = pathArrayForSectionElement(sectionElementContainingLink(linkElement))
-
-      if (!linkElement.classList.contains('canopy-open-link')) {
-        path = path.addSegment(
-          linkElement.dataset.targetTopic,
-          linkElement.dataset.targetSubtopic
-        );
+      path = link.enclosingParagraph.path;
+      if (!link.isOpen) {
+        path = path.addSegment(link.targetTopic, link.targetSubtopic);
       }
     } else {
-      path = new Path([[targetTopic, targetSubtopic]]);
+      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
     }
 
     if (e.metaKey) {

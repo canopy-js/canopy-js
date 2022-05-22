@@ -12,6 +12,10 @@ const fetchAndRenderPath = (path, parentElement, eagerRenderGlobalChildren) => {
     return fetchAndRenderPath(newPath, preexistingNode);
   }
 
+  let pathDepth = Number(parentElement.dataset.pathDepth) + 1 || 0;
+  let placeHolderElement = createPlaceholderElement(path.firstTopic, path.firstSubtopic, pathDepth);
+  parentElement.appendChild(placeHolderElement); // this prevents duplicates
+
   let uponResponsePromise = requestJson(path.firstTopic);
 
   let uponTreeRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {

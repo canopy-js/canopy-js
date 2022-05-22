@@ -1,15 +1,7 @@
 import Path from 'models/path';
-import {
-  canopyContainer,
-  parentLinksOfSection,
-  documentTitleFor,
-  sectionElementContainingLink,
-  paragraphElementOfSection
-} from 'helpers/getters';
+import { canopyContainer } from 'helpers/getters';
 
 import {
-  determineLinkToSelect,
-  determineSectionElementToDisplay,
   setHeader,
   addSelectedLinkClass,
   hideAllSectionElements,
@@ -18,51 +10,42 @@ import {
   tryPathPrefix
 } from 'display/helpers';
 
-import { storeLinkSelectionInSession } from 'history/helpers';
+import Link from 'models/link';
 
 const displayPath = (path, displayOptions) => {
   displayOptions = displayOptions || {};
-  let sectionElement = path.sectionElement;
-  if (!path.sectionElement) return tryPathPrefix(path, displayOptions);
+  if (!path.paragraph) return tryPathPrefix(path, displayOptions);
 
-  document.title = documentTitleFor(path.firstTopic);
-  let displayTopicName = path.firstSegment.sectionElement.dataset.displayTopicName;
-  setHeader(displayTopicName);
+  document.title = path.firstTopic;
+  setHeader(path.firstSegment.paragraph.displayTopicName);
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
 
   resetDom();
 
-  let linkToSelect = determineLinkToSelect(path, displayOptions);
-  addSelectedLinkClass(linkToSelect);
-  setPathAndStoreLinkInSession(path, linkToSelect, displayOptions);
+  let { linkToSelect, selectALink } = displayOptions;
+  linkToSelect = determineLinkToSelect(linkToSelect, selectALink, path.paragraph);
+  if (!displayOptions.pathAlreadySet) Path.setPath(path);
+  if (linkToSelect) {
+    Link.select(linkToSelect);
+    Link.persistInHistory(linkToSelect);
+    Link.persistInSession(linkToSelect);
+  }
 
-  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
-  displayPathTo(sectionElementToDisplay, linkToSelect);
+  displayPathTo(path.paragraph, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
-const displayPathTo = (sectionElement, linkToSelect) => {
-  sectionElement.style.display = 'block';
-
-  if (sectionElement.parentNode === canopyContainer) {
-    return;
-  }
-
-  let parentLinks = parentLinksOfSection(sectionElement);
-
-  parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
-
-  let parentSectionElement = sectionElementContainingLink(parentLinks[0]);
-  displayPathTo(parentSectionElement, linkToSelect);
+const displayPathTo = (paragraph, link) => {
+  paragraph.display();
+  if (paragraph.isPageRoot) return;
+  paragraph.parentLink && paragraph.parentLink.open();
+  displayPathTo(paragraph.parentParagraph, link);
 }
 
-function setPathAndStoreLinkInSession(path, linkToSelect, displayOptions) {
-  // These operations must occur in this order so that the URL is updated first
-  // and then the link selection data is stored in the session under that URL
-  if (!displayOptions.pathAlreadyChanged) {
-    Path.setPath(path, linkToSelect);
-  }
-  storeLinkSelectionInSession(linkToSelect);
+function determineLinkToSelect(linkToSelect, selectALink, paragraph) {
+  if (linkToSelect) return linkToSelect;
+  if (selectALink) return paragraph.firstLink || paragraph.parentLink;
+  return null;
 }
 
 const resetDom = () => {

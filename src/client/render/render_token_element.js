@@ -3,6 +3,7 @@ import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
 import eagerLoad from 'requests/eager_load';
+import Link from 'models/link';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -72,7 +73,7 @@ function renderSharedParentLinkBase(token) {
   appendElementsToParent(styleElements, linkElement);
   linkElement.addEventListener(
     'click',
-    onParentLinkClick(token.targetTopic, token.targetSubtopic, linkElement)
+    onParentLinkClick(new Link(linkElement))
   );
   return linkElement;
 }
@@ -106,7 +107,7 @@ function createGlobalLinkElement(token) {
   linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
   linkElement.addEventListener(
     'click',
-    onGlobalLinkClick(token.targetTopic, token.targetSubtopic, linkElement)
+    onGlobalLinkClick(new Link(linkElement))
   );
   return linkElement
 }
