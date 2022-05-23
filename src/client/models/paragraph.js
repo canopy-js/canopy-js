@@ -96,6 +96,10 @@ class Paragraph {
     return this.links.find(callback);
   }
 
+  linksBySelector(callback) {
+    return this.links.filter(callback);
+  }
+
   linkByTarget(targetTopic, targetSubtopic) {
     return this.linkBySelector(
       (link) => link.targetTopic === targetTopic && link.targetSubtopic === targetSubtopic
