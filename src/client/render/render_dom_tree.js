@@ -64,12 +64,16 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 
   return (token, linkElement) => {
     eagerLoad(token.targetTopic);
-    if (shouldRenderGlobalChild(linkElement, path, subtopicName, eagerRenderGlobalChildren)) {
-      let pathForSubtree = pathForGlobalChild(linkElement, path, subtopicName);
-      let newEagerRenderGlobalChildren = !sectionIsLastPathSegment(linkElement, path, subtopicName);
-      let whenTopicTreeAppended = fetchAndRenderPath(pathForSubtree, sectionElement, newEagerRenderGlobalChildren);
-      let currentSectionIsEagerRender = !eagerRenderGlobalChildren;
-      if (!currentSectionIsEagerRender) { promises.push(whenTopicTreeAppended); } // eager render shouldn't block UI
+
+    if (globalLinkIsOpen(linkElement, path, subtopicName)) {
+      let newPath = path.withoutFirstSegment;
+      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, eagerRenderGlobalChildren);
+      promises.push(whenTopicTreeAppended);
+    }
+
+    if (renderingLastPathSegment(linkElement, path) && eagerRenderGlobalChildren) {
+      let newPath = Path.forTopic(linkElement.dataset.targetTopic);
+      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, false);
     }
   }
 }
@@ -114,43 +118,26 @@ function renderElementsForBlocks(blocksOfParagraph, renderContext) {
   return elementArray;
 }
 
-function shouldRenderGlobalChild(linkElement, path, subtopicName, eagerRenderGlobalChildren) {
-  // A global link's children should be rendered if either of the following is true
-  // 1. Is the child of the global link the topic of the next path segment?
-  // 2a. Is the current section containing the global link the final path subtopic element?
-  // 2b. (And the current section element is not itself an eager render?)
-  return globalLinkIsOpen(linkElement, path, subtopicName) ||
-    (sectionIsLastPathSegment(linkElement, path) && eagerRenderGlobalChildren);
-}
-
-function pathForGlobalChild(linkElement, path, subtopicName) {
-  if (globalLinkIsOpen(linkElement, path, subtopicName)) {
-    return path.withoutFirstSegment;
-  } else if (sectionIsLastPathSegment(linkElement, path)) {
-    return Path.forTopic(linkElement.dataset.targetTopic);
-  } else {
-    throw "Generating path for global child that shouldn't be rendered";
-  }
-}
-
 function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopicName) {
   let subtopicOfPathContainingOpenGlobalReference = path.firstSubtopic;
   let openGlobalLinkExists = path.secondTopic;
+
   let openGlobalLinkTargetTopic = path.secondTopic;
   let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-  let thisIsTheOpenGlobalLink = 
+  let thisGlobalLinkIsPointingToTheRightThingToBeOpen =
     linkElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
     linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic;
+
   let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopicName === 
     subtopicOfPathContainingOpenGlobalReference;
 
   return openGlobalLinkExists &&
-    thisIsTheOpenGlobalLink &&
+    thisGlobalLinkIsPointingToTheRightThingToBeOpen &&
     thisGlobalLinkIsInCorrectSubtopicToBeOpen;
     
 }
 
-function sectionIsLastPathSegment(linkElement, path) {
+function renderingLastPathSegment(linkElement, path) {
   return path.length === 1 &&
     path.firstTopic === linkElement.dataset.enclosingTopic &&
     path.firstSubtopic === linkElement.dataset.enclosingSubtopic;
