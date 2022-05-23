@@ -8,8 +8,7 @@ const fetchAndRenderPath = (path, parentElement, eagerRenderGlobalChildren) => {
 
   let preexistingNode = path.firstSegment.relativeSectionElement(parentElement);
   if (preexistingNode) {
-    let newPath = path.withoutFirstSegment;
-    return fetchAndRenderPath(newPath, preexistingNode);
+    return fetchAndRenderPath(path.withoutFirstSegment, preexistingNode);
   }
 
   let pathDepth = Number(parentElement.dataset.pathDepth) + 1 || 0;
@@ -18,26 +17,29 @@ const fetchAndRenderPath = (path, parentElement, eagerRenderGlobalChildren) => {
 
   let uponResponsePromise = requestJson(path.firstTopic);
 
-  let uponTreeRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
+  return uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
         topicName: path.firstTopic,
         subtopicName: path.firstTopic,
         path,
-        displayTopicName: displayTopicName,
+        displayTopicName,
         paragraphsBySubtopic,
         subtopicsAlreadyRendered: {},
-        pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0,
+        pathDepth,
+        placeHolderElement,
         eagerRenderGlobalChildren
-      }
+      },
     );
   });
+}
 
-  return uponTreeRender.then((domTree) => {
-    if (domTree) { // null if parent was leaf node
-      parentElement.appendChild(domTree);
-    }
-  });
+function createPlaceholderElement(topicName, subtopicName, pathDepth) {
+  let sectionElement = document.createElement('section');
+  sectionElement.dataset.topicName = topicName;
+  sectionElement.dataset.subtopicName = subtopicName;
+  sectionElement.dataset.pathDepth = pathDepth;
+  return sectionElement;
 }
 
 export default fetchAndRenderPath;

@@ -9,10 +9,12 @@ import Paragraph from 'models/paragraph';
 function renderDomTree(renderContext) {
   let {
     subtopicName,
-    paragraphsBySubtopic
+    paragraphsBySubtopic,
+    placeHolderElement
   } = renderContext;
 
-  let sectionElement = createNewSectionElement(renderContext);
+  let sectionElement = placeHolderElement || document.createElement('section');
+  decorateSectionElement(sectionElement, renderContext);
 
   renderContext.subtopicsAlreadyRendered[subtopicName] = true;
   renderContext.promises = [];
@@ -38,7 +40,8 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
-        subtopicName: token.targetSubtopic
+        subtopicName: token.targetSubtopic,
+        placeHolderElement: null
       })
     );
 
@@ -71,12 +74,11 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   }
 }
 
-function createNewSectionElement(renderContext) {
+function decorateSectionElement(sectionElement, renderContext) {
   let {
     topicName, subtopicName, displayTopicName, pathDepth
   } = renderContext;
 
-  let sectionElement = document.createElement('section');
   sectionElement.classList.add('canopy-section');
   let paragraphElement = document.createElement('p');
   paragraphElement.classList.add('canopy-paragraph');
