@@ -30,12 +30,22 @@ class Paragraph {
     return this.sectionElement;
   }
 
+  set element(sectionElement) {
+    return this.sectionElement;
+    this.transferDataset(this.sectionElement);
+  }
+
+  transferDataset() {
+    this.topicName = this.sectionElement.dataset.topicName;
+    this.subtopicName = this.sectionElement.dataset.subtopicName;
+  }
+
   get topic() {
-    return this.element.dataset.topicName;
+    throw "Depreciated in favor of #topicName"
   }
 
   get subtopic() {
-    return this.element.dataset.topicName;
+    throw "Depreciated in favor of #subtopicName"
   }
 
   get paragraphElement() {
@@ -68,8 +78,10 @@ class Paragraph {
   }
 
   get links() {
+    if (this.linkObjects) return this.linkObjects;
     let linkElements = this.paragraphElement.querySelectorAll('a.canopy-selectable-link');
-    return Array.from(linkElements).map((element) => new Link(element))
+    this.linkObjects = Array.from(linkElements).map((element) => new Link(element));
+    return this.linkObjects;
   }
 
   get firstLink() {
@@ -136,7 +148,13 @@ class Paragraph {
     return new Paragraph(nodeList[nodeList.length - 1]);
   }
 
+  static get root() {
+    let path = Path.forTopic(Path.current.firstTopic);
+    return path.paragraph;
+  }
+
   static containingLink(link) {
+    if (!link instanceof Link) throw "Must provide link instance argument";
     let sectionElement = ancestorElement(link.element, 'canopy-section');
     return new Paragraph(sectionElement);
   }
