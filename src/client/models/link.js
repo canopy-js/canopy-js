@@ -5,10 +5,19 @@ import Paragraph from 'models/paragraph';
 
 class Link {
   constructor(argument) {
+    // There are three ways to instantiate a link object:
+    // 1. You can provide a DOM element
+    // 2. You can provide a metadata object
+    //   (This is helpful when storing link selection in the session or history)
+    // 3. You can provide a callback that returns the link
+    //   (This is helpful for selecting links that are not yet rendered)
+
     if (argument.tagName === 'A') {
-      this.linkElement = argument;
+      this.element = argument;
     } else if (argument instanceof Link) {
       throw "Cannot instantiate link from link";
+    } else if (typeof argument === 'function') {
+      this.selectorCallback = argument;
     } else {
       // The link element is retrieved only on-demand in case it doesn't exist yet
       this.metadataObject = argument;
@@ -22,10 +31,31 @@ class Link {
   get element () {
     if (this.linkElement) {
       return this.linkElement
-    } else {
-      this.linkElement = Link.elementFromMetadata(this.metadata);
+    } else if (this.metadataObject) {
+      this.element = Link.elementFromMetadata(this.metadata);
+      return this.linkElement;
+    } else if (this.selectorCallback) {
+      let link = this.selectorCallback();
+      this.element = link.element;
+      if (!this.element) throw "Link selector callback didn't select link";
       return this.linkElement;
     }
+  }
+
+  set element(argument) {
+    if (argument instanceof HTMLAnchorElement) {
+      this.linkElement = argument;
+    } else if (argument instanceof Link) {
+      this.linkElement = argument.element;
+    }
+    this.transferDataset();
+  }
+
+  transferDataset() {
+    this.targetTopic = this.element.dataset.targetTopic;
+    this.targetSubtopic = this.element.dataset.targetSubtopic;
+    this.enclosingTopic = this.element.dataset.enclosingTopic;
+    this.enclosingSubtopic = this.element.dataset.enclosingSubtopic;
   }
 
   get type() {
@@ -55,41 +85,40 @@ class Link {
     return new Paragraph(element);
   }
 
-  get targetTopic() {
-    return this.element.dataset.targetTopic;
-  }
+  get relativeLinkNumber() {
+    if (this.storedRelativeLinkNumber) return this.storedRelativeLinkNumber;
+    this.storedRelativeLinkNumber = this.
+      enclosingParagraph.
+      links.
+      map(e => e.element).
+      indexOf(this.element);
 
-  get targetSubtopic() {
-    return this.element.dataset.targetSubtopic;
-  }
-
-  get enclosingTopic() {
-    return this.element.dataset.enclosingTopic;
-  }
-
-  get enclosingSubtopic() {
-    return this.element.dataset.enclosingSubtopic;
+    return this.storedRelativeLinkNumber;
   }
 
   get metadata() {
     if (this.metadataObject) {
       return this.metadataObject;
     } else if(this.linkElement) {
-      let paragraph = Paragraph.containingLink(this);
-
-      let relativeLinkNumber = Array.from(
-        paragraph.element.querySelectorAll('.canopy-selectable-link')
-      ).indexOf(this.linkElement);
-
-      // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
-      this.metadataObject = {
-        pathString: paragraph.path.string,
-        text: this.linkElement.dataset.text,
-        relativeLinkNumber: relativeLinkNumber
-      };
-
-      return this.metadataObject;
+      let metadata = Link.collectMetadata(this.linkElement);
+      this.metadataObject = metadata;
+    } else if (this.selectorCallback) {
+      this.element = this.selectorCallback();
+    } else {
+      throw "Link has neither supplied metadata, dom element, nor selector function";
     }
+  }
+
+  static collectMetadata(linkElement) {
+    let link = new Link(linkElement);
+    let paragraph = Paragraph.containingLink(link);
+
+    // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
+    return {
+      pathString: paragraph.path.string,
+      text: linkElement.dataset.text,
+      relativeLinkNumber: link.relativeLinkNumber
+    };
   }
 
   static containsLinkSelectionMetadata(object) {

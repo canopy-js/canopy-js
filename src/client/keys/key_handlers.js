@@ -214,21 +214,17 @@ function depthFirstSearch(dfsDirectionInteger) {
 }
 
 function zoomOnLocalPath() {
-  let link = Link.selection;
-  let displayOptions = {};
+  let currentLink = Link.selection;
   let newPath = Path.current.lastSegment;
-
-  if (link) {
-    let metadata = link.metadata;
-    // Link might be local link with no children so the path to the open
-    // paragraph isn't necessarily the path to the paragraph containing the link
-    metadata.pathString = Paragraph.containingLink(link).path.lastSegment.string;
-    displayOptions.linkToSelect = new Link(metadata);
-  }
+  let newlink = new Link((_) => newPath.paragraph.links.find(
+    (link) => link.targetTopic === currentLink.targetTopic &&
+      link.targetSubtopic === currentLink.targetSubtopic &&
+      link.relativeLinkNumber === currentLink.relativeLinkNumber
+  ));
 
   return updateView(
     newPath,
-    displayOptions
+    { linkToSelect: newlink }
   );
 }
 
