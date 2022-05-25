@@ -6,12 +6,13 @@ import {
   childSectionElementOfParentLink
 } from 'helpers/getters';
 
-const updateView = (path, displayOptions) => {
-  let newTreeAppended = fetchAndRenderPath(path, canopyContainer, true);
+const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
+  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer, true);
 
   newTreeAppended.then(() => {
     displayPath(
-      path,
+      pathToDisplay,
+      linkToSelect,
       displayOptions
     );
   });

@@ -273,6 +273,13 @@ class Link {
       window.location.href
     );
   }
+
+  static get selectALink() {
+    return new Link(() => {
+      let paragraph = Paragraph.current;
+      return paragraph.firstLink || paragraph.parentLink;
+    });
+  }
 }
 
 export default Link;

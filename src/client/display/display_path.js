@@ -12,7 +12,7 @@ import {
 
 import Link from 'models/link';
 
-const displayPath = (path, displayOptions) => {
+const displayPath = (path, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!path.paragraph) return tryPathPrefix(path, displayOptions);
 
@@ -22,8 +22,6 @@ const displayPath = (path, displayOptions) => {
 
   resetDom();
 
-  let { linkToSelect, selectALink } = displayOptions;
-  linkToSelect = determineLinkToSelect(linkToSelect, selectALink, path.paragraph);
   if (!displayOptions.pathAlreadySet) Path.setPath(path);
   if (linkToSelect) {
     Link.select(linkToSelect);
@@ -40,12 +38,6 @@ const displayPathTo = (paragraph, link) => {
   if (paragraph.isPageRoot) return;
   paragraph.parentLink && paragraph.parentLink.open();
   displayPathTo(paragraph.parentParagraph, link);
-}
-
-function determineLinkToSelect(linkToSelect, selectALink, paragraph) {
-  if (linkToSelect) return linkToSelect;
-  if (selectALink) return paragraph.firstLink || paragraph.parentLink;
-  return null;
 }
 
 const resetDom = () => {

@@ -81,7 +81,7 @@ function tryPathPrefix(path, displayOptions) {
   console.log("No section element found for path: ", JSON.stringify(path.toString()));
   console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
   if (path.length > 1) {
-    return displayPath(path.withoutLastSegment, displayOptions);
+    return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {
     throw "Invalid path: " + path.array;
   }

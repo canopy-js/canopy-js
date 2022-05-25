@@ -12,14 +12,14 @@ function moveUpward() {
   if (link.isGlobal && link.isOpen && !link.targetParagraph.hasLinks) {
     return updateView(
       path.withoutLastSegment,
-      { linkToSelect: Link.selection }
+      Link.selection,
     );
   }
 
   if (link.isLocal && link.isOpen && !link.targetParagraph.hasLinks) {
     return updateView(
       Link.selection.enclosingParagraph.path,
-      { linkToSelect: Link.selection }
+      Link.selection,
     );
   }
 
@@ -30,14 +30,14 @@ function moveUpward() {
   if (link.enclosingParagraph.isTopic) {
     return updateView(
       path.withoutLastSegment,
-      { linkToSelect: link.enclosingParagraph.parentLink }
+      link.enclosingParagraph.parentLink,
     );
   }
 
   if (link.parentLink.isLocal) {
     return updateView(
       link.parentLink.enclosingParagraph.path,
-      { linkToSelect: link.enclosingParagraph.parentLink }
+      link.enclosingParagraph.parentLink,
     );
   }
 }
@@ -57,7 +57,7 @@ function moveDownward(cycle) {
 
     return updateView(
       newPath,
-      { selectALink: true }
+      Link.selectALink
     );
   }
 
@@ -66,7 +66,7 @@ function moveDownward(cycle) {
 
     return updateView(
       newPath,
-      { selectALink: true }
+      Link.selectALink
     );
   }
 }
@@ -97,7 +97,7 @@ function moveLaterally(directionInteger) {
 
   updateView(
     newPath,
-    { linkToSelect: link }
+    link,
   );
 }
 
@@ -113,7 +113,7 @@ function moveDownOrRedirect(newTab, altKey) {
     if (altKey) { // in-line topic mode
       if (link.isGlobal && link.isOpen && !link.targetParagraph.hasLinks) { // If it is open, close it
         let link = Paragraph.current.parentLink;
-        options = { linkToSelect: Link.selection }
+        options = Link.selection,
         path = Path.current.withoutLastSegment;
 
       } { // If it is closed, open it
@@ -129,7 +129,7 @@ function moveDownOrRedirect(newTab, altKey) {
         Link.selection.targetTopic,
         Link.selection.targetSubtopic
       ]]);
-      options = { selectALink: true };
+      options = Link.selectALink;
     }
 
     if (newTab) {
@@ -141,7 +141,7 @@ function moveDownOrRedirect(newTab, altKey) {
 
     updateView(
       path,
-      options || { selectALink: true }
+      options || Link.selectALink
     );
   } else if (Link.selection.type === 'url') {
     if (newTab) {
@@ -162,7 +162,7 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (link.isLocal && link.isClosed) {
     return updateView(
       Path.current.replaceTerminalSubtopic(link.targetSubtopic),
-      { linkToSelect: link.firstChildLink || link }
+      link.firstChildLink || link,
     );
   }
 
@@ -170,7 +170,7 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (link.isLocal && link.isClosed && !link.targetParagraph.hasLinks) {
     return updateView(
       Path.current.replaceTerminalSubtopic(link.targetSubtopic),
-      { linkToSelect: link.parentLink.nextSibling || link.grandParentLink }
+      link.parentLink.nextSibling || link.grandParentLink,
     );
   }
 
@@ -186,14 +186,14 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (dfsDirectionInteger === 1 && link.nextSibling && !link.nextSibling.equals(link)) {
     return updateView(
       link.nextSibling.enclosingParagraph.path,
-      { linkToSelect: link.nextSibling }
+      link.nextSibling,
     );
   }
 
   if (dfsDirectionInteger === -1 && link.previousSibling && !link.previousSibling.equals(link)) {
     return updateView(
       link.nextSibling.enclosingParagraph.path,
-      { linkToSelect: link.previousSibling }
+      link.previousSibling,
     );
   }
 
@@ -201,14 +201,14 @@ function depthFirstSearch(dfsDirectionInteger) {
   if (dfsDirectionInteger === 1 && link.topicParagraph.lastLink) {
     return updateView(
       Path.current,
-      { linkToSelect: link.firstSibling }
+      link.firstSibling,
     );
   }
 
   if (dfsDirectionInteger === -1 && link.topicParagraph.firstLink) {
     return updateView(
       Path.current,
-      { linkToSelect: link.lastSibling }
+      link.lastSibling,
     );
   }
 }
@@ -216,7 +216,7 @@ function depthFirstSearch(dfsDirectionInteger) {
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = Path.current.lastSegment;
-  let newlink = new Link((_) => newPath.paragraph.links.find(
+  let newlink = new Link(() => newPath.paragraph.links.find(
     (link) => link.targetTopic === currentLink.targetTopic &&
       link.targetSubtopic === currentLink.targetSubtopic &&
       link.relativeLinkNumber === currentLink.relativeLinkNumber
@@ -224,7 +224,7 @@ function zoomOnLocalPath() {
 
   return updateView(
     newPath,
-    { linkToSelect: newlink }
+    newlink,
   );
 }
 
