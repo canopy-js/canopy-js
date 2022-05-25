@@ -80,11 +80,15 @@ function tryPathPrefix(path, displayOptions) {
   }
 }
 
+const resetDom = () => {
+  deselectAllLinks();
+  hideAllSectionElements();
+}
+
 export {
   setHeader,
   displaySectionBelowLink,
   moveSelectedSectionClass,
-  hideAllSectionElements,
-  deselectAllLinks,
+  resetDom,
   tryPathPrefix
 };
