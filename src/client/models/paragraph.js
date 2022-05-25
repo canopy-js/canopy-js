@@ -144,8 +144,7 @@ class Paragraph {
   }
 
   static get current() {
-    let nodeList = document.querySelectorAll('section[style="display: block;"');
-    return new Paragraph(nodeList[nodeList.length - 1]);
+    return Path.current.paragraph;
   }
 
   static get root() {

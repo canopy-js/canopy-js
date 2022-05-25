@@ -55,7 +55,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
 
 function globalLinkSubtreeCallback(sectionElement, renderContext) {
   let {
-    path,
+    pathToDisplay,
     pathDepth,
     subtopicName,
     eagerRenderGlobalChildren,
@@ -65,13 +65,13 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   return (token, linkElement) => {
     eagerLoad(token.targetTopic);
 
-    if (globalLinkIsOpen(linkElement, path, subtopicName)) {
-      let newPath = path.withoutFirstSegment;
+    if (globalLinkIsOpen(linkElement, pathToDisplay, subtopicName)) {
+      let newPath = pathToDisplay.withoutFirstSegment;
       let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, eagerRenderGlobalChildren);
       promises.push(whenTopicTreeAppended);
     }
 
-    if (renderingLastPathSegment(linkElement, path) && eagerRenderGlobalChildren) {
+    if (renderingLastPathSegment(linkElement, pathToDisplay) && eagerRenderGlobalChildren) {
       let newPath = Path.forTopic(linkElement.dataset.targetTopic);
       let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, false);
     }
