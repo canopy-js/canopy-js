@@ -12,24 +12,24 @@ import {
 
 import Link from 'models/link';
 
-const displayPath = (path, linkToSelect, displayOptions) => {
+const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
-  if (!path.paragraph) return tryPathPrefix(path, displayOptions);
+  if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
 
-  document.title = path.firstTopic;
-  setHeader(path.firstSegment.paragraph.displayTopicName);
+  document.title = pathToDisplay.firstTopic;
+  setHeader(pathToDisplay.firstSegment.paragraph.displayTopicName);
   displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
 
   resetDom();
 
-  if (!displayOptions.pathAlreadySet) Path.setPath(path);
+  if (!displayOptions.pathAlreadySet) Path.setPath(pathToDisplay);
   if (linkToSelect) {
     Link.select(linkToSelect);
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
   }
 
-  displayPathTo(path.paragraph, linkToSelect);
+  displayPathTo(pathToDisplay.paragraph, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
