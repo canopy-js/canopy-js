@@ -10,8 +10,8 @@ function registerPopStateListener() {
 
     updateView(
       Path.current,
+      linkSelection || Link.sessionSelection,
       {
-        linkToSelect: linkSelection || Link.sessionSelection,
         pathAlreadySet: true
       }
     );

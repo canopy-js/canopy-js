@@ -10,5 +10,5 @@ registerPopStateListener();
 
 updateView(
   Path.initial,
-  { linkToSelect: Link.priorSelection }
+  Link.priorSelection
 );

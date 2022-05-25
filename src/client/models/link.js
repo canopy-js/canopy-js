@@ -292,6 +292,20 @@ class Link {
       window.location.href
     );
   }
+
+  // selectALink returns a callback that will pick a link to select
+  // once the DOM has rendered.
+  //
+  // selectALink takes a path to clarify which path is intended in case
+  // there are multiple rendered in the DOM, and the path has not updated yet.
+
+  static selectALink(path) {
+    return new Link(() => {
+      path = path || Path.current;
+      let paragraph = path.paragraph;
+      return paragraph.parentLink || paragraph.firstLink;
+    });
+  }
 }
 
 export default Link;
