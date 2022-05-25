@@ -238,8 +238,10 @@ class Link {
     return this.isGlobal || this.isLocal;
   }
 
-  static select(link) {
-    link && link.element.classList.add('canopy-selected-link');
+  static select(linkToSelect) {
+    linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
+    Link.persistInHistory(linkToSelect);
+    Link.persistInSession(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -287,7 +289,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link.metadata,
+      link && link.metadata || null,
       document.title,
       window.location.href
     );
