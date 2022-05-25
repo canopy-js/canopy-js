@@ -18,7 +18,6 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
 
   document.title = pathToDisplay.firstTopic;
   setHeader(pathToDisplay.firstSegment.paragraph.displayTopicName);
-  displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
 
   resetDom();
 
@@ -41,7 +40,6 @@ const displayPathTo = (paragraph, link) => {
 }
 
 const resetDom = () => {
-  removeDfsClasses();
   deselectAllLinks();
   hideAllSectionElements();
 }

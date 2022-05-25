@@ -70,13 +70,6 @@ function showsectionElementContainingLink(linkElement) {
   showSectionElement(sectionElementContainingLink(linkElement));
 }
 
-function removeDfsClasses() {
-  Array.from(document.getElementsByTagName("a")).forEach((linkElement) => {
-    linkElement.classList.remove('canopy-dfs-previously-selected-link');
-    linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
-  });
-}
-
 function tryPathPrefix(path, displayOptions) {
   console.log("No section element found for path: ", JSON.stringify(path.toString()));
   console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
@@ -93,6 +86,5 @@ export {
   moveSelectedSectionClass,
   hideAllSectionElements,
   deselectAllLinks,
-  removeDfsClasses,
   tryPathPrefix
 };
