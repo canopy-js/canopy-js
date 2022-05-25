@@ -3,29 +3,29 @@ import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
 import Path from 'models/path';
 
-const fetchAndRenderPath = (path, parentElement, eagerRenderGlobalChildren) => {
-  if (path.length === 0) {
+const fetchAndRenderPath = (pathToDisplay, parentElement, eagerRenderGlobalChildren) => {
+  if (pathToDisplay.length === 0) {
     if (eagerRenderGlobalChildren) eagerRenderGlobalChildrenOf(parentElement);
     return Promise.resolve(null);
   }
 
-  let preexistingNode = path.firstSegment.relativeSectionElement(parentElement);
+  let preexistingNode = pathToDisplay.firstSegment.relativeSectionElement(parentElement);
   if (preexistingNode) {
-    return fetchAndRenderPath(path.withoutFirstSegment, preexistingNode, eagerRenderGlobalChildren);
+    return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingNode, eagerRenderGlobalChildren);
   }
 
   let pathDepth = Number(parentElement.dataset.pathDepth) + 1 || 0;
-  let placeHolderElement = createPlaceholderElement(path.firstTopic, path.firstSubtopic, pathDepth);
+  let placeHolderElement = createPlaceholderElement(pathToDisplay.firstTopic, pathToDisplay.firstSubtopic, pathDepth);
   parentElement.appendChild(placeHolderElement); // this prevents duplicates
 
-  let uponResponsePromise = requestJson(path.firstTopic);
+  let uponResponsePromise = requestJson(pathToDisplay.firstTopic);
 
   return uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
-        topicName: path.firstTopic,
-        subtopicName: path.firstTopic,
-        path,
+        topicName: pathToDisplay.firstTopic,
+        subtopicName: pathToDisplay.firstTopic,
+        pathToDisplay,
         displayTopicName,
         paragraphsBySubtopic,
         subtopicsAlreadyRendered: {},
