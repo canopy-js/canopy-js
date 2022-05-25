@@ -4,44 +4,33 @@ import { canopyContainer } from 'helpers/getters';
 import {
   setHeader,
   addSelectedLinkClass,
-  hideAllSectionElements,
-  deselectAllLinks,
-  removeDfsClasses,
-  tryPathPrefix
+  tryPathPrefix,
+  resetDom
 } from 'display/helpers';
 
 import Link from 'models/link';
+import Paragraph from 'models/paragraph';
 
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
 
-  document.title = pathToDisplay.firstTopic;
-  setHeader(pathToDisplay.firstSegment.paragraph.displayTopicName);
-
   resetDom();
 
   if (!displayOptions.pathAlreadySet) Path.setPath(pathToDisplay);
-  if (linkToSelect) {
-    Link.select(linkToSelect);
-    Link.persistInHistory(linkToSelect);
-    Link.persistInSession(linkToSelect);
-  }
+  setHeader(Paragraph.root.displayTopicName);
+  document.title = pathToDisplay.firstTopic;
+  Link.select(linkToSelect); // if null, persists deselect
 
   displayPathTo(pathToDisplay.paragraph, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
-const displayPathTo = (paragraph, link) => {
+const displayPathTo = (paragraph) => {
   paragraph.display();
   if (paragraph.isPageRoot) return;
   paragraph.parentLink && paragraph.parentLink.open();
-  displayPathTo(paragraph.parentParagraph, link);
-}
-
-const resetDom = () => {
-  deselectAllLinks();
-  hideAllSectionElements();
+  displayPathTo(paragraph.parentParagraph);
 }
 
 export default displayPath;
