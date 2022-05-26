@@ -14,6 +14,8 @@ class Paragraph {
   // paragraph.paragraphElement returns the paragraph element.
 
   constructor(sectionElement) {
+    if (!sectionElement) throw "Paragraph instantiation requires section element";
+    if (!sectionElement.classList.contains('canopy-section')) throw "Paragraph class requires Canopy section element";
     this.sectionElement = sectionElement;
     this.transferDataset();
   }
@@ -41,11 +43,11 @@ class Paragraph {
   }
 
   get topic() {
-    throw "Depreciated in favor of #topicName"
+    throw "Depreciated in favor of #topicName";
   }
 
   get subtopic() {
-    throw "Depreciated in favor of #subtopicName"
+    throw "Depreciated in favor of #subtopicName";
   }
 
   get paragraphElement() {
@@ -121,7 +123,7 @@ class Paragraph {
   get parentLink() {
     if (this.element.parentNode === canopyContainer) { return null; }
 
-    return this.parentParagraph.linkByTarget(
+    return this.parentParagraph && this.parentParagraph.linkByTarget(
       this.element.dataset.topicName,
       this.element.dataset.subtopicName
     );
@@ -131,23 +133,32 @@ class Paragraph {
     return this.element.dataset.displayTopicName;
   }
 
-  get parentParagraphElement() {
-    return ancestorElement(this.element, 'canopy-paragraph');
-  }
-
-  get parentSectionElement() {
-    return ancestorElement(this.element, 'canopy-section');
-  }
-
   get parentParagraph() {
-    return new Paragraph(this.parentSectionElement);
+    if (this.element) {
+      let parentElement = ancestorElement(this.element, 'canopy-section');
+      return parent ? new Paragraph(parentElement) : null;
+    } else {
+      return null;
+    }
+  }
+
+  get topicParagraph() {
+    if (this.isTopic) {
+      return this;
+    } else {
+      return new Paragraph(ancestorElement(this.element, 'canopy-topic-section'));
+    }
+  }
+
+  get isTopicRoot() {
+    return this.topicName === this.subtopicName;
   }
 
   static get current() {
     return Path.current.paragraph;
   }
 
-  static get root() {
+  static get pageRoot() {
     let path = Path.forTopic(Path.current.firstTopic);
     return path.paragraph;
   }

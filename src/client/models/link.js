@@ -28,6 +28,16 @@ class Link {
     return this.element === otherLink.element;
   }
 
+  matches(otherLink) {
+    return this.targetTopic === otherLink.targetTopic &&
+      this.targetSubtopic === otherLink.targetSubtopic &&
+      this.relativeLinkNumber === otherLink.relativeLinkNumber;
+  }
+
+  contradicts(path) {
+    return this.pathWhenSelected.string !== path.string;
+  }
+
   get element () {
     if (this.linkElement) {
       return this.linkElement
@@ -36,8 +46,11 @@ class Link {
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
+      if (!link) {
+        console.log("Link selector callback didn't select link");
+        return;
+      }
       this.element = link.element;
-      if (!this.element) throw "Link selector callback didn't select link";
       return this.linkElement;
     }
   }
@@ -54,7 +67,7 @@ class Link {
   transferDataset() {
     // This is just to make it easier to inspect and debug DOM elements
     // Getters are used instead of properties to allow lazy access for callback-specified links
-    if (!this.linkElement) throw 'Link element must be present';
+    if (!this.linkElement) return;
     this._targetTopic = this.linkElement.dataset.targetTopic;
     this._targetSubtopic = this.linkElement.dataset.targetSubtopic;
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
@@ -76,10 +89,10 @@ class Link {
   }
 
   get type() {
-    return this.linkElement.dataset.type;
+    return this.element.dataset.type;
   }
 
-  get parentSectionElement() {
+  get sectionElement() {
     return ancestorElement(this.element, 'canopy-section');
   }
 
@@ -88,7 +101,7 @@ class Link {
   }
 
   get enclosingParagraph() {
-    return new Paragraph(this.parentSectionElement);
+    return new Paragraph(this.sectionElement);
   }
 
   get targetParagraph() {
@@ -100,6 +113,30 @@ class Link {
         childElement.dataset.subtopicName === this.element.dataset.targetSubtopic);
 
     return new Paragraph(element);
+  }
+
+  atNewPath(newPath) { // get matching link at new path
+    let newEnclosingParagraph;
+    if (this.isParent) {
+      newEnclosingParagraph = newPath.paragraph.parentParagraph;
+    } else {
+      newEnclosingParagraph = newPath.paragraph;
+    }
+    return newEnclosingParagraph
+      .links
+      .find(this.matcher);
+  }
+
+  get localPathWhenSelected() {
+    if (this.isGlobal) {
+      return new Path(this.pathWhenSelected.pathArray.slice(-2));
+    } else {
+      return this.pathWhenSelected.lastSegment;
+    }
+  }
+
+  get matcher() {
+    return (link) => link.matches(this);
   }
 
   get relativeLinkNumber() {
@@ -128,13 +165,37 @@ class Link {
     }
   }
 
+  get targetPath() {
+    if (this.isGlobal) {
+      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
+    } else if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    } else {
+      return null; // eg URL link
+    }
+  }
+
+  get path() {
+    throw "Depreciated in favor of #pathWhenSelected";
+  }
+
+  get pathWhenSelected() {
+    if (this.isGlobal) {
+      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
+    } else if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    } else {
+      return this.enclosingParagraph.path;
+    }
+  }
+
   static collectMetadata(linkElement) {
     let link = new Link(linkElement);
     let paragraph = Paragraph.containingLink(link);
 
     // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
     return {
-      pathString: paragraph.path.string,
+      pathString: paragraph.path.string, // initial page load with session/history link selection requires this
       text: linkElement.dataset.text,
       relativeLinkNumber: link.relativeLinkNumber
     };
@@ -238,8 +299,12 @@ class Link {
     return this.isGlobal || this.isLocal;
   }
 
+  get present() {
+    return !!this.element;
+  }
+
   static select(linkToSelect) {
-    linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
+    linkToSelect?.present && linkToSelect.element.classList.add('canopy-selected-link');
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
   }
@@ -281,7 +346,7 @@ class Link {
   static persistInSession(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
-    let linkData = link && JSON.stringify(link.metadata);
+    let linkData = link?.present && JSON.stringify(link.metadata);
     sessionStorage.setItem(location.pathname + location.hash, linkData || null);
   }
 
@@ -289,7 +354,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link && link.metadata || null,
+      link?.present && link.metadata || null,
       document.title,
       window.location.href
     );
@@ -307,6 +372,17 @@ class Link {
       let paragraph = path.paragraph;
       return paragraph.parentLink || paragraph.firstLink;
     });
+  }
+
+  static hasTarget(topic, subtopic) {
+    return (link) => {
+      return link.targetTopic === topic &&
+        link.targetSubtopic === (subtopic || topic);
+    }
+  }
+
+  static current() {
+    throw "Link#current does not exist, try Link#selection";
   }
 }
 

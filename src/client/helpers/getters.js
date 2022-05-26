@@ -9,8 +9,8 @@ const projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPath
 function ancestorElement(currentElement, className) {
   let parentElement = currentElement.parentElement;
   while (parentElement.classList && !parentElement.classList.contains(className)) {
-    parentElement = parentElement.parentNode;
     if (parentElement === canopyContainer) return null;
+    parentElement = parentElement.parentNode;
   }
   return parentElement;
 }

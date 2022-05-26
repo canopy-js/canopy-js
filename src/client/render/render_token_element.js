@@ -73,7 +73,7 @@ function renderSharedParentLinkBase(token) {
   appendElementsToParent(styleElements, linkElement);
   linkElement.addEventListener(
     'click',
-    onParentLinkClick(new Link(linkElement))
+    onParentLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
   );
   return linkElement;
 }

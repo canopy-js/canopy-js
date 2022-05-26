@@ -5,14 +5,13 @@ import Path from 'models/path';
 function onParentLinkClick (targetTopic, targetSubtopic, link) {
   return (e) => {
     e.preventDefault();
-    // If the link's child is already selected, display the link's section
-    let path = link.enclosingParagraph.path;
-    let newPath = path.withoutLastSegment;
+    let pathToLink = link.enclosingParagraph.path;
+    let newPath;
 
     if (link.isOpen) {
-      newPath = newPath.addSegment(link.enclosingTopic, link.enclosingSubtopic);
+      newPath = pathToLink.replaceTerminalSubtopic(link.enclosingParagraph.subtopicName);
     } else {
-      newPath = newPath.addSegment(link.targetTopic, link.targetSubtopic);
+      newPath = pathToLink.replaceTerminalSubtopic(link.targetSubtopic);
     }
 
     updateView(newPath);
@@ -25,11 +24,12 @@ function onGlobalLinkClick (link) {
 
     let path;
     if (e.altKey) {
-      path = link.enclosingParagraph.path;
-      if (!link.isOpen) {
-        path = path.addSegment(link.targetTopic, link.targetSubtopic);
+      if (link.isOpen) { // close global child
+        path = link.enclosingParagraph.path;
+      } else { // open global child
+        path = link.pathWhenSelected;
       }
-    } else {
+    } else { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
     }
 
