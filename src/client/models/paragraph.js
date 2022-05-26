@@ -6,40 +6,37 @@ import { ancestorElement } from 'helpers/getters';
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not
   // specifically the DOM element of type paragraph.
-  // As such, calls to paragraph.element actually return a
-  // section element, which has a child that is of type P,
-  // and other section elements as children.
   //
-  // paragraph.element returns the section element, whereas
+  // Visible paragraphs in the UI are created with a section element
+  // that has a paragraph element child.
+  //
+  // paragraph.sectionElement returns the section element, whereas
   // paragraph.paragraphElement returns the paragraph element.
 
   constructor(sectionElement) {
-    if (!sectionElement) throw "Paragraph instantiation requires section element";
+    if (!sectionElement || sectionElement.tagName !== 'SECTION' ) throw "Paragraph instantiation requires section element";
     if (!sectionElement.classList.contains('canopy-section')) throw "Paragraph class requires Canopy section element";
     this.sectionElement = sectionElement;
     this.transferDataset();
   }
 
   equals(otherParagraph) {
-    return this.sectionElement === otherParagraph.element;
+    if (!otherParagraph) return false;
+    return this.sectionElement === otherParagraph.sectionElement;
   }
 
   display() {
-    this.element.style.display = 'block';
+    this.sectionElement.style.display = 'block';
   }
 
   get element() {
-    return this.sectionElement;
-  }
-
-  set element(sectionElement) {
-    return this.sectionElement;
-    this.transferDataset(this.sectionElement);
+    throw "Depreciated in favor of #sectionElement property";
   }
 
   transferDataset() {
     this.topicName = this.sectionElement.dataset.topicName;
     this.subtopicName = this.sectionElement.dataset.subtopicName;
+    this.pathDepth = this.sectionElement.dataset.pathDepth;
   }
 
   get topic() {
@@ -51,13 +48,16 @@ class Paragraph {
   }
 
   get paragraphElement() {
-    return Array.from(this.element.childNodes).
+    let paragraphElement = Array.from(this.sectionElement.childNodes).
       find((element) => element.tagName === 'P');
+
+    if (!paragraphElement) throw "Paragraph has no paragraph element";
+    return paragraphElement;
   }
 
   get path() {
     let pathArray = [];
-    let currentElement = this.element;
+    let currentElement = this.sectionElement;
 
     while (currentElement !== canopyContainer) {
       let currentTopic = currentElement.dataset.topicName;
@@ -73,10 +73,6 @@ class Paragraph {
     }
 
     return new Path(pathArray);
-  }
-
-  get pathDepth() {
-    return this.sectionElement.dataset.pathDepth;
   }
 
   get links() {
@@ -95,11 +91,11 @@ class Paragraph {
   }
 
   get isPageRoot() {
-    return this.element.parentNode === canopyContainer
+    return this.sectionElement.parentNode === canopyContainer
   }
 
   get isTopic() {
-    return this.sectionElement.dataset.topicName === this.sectionElement.dataset.subtopicName;
+    return this.topicName === this.subtopicName;
   }
 
   get hasLinks() {
@@ -115,28 +111,30 @@ class Paragraph {
   }
 
   linkByTarget(targetTopic, targetSubtopic) {
+    targetSubtopic = targetSubtopic || targetTopic;
+
     return this.linkBySelector(
       (link) => link.targetTopic === targetTopic && link.targetSubtopic === targetSubtopic
     );
   }
 
   get parentLink() {
-    if (this.element.parentNode === canopyContainer) { return null; }
+    if (this.sectionElement.parentNode === canopyContainer) { return null; }
 
     return this.parentParagraph && this.parentParagraph.linkByTarget(
-      this.element.dataset.topicName,
-      this.element.dataset.subtopicName
+      this.sectionElement.dataset.topicName,
+      this.sectionElement.dataset.subtopicName
     );
   }
 
   get displayTopicName() {
-    return this.element.dataset.displayTopicName;
+    return this.sectionElement.dataset.displayTopicName;
   }
 
   get parentParagraph() {
-    if (this.element) {
-      let parentElement = ancestorElement(this.element, 'canopy-section');
-      return parent ? new Paragraph(parentElement) : null;
+    if (this.sectionElement) {
+      let parentElement = ancestorElement(this.sectionElement, 'canopy-section');
+      return parentElement ? new Paragraph(parentElement) : null;
     } else {
       return null;
     }
@@ -146,7 +144,7 @@ class Paragraph {
     if (this.isTopic) {
       return this;
     } else {
-      return new Paragraph(ancestorElement(this.element, 'canopy-topic-section'));
+      return new Paragraph(ancestorElement(this.sectionElement, 'canopy-topic-section'));
     }
   }
 
