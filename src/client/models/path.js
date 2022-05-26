@@ -103,40 +103,8 @@ class Path {
     }
   }
 
-  relativeSectionElement(suppliedRootElement) {
-    let rootElement = suppliedRootElement;
-    if (!suppliedRootElement) { rootElement = canopyContainer; }
-    let path = this.clone;
-
-    let currentNode = rootElement;
-    if (rootElement === canopyContainer) {
-      currentNode = rootElement.querySelector(
-        `[data-topic-name="${path.firstTopic}"]` +
-        `[data-subtopic-name="${path.firstSubtopic}"]` +
-        `[data-path-depth="${0}"]`
-      );
-      if (path.length === 1) { return currentNode; }
-      path = path.withoutFirstSegment;
-    }
-
-    let subpath = path.clone;
-    for (let i = 0; i < path.length; i++) {
-      let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
-
-      currentNode = currentNode.querySelector(
-        `[data-topic-name="${subpath.firstTopic}"]` +
-        `[data-subtopic-name="${subpath.firstSubtopic}"]` +
-        `[data-path-depth="${newPathDepth}"]`
-      );
-
-      subpath = subpath.withoutFirstSegment;
-    }
-
-    return currentNode;
-  }
-
   get sectionElement() {
-    return this.relativeSectionElement(canopyContainer);
+    return Path.elementAtRelativePath(this, canopyContainer);
   }
 
   get paragraph() {
@@ -260,6 +228,47 @@ class Path {
     return slashSeparatedUnits;
   }
 
+  static validateConnectingLink(parentElement, pathToDisplay) {
+    if (parentElement === canopyContainer) return;
+    let parentParagraph = new Paragraph(parentElement);
+    if (!parentParagraph.linkBySelector(Link.hasTarget(pathToDisplay.firstTopic))) {
+      throw "Parent element has no connecting link to subsequent path segment";
+    }
+  }
+
+  static elementAtRelativePath(suppliedPath, suppliedRootElement) {
+    let rootElement = suppliedRootElement;
+    if (!suppliedRootElement) { rootElement = canopyContainer; }
+    let path = suppliedPath.clone;
+
+    let currentNode = rootElement;
+    if (rootElement === canopyContainer) {
+      currentNode = rootElement.querySelector(
+        `[data-topic-name="${path.firstTopic}"]` +
+        `[data-subtopic-name="${path.firstSubtopic}"]` +
+        `[data-path-depth="${0}"]`
+      );
+      if (path.length === 1) { return currentNode; }
+      if (!currentNode) return null;
+      path = path.withoutFirstSegment;
+    }
+
+    let subpath = path.clone;
+    for (let i = 0; i < path.length; i++) {
+      let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
+
+      currentNode = currentNode.querySelector(
+        `[data-topic-name="${subpath.firstTopic}"]` +
+        `[data-subtopic-name="${subpath.firstSubtopic}"]` +
+        `[data-path-depth="${newPathDepth}"]`
+      );
+
+      subpath = subpath.withoutFirstSegment;
+    }
+
+    return currentNode;
+  }
+
   static setPath(newPath) {
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic;
@@ -277,17 +286,6 @@ class Path {
 
     function pushState(a, b, c) {
       history.pushState(a, b, c);
-    }
-  }
-
-  static parentHasConnectingLink(parentElement, pathToDisplay) {
-    if (parentElement === canopyContainer) {
-      return true;
-    }
-
-    if (parentElement !== canopyContainer) {
-      let parentParagraph = new Paragraph(parentElement);
-      return parentParagraph.linkBySelector(Link.hasTarget(pathToDisplay.firstTopic));
     }
   }
 }
