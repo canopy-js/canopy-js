@@ -8,13 +8,13 @@ import Paragraph from 'models/paragraph';
 
 function renderDomTree(renderContext) {
   let {
+    pathToDisplay,
     subtopicName,
     paragraphsBySubtopic
   } = renderContext;
 
   let sectionElement = createSectionElement(renderContext);
 
-  renderContext.subtopicsAlreadyRendered[subtopicName] = true;
   renderContext.promises = [];
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
@@ -28,10 +28,6 @@ function renderDomTree(renderContext) {
   });
 
   return Promise.all(renderContext.promises).then((_) => sectionElement);
-}
-
-function generateIsSubtopicAlreadyRenderedCallback(subtopicsAlreadyRendered) {
-  return (targetSubtopic) => subtopicsAlreadyRendered.hasOwnProperty(targetSubtopic);
 }
 
 function localLinkSubtreeCallback(sectionElement, renderContext) {
