@@ -38,13 +38,6 @@ function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
     })
 }
 
-function moveSelectedSectionClass(sectionElement) {
-  Array.from(document.getElementsByTagName("section")).forEach((sectionElement) => {
-    sectionElement.classList.remove('canopy-selected-section');
-  });
-  sectionElement.classList.add('canopy-selected-section');
-}
-
 function hideAllSectionElements() {
   Array.from(document.getElementsByTagName("section")).forEach((sectionElement) => {
     sectionElement.style.display = 'none';
@@ -97,7 +90,6 @@ function pathForUrl(pathToDisplay, link) {
 export {
   setHeader,
   displaySectionBelowLink,
-  moveSelectedSectionClass,
   resetDom,
   tryPathPrefix
 };
