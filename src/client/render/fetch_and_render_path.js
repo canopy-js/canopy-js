@@ -26,7 +26,6 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
         pathToDisplay,
         displayTopicName,
         paragraphsBySubtopic,
-        subtopicsAlreadyRendered: {},
         pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0
       },
     );
