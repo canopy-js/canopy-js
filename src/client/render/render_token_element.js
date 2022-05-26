@@ -124,7 +124,7 @@ function renderLinkLiteral(token) {
   linkElement.dataset.type = 'url';
   linkElement.dataset.text = token.text;
   linkSpan.appendChild(linkElement);
-  linkSpan.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  linkElement.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
   return linkSpan;
 }
 
