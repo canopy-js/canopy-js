@@ -9,7 +9,7 @@ import {
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   if (!pathToDisplay) throw "updateView requires a path argument";
 
-  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer, true);
+  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer);
 
   newTreeAppended.then(() => {
     displayPath(
