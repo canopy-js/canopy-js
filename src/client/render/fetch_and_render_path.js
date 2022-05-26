@@ -10,9 +10,9 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
     return Promise.resolve(null);
   }
 
-  let preexistingElement = pathToDisplay.firstSegment.relativeSectionElement(parentElement);
+  let preexistingElement = Path.elementAtRelativePath(pathToDisplay.firstSegment, parentElement);
   if (preexistingElement) {
-    if (!Path.parentHasConnectingLink(parentElement, pathToDisplay)) throw "No link for path adjacency";
+    Path.validateConnectingLink(parentElement, pathToDisplay);
     return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement);
   }
 
