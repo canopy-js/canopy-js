@@ -1,13 +1,11 @@
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import displayPath from 'display/display_path';
-import {
-  defaultTopic,
-  canopyContainer,
-  childSectionElementOfParentLink
-} from 'helpers/getters';
+import Link from 'models/link';
+import Path from 'models/path';
+import { defaultTopic, canopyContainer } from 'helpers/getters';
 
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
-  if (!pathToDisplay) throw "updateView requires a path argument";
+  validatePathAndLink(pathToDisplay, linkToSelect);
 
   let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer);
 
@@ -18,6 +16,11 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
       displayOptions
     );
   });
+}
+
+function validatePathAndLink(pathToDisplay, linkToSelect) {
+  if (!(pathToDisplay instanceof Path)) throw "Invalid path argument";
+  if (linkToSelect && !(linkToSelect instanceof Link)) throw "Invalid link selection argument";
 }
 
 export default updateView;
