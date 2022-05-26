@@ -9,12 +9,10 @@ import Paragraph from 'models/paragraph';
 function renderDomTree(renderContext) {
   let {
     subtopicName,
-    paragraphsBySubtopic,
-    placeHolderElement
+    paragraphsBySubtopic
   } = renderContext;
 
-  let sectionElement = placeHolderElement || document.createElement('section');
-  decorateSectionElement(sectionElement, renderContext);
+  let sectionElement = createSectionElement(renderContext);
 
   renderContext.subtopicsAlreadyRendered[subtopicName] = true;
   renderContext.promises = [];
@@ -40,8 +38,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
-        subtopicName: token.targetSubtopic,
-        placeHolderElement: null
+        subtopic: new Topic(token.targetSubtopic)
       })
     );
 
@@ -58,7 +55,6 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
     pathToDisplay,
     pathDepth,
     subtopicName,
-    eagerRenderGlobalChildren,
     promises
   } = renderContext;
 
@@ -67,22 +63,18 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 
     if (globalLinkIsOpen(linkElement, pathToDisplay, subtopicName)) {
       let newPath = pathToDisplay.withoutFirstSegment;
-      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, eagerRenderGlobalChildren);
-      promises.push(whenTopicTreeAppended);
-    }
-
-    if (renderingLastPathSegment(linkElement, pathToDisplay) && eagerRenderGlobalChildren) {
-      let newPath = Path.forTopic(linkElement.dataset.targetTopic);
-      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement, false);
+      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement);
+      promises.push(whenTopicTreeAppended)
     }
   }
 }
 
-function decorateSectionElement(sectionElement, renderContext) {
+function createSectionElement(renderContext) {
   let {
     topicName, subtopicName, displayTopicName, pathDepth
   } = renderContext;
 
+  let sectionElement = document.createElement('section');
   sectionElement.classList.add('canopy-section');
   let paragraphElement = document.createElement('p');
   paragraphElement.classList.add('canopy-paragraph');
@@ -135,12 +127,6 @@ function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopicName) {
     thisGlobalLinkIsPointingToTheRightThingToBeOpen &&
     thisGlobalLinkIsInCorrectSubtopicToBeOpen;
     
-}
-
-function renderingLastPathSegment(linkElement, path) {
-  return path.length === 1 &&
-    path.firstTopic === linkElement.dataset.enclosingTopic &&
-    path.firstSubtopic === linkElement.dataset.enclosingSubtopic;
 }
 
 export default renderDomTree;
