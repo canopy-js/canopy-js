@@ -38,7 +38,7 @@ const registerKeyListeners = () => {
     } else if (shortcutRelationships[shortcutName]) {
       updateView(
         Path.current,
-        Link.selectALink
+        Link.selectALink(Path.current)
       );
     }
   });

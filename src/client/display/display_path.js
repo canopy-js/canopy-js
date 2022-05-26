@@ -1,6 +1,8 @@
 import Path from 'models/path';
 import { canopyContainer } from 'helpers/getters';
-
+import Link from 'models/link';
+import Paragraph from 'models/paragraph';
+import updateView from 'display/update_view';
 import {
   setHeader,
   addSelectedLinkClass,
@@ -8,17 +10,18 @@ import {
   resetDom
 } from 'display/helpers';
 
-import Link from 'models/link';
-import Paragraph from 'models/paragraph';
-
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
+  if (linkToSelect && linkToSelect.contradicts(pathToDisplay)) {
+    console.log(`Path: "${pathToDisplay}" contradicts link selection path: "${linkToSelect.pathWhenSelected}"`)
+    return updateView(linkToSelect.pathWhenSelected, linkToSelect, displayOptions);
+  }
 
   resetDom();
 
   if (!displayOptions.pathAlreadySet) Path.setPath(pathToDisplay);
-  setHeader(Paragraph.root.displayTopicName);
+  setHeader(Paragraph.pageRoot.displayTopicName);
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect
 
