@@ -33,16 +33,11 @@ function renderTextToken(token) {
 
 function renderParentLink(token, renderContext) {
   let {
-    subtopicsAlreadyRendered,
     localLinkSubtreeCallback
   } = renderContext;
 
-  if (!subtopicsAlreadyRendered.hasOwnProperty(token.targetSubtopic)) {
-    localLinkSubtreeCallback(token);
-    return renderRegularParentLink(token);
-  } else {
-    return renderRedundantParentLink(token);
-  }
+  localLinkSubtreeCallback(token);
+  return renderRegularParentLink(token)
 }
 
 function renderRegularParentLink(token) {
