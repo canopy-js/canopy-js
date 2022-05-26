@@ -5,25 +5,20 @@ import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 
-const fetchAndRenderPath = (pathToDisplay, parentElement, eagerRenderGlobalChildren) => {
+const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   if (pathToDisplay.length === 0) {
-    if (eagerRenderGlobalChildren) eagerRenderGlobalChildrenOf(parentElement);
     return Promise.resolve(null);
   }
 
   let preexistingElement = pathToDisplay.firstSegment.relativeSectionElement(parentElement);
   if (preexistingElement) {
     if (!Path.parentHasConnectingLink(parentElement, pathToDisplay)) throw "No link for path adjacency";
-    return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement, eagerRenderGlobalChildren);
+    return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement);
   }
-
-  let pathDepth = Number(parentElement.dataset.pathDepth) + 1 || 0;
-  let placeHolderElement = createPlaceholderElement(pathToDisplay.firstTopic, pathToDisplay.firstSubtopic, pathDepth);
-  parentElement.appendChild(placeHolderElement); // this prevents duplicates
 
   let uponResponsePromise = requestJson(pathToDisplay.firstTopic);
 
-  return uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
+  let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
         topicName: pathToDisplay.firstTopic,
@@ -32,12 +27,12 @@ const fetchAndRenderPath = (pathToDisplay, parentElement, eagerRenderGlobalChild
         displayTopicName,
         paragraphsBySubtopic,
         subtopicsAlreadyRendered: {},
-        pathDepth,
-        placeHolderElement,
-        eagerRenderGlobalChildren
+        pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0
       },
     );
   });
+
+  return uponRender.then((domTree) => parentElement.appendChild(domTree));
 }
 
 function createPlaceholderElement(topicName, subtopicName, pathDepth) {
@@ -46,14 +41,6 @@ function createPlaceholderElement(topicName, subtopicName, pathDepth) {
   sectionElement.dataset.subtopicName = subtopicName;
   sectionElement.dataset.pathDepth = pathDepth;
   return sectionElement;
-}
-
-function eagerRenderGlobalChildrenOf(parentElement) {
-  let paragraph = new Paragraph(parentElement);
-  let links = paragraph.linksBySelector((link) => link.isGlobal);
-  links.forEach(
-    (link) => fetchAndRenderPath(Path.forTopic(link.targetTopic), parentElement, false)
-  );
 }
 
 export default fetchAndRenderPath;
