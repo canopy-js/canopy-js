@@ -85,7 +85,7 @@ class Link {
   }
 
   get targetParagraph() {
-    let childNodes = Array.from(this.enclosingParagraph.element.childNodes);
+    let childNodes = Array.from(this.enclosingParagraph.sectionElement.childNodes);
 
     let element = childNodes.find((childElement) =>
         childElement.tagName === 'SECTION' &&
