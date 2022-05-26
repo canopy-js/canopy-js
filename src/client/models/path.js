@@ -279,6 +279,17 @@ class Path {
       history.pushState(a, b, c);
     }
   }
+
+  static parentHasConnectingLink(parentElement, pathToDisplay) {
+    if (parentElement === canopyContainer) {
+      return true;
+    }
+
+    if (parentElement !== canopyContainer) {
+      let parentParagraph = new Paragraph(parentElement);
+      return parentParagraph.linkBySelector(Link.hasTarget(pathToDisplay.firstTopic));
+    }
+  }
 }
 
 export default Path;

@@ -28,6 +28,16 @@ class Link {
     return this.element === otherLink.element;
   }
 
+  matches(otherLink) {
+    return this.targetTopic === otherLink.targetTopic &&
+      this.targetSubtopic === otherLink.targetSubtopic &&
+      this.relativeLinkNumber === otherLink.relativeLinkNumber;
+  }
+
+  contradicts(path) {
+    return this.pathWhenSelected.string !== path.string;
+  }
+
   get element () {
     if (this.linkElement) {
       return this.linkElement
@@ -59,10 +69,10 @@ class Link {
   }
 
   get type() {
-    return this.linkElement.dataset.type;
+    return this.element.dataset.type;
   }
 
-  get parentSectionElement() {
+  get sectionElement() {
     return ancestorElement(this.element, 'canopy-section');
   }
 
@@ -71,7 +81,7 @@ class Link {
   }
 
   get enclosingParagraph() {
-    return new Paragraph(this.parentSectionElement);
+    return new Paragraph(this.sectionElement);
   }
 
   get targetParagraph() {
@@ -83,6 +93,30 @@ class Link {
         childElement.dataset.subtopicName === this.element.dataset.targetSubtopic);
 
     return new Paragraph(element);
+  }
+
+  atNewPath(newPath) { // get matching link at new path
+    let newEnclosingParagraph;
+    if (this.isParent) {
+      newEnclosingParagraph = newPath.paragraph.parentParagraph;
+    } else {
+      newEnclosingParagraph = newPath.paragraph;
+    }
+    return newEnclosingParagraph
+      .links
+      .find(this.matcher);
+  }
+
+  get localPathWhenSelected() {
+    if (this.isGlobal) {
+      return new Path(this.pathWhenSelected.pathArray.slice(-2));
+    } else {
+      return this.pathWhenSelected.lastSegment;
+    }
+  }
+
+  get matcher() {
+    return (link) => link.matches(this);
   }
 
   get relativeLinkNumber() {
@@ -109,13 +143,37 @@ class Link {
     }
   }
 
+  get targetPath() {
+    if (this.isGlobal) {
+      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
+    } else if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    } else {
+      return null; // eg URL link
+    }
+  }
+
+  get path() {
+    throw "Depreciated in favor of #pathWhenSelected";
+  }
+
+  get pathWhenSelected() {
+    if (this.isGlobal) {
+      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
+    } else if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    } else {
+      return this.enclosingParagraph.path;
+    }
+  }
+
   static collectMetadata(linkElement) {
     let link = new Link(linkElement);
     let paragraph = Paragraph.containingLink(link);
 
     // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
     return {
-      pathString: paragraph.path.string,
+      pathString: paragraph.path.string, // initial page load with session/history link selection requires this
       text: linkElement.dataset.text,
       relativeLinkNumber: link.relativeLinkNumber
     };
@@ -276,11 +334,22 @@ class Link {
     );
   }
 
-  static get selectALink() {
+  static selectALink(path) {
     return new Link(() => {
-      let paragraph = Paragraph.current;
-      return paragraph.firstLink || paragraph.parentLink;
+      let paragraph = path.paragraph;
+      return paragraph.parentLink || paragraph.firstLink;
     });
+  }
+
+  static hasTarget(topic, subtopic) {
+    return (link) => {
+      return link.targetTopic === topic &&
+        link.targetSubtopic === (subtopic || topic);
+    }
+  }
+
+  static current() {
+    throw "Link#current does not exist, try Link#selection";
   }
 }
 
