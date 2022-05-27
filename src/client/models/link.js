@@ -16,11 +16,12 @@ class Link {
       this.element = argument;
     } else if (argument instanceof Link) {
       throw "Cannot instantiate link from link";
+    } else if (typeof argument === 'object') {
+      this.metadataObject = argument;
     } else if (typeof argument === 'function') {
       this.selectorCallback = argument;
     } else {
-      // The link element is retrieved only on-demand in case it doesn't exist yet
-      this.metadataObject = argument;
+      throw 'Invalid argument to Link constructor';
     }
   }
 
@@ -29,12 +30,15 @@ class Link {
   }
 
   matches(otherLink) {
+    if (!otherLink) throw 'Invalid link argument to Link#matches';
+
     return this.targetTopic === otherLink.targetTopic &&
       this.targetSubtopic === otherLink.targetSubtopic &&
       this.relativeLinkNumber === otherLink.relativeLinkNumber;
   }
 
   contradicts(path) {
+    if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
     return this.pathWhenSelected.string !== path.string;
   }
 
@@ -62,37 +66,65 @@ class Link {
   }
 
   transferDataset() {
-    this.targetTopic = this.element.dataset.targetTopic;
-    this.targetSubtopic = this.element.dataset.targetSubtopic;
-    this.enclosingTopic = this.element.dataset.enclosingTopic;
-    this.enclosingSubtopic = this.element.dataset.enclosingSubtopic;
+    this._targetTopic = this.element.dataset.targetTopic;
+    this._targetSubtopic = this.element.dataset.targetSubtopic;
+    this._enclosingTopic = this.element.dataset.enclosingTopic;
+    this._enclosingSubtopic = this.element.dataset.enclosingSubtopic;
+    this._typeValue = this.element.dataset.type;
+  }
+
+  get targetTopic() {
+    return this.element.dataset.targetTopic;
+  }
+  get targetSubtopic() {
+    return this.element.dataset.targetSubtopic;
+  }
+  get enclosingTopic() {
+    return this.element.dataset.enclosingTopic;
+  }
+  get enclosingSubtopic() {
+    return this.element.dataset.enclosingSubtopic;
   }
 
   get type() {
     return this.element.dataset.type;
   }
 
-  get sectionElement() {
+  get enclosingSectionElement() {
     return ancestorElement(this.element, 'canopy-section');
   }
 
-  get parentParagraphElement() {
+  get sectionElement() {
+    throw "Depreciated in favor of #enclosingSectionElement";
+  }
+
+  get enclosingParagraphElement() {
     return ancestorElement(this.element, 'canopy-paragraph');
   }
 
+  get parentParagraphElement() {
+    throw "Depreciated in favor of #enclosingParagraphElement";
+  }
+
   get enclosingParagraph() {
-    return new Paragraph(this.sectionElement);
+    return new Paragraph(this.enclosingSectionElement);
   }
 
   get targetParagraph() {
+    if (!this.isParent) return null;
+
     let childNodes = Array.from(this.enclosingParagraph.sectionElement.childNodes);
 
-    let element = childNodes.find((childElement) =>
+    let paragraphElement = childNodes.find((childElement) =>
         childElement.tagName === 'SECTION' &&
-        childElement.dataset.topicName === this.element.dataset.targetTopic &&
-        childElement.dataset.subtopicName === this.element.dataset.targetSubtopic);
+        childElement.dataset.topicName === this.targetTopic &&
+        childElement.dataset.subtopicName === this.targetSubtopic);
 
-    return new Paragraph(element);
+    if (!paragraphElement) {
+      throw `Did not find paragraph child element matching link ${this.targetTopic}/${this.targetSubtopic}`;
+    }
+
+    return new Paragraph(paragraphElement);
   }
 
   atNewPath(newPath) { // get matching link at new path
@@ -334,7 +366,15 @@ class Link {
     );
   }
 
+  // selectALink returns a callback that will pick a link to select
+  // once the DOM has rendered.
+  //
+  // selectALink takes a path to clarify which path is intended in case
+  // there are multiple rendered in the DOM, and the path has not updated yet.
+
   static selectALink(path) {
+    path = path || Path.current;
+
     return new Link(() => {
       let paragraph = path.paragraph;
       return paragraph.parentLink || paragraph.firstLink;
@@ -342,6 +382,8 @@ class Link {
   }
 
   static hasTarget(topic, subtopic) {
+    if (!topic) throw "No topic provided";
+
     return (link) => {
       return link.targetTopic === topic &&
         link.targetSubtopic === (subtopic || topic);
