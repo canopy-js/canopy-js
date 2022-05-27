@@ -1,7 +1,0 @@
-Design principles of Canopy: Canopy is designed to mimic the interface of human explanation. The Canopy parser is intended to recognize the same patterns in text as does a human listener.
-
-Mimic the interface of human explanation: Canopy is intended to present the same options to the reader as does a human explainer. The same way that an expert can summarize a domain and then be asked follow up questions, Canopy presents a small amount of information that contains within it follow-up queries that are supported.
-
-The same patterns in text as does a human listener: When a later paragraph references an earlier one, it shouldn't need to be identified with a hypertext reference, because a human reader wouldn't need hypertext to identify the reference as a reference. It must be that the reader recognizes something in the later paragraph they saw in the earlier one, and on this basis recognizes the reference. Canopy is intended to make the same recognition based on the same information.
-
-- Links that reify ordinary language reference - synchronized with no way for links to change from linguistic reference.

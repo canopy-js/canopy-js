@@ -3,7 +3,4 @@ node_modules/*
 yarn-error.log
 yarn.lock
 TODO
-docs/build/
-docs/.canopy_watch.pid
-docs/.canopy_bulk_temp
-docs/canopy_bulk_temp
+
