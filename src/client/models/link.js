@@ -16,11 +16,12 @@ class Link {
       this.element = argument;
     } else if (argument instanceof Link) {
       throw "Cannot instantiate link from link";
+    } else if (typeof argument === 'object') {
+      this.metadataObject = argument;
     } else if (typeof argument === 'function') {
       this.selectorCallback = argument;
     } else {
-      // The link element is retrieved only on-demand in case it doesn't exist yet
-      this.metadataObject = argument;
+      throw 'Invalid argument to Link constructor';
     }
   }
 
@@ -29,12 +30,15 @@ class Link {
   }
 
   matches(otherLink) {
+    if (!otherLink) throw 'Invalid link argument to Link#matches';
+
     return this.targetTopic === otherLink.targetTopic &&
       this.targetSubtopic === otherLink.targetSubtopic &&
       this.relativeLinkNumber === otherLink.relativeLinkNumber;
   }
 
   contradicts(path) {
+    if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
     return this.pathWhenSelected.string !== path.string;
   }
 
@@ -92,27 +96,41 @@ class Link {
     return this.element.dataset.type;
   }
 
-  get sectionElement() {
+  get enclosingSectionElement() {
     return ancestorElement(this.element, 'canopy-section');
   }
 
-  get parentParagraphElement() {
+  get sectionElement() {
+    throw "Depreciated in favor of #enclosingSectionElement";
+  }
+
+  get enclosingParagraphElement() {
     return ancestorElement(this.element, 'canopy-paragraph');
   }
 
+  get parentParagraphElement() {
+    throw "Depreciated in favor of #enclosingParagraphElement";
+  }
+
   get enclosingParagraph() {
-    return new Paragraph(this.sectionElement);
+    return new Paragraph(this.enclosingSectionElement);
   }
 
   get targetParagraph() {
+    if (!this.isParent) return null;
+
     let childNodes = Array.from(this.enclosingParagraph.sectionElement.childNodes);
 
-    let element = childNodes.find((childElement) =>
+    let paragraphElement = childNodes.find((childElement) =>
         childElement.tagName === 'SECTION' &&
-        childElement.dataset.topicName === this.element.dataset.targetTopic &&
-        childElement.dataset.subtopicName === this.element.dataset.targetSubtopic);
+        childElement.dataset.topicName === this.targetTopic &&
+        childElement.dataset.subtopicName === this.targetSubtopic);
 
-    return new Paragraph(element);
+    if (!paragraphElement) {
+      throw `Did not find paragraph child element matching link ${this.targetTopic}/${this.targetSubtopic}`;
+    }
+
+    return new Paragraph(paragraphElement);
   }
 
   atNewPath(newPath) { // get matching link at new path
@@ -375,6 +393,8 @@ class Link {
   }
 
   static hasTarget(topic, subtopic) {
+    if (!topic) throw "No topic provided";
+
     return (link) => {
       return link.targetTopic === topic &&
         link.targetSubtopic === (subtopic || topic);
