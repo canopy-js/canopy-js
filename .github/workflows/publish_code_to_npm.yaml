@@ -22,8 +22,9 @@ jobs:
         set -ex
 
         PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
-        GIT_VERSION=${GITHUB_REF#refs/*/}
+        GITHUB_REF=${GITHUB_REF#refs/*/}
         echo $PACKAGE_JSON_VERSION
-        echo $GIT_VERSION
+        echo $GITHUB_REF
+        echo ${GITHUB_REF#refs/*/}
 
         # npm publish --access public
