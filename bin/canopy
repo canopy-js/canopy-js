@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CANOPY_LOCATION="${CANOPY_LOCATION:- $(npm root -g)}"
+CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy))}"
 
 case $1 in
 build)
@@ -37,7 +37,7 @@ build)
 EOF
   fi
 
-  node $CANOPY_LOCATION/canopy-js/dist/parser.js . $2
+  node $CANOPY_LOCATION/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
     for D in `find "build" -mindepth 1 ! -name '*_data' -type d`; do
@@ -62,9 +62,9 @@ EOF
     cd ..
   fi
 
-  cp $CANOPY_LOCATION/canopy-js/dist/canopy.js build/canopy.js
-  if [ "$CANOPY_LOGGING" ]; then
-    cp $CANOPY_LOCATION/canopy-js/dist/canopy.js.map build/canopy.js.map
+  cp $CANOPY_LOCATION/dist/canopy.js build/canopy.js
+  if [ -f "$CANOPY_LOCATION/dist/canopy.js.map" ]; then
+    cp $CANOPY_LOCATION/dist/canopy.js.map build/canopy.js.map
   fi
   if [ -d "assets" ]; then
     cp -r assets build/assets
@@ -80,7 +80,7 @@ init)
   echo "Enter default topic name:"
   read DEFAULT_TOPIC
   echo $DEFAULT_TOPIC > .canopy_default_topic
-  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/canopy-js/script/snake_case.js)
+  echo "${DEFAULT_TOPIC}: Text here." > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/script/snake_case.js)
   echo
   echo "If you will be hosting Canopy with a static assets server,"
   echo "and Canopy will be hosted from a subdirectory of the path,"
@@ -128,6 +128,48 @@ watch)
   fi
 
   canopy build $2;;
+watch-dev)
+  # Watch-dev assumes $CANOPY_LOCATION is pointing to your local development repo.
+  #
+  # When a change to your code triggers a rebuild of the assets in canopy-js/dist,
+  #   watch-dev rebuilds the current canopy project to include the new version of canopy-js
+  #
+  command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
+
+  if [ "$2" == "stop" ]; then
+    kill $(cat .canopy_dev_watch.pid) > /dev/null 2>&1;
+    rm .canopy_watch.pid
+    exit 0;
+  fi
+
+  PIDFILE=.canopy_watch_dev.pid
+  if [ -f $PIDFILE ];
+  then
+    PID=$(cat $PIDFILE)
+    if ps -p $PID > /dev/null 2>&1;
+    then
+      # Canopy watch is already running
+      kill $PID
+    fi
+  fi
+
+  if [ ! -d ./topics ]; then
+    echo "There must be a topics directory at the current path"
+    exit 1
+  fi
+
+  #######
+  fswatch -0 -o $CANOPY_LOCATION/dist | CANOPY_DEBUG=true xargs -0 -n1 -I{} canopy build > /dev/null 2>&1 &
+  #######
+
+  echo $(jobs -p | tail -1) > $PIDFILE
+  if [ $? -ne 0 ];
+  then
+    echo "Could not create PID file"
+    exit 1
+  fi
+
+  canopy build $2;;
 serve)
   canopy build
   if [ $? -ne 0 ];
@@ -135,14 +177,14 @@ serve)
     exit 1
   fi
   echo "Serving on port ${2:-3000}"
-  node $CANOPY_LOCATION/canopy-js/script/server.js ${2:-3000}
+  node $CANOPY_LOCATION/script/server.js ${2:-3000}
   ;;
 
 bulk)
-  node $CANOPY_LOCATION/canopy-js/script/bulk_edit.js "$@"
+  node $CANOPY_LOCATION/script/bulk_edit.js "$@"
   ;;
 
-?|usage)
+*)
 echo "Usage:"
 echo "  canopy init"
 echo "  canopy build [--for-static-assets]"
@@ -150,6 +192,5 @@ echo "  canopy watch [stop]"
 echo "  canopy serve [PORT]"
 echo "  canopy bulk [--start|--stop] [PATHS]"
 ;;
-*)
-  echo Unknown command;;
+
 esac

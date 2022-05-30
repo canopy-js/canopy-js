@@ -1,54 +1,45 @@
 import updateView from 'display/update_view';
-import { sectionElementOfLink } from 'helpers/getters';
-import { pathForSectionElement } from 'path/helpers';
-import parsePathString from 'path/parse_path_string';
-import pathStringFor from 'path/path_string_for';
+import { sectionElementContainingLink } from 'helpers/getters';
+import Path from 'models/path';
 
-const onParentLinkClick = (topicName, targetSubtopic, linkElement) => {
+function onParentLinkClick (targetTopic, targetSubtopic, link) {
   return (e) => {
     e.preventDefault();
-    // If the link's child is already selected, display the link's section
-    let pathArray = pathForSectionElement(sectionElementOfLink(linkElement));
+    let pathToLink = link.enclosingParagraph.path;
+    let newPath;
 
-    if (linkElement.classList.contains('canopy-open-link')) {
-      pathArray.pop();
-      let newTuple = [linkElement.dataset.enclosingTopic, linkElement.dataset.enclosingSubtopic];
-      pathArray.push(newTuple);
+    if (link.isOpen) {
+      newPath = pathToLink.replaceTerminalSubtopic(link.enclosingParagraph.subtopicName);
     } else {
-      pathArray.pop();
-      let newTuple = [topicName, targetSubtopic];
-      pathArray.push(newTuple);
+      newPath = pathToLink.replaceTerminalSubtopic(link.targetSubtopic);
     }
 
-    updateView(pathArray);
-  }
-}
+    updateView(newPath);
+  };
+};
 
-const onGlobalLinkClick = (targetTopic, targetSubtopic, linkElement) => {
+function onGlobalLinkClick (link) {
   return (e) => {
     e.preventDefault();
 
-    let pathArray
+    let path;
     if (e.altKey) {
-      pathArray = pathForSectionElement(sectionElementOfLink(linkElement))
-
-      if (!linkElement.classList.contains('canopy-open-link')) {
-        pathArray.push([
-          linkElement.dataset.targetTopic,
-          linkElement.dataset.targetSubtopic
-        ]);
+      if (link.isOpen) { // close global child
+        path = link.enclosingParagraph.path;
+      } else { // open global child
+        path = link.pathWhenSelected;
       }
-    } else {
-      pathArray = [[targetTopic, targetSubtopic]];
+    } else { // Redirect to global child
+      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
     }
 
     if (e.metaKey) {
       window.open(
-        location.origin + pathStringFor(pathArray),
+        location.origin + path.string,
         '_blank'
       );
     } else {
-      updateView(pathArray)
+      updateView(path)
     }
   }
 }

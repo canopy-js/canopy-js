@@ -1,70 +1,39 @@
-import setPath from 'path/set_path';
+import Path from 'models/path';
+import { canopyContainer } from 'helpers/getters';
+import Link from 'models/link';
+import Paragraph from 'models/paragraph';
+import updateView from 'display/update_view';
 import {
-  canopyContainer,
-  sectionElementOfPath,
-  parentLinksOfSection,
-  documentTitleFor,
-  sectionElementOfLink,
-  paragraphElementOfSection
-} from 'helpers/getters';
-
-import {
-  determineLinkToSelect,
-  determineSectionElementToDisplay,
-  createOrReplaceHeader,
-  displaySectionBelowLink,
+  setHeader,
   addSelectedLinkClass,
-  hideAllSectionElements,
-  deselectAllLinks,
-  removeDfsClasses,
   tryPathPrefix,
-  addLinkSelection
+  resetDom
 } from 'display/helpers';
 
-import { storeLinkSelectionInSession } from 'history/helpers';
-
-const displayPath = (pathArray, displayOptions) => {
+const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
-  let sectionElement = sectionElementOfPath(pathArray);
-  if (!sectionElement && pathArray.length === 1 && pathArray[0][0] === pathArray[0][1]) throw 'Unknown path';
-  if (!sectionElement) return tryPathPrefix(pathArray, displayOptions);
+  if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
+  if (linkToSelect && linkToSelect.contradicts(pathToDisplay)) {
+    console.log(`Path: "${pathToDisplay}" contradicts link selection path: "${linkToSelect.pathWhenSelected}"`)
+    return updateView(linkToSelect.pathWhenSelected, linkToSelect, displayOptions);
+  }
 
-  let topicName = pathArray[0][0];
-  document.title = documentTitleFor(topicName);
-  let displayTopicName = sectionElementOfPath([[topicName, topicName]]).dataset.topicDisplayName;
-  createOrReplaceHeader(displayTopicName);
+  resetDom();
 
-  removeDfsClasses();
-  displayOptions.postDisplayCallback && displayOptions.postDisplayCallback();
-  deselectAllLinks();
-  hideAllSectionElements();
+  if (!displayOptions.pathAlreadySet) Path.setPath(pathToDisplay);
+  setHeader(Paragraph.pageRoot.displayTopicName);
+  document.title = pathToDisplay.firstTopic;
+  Link.select(linkToSelect); // if null, persists deselect
 
-  let linkToSelect = determineLinkToSelect(pathArray, sectionElement, displayOptions);
-  let sectionElementToDisplay = determineSectionElementToDisplay(linkToSelect, sectionElement, displayOptions);
-  addSelectedLinkClass(linkToSelect);
-  if (!displayOptions.originatesFromPopStateEvent) setPath(pathArray, linkToSelect);
-  storeLinkSelectionInSession(linkToSelect);
-  displayPathTo(sectionElementToDisplay, linkToSelect);
+  displayPathTo(pathToDisplay.paragraph, linkToSelect);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
-const displayPathTo = (sectionElement, linkToSelect) => {
-  sectionElement.style.display = 'block';
-
-  if (sectionElement.parentNode === canopyContainer) {
-    return;
-  }
-
-  let parentLinks = parentLinksOfSection(sectionElement);
-  let isPreviewParagraph = linkToSelect &&
-    linkToSelect.dataset.type === 'local' &&
-    paragraphElementOfSection(sectionElement.parentNode).
-    contains(linkToSelect);
-
-  parentLinks.forEach((parentLink) => parentLink.classList.add('canopy-open-link'));
-
-  let parentSectionElement = sectionElementOfLink(parentLinks[0]);
-  displayPathTo(parentSectionElement, linkToSelect);
+const displayPathTo = (paragraph) => {
+  paragraph.display();
+  if (paragraph.isPageRoot) return;
+  paragraph.parentLink && paragraph.parentLink.open();
+  displayPathTo(paragraph.parentParagraph);
 }
 
 export default displayPath;

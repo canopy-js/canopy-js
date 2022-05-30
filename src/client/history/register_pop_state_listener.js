@@ -1,23 +1,18 @@
-import {
-  saveCurrentLinkSelectionInHistoryStack,
-  linkSelectionPresentInEvent
-} from 'history/helpers';
-import { priorLinkSelectionDataFromSession } from 'history/helpers';
 import updateView from 'display/update_view';
-import parsePathString from 'path/parse_path_string';
-import { selectedLink } from 'helpers/getters';
+import Path from 'models/path';
+import Link from 'models/link';
 
 function registerPopStateListener() {
   window.addEventListener('popstate', (e) => {
-    saveCurrentLinkSelectionInHistoryStack(selectedLink());
+    Link.persistInHistory(Link.selection);
 
-    let newLinkSelectionData = linkSelectionPresentInEvent(e) ? e.state : null;
+    let linkSelection = Link.selectionPresentInEvent(e) ? new Link(e.state) : null;
 
     updateView(
-      parsePathString(),
+      Path.current,
+      linkSelection || Link.sessionSelection,
       {
-        linkSelectionData: newLinkSelectionData || priorLinkSelectionDataFromSession(),
-        originatesFromPopStateEvent: true
+        pathAlreadySet: true
       }
     );
   });

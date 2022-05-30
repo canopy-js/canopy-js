@@ -1,28 +1,45 @@
 import renderDomTree from 'render/render_dom_tree';
 import requestJson from 'requests/request_json';
+import Paragraph from 'models/paragraph';
+import Path from 'models/path';
+import Link from 'models/link';
+import { canopyContainer } from 'helpers/getters';
 
-const fetchAndRenderPath = (pathArray, pathDepth) => {
-  if (pathArray.length === 0) {
+const fetchAndRenderPath = (pathToDisplay, parentElement) => {
+  if (pathToDisplay.length === 0) {
     return Promise.resolve(null);
   }
-  let topicName = pathArray[0][0];
-  let uponResponsePromise = requestJson(topicName);
 
-  return uponResponsePromise.then((dataObject) => {
-    let { paragraphsBySubtopic, topicDisplayName } = dataObject;
+  let preexistingElement = Path.elementAtRelativePath(pathToDisplay.firstSegment, parentElement);
+  if (preexistingElement) {
+    Path.validateConnectingLink(parentElement, pathToDisplay);
+    return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement);
+  }
 
+  let uponResponsePromise = requestJson(pathToDisplay.firstTopic);
+
+  let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
-        topicName: pathArray[0][0],
-        topicDisplayName: topicDisplayName,
-        subtopicName: pathArray[0][0],
-        pathArray,
+        topicName: pathToDisplay.firstTopic,
+        subtopicName: pathToDisplay.firstTopic,
+        pathToDisplay,
+        displayTopicName,
         paragraphsBySubtopic,
-        subtopicsAlreadyRendered: {},
-        pathDepth
-      }
+        pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0
+      },
     );
   });
+
+  return uponRender.then((domTree) => parentElement.appendChild(domTree));
+}
+
+function createPlaceholderElement(topicName, subtopicName, pathDepth) {
+  let sectionElement = document.createElement('section');
+  sectionElement.dataset.topicName = topicName;
+  sectionElement.dataset.subtopicName = subtopicName;
+  sectionElement.dataset.pathDepth = pathDepth;
+  return sectionElement;
 }
 
 export default fetchAndRenderPath;

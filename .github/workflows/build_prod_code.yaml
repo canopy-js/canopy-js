@@ -1,0 +1,42 @@
+name: Build Prod Code
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14
+    - run: npm install
+    - run: npm run build-prod
+    - env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        rev=$(git rev-parse --short HEAD)
+
+        rm -rf .git
+        git init
+        git remote add origin "https://canopy-js:$GITHUB_TOKEN@github.com/canopy-js/canopy-js.git"
+        git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+        git fetch origin
+
+        git remote -v
+        git branch -r
+
+        git reset origin/build
+        git stash
+        git checkout origin/build
+        git stash apply
+
+        npm run build-prod
+        git add -A
+
+        git config --global user.email "canopyjs@gmail.com"
+        git config --global user.name "Canopy JS"
+
+        git commit -m "Code built at ${rev}"
+        git push -q origin HEAD:build
+

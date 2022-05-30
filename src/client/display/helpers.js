@@ -1,67 +1,22 @@
-import {
-  canopyContainer,
-  siblingOfLinkLike,
-  firstLinkOfSectionElement,
-  childSectionElementOfParentLink,
-  parentLinkOfSection,
-  lastLinkOfSectionElement,
-  selectedLink,
-  linksOfSectionLike,
-  forEach,
-  findLinkFromMetadata
-} from 'helpers/getters';
-
-import { sectionHasNoChildLinks } from 'helpers/booleans';
+import { canopyContainer } from 'helpers/getters';
 
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 
-function newNodeAlreadyPresent(anchorElement, domTree) {
-  return Array.from(anchorElement.childNodes)
-    .filter((childNode) => {
-      return childNode.dataset &&
-        childNode.dataset.topicName === domTree.dataset.topicName &&
-        childNode.dataset.subtopicName === domTree.dataset.subtopicName;
-    }).length > 0;
-}
-
-function determineLinkToSelect(pathArray, sectionElementOfCurrentPath, displayOptions) {
-  let {
-    linkSelectionData,
-    selectALink
-  } = displayOptions;
-
-  if (linkSelectionData) {
-    return findLinkFromMetadata(linkSelectionData);
-  }
-
-  if (selectALink) {
-    return firstLinkOfSectionElement(sectionElementOfCurrentPath) ||
-      parentLinkOfSection(sectionElementOfCurrentPath);
-  } else {
-    return null;
-  }
-}
-
-function lastPathSegmentIsATopicRoot(pathArray) {
-  let lastPathSegment = pathArray[pathArray.length - 1];
-  return lastPathSegment[0] === lastPathSegment[1];
-}
-
-function createOrReplaceHeader(topicName) {
+function setHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
   if (existingHeader) { existingHeader.remove(); }
   let headerDomElement = document.createElement('h1');
   let styleElements = renderStyledText(topicName);
-  styleElements.forEach((element) => {headerDomElement.appendChild(element)});
+  Array.from(styleElements).forEach((element) => {headerDomElement.appendChild(element)});
   canopyContainer.prepend(headerDomElement);
 };
 
-function determineSectionElementToDisplay(linkToSelect, sectionElementOfCurrentPath, displayOptions) {
+function determineParagraphToDisplay(linkToSelect, paragraph, displayOptions) {
   // if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
     // return childSectionElementOfParentLink(linkToSelect);
   // } else {
-    return sectionElementOfCurrentPath;
+    return paragraph;
   // }
 }
 
@@ -83,27 +38,14 @@ function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
     })
 }
 
-function addSelectedLinkClass(linkToSelect) {
-  if (linkToSelect) {
-    linkToSelect.classList.add('canopy-selected-link');
-  }
-}
-
-function moveSelectedSectionClass(sectionElement) {
-  forEach(document.getElementsByTagName("section"), function(sectionElement) {
-    sectionElement.classList.remove('canopy-selected-section');
-  });
-  sectionElement.classList.add('canopy-selected-section');
-}
-
 function hideAllSectionElements() {
-  forEach(document.getElementsByTagName("section"), function(sectionElement) {
+  Array.from(document.getElementsByTagName("section")).forEach((sectionElement) => {
     sectionElement.style.display = 'none';
   });
 }
 
 function deselectAllLinks() {
-  forEach(document.getElementsByTagName("a"), function(linkElement) {
+  Array.from(document.getElementsByTagName("a")).forEach((linkElement) => {
     linkElement.classList.remove('canopy-selected-link');
     linkElement.classList.remove('canopy-open-link');
   });
@@ -117,60 +59,28 @@ function showSectionElement(sectionElement) {
   sectionElement.style.display = 'block';
 }
 
-function showSectionElementOfLink(linkElement) {
-  showSectionElement(sectionElementOfLink(linkElement));
+function showsectionElementContainingLink(linkElement) {
+  showSectionElement(sectionElementContainingLink(linkElement));
 }
 
-function removeDfsClasses() {
-  forEach(document.getElementsByTagName("a"), function(linkElement) {
-    linkElement.classList.remove('canopy-dfs-previously-selected-link');
-    linkElement.classList.remove('canopy-reverse-dfs-previously-selected-link');
-  });
-}
-
-function removeLastPathElement(pathArray) {
-  let lastItem = pathArray[pathArray.length - 1];
-  if (lastItem[0] === lastItem[1]) {
-    return JSON.parse(JSON.stringify(pathArray.slice(0, -1)));
+function tryPathPrefix(path, displayOptions) {
+  console.log("No section element found for path: ", JSON.stringify(path.toString()));
+  console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
+  if (path.length > 1) {
+    return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {
-    let newArray = JSON.parse(JSON.stringify(pathArray));
-    let item = newArray.pop();
-    item[1] = item[0];
-    newArray.push(item);
-    return newArray;
+    throw "Invalid path: " + path.array;
   }
 }
 
-function tryPathPrefix(pathArray, displayOptions) {
-  console.log("No section element found for path: ", pathArray);
-  console.log("Trying: ", removeLastPathElement(pathArray))
-  return displayPath(removeLastPathElement(pathArray), displayOptions);
-}
-
-function addLinkSelection(pathArray, linkToSelect) {
-  if (linkToSelect && linkToSelect.dataset.type === 'local') {
-    let newArray = JSON.parse(JSON.stringify(pathArray));
-    let item = newArray.pop();
-    item[1] = linkToSelect.dataset.targetSubtopic
-    newArray.push(item);
-    return newArray;
-  } else {
-    return pathArray;
-  }
+const resetDom = () => {
+  deselectAllLinks();
+  hideAllSectionElements();
 }
 
 export {
-  newNodeAlreadyPresent,
-  determineLinkToSelect,
-  determineSectionElementToDisplay,
-  createOrReplaceHeader,
+  setHeader,
   displaySectionBelowLink,
-  addSelectedLinkClass,
-  moveSelectedSectionClass,
-  hideAllSectionElements,
-  deselectAllLinks,
-  removeDfsClasses,
-  removeLastPathElement,
-  tryPathPrefix,
-  addLinkSelection
+  resetDom,
+  tryPathPrefix
 };

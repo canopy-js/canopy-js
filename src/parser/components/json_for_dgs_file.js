@@ -32,7 +32,7 @@ function jsonForDgsFile(path, namespaceObject) {
   });
 
   let jsonObject = {
-    topicDisplayName: displayTopicOfFile,
+    displayTopicName: displayTopicOfFile,
     paragraphsBySubtopic: tokenizedParagraphsByKey
   }
 

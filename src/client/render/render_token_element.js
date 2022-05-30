@@ -1,8 +1,9 @@
 import { slugFor } from 'helpers/identifiers';
 import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
-import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
+import externalLinkIconSvg from 'raw-loader!assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
 import eagerLoad from 'requests/eager_load';
+import Link from 'models/link';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -32,16 +33,11 @@ function renderTextToken(token) {
 
 function renderParentLink(token, renderContext) {
   let {
-    subtopicsAlreadyRendered,
-    parentLinkSubtreeCallback
+    localLinkSubtreeCallback
   } = renderContext;
 
-  if (!subtopicsAlreadyRendered.hasOwnProperty(token.targetSubtopic)) {
-    parentLinkSubtreeCallback(token);
-    return renderRegularParentLink(token);
-  } else {
-    return renderRedundantParentLink(token);
-  }
+  localLinkSubtreeCallback(token);
+  return renderRegularParentLink(token)
 }
 
 function renderRegularParentLink(token) {
@@ -72,7 +68,7 @@ function renderSharedParentLinkBase(token) {
   appendElementsToParent(styleElements, linkElement);
   linkElement.addEventListener(
     'click',
-    onParentLinkClick(token.targetTopic, token.targetSubtopic, linkElement)
+    onParentLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
   );
   return linkElement;
 }
@@ -84,13 +80,9 @@ function renderGlobalLink(token, renderContext) {
     globalLinkSubtreeCallback
   } = renderContext;
 
-  window.setTimeout(() => eagerLoad(token.targetTopic), 0);
-
   let linkElement = createGlobalLinkElement(token, pathArray);
 
-  if (globalLinkIsOpen(linkElement, pathArray, subtopicName)) {
-    globalLinkSubtreeCallback(token);
-  }
+  globalLinkSubtreeCallback(token, linkElement);
 
   return linkElement;
 }
@@ -110,21 +102,9 @@ function createGlobalLinkElement(token) {
   linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
   linkElement.addEventListener(
     'click',
-    onGlobalLinkClick(token.targetTopic, token.targetSubtopic, linkElement)
+    onGlobalLinkClick(new Link(linkElement))
   );
   return linkElement
-}
-
-function globalLinkIsOpen(linkElement, pathArray, subtopicName) {
-  let subtopicContainingOpenGlobalReference = pathArray[0][1];
-  let openGlobalLinkExists = pathArray[1];
-  let openGlobalLinkTargetTopic = pathArray[1] && pathArray[1][0];
-  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-
-  return openGlobalLinkExists &&
-    linkElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
-    linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic &&
-    subtopicName === subtopicContainingOpenGlobalReference;
 }
 
 function renderLinkLiteral(token) {
@@ -139,7 +119,7 @@ function renderLinkLiteral(token) {
   linkElement.dataset.type = 'url';
   linkElement.dataset.text = token.text;
   linkSpan.appendChild(linkElement);
-  linkSpan.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  linkElement.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
   return linkSpan;
 }
 
