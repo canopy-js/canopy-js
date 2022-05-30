@@ -120,6 +120,7 @@ function renderLinkLiteral(token) {
   linkElement.dataset.text = token.text;
   linkSpan.appendChild(linkElement);
   linkElement.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+
   return linkSpan;
 }
 
