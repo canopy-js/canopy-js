@@ -1,0 +1,35 @@
+name: Publish to NPM
+on:
+ push:
+   tags:
+     - '[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 12
+        registry-url: https://npm.pkg.github.com/
+    - env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      run: |
+        set -ex
+        touch .npmrc
+        npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+
+        npm install
+        npm run build-prod
+
+        PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
+
+        if [ "$PACKAGE_JSON_VERSION" = "${GITHUB_REF#refs/*/}" ]; then
+            echo "Version number in package.json matches git tag"
+        else
+            echo "Version number in package.json does not match git tag"
+            exit 1
+        fi
+
+        npm publish --access public --ignore-scripts
