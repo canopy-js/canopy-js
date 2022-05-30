@@ -26,4 +26,4 @@ jobs:
             echo "Strings are not equal."
         fi
 
-        # npm publish --access public
+        npm publish --access public
