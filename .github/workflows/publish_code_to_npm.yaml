@@ -19,9 +19,11 @@ jobs:
         set -ex
 
         PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
-        GITHUB_REF=${GITHUB_REF#refs/*/}
-        echo $PACKAGE_JSON_VERSION
-        echo $GITHUB_REF
-        echo ${GITHUB_REF#refs/*/}
+
+        if [ "$PACKAGE_JSON_VERSION" = "${GITHUB_REF#refs/*/}" ]; then
+            echo "Strings are equal."
+        else
+            echo "Strings are not equal."
+        fi
 
         # npm publish --access public
