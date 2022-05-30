@@ -1,14 +1,8 @@
 #!/bin/bash
 
-<<<<<<< HEAD
-NPM_LOCATION="$(npm root -g)"
-NPM_CANOPY_LOCATION=$(readlink -f "$NPM_LOCATION/canopy-js") # In case the developer is using a symlink
-CANOPY_LOCATION="${CANOPY_LOCATION:-$NPM_CANOPY_LOCATION}"
-=======
 # We are assuming however you installed canopy, the binary on your bath is a symlink to this file
 # and that the binary's directory's directory is the canopy repository
 CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}"
->>>>>>> c65d480 (fixup! Rename `pathPrefix` to `projectPathPrefix`)
 
 case $1 in
 build)
@@ -44,7 +38,7 @@ build)
 </html>
 EOF
   fi
-
+  
   node $CANOPY_LOCATION/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
