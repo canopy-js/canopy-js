@@ -12,13 +12,12 @@ jobs:
       with:
         node-version: 14
     - env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       run: |
         set -ex
 
         npm install
-
         npm run build-prod
 
         PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
@@ -30,5 +29,5 @@ jobs:
             exit 1
         fi
 
-        npm login
+        npm config set_authToken="$NPM_TOKEN"
         npm publish --access public
