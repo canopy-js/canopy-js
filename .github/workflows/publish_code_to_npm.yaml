@@ -30,4 +30,5 @@ jobs:
             exit 1
         fi
 
+        npm login
         npm publish --access public
