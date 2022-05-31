@@ -1,9 +1,10 @@
 #!/bin/bash
 
-CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy))}"
+CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}"
 
 case $1 in
 build)
+  set -ex
   if [ ! -d ./topics ]; then
     echo "There must be a 'topics' directory at the current path"
     exit 1
@@ -36,7 +37,7 @@ build)
 </html>
 EOF
   fi
-
+  echo $CANOPY_LOCATION
   node $CANOPY_LOCATION/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
