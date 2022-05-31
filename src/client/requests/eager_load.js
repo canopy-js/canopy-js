@@ -4,7 +4,7 @@ import REQUEST_CACHE from 'requests/request_cache';
 
 function eagerLoad(topicName) {
   if (REQUEST_CACHE[topicName]) return;
-  let dataPath = projectPathPrefix + '/data/' + slugFor(topicName.toLowerCase()) + '.json';
+  let dataPath = projectPathPrefix + '/_data/' + slugFor(topicName.toLowerCase()) + '.json';
 
   return fetch(dataPath).
     then(res => {
