@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# We are assuming however you installed canopy, the binary on your bath is a symlink to this file
+# and that the binary's directory's directory is the canopy repository
 CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}"
 
 case $1 in
@@ -13,7 +15,7 @@ build)
   mkdir build
 
   DEFAULT_TOPIC=`cat .canopy_default_topic`
-  PATH_PREFIX=`cat .canopy_path_prefix`
+  PROJECT_PATH_PREFIX=`cat .canopy_project_path_prefix`
 
   if [ -e index.html ]; then
     cp index.html build
@@ -25,8 +27,8 @@ build)
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
-<div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-project-path-prefix="$PATH_PREFIX"></div>
-<script src="$PATH_PREFIX/canopy.js"></script>
+<div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-project-path-prefix="$PROJECT_PATH_PREFIX"></div>
+<script src="$PROJECT_PATH_PREFIX/canopy.js"></script>
 </body>
 <script>
   if (location.href[location.href.length - 1] === '/' && location.href !== location.origin + '/') {
@@ -83,8 +85,8 @@ init)
   echo "(eg, example.com/subdirectory/Topic, as opposed to example.com/Topic),"
   echo "type the prefix (eg, subdirectory) below, without leading or trailing slashes."
   echo "Otherwise, (or if you're not sure,) just press return."
-  read PATH_PREFIX
-  echo $PATH_PREFIX > .canopy_path_prefix
+  read PROJECT_PATH_PREFIX
+  echo $PROJECT_PATH_PREFIX > .canopy_project_path_prefix
   echo "All done. You might want to initialize a git repository with \`git init\`"
   ;;
 watch)
