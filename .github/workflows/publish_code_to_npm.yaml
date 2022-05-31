@@ -11,20 +11,13 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 14
-    - name: Wait for prod code to build
-      uses: lewagon/wait-on-check-action@v1.0.0
-      with:
-        ref: ${{ github.ref }}
-        check-name: 'Build Prod Code'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 10
     - env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       run: |
         set -ex
 
-        git checkout build
+        npm run build-prod
 
         PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
 
