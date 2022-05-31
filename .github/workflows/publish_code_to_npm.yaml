@@ -18,6 +18,8 @@ jobs:
       run: |
         set -ex
 
+        cat .npmrc
+
         npm install
         npm run build-prod
 

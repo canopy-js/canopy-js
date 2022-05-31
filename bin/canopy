@@ -26,7 +26,7 @@ build)
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
-<div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-path-prefix="$PATH_PREFIX"></div>
+<div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-project-path-prefix="$PATH_PREFIX"></div>
 <script src="$PATH_PREFIX/canopy.js"></script>
 </body>
 <script>
