@@ -18,6 +18,9 @@ jobs:
       run: |
         set -ex
 
+        touch .npmrc
+        npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+
         npm install
         npm run build-prod
 
@@ -30,4 +33,4 @@ jobs:
             exit 1
         fi
 
-        npm publish --access public
+        npm publish --access public --ignore-scripts
