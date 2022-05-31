@@ -1,7 +1,7 @@
 {
   "name": "canopy-js",
-  "version": "0.2.50",
-  "description": "A library for creating and browsing explanatory graphs",
+  "version": "0.2.51",
+  "description": "A library for creating and browsing explanation graphs",
   "main": "dist/parser.js",
   "scripts": {
     "test": "jest",
