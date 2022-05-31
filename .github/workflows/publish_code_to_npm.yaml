@@ -17,14 +17,17 @@ jobs:
       run: |
         set -ex
 
+        npm install
+
         npm run build-prod
 
         PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
 
         if [ "$PACKAGE_JSON_VERSION" = "${GITHUB_REF#refs/*/}" ]; then
-            echo "Strings are equal."
+            echo "Version number in package.json matches git tag"
         else
-            echo "Strings are not equal."
+            echo "Version number in package.json does not match git tag"
+            exit 1
         fi
 
         npm publish --access public
