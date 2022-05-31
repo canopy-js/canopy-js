@@ -13,6 +13,7 @@ class Path {
         this.pathArray = [['', '']];
       } else {
         this.pathArray = JSON.parse(JSON.stringify(argument));
+        validatePathsArray(this.pathArray);
       }
       this.pathString = Path.arrayToString(this.pathArray);
     } else if (typeof argument === 'string' || argument instanceof String) {
@@ -23,6 +24,13 @@ class Path {
 
   equals(otherPath) {
     return this.string === otherPath.string;
+  }
+
+  static validatePathArray(array) {
+    array.forEach(tuple => {
+      if (tuple.length !== 2) throw `Invalid path segment format: ${tuple}`;
+      if (typeof tuple[0] !== 'string' || typeof tuple[1] !== 'string') throw `Invalid path segment format: ${tuple}`;
+    })
   }
 
   addSegment(topic, subtopic) {
