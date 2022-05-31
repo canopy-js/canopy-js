@@ -22,6 +22,8 @@ jobs:
         echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
         echo "registry=https://registry.npmjs.org/" >> .npmrc
         echo "always-auth=true" >> .npmrc
+        npm config set _authToken="$NPM_TOKEN"
+        cat .npmrc
 
         npm install
         npm run build-prod
@@ -35,5 +37,4 @@ jobs:
             exit 1
         fi
 
-        npm config set authToken="$NPM_TOKEN"
         npm publish --access public
