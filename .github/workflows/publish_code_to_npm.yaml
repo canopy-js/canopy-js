@@ -29,5 +29,5 @@ jobs:
             exit 1
         fi
 
-        npm config set_authToken="$NPM_TOKEN"
+        npm config set authToken="$NPM_TOKEN"
         npm publish --access public
