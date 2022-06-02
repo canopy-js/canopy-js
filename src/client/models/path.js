@@ -13,7 +13,7 @@ class Path {
         this.pathArray = [['', '']];
       } else {
         this.pathArray = JSON.parse(JSON.stringify(argument));
-        validatePathsArray(this.pathArray);
+        Path.validatePathArray(this.pathArray);
       }
       this.pathString = Path.arrayToString(this.pathArray);
     } else if (typeof argument === 'string' || argument instanceof String) {
@@ -157,6 +157,8 @@ class Path {
   }
 
   static stringToArray(pathString) {
+    if (typeof pathString !== 'string') throw "Function requires string argument";
+
     if (pathString.indexOf(projectPathPrefix) === 0) {
       pathString = pathString.slice(projectPathPrefix.length);
     }
@@ -185,11 +187,13 @@ class Path {
   }
 
   static arrayToString(pathArray) {
+    if (!Array.isArray(pathArray)) throw 'Argument must be array';
+
     if (Array.isArray(pathArray) && pathArray.length === 0) {
       return '/';
     }
 
-    if (!(Array.isArray(pathArray) && Array.isArray(pathArray[0]))) {
+    if (!Array.isArray(pathArray[0])) {
       throw 'Path array must be two-dimensional array';
     }
 
