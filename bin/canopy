@@ -5,6 +5,51 @@
 CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}"
 
 case $1 in
+init)
+  mkdir -p topics
+  if [[ -f .canopy_config ]]; then echo ".canopy_config file already detected, delete and try again."; exit 1; fi
+
+  touch .gitignore
+  if [[ -z $(cat .gitignore | grep "build/") ]]; then echo "build/"; fi
+  if [[ -z $(cat .gitignore | grep ".canopy_watch.pid") ]]; then echo ".canopy_watch.pid"; fi
+  if [[ -z $(cat .gitignore | grep ".canopy_watch_dev.pid") ]]; then echo ".canopy_watch_dev.pid"; fi
+  if [[ -z $(cat .gitignore | grep ".canopy_bulk_temp") ]]; then echo ".canopy_bulk_temp"; fi
+  if [[ -z $(cat .gitignore | grep "canopy_bulk_temp") ]]; then echo "canopy_bulk_temp"; fi
+
+  touch .canopy_config
+  if [[ -z $(cat .canopy_config | grep "DEFAULT_TOPIC") ]]; then
+    echo "Enter default topic name:"
+    read DEFAULT_TOPIC
+    echo "DEFAULT_TOPIC=$DEFAULT_TOPIC" >> .canopy_config
+    printf "${DEFAULT_TOPIC}: Text here.\n" > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/script/snake_case.js)
+    echo
+  fi
+
+  if [[ -z $(cat .canopy_config | grep "PROJECT_PATH_PREFIX") ]]; then
+    echo "If you will be hosting Canopy with a static assets server,"
+    echo "and Canopy will be hosted from a subdirectory of the path,"
+    echo "(eg, example.com/subdirectory/Topic, as opposed to example.com/Topic),"
+    echo "type the prefix (eg, subdirectory) below, without leading or trailing slashes."
+    echo "Otherwise, (or if you're not sure,) just press return."
+    read PROJECT_PATH_PREFIX
+    echo "PROJECT_PATH_PREFIX=$PROJECT_PATH_PREFIX" >> .canopy_config
+    echo
+  fi
+
+  if [[ -z $(cat .canopy_config | grep "HASHBANGS") ]]; then
+    echo "Will you be hosting your project with hash-bang URLs?"
+    echo "(If yes, your URLs will look like http://example.com/#!/Topic)"
+    echo "The reason to prefer hash-bangs is if you will be using a static assets server"
+    echo "that does not support symlinks, like Github Pages."
+    read -p "(y/n) " yn
+    case $yn in
+        [Yy]* ) HASHBANGS="true";;
+        [Nn]* ) HASHBANGS="";;
+        * ) echo "Please answer yes or no.";;
+    esac
+    echo "HASHBANGS=$HASHBANGS" >> .canopy_config
+  fi
+  echo "All done. You might want to initialize a git repository with \`git init\`";;
 build)
   if [ ! -d ./topics ]; then
     echo "There must be a 'topics' directory at the current path"
@@ -14,8 +59,9 @@ build)
   rm -rf build
   mkdir build
 
-  DEFAULT_TOPIC=`cat .canopy_default_topic`
-  PROJECT_PATH_PREFIX=`cat .canopy_project_path_prefix`
+  DEFAULT_TOPIC=`cat .canopy_config | grep DEFAULT_TOPIC= | cut -d'=' -f 2`
+  PROJECT_PATH_PREFIX=`cat .canopy_config | grep PROJECT_PATH_PREFIX= | cut -d'=' -f 2`
+  HASHBANGS=`cat .canopy_config | grep HASHBANGS= | cut -d'=' -f 2`
 
   if [ -e index.html ]; then
     cp index.html build
@@ -27,7 +73,12 @@ build)
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
-<div id="_canopy" data-default-topic="$DEFAULT_TOPIC" data-project-path-prefix="$PROJECT_PATH_PREFIX"></div>
+<div
+  id="_canopy"
+  data-default-topic="$DEFAULT_TOPIC"
+  data-project-path-prefix="$PROJECT_PATH_PREFIX"
+  data-hashbangs="$HASHBANGS">
+</div>
 <script src="$PROJECT_PATH_PREFIX/canopy.js"></script>
 </body>
 <script>
@@ -38,7 +89,7 @@ build)
 </html>
 EOF
   fi
-  
+
   node $CANOPY_LOCATION/dist/parser.js . $2
 
   if [[ $2 = "--for-static-assets" ]]; then
@@ -66,29 +117,7 @@ EOF
   fi
   if [ -d "assets" ]; then
     cp -r assets build/assets
-  fi
-;;
-init)
-  mkdir topics
-  touch .gitignore
-  echo "build/" >> .gitignore
-  echo ".canopy_watch.pid" >> .gitignore
-  echo ".canopy_bulk_temp" >> .gitignore
-  echo "canopy_bulk_temp" >> .gitignore
-  echo "Enter default topic name:"
-  read DEFAULT_TOPIC
-  echo $DEFAULT_TOPIC > .canopy_default_topic
-  echo "${DEFAULT_TOPIC}: Text here.\n" > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/script/snake_case.js)
-  echo
-  echo "If you will be hosting Canopy with a static assets server,"
-  echo "and Canopy will be hosted from a subdirectory of the path,"
-  echo "(eg, example.com/subdirectory/Topic, as opposed to example.com/Topic),"
-  echo "type the prefix (eg, subdirectory) below, without leading or trailing slashes."
-  echo "Otherwise, (or if you're not sure,) just press return."
-  read PROJECT_PATH_PREFIX
-  echo $PROJECT_PATH_PREFIX > .canopy_project_path_prefix
-  echo "All done. You might want to initialize a git repository with \`git init\`"
-  ;;
+  fi;;
 watch)
   command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
 
