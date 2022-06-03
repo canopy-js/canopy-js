@@ -18,6 +18,10 @@ jobs:
         set -ex
         rev=$(git rev-parse --short HEAD)
 
+        rm -rf .git
+        git init
+
+        git remote add origin "https://canopy-js:$GITHUB_TOKEN@github.com/canopy-js/canopy-js.git"
         git fetch origin
         git reset origin/build
 

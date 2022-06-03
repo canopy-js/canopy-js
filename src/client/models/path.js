@@ -217,6 +217,9 @@ class Path {
   static fixOrphanSubtopics(pathString, slashSeparatedUnits) {
     // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
 
+    if (typeof pathString !== 'string') throw "pathString must be a string argument";
+    if (!Array.isArray(slashSeparatedUnits)) throw 'slashSeparatedUnits must be an array';
+
     if (pathString.match(/\/#\w+/)) {
       for (let i = 1; i < slashSeparatedUnits.length; i++) {
         if (slashSeparatedUnits[i].match(/^#/)) {
@@ -241,6 +244,9 @@ class Path {
   }
 
   static validateConnectingLink(parentElement, pathToDisplay) {
+    if (!parentElement) throw 'Parent element required';
+    if (!pathToDisplay instanceof Path) throw 'pathToDisplay must be a Path object';
+
     if (parentElement === canopyContainer) return;
     let parentParagraph = new Paragraph(parentElement);
     if (!parentParagraph.linkBySelector(Link.hasTarget(pathToDisplay.firstTopic))) {
@@ -249,6 +255,9 @@ class Path {
   }
 
   static elementAtRelativePath(suppliedPath, suppliedRootElement) {
+    if (!suppliedPath instanceof Path) throw 'pathToDisplay must be a Path object';
+    if (!suppliedRootElement || !suppliedRootElement.tagName) 'Root element must be a DOM node';
+
     let rootElement = suppliedRootElement;
     if (!suppliedRootElement) { rootElement = canopyContainer; }
     let path = suppliedPath.clone;
@@ -281,6 +290,8 @@ class Path {
   }
 
   static setPath(newPath) {
+    if (!newPath instanceof Path) throw 'newPath must be Path object';
+
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic;
     let historyApiFunction = newPath.equals(oldPath) ? replaceState : pushState;
