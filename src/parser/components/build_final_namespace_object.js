@@ -5,11 +5,11 @@ import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 import subsumingPathExists from 'helpers/subsuming_path_exists';
 
-function buildFinalNamespaceObject(dgsFilePaths, provisionalNamespaceObject) {
+function buildFinalNamespaceObject(explFilePaths, provisionalNamespaceObject) {
   let finalNamespaceObject = {};
   let localReferenceGraph = {};
 
-  dgsFilePaths.forEach((path) => {
+  explFilePaths.forEach((path) => {
     let paragraphsWithKeys = paragraphsOfFile(path);
     let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
     let topicOfFile = removeMarkdownTokens(displayTopicOfFile);

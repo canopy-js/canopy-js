@@ -5,7 +5,7 @@ import extractKeyAndParagraph from 'helpers/extract_key_and_paragraph';
 import { removeMarkdownTokens } from 'helpers/identifiers';
 import subsumingPathExists from 'helpers/subsuming_path_exists';
 
-function jsonForDgsFile(path, namespaceObject) {
+function jsonForExplFile(path, namespaceObject) {
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
   let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
@@ -43,4 +43,4 @@ function jsonForDgsFile(path, namespaceObject) {
   );
 }
 
-export default jsonForDgsFile;
+export default jsonForExplFile;

@@ -1,4 +1,4 @@
-import jsonForProjectDirectory from './components/json_for_dgs_directory';
+import jsonForProjectDirectory from './components/json_for_expl_directory';
 
 if (process.argv.length < 2) {
   console.log('Project directory argument required');
