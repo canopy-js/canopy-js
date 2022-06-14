@@ -1,223 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-# We are assuming however you installed canopy, the binary on your bath is a symlink to this file
-# and that the binary's directory's directory is the canopy repository
-CANOPY_LOCATION="${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}"
+const { Command } = require('commander');
+const init = require('./commands/init');
+const build = require('./commands/build');
+const watch = require('./commands/watch');
+const serve = require('./commands/serve/serve');
+const bulk = require('./commands/bulk/bulk');
 
-case $1 in
-init)
-  mkdir -p topics
-  if [[ -f .canopy_config ]]; then echo ".canopy_config file already detected, delete and try again."; exit 1; fi
+const program = new Command();
 
-  touch .gitignore
-  if [[ -z $(cat .gitignore | grep "build/") ]]; then echo "build/"; fi
-  if [[ -z $(cat .gitignore | grep ".canopy_watch.pid") ]]; then echo ".canopy_watch.pid"; fi
-  if [[ -z $(cat .gitignore | grep ".canopy_watch_dev.pid") ]]; then echo ".canopy_watch_dev.pid"; fi
-  if [[ -z $(cat .gitignore | grep ".canopy_bulk_temp") ]]; then echo ".canopy_bulk_temp"; fi
-  if [[ -z $(cat .gitignore | grep "canopy_bulk_temp") ]]; then echo "canopy_bulk_temp"; fi
+program
+  .name('canopy-js')
+  .description('A library for creating explanation trees');
 
-  touch .canopy_config
-  if [[ -z $(cat .canopy_config | grep "DEFAULT_TOPIC") ]]; then
-    echo "Enter default topic name:"
-    read DEFAULT_TOPIC
-    echo "DEFAULT_TOPIC=$DEFAULT_TOPIC" >> .canopy_config
-    printf "${DEFAULT_TOPIC}: Text here.\n" > $(echo $DEFAULT_TOPIC | node $CANOPY_LOCATION/script/snake_case.js)
-    echo
-  fi
+program.command('init')
+  .description('Initialize a Canopy project')
+  .action(() => {
+  	init();
+  });
 
-  if [[ -z $(cat .canopy_config | grep "PROJECT_PATH_PREFIX") ]]; then
-    echo "If you will be hosting Canopy with a static assets server,"
-    echo "and Canopy will be hosted from a subdirectory of the path,"
-    echo "(eg, example.com/subdirectory/Topic, as opposed to example.com/Topic),"
-    echo "type the prefix (eg, subdirectory) below, without leading or trailing slashes."
-    echo "Otherwise, (or if you're not sure,) just press return."
-    read PROJECT_PATH_PREFIX
-    echo "PROJECT_PATH_PREFIX=$PROJECT_PATH_PREFIX" >> .canopy_config
-    echo
-  fi
+program.command('build')
+  .description('build the Canopy text files into JSON data')
+  .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
+  .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
+  .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
+  .action((options) => {
+  	build(options);
+  });
 
-  if [[ -z $(cat .canopy_config | grep "HASHBANGS") ]]; then
-    echo "Will you be hosting your project with hash-bang URLs?"
-    echo "(If yes, your URLs will look like http://example.com/#!/Topic)"
-    echo "The reason to prefer hash-bangs is if you will be using a static assets server"
-    echo "that does not support symlinks, like Github Pages."
-    read -p "(y/n) " yn
-    case $yn in
-        [Yy]* ) HASHBANGS="true";;
-        [Nn]* ) HASHBANGS="";;
-        * ) echo "Please answer yes or no.";;
-    esac
-    echo "HASHBANGS=$HASHBANGS" >> .canopy_config
-  fi
-  echo "All done. You might want to initialize a git repository with \`git init\`";;
-build)
-  if [ ! -d ./topics ]; then
-    echo "There must be a 'topics' directory at the current path"
-    exit 1
-  fi
+program.command('watch')
+  .description('watch a Canopy project and rebuild JSON assets on text change')
+  .argument('[mode]', 'whether to start or stop Canopy watch', 'start')
+  .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
+  .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
+  .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
+  .action((argument, options) => {
+  	watch(argument, options);
+  });
 
-  rm -rf build
-  mkdir build
+program.command('serve')
+  .description('run a server for a Canopy project')
+  .option('-p, --port <port>', 'specify a custom port', 8000)
+  .option('-s, --static', 'run a static assets server instead of a node.js server', false)
+  .action((options) => {
+  	serve(options);
+  });
 
-  DEFAULT_TOPIC=`cat .canopy_config | grep DEFAULT_TOPIC= | cut -d'=' -f 2`
-  PROJECT_PATH_PREFIX=`cat .canopy_config | grep PROJECT_PATH_PREFIX= | cut -d'=' -f 2`
-  HASHBANGS=`cat .canopy_config | grep HASHBANGS= | cut -d'=' -f 2`
+program.command('bulk')
+  .description('watch a Canopy project and rebuild JSON assets on text change')
+  .option('--start', 'start a bulk mode session using canopy_bulk_file for manual editing')
+  .option('--finish', 'import finished session from canopy_bulk_file')
+  .option('-p, --pick', 'choose file paths with fuzzy selector')
+  .option('-b, --blank', 'choose file paths with fuzzy selector')
+  .option('-d, --directories', 'used in conjunction with --pick, allows the user to select directories of files')
+  .option('-r, --recursive', 'used in conjunction with --pick, allows selection of recursive directory contents')
+  .option('-c, --clear-backup', 'clear the backup file prior to bulk edit')
+  .argument('[paths...]')
+  .action((paths, options) => {
+  	bulk(paths, options).catch((e) => console.error(e));
+  });
 
-  if [ -e index.html ]; then
-    cp index.html build
-  else
-    cat << EOF > build/index.html
-<html>
-<head>
-<meta charset="utf-8">
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-</head>
-<body>
-<div
-  id="_canopy"
-  data-default-topic="$DEFAULT_TOPIC"
-  data-project-path-prefix="$PROJECT_PATH_PREFIX"
-  data-hashbangs="$HASHBANGS">
-</div>
-<script src="$PROJECT_PATH_PREFIX/canopy.js"></script>
-</body>
-<script>
-  if (location.href[location.href.length - 1] === '/' && location.href !== location.origin + '/') {
-    window.history.replaceState('Object', 'Title', location.href.slice(0, -1));
-  }
-</script>
-</html>
-EOF
-  fi
-
-  node $CANOPY_LOCATION/dist/parser.js . $2
-
-  if [[ $2 = "--for-static-assets" ]]; then
-    cd build
-    for CURRENT_TOPIC_PATH in `find "." -mindepth 1 ! -name '*data' -type d`; do
-      for TOPIC_TO_ALIAS_PATH in `find "." -mindepth 1 ! -name '*data' -type d`; do
-        if [ "$CANOPY_LOGGING" ]; then
-          echo rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-        fi
-        rm -f $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-        cd $CURRENT_TOPIC_PATH
-        if [ "$CANOPY_LOGGING" ]; then
-          echo ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $CURRENT_TOPIC_PATH/$(basename $TOPIC_TO_ALIAS_PATH)
-        fi
-        ln -s ../$(basename $TOPIC_TO_ALIAS_PATH) $(basename $TOPIC_TO_ALIAS_PATH)
-        cd ..
-      done
-    done
-    cd ..
-  fi
-
-  cp $CANOPY_LOCATION/dist/canopy.js build/canopy.js
-  if [ -f "$CANOPY_LOCATION/dist/canopy.js.map" ]; then
-    cp $CANOPY_LOCATION/dist/canopy.js.map build/canopy.js.map
-  fi
-  if [ -d "assets" ]; then
-    cp -r assets build/assets
-  fi;;
-watch)
-  command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
-
-  if [ "$2" == "stop" ]; then
-    kill $(cat .canopy_watch.pid) > /dev/null 2>&1;
-    rm .canopy_watch.pid
-    exit 0;
-  fi
-
-  PIDFILE=.canopy_watch.pid
-  if [ -f $PIDFILE ];
-  then
-    PID=$(cat $PIDFILE)
-    if ps -p $PID > /dev/null 2>&1;
-    then
-      # Canopy watch is already running
-      kill $PID
-    fi
-  fi
-
-  if [ ! -d ./topics ]; then
-    echo "There must be a topics directory at the current path"
-    exit 1
-  fi
-
-  #######
-  fswatch -0 -o topics | CANOPY_DEBUG=true xargs -0 -n1 -I{} canopy build > /dev/null 2>&1 &
-  #######
-
-  echo $(jobs -p | tail -1) > $PIDFILE
-  if [ $? -ne 0 ];
-  then
-    echo "Could not create PID file"
-    exit 1
-  fi
-
-  canopy build $2;;
-watch-dev)
-  # Watch-dev assumes $CANOPY_LOCATION is pointing to your local development repo.
-  #
-  # When a change to your code triggers a rebuild of the assets in canopy-js/dist,
-  #   watch-dev rebuilds the current canopy project to include the new version of canopy-js
-  #
-  command -v fswatch >/dev/null 2>&1 || { echo >&2 "Canopy watch requires fswatch to be installed."; exit;}
-
-  if [ "$2" == "stop" ]; then
-    kill $(cat .canopy_dev_watch.pid) > /dev/null 2>&1;
-    rm .canopy_watch.pid
-    exit 0;
-  fi
-
-  PIDFILE=.canopy_watch_dev.pid
-  if [ -f $PIDFILE ];
-  then
-    PID=$(cat $PIDFILE)
-    if ps -p $PID > /dev/null 2>&1;
-    then
-      # Canopy watch is already running
-      kill $PID
-    fi
-  fi
-
-  if [ ! -d ./topics ]; then
-    echo "There must be a topics directory at the current path"
-    exit 1
-  fi
-
-  #######
-  fswatch -0 -o $CANOPY_LOCATION/dist | CANOPY_DEBUG=true xargs -0 -n1 -I{} canopy build > /dev/null 2>&1 &
-  #######
-
-  echo $(jobs -p | tail -1) > $PIDFILE
-  if [ $? -ne 0 ];
-  then
-    echo "Could not create PID file"
-    exit 1
-  fi
-
-  canopy build $2;;
-serve)
-  canopy build
-  if [ $? -ne 0 ];
-  then
-    exit 1
-  fi
-  echo "Serving on port ${2:-3000}"
-  node $CANOPY_LOCATION/script/server.js ${2:-3000}
-  ;;
-
-bulk)
-  node $CANOPY_LOCATION/script/bulk_edit.js "$@"
-  ;;
-
-*)
-echo "Usage:"
-echo "  canopy init"
-echo "  canopy build [--for-static-assets]"
-echo "  canopy watch [stop]"
-echo "  canopy serve [PORT]"
-echo "  canopy bulk [--start|--stop] [PATHS]"
-;;
-
-esac
+program.parse();
