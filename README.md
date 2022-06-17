@@ -1,3 +1,5 @@
+Canopy JS is a library that takes natural language explanation and generates an interactive explanatory interface.
+
 Install CLI:
 
 Check that `npm get prefix` is a directory that's on your path.
