@@ -22,7 +22,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 		  id="_canopy"
 		  data-default-topic="${defaultTopic}"
 		  data-project-path-prefix="${projectPathPrefix}"
-		  data-hash-urls="${hashUrls}">
+		  data-hash-urls="${hashUrls || ''}">
 		</div>
 		<script src="${projectPathPrefix}/canopy.js"></script>
 		</body>
