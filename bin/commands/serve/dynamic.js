@@ -16,4 +16,9 @@ app.use('*/_assets', express.static(buildPath + '_assets'));
 
 // not found in static files, so default to index.html
 app.use((req, res) => res.sendFile(buildPath + 'index.html'));
-app.listen(port);
+
+function runDynamic(port) {
+	app.listen(port);
+}
+
+module.exports = runDynamic;
