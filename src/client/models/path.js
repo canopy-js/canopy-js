@@ -1,4 +1,4 @@
-import { defaultTopic, canopyContainer, projectPathPrefix } from 'helpers/getters';
+import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
 import { selectedLink, metadataForLink } from 'helpers/getters';
 import { slugFor } from 'helpers/identifiers';
 import Paragraph from 'models/paragraph';
@@ -132,10 +132,13 @@ class Path {
   }
 
   static get current() {
-   let pathString = window.location.pathname + window.location.hash;
-    if (pathString.indexOf(projectPathPrefix) === 0) {
-      pathString = pathString.slice(projectPathPrefix.length);
+    let pathString = window.location.pathname + window.location.hash;
+
+    if (pathString.indexOf(`/${projectPathPrefix}`) === 0) {
+      pathString = pathString.slice(projectPathPrefix.length + 1);
     }
+
+    if (pathString.indexOf('#/') === 0) pathString = pathString.slice(1);  // example.com[/#]/Topic
 
     return new Path(pathString);
   }
@@ -159,8 +162,8 @@ class Path {
   static stringToArray(pathString) {
     if (typeof pathString !== 'string') throw "Function requires string argument";
 
-    if (pathString.indexOf(projectPathPrefix) === 0) {
-      pathString = pathString.slice(projectPathPrefix.length);
+    if (pathString.indexOf(projectPathPrefix) === 1) {
+      pathString = pathString.slice(projectPathPrefix.length + 1);
     }
 
     if (pathString === '/') {
@@ -198,10 +201,6 @@ class Path {
     }
 
     let pathString = '/';
-
-    if (projectPathPrefix) {
-      pathString += projectPathPrefix;
-    }
 
     pathString += pathArray.map(([topic, subtopic]) => {
       let pathSegmentString = slugFor(topic);
@@ -296,11 +295,12 @@ class Path {
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic;
     let historyApiFunction = newPath.equals(oldPath) ? replaceState : pushState;
+    let fullPathString = (projectPathPrefix ? `/${projectPathPrefix}` : '') + (hashUrls ? '/#' : '') + newPath.string;
 
     historyApiFunction(
       history.state, // this will be changed via Link#persistInHistory
       documentTitle,
-      newPath.string
+      fullPathString
     );
 
     function replaceState(a, b, c) {
