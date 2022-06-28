@@ -6,8 +6,15 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 
-function moveUpward() {
+function moveUpward(option) {
   let link = Link.selection;
+
+  if (option) {
+    return updateView(
+      link.enclosingParagraph.topicParagraph.path,
+      link.enclosingParagraph.topicParagraph.parentLink
+    );
+  }
 
   if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
     return updateView(link.enclosingParagraph.path);

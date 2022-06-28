@@ -49,6 +49,7 @@ const shortcutRelationships = {
   'up': moveUpward,
   'down': moveDownward,
   'right': moveRightward,
+  'alt-up': moveUpward.bind(null, true),
 
   'h': moveLeftward,
   'j': moveDownward,
