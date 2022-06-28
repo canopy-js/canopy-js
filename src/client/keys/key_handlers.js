@@ -10,18 +10,20 @@ function moveUpward(option) {
   let link = Link.selection;
 
   if (option) {
+    let newLink = link.enclosingParagraph.topicParagraph.parentLink
+
     return updateView(
-      link.enclosingParagraph.topicParagraph.path,
-      link.enclosingParagraph.topicParagraph.parentLink
+      newLink.pathToDisplay,
+      newLink
     );
   }
 
   if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
-    return updateView(link.enclosingParagraph.path);
+    return updateView(link.enclosingParagraph.path); // deselect link
   }
 
   return updateView(
-    link.parentLink.pathWhenSelected,
+    link.parentLink.pathToDisplay,
     link.parentLink
   );
 }
@@ -29,6 +31,7 @@ function moveUpward(option) {
 function moveDownward() {
   let path = Path.current;
   let oldLink = Link.selection;
+  let newLink;
 
   if (oldLink.isParent) {
 
@@ -51,7 +54,7 @@ function moveDownward() {
 function moveLeftward() {
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
-    link.pathWhenSelected,
+    link.pathToDisplay,
     link,
   );
 }
@@ -60,7 +63,7 @@ function moveRightward() {
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
-    link.pathWhenSelected,
+    link.pathToDisplay,
     link,
   );
 }
@@ -70,23 +73,12 @@ function moveDownOrRedirect(newTab, altKey) {
     return moveDownward();
   }
 
-  if (Link.selection.isGlobalOrImport) {
-    let path;
-    let link;
+  if (Link.selection.isGlobalOrImport && altKey) { //inline topic
+    return moveDownward();
+  }
 
-    if (altKey) { // in-line topic mode
-      if (Link.selection.targetParagraph.hasLinks) { // select first child link
-        link = Link.selection.targetParagraph.firstLink;
-        path = Paragraph.current.firstLink.pathWhenSelected;
-      } else { // there is nothing in the previewed child to select
-        return;
-      }
-    }
-
-    if (!altKey) { // redirecting to new topic page
-      path = Link.selection.targetPath.lastSegment;
-      link = Link.selectALink(path);
-    }
+  if (Link.selection.isGlobalOrImport && !altKey) { // redirecting to new page
+    let path = Link.selection.targetPath.lastSegment;
 
     if (newTab) {
       return window.open(
@@ -94,17 +86,14 @@ function moveDownOrRedirect(newTab, altKey) {
         '_blank'
       );
     } else {
-      updateView(
+      return updateView(
         path,
         Link.selectALink(path)
       )
     }
+  }
 
-    updateView(
-      path,
-      link
-    );
-  } else if (Link.selection.type === 'url') {
+  if (Link.selection.type === 'url') {
     if (newTab) {
       return window.open(
         Link.selection.element.href,

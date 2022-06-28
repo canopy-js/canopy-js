@@ -14,13 +14,11 @@ import {
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
-  if (linkToSelect.?present && linkToSelect.contradicts(pathToDisplay)) {
-    console.log(`Path: "${pathToDisplay}" contradicts link selection path: "${linkToSelect.pathWhenSelected}"`)
-    return updateView(linkToSelect.pathWhenSelected, linkToSelect, displayOptions);
+  if (linkToSelect?.present && linkToSelect.contradicts(pathToDisplay)) {
+    return updateView(linkToSelect.pathToDisplay, linkToSelect, displayOptions);
   }
 
   resetDom();
-
   if (!displayOptions.pathAlreadySet) Path.setPath(pathForUrl(pathToDisplay, linkToSelect));
   setHeader(Paragraph.pageRoot.displayTopicName);
   document.title = pathToDisplay.firstTopic;
