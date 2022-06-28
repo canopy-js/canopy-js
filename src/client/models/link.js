@@ -39,7 +39,7 @@ class Link {
 
   contradicts(path) {
     if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
-    return this.pathWhenSelected.string !== path.string;
+    return this.pathToDisplay.string !== path.string;
   }
 
   get element () {
@@ -149,9 +149,9 @@ class Link {
 
   get localPathWhenSelected() {
     if (this.isGlobalOrImport) {
-      return new Path(this.pathWhenSelected.pathArray.slice(-2));
+      return new Path(this.pathToDisplay.pathArray.slice(-2));
     } else {
-      return this.pathWhenSelected.lastSegment;
+      return this.pathToDisplay.lastSegment;
     }
   }
 
@@ -196,10 +196,10 @@ class Link {
   }
 
   get path() {
-    throw "Depreciated in favor of #pathWhenSelected";
+    throw "Depreciated in favor of #pathToDisplay";
   }
 
-  get pathWhenSelected() {
+  get pathToDisplay() {
     if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
