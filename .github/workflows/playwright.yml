@@ -18,8 +18,9 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
-      with: GabrielBB/xvfb-action@v1
-      run: npx playwright test --headed
+      uses: GabrielBB/xvfb-action@v1
+      with:
+        run: npx playwright test --headed
     - uses: actions/upload-artifact@v2
       if: always()
       with:
