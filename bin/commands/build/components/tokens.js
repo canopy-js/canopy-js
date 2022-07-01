@@ -1,6 +1,7 @@
-function TextToken(text) {
+function TextToken(text, length) {
   this.text = text;
   this.type = 'text';
+  this.length = length || text.length;
 }
 
 function LocalReferenceToken(
@@ -9,6 +10,7 @@ function LocalReferenceToken(
     enclosingTopic,
     enclosingSubtopic,
     text,
+    length
   ) {
   this.text = text;
   this.type = 'local';
@@ -16,6 +18,7 @@ function LocalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  this.length = length;
 }
 
 function GlobalReferenceToken(
@@ -24,6 +27,7 @@ function GlobalReferenceToken(
     enclosingTopic,
     enclosingSubtopic,
     text,
+    length
   ) {
   this.text = text;
   this.type = 'global';
@@ -31,39 +35,61 @@ function GlobalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  this.length = length;
 }
 
-function markdownUrlToken(url, text) {
+function ImportReferenceToken(
+    targetTopic,
+    targetSubtopic,
+    enclosingTopic,
+    enclosingSubtopic,
+    text,
+    length,
+  ) {
+  this.text = text;
+  this.type = 'import';
+  this.targetSubtopic = targetSubtopic;
+  this.targetTopic = targetTopic;
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
+  this.length = length;
+}
+
+function markdownUrlToken(url, text, length) {
   this.type = 'url';
   this.text = text || url;
   this.url = url;
+  this.length = length;
 }
 
-function markdownImageToken(alt, resourceUrl, title, anchorUrl) {
+function markdownImageToken(alt, resourceUrl, title, anchorUrl, length) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title || null;
   this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
+  this.length = length;
 }
 
-function markdownFootnoteToken(superscript) {
+function markdownFootnoteToken(superscript, length) {
   this.type = 'footnote';
   this.text = superscript;
+  this.length = length;
 }
 
-function markdownHtmlToken(html) {
+function markdownHtmlToken(html, length) {
   this.type = 'html';
   this.html = html;
+  this.length = length;
 }
 
-export {
+module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
+  ImportReferenceToken,
   TextToken,
   markdownUrlToken,
   markdownImageToken,
   markdownFootnoteToken,
-  markdownHtmlToken
-};
-
+  markdownHtmlToken,
+}

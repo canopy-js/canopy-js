@@ -9,9 +9,11 @@ function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
     return renderTextToken(token);
   } else if (token.type === 'local') {
-    return renderParentLink(token, renderContext);
+    return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
     return renderGlobalLink(token, renderContext);
+  } else if (token.type === 'import') {
+    return renderImportLink(token, renderContext);
   } else if (token.type === 'url') {
     return renderLinkLiteral(token);
   } else if (token.type === 'image') {
@@ -31,33 +33,16 @@ function renderTextToken(token) {
   return spanElement;
 }
 
-function renderParentLink(token, renderContext) {
+function renderLocalLink(token, renderContext) {
   let {
     localLinkSubtreeCallback
   } = renderContext;
 
   localLinkSubtreeCallback(token);
-  return renderRegularParentLink(token)
+  return createLocalLinkElement(token)
 }
 
-function renderRegularParentLink(token) {
-  let linkElement = renderSharedParentLinkBase(token);
-  linkElement.classList.add('canopy-local-link');
-  linkElement.dataset.type = 'local';
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.enclosingSubtopic)}`;
-  return linkElement;
-}
-
-function renderRedundantParentLink(token) {
-  let linkElement = renderSharedParentLinkBase(token);
-  linkElement.classList.add('canopy-redundant-local-link');
-  linkElement.dataset.type = 'redundant-local';
-  linkElement.href = `/${slugFor(token.enclosingTopic)}#${slugFor(token.enclosingSubtopic)}`;
-  return linkElement;
-}
-
-function renderSharedParentLinkBase(token) {
-  let styleElements = renderStyledText(token.text);
+function createLocalLinkElement(token) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.targetTopic = token.targetTopic;
@@ -65,11 +50,18 @@ function renderSharedParentLinkBase(token) {
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
+
+  let styleElements = renderStyledText(token.text);
   appendElementsToParent(styleElements, linkElement);
+
   linkElement.addEventListener(
     'click',
     onParentLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
   );
+
+  linkElement.classList.add('canopy-local-link');
+  linkElement.dataset.type = 'local';
+  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.enclosingSubtopic)}`;
   return linkElement;
 }
 
@@ -88,22 +80,65 @@ function renderGlobalLink(token, renderContext) {
 }
 
 function createGlobalLinkElement(token) {
-  let styleElements = renderStyledText(token.text);
   let linkElement = document.createElement('a');
+
+  let styleElements = renderStyledText(token.text);
   appendElementsToParent(styleElements, linkElement);
+
   linkElement.classList.add('canopy-global-link');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
+
   linkElement.dataset.targetTopic = token.targetTopic;
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+
   linkElement.dataset.text = token.text;
+
   linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
   linkElement.addEventListener(
     'click',
     onGlobalLinkClick(new Link(linkElement))
   );
+  return linkElement
+}
+
+function renderImportLink(token, renderContext) {
+  let {
+    pathArray,
+    subtopicName,
+    globalLinkSubtreeCallback
+  } = renderContext;
+
+  let linkElement = createImportLinkElement(token, pathArray);
+
+  return linkElement;
+}
+
+function createImportLinkElement(token) {
+  let linkElement = document.createElement('a');
+
+  let styleElements = renderStyledText(token.text);
+  appendElementsToParent(styleElements, linkElement);
+
+  linkElement.classList.add('canopy-global-link');
+  linkElement.classList.add('canopy-selectable-link');
+  linkElement.dataset.type = 'import';
+
+  linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.dataset.enclosingTopic = token.enclosingTopic;
+  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  linkElement.dataset.text = token.text;
+
+  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+
+  linkElement.addEventListener(
+    'click',
+    onGlobalLinkClick(new Link(linkElement))
+  );
+
   return linkElement
 }
 

@@ -39,7 +39,7 @@ class Link {
 
   contradicts(path) {
     if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
-    return this.pathWhenSelected.string !== path.string;
+    return this.pathToDisplay.string !== path.string;
   }
 
   get element () {
@@ -50,8 +50,8 @@ class Link {
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
+      if (!link) throw ("Link selector callback didn't select link");
       this.element = link.element;
-      if (!this.element) throw "Link selector callback didn't select link";
       return this.linkElement;
     }
   }
@@ -113,18 +113,20 @@ class Link {
   get targetParagraph() {
     if (!this.isParent) return null;
 
-    let childNodes = Array.from(this.enclosingParagraph.sectionElement.childNodes);
+    let pathDepth = this.enclosingParagraph.pathDepth;
+    if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
-    let paragraphElement = childNodes.find((childElement) =>
-        childElement.tagName === 'SECTION' &&
-        childElement.dataset.topicName === this.targetTopic &&
-        childElement.dataset.subtopicName === this.targetSubtopic);
+    let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
+        `section[data-topic-name="${this.targetTopic}"]` +
+        `[data-subtopic-name="${this.targetSubtopic}"]` +
+        `[data-path-depth="${pathDepth}"`
+      );
 
-    if (!paragraphElement) {
-      throw `Did not find paragraph child element matching link ${this.targetTopic}/${this.targetSubtopic}`;
+    if (!sectionElement) {
+      throw `Did not find paragraph child element matching link [${this.targetTopic}, ${this.targetSubtopic}]`;
     }
 
-    return new Paragraph(paragraphElement);
+    return new Paragraph(sectionElement);
   }
 
   atNewPath(newPath) { // get matching link at new path
@@ -140,10 +142,10 @@ class Link {
   }
 
   get localPathWhenSelected() {
-    if (this.isGlobal) {
-      return new Path(this.pathWhenSelected.pathArray.slice(-2));
+    if (this.isGlobalOrImport) {
+      return new Path(this.pathToDisplay.pathArray.slice(-2));
     } else {
-      return this.pathWhenSelected.lastSegment;
+      return this.pathToDisplay.lastSegment;
     }
   }
 
@@ -168,15 +170,17 @@ class Link {
     } else if(this.linkElement) {
       let metadata = Link.collectMetadata(this.linkElement);
       this.metadataObject = metadata;
+      return metadata;
     } else if (this.selectorCallback) {
       this.element = this.selectorCallback();
+      return this.metadata; // now that there is a this.linkElement
     } else {
       throw "Link has neither supplied metadata, dom element, nor selector function";
     }
   }
 
   get targetPath() {
-    if (this.isGlobal) {
+    if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
@@ -186,11 +190,11 @@ class Link {
   }
 
   get path() {
-    throw "Depreciated in favor of #pathWhenSelected";
+    throw "Depreciated in favor of #pathToDisplay";
   }
 
-  get pathWhenSelected() {
-    if (this.isGlobal) {
+  get pathToDisplay() {
+    if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
@@ -301,12 +305,20 @@ class Link {
     return this.type === 'global';
   }
 
+  get isImport() {
+    return this.type === 'import';
+  }
+
+  get isGlobalOrImport() {
+    return this.type === 'global' || this.type === 'import';
+  }
+
   get isLocal() {
     return this.type === 'local';
   }
 
   get isParent() {
-    return this.isGlobal || this.isLocal;
+    return this.isGlobal || this.isLocal || this.isImport;
   }
 
   static select(linkToSelect) {
@@ -372,22 +384,13 @@ class Link {
   // selectALink takes a path to clarify which path is intended in case
   // there are multiple rendered in the DOM, and the path has not updated yet.
 
-  static selectALink(path) {
-    path = path || Path.current;
+  static get selectALink() {
+    let path = Path.current;
 
     return new Link(() => {
       let paragraph = path.paragraph;
       return paragraph.parentLink || paragraph.firstLink;
     });
-  }
-
-  static hasTarget(topic, subtopic) {
-    if (!topic) throw "No topic provided";
-
-    return (link) => {
-      return link.targetTopic === topic &&
-        link.targetSubtopic === (subtopic || topic);
-    }
   }
 
   static current() {

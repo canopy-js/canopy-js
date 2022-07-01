@@ -27,7 +27,7 @@ function onGlobalLinkClick (link) {
       if (link.isOpen) { // close global child
         path = link.enclosingParagraph.path;
       } else { // open global child
-        path = link.pathWhenSelected;
+        path = link.pathToDisplay;
       }
     } else { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);

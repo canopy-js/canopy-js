@@ -1,6 +1,7 @@
 let fs = require('fs-extra');
+let recursiveReadSync = require('recursive-readdir-sync');
 
-function keyFromFile(fileText) {
+function keyFromString(fileText) {
   return (fileText.match(/^(?!-)([^:.,;]+):/)||{})[1] || null;
 }
 
@@ -45,21 +46,15 @@ function deduplicate(pathList) {
   return uniquePaths
 }
 
-function getRecursiveSubdirectoryFiles(pathList) {
-  return pathList.map(path => recursiveReadSync(path)).flat();
+function getRecursiveSubdirectoryFiles(path) {
+  return recursiveReadSync(path).flat();
 }
 
-function getDirectoryFiles(pathList) {
-  let results = [];
-
-  pathList.forEach(path => {
-    let contents = fs.readdirSync(path, { withFileTypes: true });
-    let filteredContents = contents.filter((item) => item.isFile());
-    let filteredPaths = filteredContents.map(item => `${path}/${item.name}`)
-    results = results.concat(filteredPaths);
-  });
-
-  return results;
+function getDirectoryFiles(path) {
+  let contents = fs.readdirSync(path, { withFileTypes: true });
+  let filteredContents = contents.filter((item) => item.isFile());
+  let filteredPaths = filteredContents.map(item => `${path}/${item.name}`)
+  return filteredPaths;
 }
 
 function pathComparator(path1, path2) {
@@ -73,14 +68,8 @@ function pathComparator(path1, path2) {
   }
 }
 
-function fileWithoutFirstKey(string) {
-  let key = keyFromFile(string);
-  if (!key) return string;
-  return string.slice(key.length + 2) // 2 for the key, plus colon, plus space.
-}
-
 module.exports = {
-  keyFromFile,
+  keyFromString,
   fileNameFor,
   takeDirectoryPath,
   recursiveDirectoryFind,
@@ -88,6 +77,5 @@ module.exports = {
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
-  pathComparator,
-  fileWithoutFirstKey
+  pathComparator
 }

@@ -1,10 +1,9 @@
-import parseSentence from './parse_sentence';
-import sentencesWithPunctuationOf from '../helpers/sentences_with_punctuation_of';
-import { TextToken } from './tokens';
+let { TextToken } = require('./tokens');
+let parseText = require('./parse_text');
 
 function textBlockFor(lines, parsingContext) {
   let tokensByLine = lines.map(
-    (line) => parseTokens(line, parsingContext)
+    (line) => parseText(line, parsingContext)
   )
 
   return {
@@ -27,7 +26,7 @@ function codeBlockFor(lines) {
 function quoteBlockFor(lines, parsingContext) {
   let modifiedParsingContext = { markdownOnly: true, ...parsingContext }
   let tokensByLine = lines.map((line) => line.match(/^\s*>\s?(.*)$/)[1]).map(
-    (line) => parseTokens(line, modifiedParsingContext)
+    (line) => parseText(line, modifiedParsingContext)
   );
 
   return {
@@ -48,7 +47,7 @@ function listBlockFor(lines, parsingContext) {
 
     let ordinal = match[1];
     let lineContents = match[2];
-    let tokensOfLine = parseTokens(lineContents, parsingContext);
+    let tokensOfLine = parseText(lineContents, parsingContext);
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -92,7 +91,8 @@ function listBlockFor(lines, parsingContext) {
 
   return {
     type: 'list',
-    topLevelNodes
+    topLevelNodes,
+    text: lines.join('')
   }
 }
 
@@ -116,7 +116,7 @@ function tableBlockFor(lines, parsingContext) {
   let tokensByCellByRow = rows.map((cellsOfRow) =>
     cellsOfRow.map(
       (cell) => Array.prototype.concat.apply(
-        [], parseTokens(cell, parsingContext)
+        [], parseText(cell, parsingContext)
       )
     )
   );
@@ -133,7 +133,7 @@ function footnoteBlockFor(lines, parsingContext) {
     let superscript = match[1];
     let text = match[2];
 
-    let tokens = parseTokens(text, parsingContext);
+    let tokens = parseText(text, parsingContext);
 
     return {
       superscript,
@@ -147,16 +147,7 @@ function footnoteBlockFor(lines, parsingContext) {
   }
 }
 
-function parseTokens(line, parsingContext) {
-  return Array.prototype.concat.apply([], sentencesWithPunctuationOf(line).map(
-    (clauseString) => parseSentence(
-      clauseString,
-      parsingContext
-    )
-  ));
-}
-
-export {
+module.exports = {
   textBlockFor,
   codeBlockFor,
   quoteBlockFor,

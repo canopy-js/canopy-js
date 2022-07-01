@@ -6,15 +6,24 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 
-function moveUpward() {
+function moveUpward(option) {
   let link = Link.selection;
 
+  if (option) {
+    let newLink = link.enclosingParagraph.topicParagraph.parentLink
+
+    return updateView(
+      newLink.pathToDisplay,
+      newLink
+    );
+  }
+
   if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
-    return updateView(link.enclosingParagraph.path);
+    return updateView(link.enclosingParagraph.path); // deselect link
   }
 
   return updateView(
-    link.parentLink.pathWhenSelected,
+    link.parentLink.pathToDisplay,
     link.parentLink
   );
 }
@@ -22,34 +31,30 @@ function moveUpward() {
 function moveDownward() {
   let path = Path.current;
   let oldLink = Link.selection;
+  let newLink;
 
   if (oldLink.isParent) {
-    let newLink = oldLink.targetParagraph.firstLink;
 
-    if (!newLink){
-      return;
-    }
-
-    if (newLink.isLocal) {
+    if (oldLink.isImport) {
       return updateView(
-        newLink.pathWhenSelected,
-        newLink
+        oldLink.pathToDisplay,
+        oldLink.targetParagraph.parentLink
       );
     }
 
-    if (newLink.isGlobal) {
-      return updateView(
-        Path.current.addSegment(newLink.targetTopic, newLink.targetTopic),
-        Link.selection.targetParagraph.firstLink
-      );
-    }
+    let newLink = oldLink.targetParagraph.firstLink || oldLink.targetParagraph.parentLink;
+
+    return updateView(
+      newLink.pathToDisplay,
+      newLink
+    );
   }
 }
 
 function moveLeftward() {
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
-    link.pathWhenSelected,
+    link.pathToDisplay,
     link,
   );
 }
@@ -58,7 +63,7 @@ function moveRightward() {
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
-    link.pathWhenSelected,
+    link.pathToDisplay,
     link,
   );
 }
@@ -68,36 +73,30 @@ function moveDownOrRedirect(newTab, altKey) {
     return moveDownward();
   }
 
-  if (Link.selection.isGlobal) {
-    let path;
-    let link;
+  if (Link.selection.isGlobalOrImport && altKey) { //inline topic
+    return moveDownward();
+  }
 
-    if (altKey) { // in-line topic mode
-      if (Link.selection.targetParagraph.hasLinks) { // select first child link
-        link = Link.selection.targetParagraph.firstLink;
-        path = Paragraph.current.firstLink.pathWhenSelected;
-      } else { // there is nothing in the previewed child to select
-        return;
-      }
-    }
-
-    if (!altKey) { // redirecting to new topic page
-      path = Link.selection.targetPath.lastSegment;
-      link = Link.selectALink(path);
-    }
+  if (Link.selection.isGlobalOrImport && !altKey) { // redirecting to new page
+    let path = Link.selection.targetPath.lastSegment;
 
     if (newTab) {
       return window.open(
         location.origin + path.string,
         '_blank'
       );
+    } else {
+      updateView(
+        path,
+        Link.selectALink
+      ).catch((e) => {
+        console.error('No link on new page to select');
+        updateView(path);
+      });
     }
+  }
 
-    updateView(
-      path,
-      link
-    );
-  } else if (Link.selection.type === 'url') {
+  if (Link.selection.type === 'url') {
     if (newTab) {
       return window.open(
         Link.selection.element.href,
@@ -128,7 +127,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     );
   }
 
-  if (link.isGlobal) {
+  if (link.isGlobalOrImport) {
     let linkToSelect = link.parentLink.nextSibling || link.grandParentLink;
     return updateView(
       linkToSelect.enclosingParagraph.path,

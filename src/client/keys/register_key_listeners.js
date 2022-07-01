@@ -38,7 +38,7 @@ const registerKeyListeners = () => {
     } else if (shortcutRelationships[shortcutName]) {
       updateView(
         Path.current,
-        Link.selectALink(Path.current)
+        Link.selectALink
       );
     }
   });
@@ -49,6 +49,7 @@ const shortcutRelationships = {
   'up': moveUpward,
   'down': moveDownward,
   'right': moveRightward,
+  'alt-up': moveUpward.bind(null, true),
 
   'h': moveLeftward,
   'j': moveDownward,

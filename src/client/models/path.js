@@ -138,7 +138,7 @@ class Path {
       pathString = pathString.slice(projectPathPrefix.length + 1);
     }
 
-    if (pathString.indexOf('/#/') === 0) pathString = pathString.slice(2);  // example.com[/#]/Topic
+    if (pathString.indexOf('#/') === 0) pathString = pathString.slice(1);  // example.com[/#]/Topic
 
     return new Path(pathString);
   }
@@ -248,7 +248,7 @@ class Path {
 
     if (parentElement === canopyContainer) return;
     let parentParagraph = new Paragraph(parentElement);
-    if (!parentParagraph.linkBySelector(Link.hasTarget(pathToDisplay.firstTopic))) {
+    if (!parentParagraph.linkByTarget(pathToDisplay.firstTopic)) {
       throw "Parent element has no connecting link to subsequent path segment";
     }
   }
@@ -289,7 +289,7 @@ class Path {
     return currentNode;
   }
 
-  static setPath(newPath) {
+  static setPath(newPath, link) {
     if (!newPath instanceof Path) throw 'newPath must be Path object';
 
     let oldPath = Path.current;

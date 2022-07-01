@@ -6,6 +6,7 @@ let BlockRenderers = {
   'quote': renderQuoteBlock,
   'list': renderListBlock,
   'table': renderTableBlock,
+  'html': renderHtmlBlock,
   'footnote': renderFootnoteBlock
 };
 
@@ -121,6 +122,17 @@ function renderTableBlock(blockObject, renderContext) {
     }
   );
   return [tableElement];
+}
+
+function renderHtmlBlock(blockObject, renderContext) {
+  let html = blockObject.tokensByLine.map((tokensOfLine, lineNumber) => {
+    return tokensOfLine.map((token) => token.html)
+  }).join('');
+
+  let htmlContainer = document.createElement('DIV');
+  htmlContainer.innerHTML = html;
+
+  return [htmlContainer];
 }
 
 function renderFootnoteBlock(blockObject, renderContext) {

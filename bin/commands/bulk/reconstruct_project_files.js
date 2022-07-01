@@ -1,20 +1,19 @@
 let fs = require('fs-extra');
-let { keyFromFile } = require('./helpers');
+let { keyFromString } = require('./helpers');
 
 function reconstructProjectFiles(dataFile, originalFileList) {
   let pathHandled = {};
 
   let sections = dataFile.split(/(?=^[^:\n]+:\n)/gm);
-
   sections.filter(Boolean).forEach(section => {
-    let pathSegments = section.split("\n")[0].split(':')[0].split('/');
-    let key = pathSegments.slice(-1)[0];
-    let newFileContents = `${key}: ${section.split(/\n\n/).slice(1).join("\n\n").trim() + "\n"}`;
+    let path = section.split("\n")[0];
+    let fileContents = section.split("\n").slice(1).join('').trim();
+    let pathSegments = path.split(':')[0].split('/');
+    let key = keyFromString(fileContents) || '';
+    let newFileContents = section.split(/\n\n/).slice(1).join("\n\n").trim() + "\n";
     let keySlug = key.replace(/ /g,'_');
-    let initialPath = pathSegments.slice(0, -1).join('/').replace(/ /g,'_');
-    let trailingSlash = initialPath ? '/' : '';
-    let directoryPath = 'topics' + '/' + initialPath + trailingSlash + keySlug;
-    let fullPath = 'topics' + '/' + initialPath + trailingSlash + keySlug + '/' + keySlug + '.expl';
+    let directoryPath = `Topics/${pathSegments.join('/').replace(/ /g,'_')}`;
+    let fullPath = `${directoryPath}/${keySlug}.expl`;
 
     fs.ensureDirSync(directoryPath);
 
@@ -30,7 +29,7 @@ function reconstructProjectFiles(dataFile, originalFileList) {
 
   originalFileList.forEach(originalFilePath => {
     if (!pathHandled.hasOwnProperty(originalFilePath.toLowerCase())) {
-      writeLog(fullPath, newFileContents, 'Delete');
+      writeLog(originalFilePath, 'File deleted.', 'Delete');
       fs.unlinkSync(originalFilePath);
       console.log(`Deleted file: ${originalFilePath}`);
       deleteEmptyFolders(originalFilePath);
@@ -50,12 +49,12 @@ function deleteEmptyFolders(path) {
 }
 
 function writeLog(fullPath, newFileContents, message) {
-  let priorLog = fs.readFileSync('.canopy_bulk_backup_log');
+  let priorLog = fs.existsSync('.canopy_bulk_backup_log') && fs.readFileSync('.canopy_bulk_backup_log');
   fs.writeFileSync(
     '.canopy_bulk_backup_log',
     (priorLog && priorLog + "\n\n") +
-    (`Old: ${fullPath}: ${fs.readFileSync(fullPath)}` + "\n\n" || '') +
-    `${message}: ${fullPath}: ${newFileContents}`
+    (fs.existsSync(fullPath) && `Old: ${fullPath}: ${fs.readFileSync(fullPath)}` + "\n\n" || '') +
+    `${message}: ${fullPath}: ${newFileContents.trim()}` + "\n\n"
   );
 }
 

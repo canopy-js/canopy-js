@@ -3,5 +3,7 @@ node_modules/*
 yarn-error.log
 yarn.lock
 TODO
-build/
 dist
+/test-results/
+/playwright-report/
+/playwright/.cache/

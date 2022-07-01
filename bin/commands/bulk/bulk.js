@@ -5,7 +5,6 @@ let editor = require('editor');
 let generateDataFile = require('./generate_data_file');
 let reconstructProjectFiles = require('./reconstruct_project_files');
 let Fzf = require('@dgoguerra/fzf').Fzf;
-let recursiveReadSync = require('recursive-readdir-sync');
 let {
   recursiveDirectoryFind,
   validatePathsAreDirectories,
@@ -13,30 +12,37 @@ let {
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
   pathComparator
-  } = require('./helpers');
+} = require('./helpers');
 
-const bulk = async function(directoryList) {
+const bulk = async function(fileList, options) {
   if (!fs.existsSync('./topics')) throw "Must be in a projects directory with a topics folder";
 	let editorMode = !!!(options.start || options.finish);
   options.clear && fs.writeFileSync('.canopy_bulk_backup_log', '');
 
 	if (options.pick) {
-    let callback = options.recursive ? (p => p + '/**') : (p => p);
-	  const fzf = new Fzf().multi().result(p => p.match(/([^*]+)(\/\*\*)?/)[1]);
-	  directoryList = recursiveDirectoryFind('topics');
-    directoryList = await fzf.run(directoryList.map(callback));
+    let callback, optionList, postProcess;
+    if (options.directories) {
+      optionList = recursiveDirectoryFind('topics');
+      postProcess = p => getDirectoryFiles(p);
+    } else if (options.recursive) {
+      optionList = recursiveDirectoryFind('topics').map(p => p + '/**');
+      postProcess = p => getRecursiveSubdirectoryFiles(p.match(/([^*]+)(\/\*\*)?/)[1]);
+    } else {
+      optionList = getRecursiveSubdirectoryFiles('Topics');
+      postProcess = p => p;
+    }
+	  const fzf = new Fzf().multi().result(postProcess);
+    fileList = (await fzf.run(optionList)).flat();
 	}
 
-  if (directoryList.length === 0) {
+  if (fileList.length === 0) {
     if (options.blank) {
-      directoryList = [];
+      fileList = [];
     } else {
-      directoryList = recursiveDirectoryFind('topics');
+      fileList = getRecursiveSubdirectoryFiles('Topics');
     }
   }
 
-	validatePathsAreDirectories(directoryList);
-  let fileList = options.recursive ? getRecursiveSubdirectoryFiles(directoryList) : getDirectoryFiles(directoryList);
   fileList = deduplicate(fileList).sort(pathComparator);
 	let initialData = generateDataFile(fileList, options.blank);
 

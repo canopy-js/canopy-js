@@ -5,7 +5,6 @@ const nodeExternals = require('webpack-node-externals');
 module.exports = {
   entry: {
     canopy: './src/client/canopy.js',
-    parser: './src/parser/parser.js'
   },
   output: {
     filename: '[name].js',
@@ -15,7 +14,6 @@ module.exports = {
     modules: [
       path.resolve(__dirname, 'src/'),
       path.resolve(__dirname, 'src/client/'),
-      path.resolve(__dirname, 'src/parser/'),
       path.resolve(__dirname, 'src/shared/'),
       'node_modules'
     ],
@@ -46,8 +44,7 @@ module.exports = {
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
-      filename: "[file].map",
-      exclude: ["parser.js"]
+      filename: "[file].map"
     })
   ]
 }
