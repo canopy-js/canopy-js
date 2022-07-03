@@ -23,7 +23,7 @@ jobs:
       run: npx playwright install --with-deps
     - name: Build canopy project
       run: |
-        cd spec/test_project
+        cd playwright/test_project
         canopy build
     - name: Run regular tests
       run: npm run test
