@@ -5,26 +5,54 @@ test.beforeEach(async ({ page }) => {
   await page.goto('localhost:3000');
 });
 
-test.describe('Open Page', () => {
-  test('Should find container', async ({ page }) => {
-    // Go to /United_States
-    await page.goto('http://localhost:3000');
+test.describe('Navigation', () => {
+  test('Should have header', async ({ page }) => {
     await expect(page).toHaveURL('/United_States');
-    // Click h1:has-text("United States")
     await expect(page.locator('h1')).toHaveText('United States');
-    await page.screenshot({ path: 'test-results/first.png' });
+    // await page.screenshot({ path: 'test-results/first.png' });
+  });
 
+  test('Left and Right keys cause child paragraph preview', async ({ page }) => {
     // Press ArrowRight
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('/United_States/New_York');
-    await expect(page.locator('text=The state of New York has a')).toHaveCount(1);
-    await page.screenshot({ path: 'test-results/second.png' });
+    await expect(page.locator('text=The state of New York has a southern border.')).toHaveCount(1);
 
     // Press ArrowRight
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('/United_States/New_Jersey');
-    await expect(page.locator('text=The state of New Jersey has a')).toHaveCount(1);
-    await page.screenshot({ path: 'test-results/third.png' });
+    await expect(page.locator('text=The state of New Jersey has a northern border.')).toHaveCount(1);
+  });
 
+  test('Selecting import reference previews path', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
+  });
+
+  test('Down on import reference jumps to path', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+  });
+
+  test('Link selection is remembered with browser history', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowRight');
+    await page.goBack();
+    await page.goForward();
+    await expect(page.locator('.canopy-selected-link')).toHaveText('url');
+  });
+
+  test('Link selection persists over refresh', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.reload();
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
   });
 });

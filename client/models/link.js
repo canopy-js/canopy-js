@@ -66,11 +66,12 @@ class Link {
   }
 
   transferDataset() {
-    this._targetTopic = this.element.dataset.targetTopic;
-    this._targetSubtopic = this.element.dataset.targetSubtopic;
-    this._enclosingTopic = this.element.dataset.enclosingTopic;
-    this._enclosingSubtopic = this.element.dataset.enclosingSubtopic;
-    this._typeValue = this.element.dataset.type;
+    if (!this.linkElement) throw 'Link element must be present';
+    this._targetTopic = this.linkElement.dataset.targetTopic;
+    this._targetSubtopic = this.linkElement.dataset.targetSubtopic;
+    this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
+    this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
+    this._typeValue = this.linkElement.dataset.type;
   }
 
   get targetTopic() {
