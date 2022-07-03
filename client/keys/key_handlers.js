@@ -86,7 +86,7 @@ function moveDownOrRedirect(newTab, altKey) {
         '_blank'
       );
     } else {
-      updateView(
+      return updateView(
         path,
         Link.selectALink
       ).catch((e) => {

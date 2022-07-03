@@ -385,10 +385,9 @@ class Link {
   // selectALink takes a path to clarify which path is intended in case
   // there are multiple rendered in the DOM, and the path has not updated yet.
 
-  static get selectALink() {
-    let path = Path.current;
-
+  static selectALink(path) {
     return new Link(() => {
+      path = path || Path.current;
       let paragraph = path.paragraph;
       return paragraph.parentLink || paragraph.firstLink;
     });

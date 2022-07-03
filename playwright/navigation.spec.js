@@ -31,6 +31,13 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
   });
 
+  test('Pressing return on global redirects page', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('Enter');
+    await expect(page).toHaveURL('/New_York#Southern_border'); // Link selected on redirect
+    await expect(page.locator('h1')).toHaveText('New York');
+  });
+
   test('Down on import reference jumps to path', async ({ page }) => {
     await page.locator('body').press('ArrowRight');
     await page.locator('body').press('ArrowDown');
