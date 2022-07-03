@@ -12,7 +12,7 @@ function reconstructProjectFiles(dataFile, originalFileList) {
     let key = keyFromString(fileContents) || '';
     let newFileContents = section.split(/\n\n/).slice(1).join("\n\n").trim() + "\n";
     let keySlug = key.replace(/ /g,'_');
-    let directoryPath = `Topics/${pathSegments.join('/').replace(/ /g,'_')}`;
+    let directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
     let fullPath = `${directoryPath}/${keySlug}.expl`;
 
     fs.ensureDirSync(directoryPath);

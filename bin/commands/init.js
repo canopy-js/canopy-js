@@ -8,7 +8,7 @@ function init() {
 	  output: process.stdout,
 	});
 
-	if (!fs.existsSync('./Topics')) fs.mkdirSync('./Topics');
+	if (!fs.existsSync('./topics')) fs.mkdirSync('./topics');
 
 	let gitignore = dedent`
 		build/
@@ -25,8 +25,8 @@ function init() {
 	  	if (!defaultTopicName) console.error('No default topic name given.') || process.exit();
 	  	let defaultTopicNameSlug = defaultTopicName.replace(/ /g, '_');
 			fs.writeFileSync('.canopy_default_topic', defaultTopicName + "\n");
-			fs.ensureDirSync(`Topics/${defaultTopicNameSlug}`);
-			fs.writeFileSync(`Topics/${defaultTopicNameSlug}/${defaultTopicNameSlug}.expl`, `${defaultTopicName}: Text here.\n`);
+			fs.ensureDirSync(`topics/${defaultTopicNameSlug}`);
+			fs.writeFileSync(`topics/${defaultTopicNameSlug}/${defaultTopicNameSlug}.expl`, `${defaultTopicName}: Text here.\n`);
 	  });
 
 	  rl.close();

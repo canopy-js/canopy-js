@@ -28,8 +28,9 @@ const bulk = async function(fileList, options) {
       optionList = recursiveDirectoryFind('topics').map(p => p + '/**');
       postProcess = p => getRecursiveSubdirectoryFiles(p.match(/([^*]+)(\/\*\*)?/)[1]);
     } else {
-      optionList = getRecursiveSubdirectoryFiles('Topics');
-      postProcess = p => p;
+      optionPrep = p => p.match(/([^.]+)\.expl/)[1];
+      optionList = getRecursiveSubdirectoryFiles('topics').map(optionPrep);
+      postProcess = p => `${p}.expl`;
     }
 	  const fzf = new Fzf().multi().result(postProcess);
     fileList = (await fzf.run(optionList)).flat();
@@ -39,7 +40,7 @@ const bulk = async function(fileList, options) {
     if (options.blank) {
       fileList = [];
     } else {
-      fileList = getRecursiveSubdirectoryFiles('Topics');
+      fileList = getRecursiveSubdirectoryFiles('topics');
     }
   }
 

@@ -4,7 +4,7 @@ const child_process = require('child_process');
 const buildProject = require('./build/build_project');
 
 function build({ symlinks, projectPathPrefix, hashUrls }) {
-	if (!fs.existsSync('./Topics')) console.error('There must be a topics directory present, try running "canopy init"') || process.exit();
+	if (!fs.existsSync('./topics')) console.error('There must be a topics directory present, try running "canopy init"') || process.exit();
 	if (!fs.existsSync('./.canopy_default_topic')) console.error('There must be a default topic dotfile present, try running "canopy init"') || process.exit();
 
 	let defaultTopic = fs.readFileSync('.canopy_default_topic').toString().trim();
