@@ -24,7 +24,6 @@ jobs:
     - name: Build canopy project
       run: |
         cd spec/test_project
-        ls
         canopy build
     - name: Run Playwright tests
       uses: GabrielBB/xvfb-action@v1
@@ -36,11 +35,9 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-    - name: Ls
-      run: ls
     - uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: screenshot
-        path: screenshot.png
+        name: test-results
+        path: test-results/
         retention-days: 30
