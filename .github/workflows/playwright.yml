@@ -22,6 +22,7 @@ jobs:
     - name: Build canopy project
       run: |
         cd spec/test_project
+        ls
         canopy build
     - name: Run Playwright tests
       uses: GabrielBB/xvfb-action@v1
