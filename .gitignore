@@ -7,3 +7,5 @@ dist
 /test-results/
 /playwright-report/
 /playwright/.cache/
+spec/test_project/build
+spec/test_project/.canopy_bulk_backup_log

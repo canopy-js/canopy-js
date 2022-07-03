@@ -13,6 +13,8 @@ test.describe('Open Page', () => {
     // Click h1:has-text("United States")
     await expect(page.locator('h1')).toHaveText('United States');
 
+    await page.screenshot({ path: 'screenshot.png' });
+
     // Press ArrowRight
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('http://localhost:3000/United_States/New_York');
