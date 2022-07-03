@@ -14,7 +14,9 @@ jobs:
       with:
         node-version: '14.x'
     - name: Install dependencies
-      run: npm install -g canopy
+      run: npm ci
+    - name: Install canopy
+      run: npm install -g .
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
