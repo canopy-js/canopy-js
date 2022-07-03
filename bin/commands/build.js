@@ -45,7 +45,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 	}
 
 	console.log(`${canopyLocation}/dist/canopy.js`)
-	console.log(child_process.execSync(`ls ${canopyLocation}/dist/canopy.js`).toString());
+	console.log(child_process.execSync(`find ${canopyLocation}`).toString());
 	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) throw 'No Canopy js build found';
 	fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
 	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
