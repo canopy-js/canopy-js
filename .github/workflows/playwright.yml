@@ -36,9 +36,11 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Ls
+      run: ls
     - uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: snapshot
-        path: snapshot.png
+        name: screenshot
+        path: screenshot.png
         retention-days: 30
