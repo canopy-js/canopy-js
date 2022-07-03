@@ -1,13 +1,10 @@
-var nodeStatic = require('node-static');
+const st = require('st');
+const http = require('http')
 
 function runStatic(port) {
-	var file = new nodeStatic.Server('./build');
-
-	require('http').createServer(function (request, response) {
-	    request.addListener('end', function () {
-	        file.serve(request, response);
-	    }).resume();
-	}).listen(port);
+  http.createServer(
+    st(process.cwd())
+  ).listen(port)
 }
 
 module.exports = runStatic;
