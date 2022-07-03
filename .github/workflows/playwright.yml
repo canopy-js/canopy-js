@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Playwright & Regular Tests
 on:
   push:
     branches: [ main ]
@@ -25,6 +25,8 @@ jobs:
       run: |
         cd spec/test_project
         canopy build
+    - name: Run regular tests
+      run: npm run test
     - name: Run Playwright tests
       uses: GabrielBB/xvfb-action@v1
       with:

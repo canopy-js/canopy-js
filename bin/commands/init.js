@@ -22,7 +22,7 @@ function init() {
 
 	const main = async () => {
 	  await requestDefaultTopicName((defaultTopicName) => {
-	  	if (!defaultTopicName) throw 'No default topic name given.';
+	  	if (!defaultTopicName) console.error('No default topic name given.') || process.exit();
 	  	let defaultTopicNameSlug = defaultTopicName.replace(/ /g, '_');
 			fs.writeFileSync('.canopy_default_topic', defaultTopicName + "\n");
 			fs.ensureDirSync(`Topics/${defaultTopicNameSlug}`);

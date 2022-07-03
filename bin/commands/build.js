@@ -44,7 +44,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 		});
 	}
 
-	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) throw 'No Canopy js build found';
+	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) console.error('No Canopy js build found') || process.exit();
 	fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
 	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
 	if (fs.existsSync(`assets`)) fs.copySync('assets', 'build/_assets', { overwrite: true });

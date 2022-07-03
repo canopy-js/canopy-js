@@ -30,12 +30,6 @@ function recursiveDirectoryFind(path, results) {
   return results;
 }
 
-function validatePathsAreDirectories(directoryList) {
-  directoryList.forEach((path) => {
-    if (!fs.lstatSync(path).isDirectory()) throw "All path arguments must be directories";
-  });
-}
-
 function deduplicate(pathList) {
   let uniquePaths = [];
   pathList.forEach((path) => {
@@ -73,7 +67,6 @@ module.exports = {
   fileNameFor,
   takeDirectoryPath,
   recursiveDirectoryFind,
-  validatePathsAreDirectories,
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,

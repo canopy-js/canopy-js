@@ -21,7 +21,8 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
     let explFileNameWithoutExtension = path.match(/\/([\w-]+)\.\w+$/)[1];
 
     if (explFileNameWithoutExtension.includes(' ')) {
-      throw 'Data filenames may not contain spaces: ' + path;
+      console.error('Data filenames may not contain spaces: ' + path);
+      process.exit();
     }
 
     let destinationPath = destinationDataDirectory +
