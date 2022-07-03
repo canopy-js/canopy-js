@@ -4,7 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   entry: {
-    canopy: './src/client/canopy.js',
+    canopy: './client/canopy.js',
   },
   output: {
     filename: '[name].js',
@@ -12,9 +12,7 @@ module.exports = {
   },
   resolve: {
     modules: [
-      path.resolve(__dirname, 'src/'),
-      path.resolve(__dirname, 'src/client/'),
-      path.resolve(__dirname, 'src/shared/'),
+      path.resolve(__dirname, 'client/'),
       'node_modules'
     ],
     extensions: [ '.js' ]
