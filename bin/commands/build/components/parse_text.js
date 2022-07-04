@@ -1,6 +1,6 @@
 let Matchers = require('./matchers');
 let { TextToken } = require('./tokens');
-let { validateImportReferenceMatching } = require('./helpers');
+let { validateImportReferenceMatching, removeLengthKeys } = require('./helpers');
 
 function parseText(text, parsingContext) {
   let topicReferences = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
@@ -27,6 +27,7 @@ function parseText(text, parsingContext) {
 
   tokens.push(new TextToken(buffer));
   validateImportReferenceMatching(tokens, parsingContext.currentTopic, parsingContext.currentSubtopic);
+  removeLengthKeys(tokens);
   return tokens;
 }
 

@@ -36,6 +36,16 @@ const bulk = async function(fileList, options) {
     fileList = (await fzf.run(optionList)).flat();
 	}
 
+  if (options.git) {
+    // `git diff` gets us the changed files and `git ls-files` gets us the new untracked files
+    fileList = child_process
+      .execSync('{ git diff --name-only head && git ls-files --others --exclude-standard; }')
+      .toString()
+      .trim()
+      .split("\n");
+
+  }
+
   if (fileList.length === 0) {
     if (options.blank) {
       fileList = [];

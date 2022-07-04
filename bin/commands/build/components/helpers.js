@@ -223,6 +223,14 @@ function validateImportReferenceTargets(importReferencesToCheck, subtopicParents
   }
 }
 
+function removeLengthKeys(tokens) {
+  tokens.forEach(token => {
+    if (token.hasOwnProperty('length')) {
+      delete token.length;
+    }
+  });
+}
+
 module.exports = {
   paragraphsOfFile,
   linesByBlockOf,
@@ -233,7 +241,8 @@ module.exports = {
   subsumingPathExists,
   removeMarkdownTokens,
   validateImportReferenceMatching,
-  validateImportReferenceTargets
+  validateImportReferenceTargets,
+  removeLengthKeys
 };
 
 
