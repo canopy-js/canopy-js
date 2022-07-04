@@ -10,10 +10,16 @@ function reconstructProjectFiles(dataFile, originalFileList) {
     let fileContents = section.split("\n").slice(1).join('').trim();
     let pathSegments = path.split(':')[0].split('/');
     let key = keyFromString(fileContents) || '';
+    let directoryPath, fullPath;
     let newFileContents = section.split(/\n\n/).slice(1).join("\n\n").trim() + "\n";
-    let keySlug = key.replace(/ /g,'_');
-    let directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
-    let fullPath = `${directoryPath}/${keySlug}.expl`;
+    if (key) {
+      let keySlug = key.replace(/ /g,'_');
+      directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
+      fullPath = `${directoryPath}/${keySlug}.expl`;
+    } else {
+      directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
+      fullPath = `${directoryPath}/${pathSegments.slice(-1)[0]}.expl`;
+    }
 
     fs.ensureDirSync(directoryPath);
 
@@ -29,6 +35,7 @@ function reconstructProjectFiles(dataFile, originalFileList) {
         console.log(`Appended to file: ${fullPath}`);
       }
     }
+
     pathHandled[fullPath.toLowerCase()] = true;
   });
 
