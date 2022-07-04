@@ -66,6 +66,8 @@ class Link {
   }
 
   transferDataset() {
+    // This is just to make it easier to inspect and debug DOM elements
+    // Getters are used instead of properties to allow lazy access for callback-specified links
     if (!this.linkElement) throw 'Link element must be present';
     this._targetTopic = this.linkElement.dataset.targetTopic;
     this._targetSubtopic = this.linkElement.dataset.targetSubtopic;
