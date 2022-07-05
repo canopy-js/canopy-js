@@ -13,20 +13,31 @@ test.describe('Navigation', () => {
   });
 
   test('Left and Right keys cause child paragraph preview', async ({ page }) => {
+    // For a global link
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('/United_States/New_York');
     await expect(page.locator('text=The state of New York has a southern border.')).toHaveCount(1);
 
-    await page.locator('body').press('ArrowRight');
-    await expect(page).toHaveURL('/United_States/New_Jersey');
-    await expect(page.locator('text=The state of New Jersey has a northern border.')).toHaveCount(1);
+    // For a local link
+    await page.locator('body').press('ArrowDown');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey.')).toHaveCount(1);
   });
 
-  test('Down on parent link advances path', async ({ page }) => {
+  test('Down on global link advances path', async ({ page }) => {
     await page.locator('body').press('ArrowRight');
     await page.locator('body').press('ArrowDown');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey.')).toHaveCount(1);
+  });
+
+  test('Down on local link advances path', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
   });
 
   test('Selecting import reference previews path', async ({ page }) => {

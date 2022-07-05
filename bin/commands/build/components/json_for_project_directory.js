@@ -25,10 +25,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       process.exit();
     }
 
-    let destinationPath = destinationDataDirectory +
-      '/' +
-      explFileNameWithoutExtension +
-      '.json';
+    let destinationPath = `${destinationDataDirectory}/${explFileNameWithoutExtension}.json`;
 
     if (process.env['CANOPY_LOGGING']) {
       console.log();

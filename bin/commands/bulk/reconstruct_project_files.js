@@ -23,10 +23,17 @@ function reconstructProjectFiles(dataFile, originalFileList) {
 
     fs.ensureDirSync(directoryPath);
 
-    if (!(fs.existsSync(fullPath) && fs.readFileSync(fullPath).toString().trim() + "\n" === newFileContents)) {
-      writeLog(fullPath, newFileContents, 'Write');
-      fs.writeFileSync(fullPath, newFileContents);
-      console.log(`Wrote to file: ${fullPath}`);
+    let oldFileContents = fs.readFileSync(fullPath).toString().trim() + "\n";
+    if (fs.existsSync(fullPath) && oldFileContents !== newFileContents) {
+      if (originalFileList.includes(fullPath)) {
+        writeLog(fullPath, newFileContents, 'Write');
+        fs.writeFileSync(fullPath, newFileContents);
+        console.log(`Wrote to file: ${fullPath}`);
+      } else {
+        writeLog(fullPath, newFileContents, 'Append');
+        fs.writeFileSync(fullPath, oldFileContents.trim() + "\n\n" + newFileContents);
+        console.log(`Appended to file: ${fullPath}`);
+      }
     }
 
     pathHandled[fullPath.toLowerCase()] = true;

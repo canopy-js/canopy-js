@@ -43,7 +43,14 @@ const bulk = async function(fileList, options) {
       .toString()
       .trim()
       .split("\n");
+  }
 
+  if (options.search) {
+    fileList = child_process
+      .execSync(`find topics | grep -i ${options.search} | grep .expl`)
+      .toString()
+      .trim()
+      .split("\n")
   }
 
   if (fileList.length === 0) {
