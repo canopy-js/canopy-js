@@ -1,8 +1,7 @@
-let fs = require('fs');
+let fs = require('fs-extra');
 let buildProvisionalNamespaceObject = require('./build_provisional_namespace_object.js');
 let jsonForExplFile = require('./json_for_expl_file.js');
 let { slugFor, topicKeyOfFile, listExplFilesRecursive, removeMarkdownTokens, validateImportReferenceTargets } = require('./helpers');
-let rimraf = require('rimraf');
 
 function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -11,7 +10,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
   let importReferencesToCheck = [];
   let subtopicParents = {};
 
-  rimraf.sync(destinationDataDirectory);
+  fs.rmSync(destinationDataDirectory, { recursive: true, force: true });
   fs.mkdirSync(destinationDataDirectory);
 
   explFilePaths.forEach(function(path) {
@@ -37,7 +36,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
     if (makeFolders) {
       let capitalizedKeySlug = slugFor(removeMarkdownTokens(topicKeyOfFile(path)));
       let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
-      rimraf.sync(topicFolderPath);
+      fs.rmSync(topicFolderPath, { recursive: true, force: true });
       fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
