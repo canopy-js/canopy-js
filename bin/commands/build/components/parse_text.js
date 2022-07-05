@@ -4,7 +4,6 @@ let { validateImportReferenceMatching, removeLengthKeys } = require('./helpers')
 
 function parseText(text, parsingContext) {
   let topicReferences = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
-  parsingContext = JSON.parse(JSON.stringify(parsingContext));
   parsingContext.topicReferences = topicReferences;
 
   let units = text.split('');

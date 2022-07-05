@@ -28,16 +28,25 @@ const Matchers = [
 let { removeMarkdownTokens, capitalize, GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
 
 function localReferenceMatcher(string, parsingContext) {
-  let { topicSubtopics, currentTopicCaps, currentSubtopicCaps, subtopicParents } = parsingContext;
+  let { topicSubtopics, currentTopicCaps, currentSubtopicCaps, subtopicParents, redundantLocalReferences } = parsingContext;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
   let currentStringAsKey = removeMarkdownTokens(linkTarget).toUpperCase();
-
-  if (!subtopicParents[currentTopicCaps]) subtopicParents[currentTopicCaps] = {};
-  subtopicParents[currentTopicCaps][currentStringAsKey] = currentSubtopicCaps;
+  subtopicParents[currentTopicCaps] = subtopicParents[currentTopicCaps] || {};
 
   if (topicSubtopics[currentTopicCaps].hasOwnProperty(currentStringAsKey)) {
+    if (subtopicParents[currentTopicCaps][currentStringAsKey]) {
+      redundantLocalReferences.push([
+        subtopicParents[currentTopicCaps][currentStringAsKey],
+        currentSubtopicCaps,
+        currentTopicCaps,
+        currentStringAsKey
+      ]);
+    }
+
+    subtopicParents[currentTopicCaps][currentStringAsKey] = currentSubtopicCaps;
+
     if (currentSubtopicCaps !== currentStringAsKey && currentTopicCaps !== currentStringAsKey) {
       return new LocalReferenceToken(
         topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
@@ -61,19 +70,16 @@ function globalReferenceMatcher(string, parsingContext) {
   let stringAsCapsKey = removeMarkdownTokens(linkTarget).toUpperCase();
 
   if (topicSubtopics.hasOwnProperty(stringAsCapsKey)) {
-    if (currentTopicCaps !== stringAsCapsKey) {
-
-      return new GlobalReferenceToken(
-        topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
-        topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
-        topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
-        topicSubtopics[currentTopicCaps][currentSubtopicCaps].mixedCase,
-        linkText,
-        fullText.length
-      );
-    } else {
-      return null;
-    }
+    return new GlobalReferenceToken(
+      topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
+      topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
+      topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
+      topicSubtopics[currentTopicCaps][currentSubtopicCaps].mixedCase,
+      linkText,
+      fullText.length
+    );
+  } else {
+    return null;
   }
 }
 
