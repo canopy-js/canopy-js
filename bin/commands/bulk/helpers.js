@@ -62,6 +62,15 @@ function pathComparator(path1, path2) {
   }
 }
 
+function groupByPath(fileList) {
+  return fileList.reduce((collection, filePath) => {
+    let directoryPath = filePath.split('/').slice(0, -1).join('/');
+    collection[directoryPath] = collection[directoryPath] || [];
+    collection[directoryPath].push(filePath)
+    return collection;
+  }, {});
+}
+
 module.exports = {
   keyFromString,
   fileNameFor,
@@ -70,5 +79,6 @@ module.exports = {
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
-  pathComparator
+  pathComparator,
+  groupByPath
 }

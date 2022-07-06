@@ -11,7 +11,8 @@ let {
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
-  pathComparator
+  pathComparator,
+  groupByPath
 } = require('./helpers');
 
 const bulk = async function(fileList, options) {
@@ -62,7 +63,8 @@ const bulk = async function(fileList, options) {
   }
 
   fileList = deduplicate(fileList).sort(pathComparator);
-	let initialData = generateDataFile(fileList, options.blank);
+  filesByPath = groupByPath(fileList);
+	let initialData = generateDataFile(filesByPath, options.blank);
 
 	if (editorMode) {
 		fs.writeFileSync('.canopy_bulk_file', initialData);
