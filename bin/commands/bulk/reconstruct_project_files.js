@@ -3,50 +3,75 @@ let { keyFromString } = require('./helpers');
 
 function reconstructProjectFiles(dataFile, originalFileList) {
   let pathHandled = {};
+  let sections = dataFile.split(/(?=^\[.*\]\n)/gm);
 
-  let sections = dataFile.split(/(?=^[^:\n]+:\n)/gm);
   sections.filter(Boolean).forEach(section => {
-    let path = section.split("\n")[0];
-    let fileContents = section.split("\n").slice(1).join('').trim();
-    let pathSegments = path.split(':')[0].split('/');
-    let key = keyFromString(fileContents) || '';
-    let directoryPath, fullPath;
-    let newFileContents = section.split(/\n\n/).slice(1).join("\n\n").trim() + "\n";
-    if (key) {
-      let keySlug = key.replace(/ /g,'_');
-      directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
-      fullPath = `${directoryPath}/${keySlug}.expl`;
-    } else {
-      directoryPath = `topics/${pathSegments.join('/').replace(/ /g,'_')}`;
-      fullPath = `${directoryPath}/${pathSegments.slice(-1)[0]}.expl`;
-    }
+    let path = section.split("\n")[0].match(/\[(.*)\]/)[1];
+    let pathSegments = path.split('/');
+    let fileTexts = section.split(/(?=^\* )/gm).slice(1).map(file => file.slice(2));
+    let categoryNotes = [];
+    let directoriesToEnsure = [];
+    let filesToWrite = {};
 
-    fs.ensureDirSync(directoryPath);
+    fileTexts.forEach(fileContents => {
+      let key = keyFromString(fileContents) || '';
+      let directoryPath, fullPath;
 
-    let oldFileContents = fs.readFileSync(fullPath).toString().trim() + "\n";
-    if (fs.existsSync(fullPath) && oldFileContents !== newFileContents) {
-      if (originalFileList.includes(fullPath)) {
-        writeLog(fullPath, newFileContents, 'Write');
-        fs.writeFileSync(fullPath, newFileContents);
-        console.log(`Wrote to file: ${fullPath}`);
+      if (key) {
+        let keySlug = key.replace(/ /g,'_');
+        directoryPath = `topics/${path.replace(/ /g,'_')}`;
+        fullPath = `${directoryPath}/${keySlug}.expl`;
+        directoriesToEnsure.push(directoryPath);
+        filesToWrite[fullPath] = fileContents.trim();
       } else {
-        writeLog(fullPath, newFileContents, 'Append');
-        fs.writeFileSync(fullPath, oldFileContents.trim() + "\n\n" + newFileContents);
-        console.log(`Appended to file: ${fullPath}`);
+        if (fileContents.trim()) {
+          categoryNotes.push(fileContents.trim());
+        }
+      }
+    });
+
+    let categoryNotePath = `topics/${path}/${pathSegments.slice(-1)[0]}.expl`;
+    if (categoryNotes.length > 0) {
+      if (filesToWrite[categoryNotePath]) {
+        filesToWrite[categoryNotePath] = filesToWrite[categoryNotePath] + "\n\n" + categoryNotes.join("\n\n");
+      } else {
+        filesToWrite[categoryNotePath] = categoryNotes.join("\n\n");
       }
     }
 
-    pathHandled[fullPath.toLowerCase()] = true;
+    directoriesToEnsure.forEach(directoryPath => fs.ensureDirSync(directoryPath));
+    Object.keys(filesToWrite).forEach(filePath => {
+      writeFile(filePath, filesToWrite[filePath]);
+    });
   });
 
   originalFileList.forEach(originalFilePath => {
-    if (!pathHandled.hasOwnProperty(originalFilePath.toLowerCase())) {
+    if (!pathHandled.hasOwnProperty(originalFilePath.toUpperCase())) {
       writeLog(originalFilePath, 'File deleted.', 'Delete');
       fs.unlinkSync(originalFilePath);
       console.log(`Deleted file: ${originalFilePath}`);
       deleteEmptyFolders(originalFilePath);
     }
   });
+
+  function writeFile(fullPath, newFileContents) {
+    pathHandled[fullPath.toUpperCase()] = true;
+
+    let oldFileContents = fs.existsSync(fullPath) && fs.readFileSync(fullPath).toString().trim();
+
+    if (oldFileContents !== newFileContents) {
+      if (originalFileList.includes(fullPath) || !oldFileContents) { // if file was loaded or is new, overwrite
+        writeLog(fullPath, newFileContents, 'Write');
+        fs.writeFileSync(fullPath, newFileContents + "\n");
+        console.log(`Wrote to file: ${fullPath}`);
+      } else {
+        writeLog(fullPath, newFileContents, 'Append');
+        fs.writeFileSync(fullPath, oldFileContents.trim() + "\n\n" + newFileContents + "\n");
+        console.log(`Appended to file: ${fullPath}`);
+      }
+    }
+
+  }
 }
 
 function deleteEmptyFolders(path) {
