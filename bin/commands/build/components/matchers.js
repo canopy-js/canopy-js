@@ -25,14 +25,14 @@ const Matchers = [
   markdownHtmlMatcher,
 ]
 
-let { removeMarkdownTokens, capitalize, GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
+let { GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
 
 function localReferenceMatcher(string, parsingContext) {
   let { topicSubtopics, currentTopicCaps, currentSubtopicCaps, subtopicParents, redundantLocalReferences } = parsingContext;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
-  let currentStringAsKey = removeMarkdownTokens(linkTarget).toUpperCase();
+  let currentStringAsKey = linkTarget.toUpperCase();
   subtopicParents[currentTopicCaps] = subtopicParents[currentTopicCaps] || {};
 
   if (topicSubtopics[currentTopicCaps].hasOwnProperty(currentStringAsKey)) {
@@ -67,7 +67,7 @@ function globalReferenceMatcher(string, parsingContext) {
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
-  let stringAsCapsKey = removeMarkdownTokens(linkTarget).toUpperCase();
+  let stringAsCapsKey = linkTarget.toUpperCase();
 
   if (topicSubtopics.hasOwnProperty(stringAsCapsKey)) {
     return new GlobalReferenceToken(
@@ -98,7 +98,7 @@ function importReferenceMatcher(string, parsingContext) {
 
 
   if (!targetTopicCaps) {
-    topicReferences.map(topicName => removeMarkdownTokens(topicName.toUpperCase())).forEach(topicName => {
+    topicReferences.map(topicName => topicName.toUpperCase()).forEach(topicName => {
       if ((topicSubtopics[topicName]||{}).hasOwnProperty(targetSubtopicCaps)) {
         if (targetTopicCaps) {
           console.error(`Error: Import reference ${fullText} in [${currentTopicCaps}, ${currentSubtopicCaps}] omits topic with multiple matching topic references.`)
@@ -139,15 +139,15 @@ function parseLink(string) {
 }
 
 function determineTopicAndSubtopic(linkTarget, linkFragment) {
-  let stringAsCapsKey = removeMarkdownTokens(linkTarget).toUpperCase();
+  let stringAsCapsKey = linkTarget.toUpperCase();
 
   let targetTopicCaps, targetSubtopicCaps;
   if (linkFragment) {
-    targetTopicCaps = removeMarkdownTokens(linkTarget.toUpperCase());
-    targetSubtopicCaps = removeMarkdownTokens(linkFragment.toUpperCase());
+    targetTopicCaps = linkTarget.toUpperCase();
+    targetSubtopicCaps = linkFragment.toUpperCase();
   } else {
     targetTopicCaps = null;
-    targetSubtopicCaps = removeMarkdownTokens(linkTarget.toUpperCase())
+    targetSubtopicCaps = linkTarget.toUpperCase();
   }
 
   return {

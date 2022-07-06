@@ -3,15 +3,22 @@ let fs = require('fs-extra');
 let fsPath = require('path');
 let { keyFromFile, takeDirectoryPath } = require('./helpers');
 
-function generateDataFile(fileList, blank) {
-	if (fileList.length === 0) return blank ? '' : defaultText();
-	return fileList.map((filePath) => {
-    let file = fs.readFileSync(filePath);
-    dataText = filePath.match(/[tT]opics\/([^.]+)\/[^.]+\.expl$/)[1].replace(/_/g, ' ');
-		dataText += ":\n\n";
-    dataText += file.toString().trim();
-		return dataText;
-	}).join("\n\n\n\n") + "\n\n\n";
+function generateDataFile(filesByPath, blank) {
+	if (filesByPath.length === 0) return blank ? '' : defaultText();
+	return Object.keys(filesByPath).map((directoryPath) => {
+    let filePaths = filesByPath[directoryPath];
+    let displayPath = directoryPath.match(/topics\/([^.]+)$/)[1].replace(/_/g, ' ');
+    let dataText = `[${displayPath}]\n\n`;
+
+    let filesOfPath = filePaths.map(filePath => {
+      let fileContents = '* ' + fs.readFileSync(filePath).toString().trim();
+      return fileContents;
+    }).join("\n\n");
+
+    dataText += filesOfPath;
+
+    return dataText;
+	}).join("\n\n\n") + "\n\n";
 }
 
 function defaultText() {

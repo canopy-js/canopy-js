@@ -1,28 +1,6 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 
-function subsumingPathExists(topic1, topic2, localReferenceGraph, stack=[]) {
-  if (topic1 === topic2) {
-    return true;
-  } else if (!localReferenceGraph.hasOwnProperty(topic1)) {
-    return false;
-  } else if (localReferenceGraph[topic1].includes(topic2)) {
-    return true;
-  } else if (stack.includes(topic1)) {
-    return false // reject cycles
-  } else {
-    stack.push(topic1);
-    return localReferenceGraph[topic1].some(
-      (referencedSubtopic) => subsumingPathExists(
-        referencedSubtopic,
-        topic2,
-        localReferenceGraph,
-        stack
-      )
-    )
-  }
-}
-
 function paragraphsOfFile(path) {
   let fileContents = fs.readFileSync(path, 'utf8');
   return fileContents.trim().split(/\n\n+/);
@@ -186,15 +164,6 @@ function topicKeyOfFile(path) {
   return extractKeyAndParagraph(paragraphsWithKeys[0]).key;
 }
 
-function removeMarkdownTokens(string) {
-  if (!string) return string;
-  return string.
-    replace(/([^\\]|^)_/g, '$1').
-    replace(/([^\\]|^)\*/g, '$1').
-    replace(/([^\\]|^)`/g, '$1').
-    replace(/([^\\]|^)~/g, '$1');
-}
-
 function validateImportReferenceMatching(tokens, topic, subtopic) {
   tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
     let globalToken = tokens.find(
@@ -245,6 +214,12 @@ function removeLengthKeys(tokens) {
   });
 }
 
+const slugFor = (string) => {
+  if (!string) {return string}
+
+  return string.replace(/ /g, '_');
+}
+
 module.exports = {
   paragraphsOfFile,
   linesByBlockOf,
@@ -252,12 +227,11 @@ module.exports = {
   topicKeyOfFile,
   extractKeyAndParagraph,
   listExplFilesRecursive,
-  subsumingPathExists,
-  removeMarkdownTokens,
   validateImportReferenceMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences,
-  removeLengthKeys
+  removeLengthKeys,
+  slugFor
 };
 
 

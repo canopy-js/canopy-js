@@ -3,8 +3,6 @@ let parseParagraph = require('./parse_paragraph');
 let {
   paragraphsOfFile,
   extractKeyAndParagraph,
-  removeMarkdownTokens,
-  subsumingPathExists,
   validateRedundantLocalReferences
 } = require('./helpers');
 
@@ -12,13 +10,13 @@ function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopi
   let paragraphsWithKeys = paragraphsOfFile(path);
   let tokenizedParagraphsByKey = {};
   let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
-  let topicOfFile = removeMarkdownTokens(displayTopicOfFile).toUpperCase();
+  let topicOfFile = displayTopicOfFile.toUpperCase();
   let redundantLocalReferences = [];
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraphData = extractKeyAndParagraph(paragraphWithKey);
     if (!paragraphData.key) { return; }
-    let currentSubtopic = removeMarkdownTokens(paragraphData.key);
+    let currentSubtopic = paragraphData.key;
     let currentSubtopicCaps = currentSubtopic.toUpperCase();
     let textWithoutKey = paragraphData.paragraph;
 
