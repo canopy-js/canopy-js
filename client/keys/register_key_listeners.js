@@ -6,6 +6,7 @@ import {
 
 import {
   moveUpward,
+  topicParentLink,
   moveDownward,
   moveLeftward,
   moveRightward,
@@ -49,7 +50,7 @@ const shortcutRelationships = {
   'up': moveUpward,
   'down': moveDownward,
   'right': moveRightward,
-  'alt-up': moveUpward.bind(null, true),
+  'shift-up': topicParentLink,
 
   'h': moveLeftward,
   'j': moveDownward,

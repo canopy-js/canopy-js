@@ -6,17 +6,8 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 
-function moveUpward(option) {
+function moveUpward() {
   let link = Link.selection;
-
-  if (option) {
-    let newLink = link.enclosingParagraph.topicParagraph.parentLink
-
-    return updateView(
-      newLink.pathToDisplay,
-      newLink
-    );
-  }
 
   if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
     return updateView(link.enclosingParagraph.path); // deselect link
@@ -28,7 +19,22 @@ function moveUpward(option) {
   );
 }
 
+function topicParentLink() {
+  let link = Link.selection;
+  let newLink = link.enclosingParagraph.topicParagraph.parentLink
+
+  return updateView(
+    newLink.pathToDisplay,
+    newLink
+  );
+}
+
 function moveDownward() {
+  let { path, link } = downwardPathAndLink();
+  return updateView(path, link)
+}
+
+function downwardPathAndLink() {
   let path = Path.current;
   let oldLink = Link.selection;
   let newLink;
@@ -36,18 +42,18 @@ function moveDownward() {
   if (oldLink.isParent) {
 
     if (oldLink.isImport) {
-      return updateView(
-        oldLink.pathToDisplay,
-        oldLink.targetParagraph.parentLink
-      );
+      return {
+        path: oldLink.pathToDisplay,
+        link: oldLink.targetParagraph.parentLink
+      }
     }
 
     let newLink = oldLink.targetParagraph.firstLink || oldLink.targetParagraph.parentLink;
 
-    return updateView(
-      newLink.pathToDisplay,
-      newLink
-    );
+    return {
+      path: newLink.pathToDisplay,
+      link: newLink
+    };
   }
 }
 
@@ -69,22 +75,41 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab, altKey) {
-  if (Link.selection.isLocal) {
-    return moveDownward();
+  let path, link;
+
+  if (Link.selection.isLocal && !altKey) { // no zoom
+    let { path, link } = downwardPathAndLink();
+    if (newTab) {
+      return window.open(location.origin + path.string, '_blank');
+    } else {
+      return updateView(path, link);
+    }
   }
 
-  if (Link.selection.isGlobalOrImport && altKey) { //inline topic
-    return moveDownward();
+  if (Link.selection.isLocal && altKey) { // zoom
+    let { path, link } = downwardPathAndLink();
+    if (newTab) {
+      return window.open(location.origin + path.lastSegment.string, '_blank');
+    } else {
+      return updateView(path.lastSegment, link.atNewPath(path.lastSegment));
+    }
   }
 
-  if (Link.selection.isGlobalOrImport && !altKey) { // redirecting to new page
+  if (Link.selection.isGlobalOrImport && !altKey) { // inline
+    let { path, link } = downwardPathAndLink();
+
+    if (newTab) {
+      return window.open(location.origin + path.string, '_blank');
+    } else {
+      return updateView(path, Link.selectALink(path));
+    }
+  }
+
+  if (Link.selection.isGlobalOrImport && altKey) { // redirect
     let path = Link.selection.targetPath.lastSegment;
 
     if (newTab) {
-      return window.open(
-        location.origin + path.string,
-        '_blank'
-      );
+      return window.open(location.origin + path.string, '_blank');
     } else {
       return updateView(
         path,
@@ -98,10 +123,7 @@ function moveDownOrRedirect(newTab, altKey) {
 
   if (Link.selection.type === 'url') {
     if (newTab) {
-      return window.open(
-        Link.selection.element.href,
-        '_blank'
-      );
+      return window.open(Link.selection.element.href, '_blank');
     } else {
       window.location = Link.selection.element.href;
     }
@@ -170,7 +192,7 @@ function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = currentLink.localPathWhenSelected;
 
-  let newLink = new Link(() => currentLink.atNewPath(newPath));
+  let newLink = currentLink.atNewPath(newPath);
 
   return updateView(
     newPath,
@@ -179,11 +201,12 @@ function zoomOnLocalPath() {
 }
 
 function removeSelection() {
-  return updateView(Path.current);
+  return updateView(Path.current.rootTopicPath);
 }
 
 export {
   moveUpward,
+  topicParentLink,
   moveDownward,
   moveLeftward,
   moveRightward,

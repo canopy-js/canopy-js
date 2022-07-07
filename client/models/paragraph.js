@@ -122,8 +122,31 @@ class Paragraph {
     if (this.sectionElement.parentNode === canopyContainer) { return null; }
 
     return this.parentParagraph && this.parentParagraph.linkByTarget(
-      this.sectionElement.dataset.topicName,
-      this.sectionElement.dataset.subtopicName
+      this.topicName,
+      this.subtopicName
+    );
+  }
+
+  get parentLinks() {
+    if (this.sectionElement.parentNode === canopyContainer) { return null; }
+
+    return this.parentParagraph.linksBySelector(
+      link => {
+        return this.topicName === link.targetTopic &&
+          this.subtopicName === link.targetSubtopic;
+      }
+    );
+  }
+
+  get ancestorImportReferences() {
+    if (this.pageRoot) { return []; }
+    if (!this.topicParagraph.parentParagraph) { return []; }
+
+    return this.topicParagraph.parentParagraph.linksBySelector(
+      link => {
+        return this.topicName === link.targetTopic &&
+          this.subtopicName === link.targetSubtopic;
+      }
     );
   }
 

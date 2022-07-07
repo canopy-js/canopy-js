@@ -89,6 +89,14 @@ class Link {
     return this.element.dataset.enclosingSubtopic;
   }
 
+  get topicName() {
+    throw 'Links have no topicName, only targetTopic or enclosingTopic';
+  }
+
+  get subtopicName() {
+    throw 'Links have no subtopicName, only targetSubtopic or enclosingSubtopic';
+  }
+
   get type() {
     return this.element.dataset.type;
   }
@@ -132,16 +140,18 @@ class Link {
     return new Paragraph(sectionElement);
   }
 
-  atNewPath(newPath) { // get matching link at new path
-    let newEnclosingParagraph;
-    if (this.isParent) {
-      newEnclosingParagraph = newPath.paragraph.parentParagraph;
-    } else {
-      newEnclosingParagraph = newPath.paragraph;
-    }
-    return newEnclosingParagraph
-      .links
-      .find(this.matcher);
+  atNewPath(newPath) { // get link instantiated with callback that returns matching link at new path
+    return new Link(() => {
+      let newEnclosingParagraph;
+      if (this.isParent) {
+        newEnclosingParagraph = newPath.paragraph.parentParagraph;
+      } else {
+        newEnclosingParagraph = newPath.paragraph;
+      }
+      return newEnclosingParagraph
+        .links
+        .find(this.matcher);
+    });
   }
 
   get localPathWhenSelected() {
@@ -391,7 +401,7 @@ class Link {
     return new Link(() => {
       path = path || Path.current;
       let paragraph = path.paragraph;
-      return paragraph.parentLink || paragraph.firstLink;
+      return paragraph.firstLink || paragraph.parentLink;
     });
   }
 
