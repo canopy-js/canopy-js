@@ -242,14 +242,18 @@ class Path {
     return slashSeparatedUnits;
   }
 
-  static validateConnectingLink(parentElement, pathToDisplay) {
+  static connectingLinkValid(parentElement, pathToDisplay) {
     if (!parentElement) throw 'Parent element required';
     if (!pathToDisplay instanceof Path) throw 'pathToDisplay must be a Path object';
 
-    if (parentElement === canopyContainer) return;
+    if (parentElement === canopyContainer) return true;
+
     let parentParagraph = new Paragraph(parentElement);
     if (!parentParagraph.linkByTarget(pathToDisplay.firstTopic)) {
-      throw "Parent element has no connecting link to subsequent path segment";
+      console.error("Parent element has no connecting link to subsequent path segment");
+      return false;
+    } else {
+      return true;
     }
   }
 
@@ -283,6 +287,7 @@ class Path {
         `[data-path-depth="${newPathDepth}"]`
       );
 
+      if (!currentNode) return null;
       subpath = subpath.withoutFirstSegment;
     }
 
