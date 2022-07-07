@@ -57,7 +57,8 @@ test.describe('Navigation', () => {
 
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
     await page.locator('body').press('ArrowRight');
-    await page.locator('body').press('Enter');
+    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('z');
     await expect(page).toHaveURL('/New_York#Southern_border');
     await expect(page.locator('h1')).toHaveText('New York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');

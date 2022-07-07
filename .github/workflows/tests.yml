@@ -27,10 +27,12 @@ jobs:
         canopy build
     - name: Run regular tests
       run: npm run test
-    - name: Run Playwright tests
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: npx playwright test --headed
+    - name: Run playwright tests
+      run: npx playwright test
+    # - name: Run Playwright tests
+    #   uses: GabrielBB/xvfb-action@v1
+    #   with:
+    #     run: npx playwright test --headed
     - uses: actions/upload-artifact@v2
       if: always()
       with:
