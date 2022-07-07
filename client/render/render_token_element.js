@@ -1,5 +1,5 @@
 import { slugFor } from 'helpers/identifiers';
-import { onParentLinkClick, onGlobalLinkClick } from 'render/click_handlers';
+import { onLocalLinkClick, onGlobalLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
 import eagerLoad from 'requests/eager_load';
@@ -56,12 +56,12 @@ function createLocalLinkElement(token) {
 
   linkElement.addEventListener(
     'click',
-    onParentLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
+    onLocalLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
   );
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.enclosingSubtopic)}`;
+  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
   return linkElement;
 }
 
@@ -96,7 +96,7 @@ function createGlobalLinkElement(token) {
 
   linkElement.dataset.text = token.text;
 
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+  linkElement.href = `/${slugFor(token.targetTopic)}`;
   linkElement.addEventListener(
     'click',
     onGlobalLinkClick(new Link(linkElement))

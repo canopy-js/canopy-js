@@ -32,6 +32,8 @@ const displayPathTo = (paragraph) => {
   paragraph.display();
   if (paragraph.isPageRoot) return;
   paragraph.parentLink && paragraph.parentLinks.forEach(link => link.open());
+  paragraph.ancestorImportReferences.forEach(link => link.open());
+  if (paragraph.parentLink && !Link.selection) Link.select(paragraph.parentLink);
   displayPathTo(paragraph.parentParagraph);
 }
 

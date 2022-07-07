@@ -63,7 +63,7 @@ class Path {
     return this.pathArray[0][0];
   }
 
-  get rootPath() {
+  get rootTopicPath() {
     return new Path([[this.topic, this.topic]]);
   }
 
@@ -134,7 +134,7 @@ class Path {
   static get current() {
     let pathString = window.location.pathname + window.location.hash;
 
-    if (pathString.indexOf(`/${projectPathPrefix}`) === 0) {
+    if (projectPathPrefix && pathString.indexOf(`/${projectPathPrefix}`) === 0) {
       pathString = pathString.slice(projectPathPrefix.length + 1);
     }
 
