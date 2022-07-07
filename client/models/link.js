@@ -92,6 +92,14 @@ class Link {
     return this.element.dataset.enclosingSubtopic;
   }
 
+  get topicName() {
+    throw 'Links have no topicName, only targetTopic or enclosingTopic';
+  }
+
+  get subtopicName() {
+    throw 'Links have no subtopicName, only targetSubtopic or enclosingSubtopic';
+  }
+
   get type() {
     return this.element.dataset.type;
   }
