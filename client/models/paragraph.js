@@ -130,10 +130,22 @@ class Paragraph {
   get parentLinks() {
     if (this.sectionElement.parentNode === canopyContainer) { return null; }
 
-    return this.parentParagraph && this.parentParagraph.linksBySelector(
+    return this.parentParagraph.linksBySelector(
       link => {
         return this.topicName === link.targetTopic &&
-        this.subtopicName === link.targetSubtopic
+          this.subtopicName === link.targetSubtopic;
+      }
+    );
+  }
+
+  get ancestorImportReferences() {
+    if (this.pageRoot) { return []; }
+    if (!this.topicParagraph.parentParagraph) { return []; }
+
+    return this.topicParagraph.parentParagraph.linksBySelector(
+      link => {
+        return this.topicName === link.targetTopic &&
+          this.subtopicName === link.targetSubtopic;
       }
     );
   }

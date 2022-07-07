@@ -143,16 +143,18 @@ class Link {
     return new Paragraph(sectionElement);
   }
 
-  atNewPath(newPath) { // get matching link at new path
-    let newEnclosingParagraph;
-    if (this.isParent) {
-      newEnclosingParagraph = newPath.paragraph.parentParagraph;
-    } else {
-      newEnclosingParagraph = newPath.paragraph;
-    }
-    return newEnclosingParagraph
-      .links
-      .find(this.matcher);
+  atNewPath(newPath) { // get link instantiated with callback that returns matching link at new path
+    return new Link(() => {
+      let newEnclosingParagraph;
+      if (this.isParent) {
+        newEnclosingParagraph = newPath.paragraph.parentParagraph;
+      } else {
+        newEnclosingParagraph = newPath.paragraph;
+      }
+      return newEnclosingParagraph
+        .links
+        .find(this.matcher);
+    });
   }
 
   get localPathWhenSelected() {
@@ -315,6 +317,10 @@ class Link {
     return !this.isOpen;
   }
 
+  get isSelected() {
+    return this.element.classList.contains('canopy-selected-link');
+  }
+
   get isGlobal() {
     return this.type === 'global';
   }
@@ -406,7 +412,7 @@ class Link {
     return new Link(() => {
       path = path || Path.current;
       let paragraph = path.paragraph;
-      return paragraph.parentLink || paragraph.firstLink;
+      return paragraph.firstLink || paragraph.parentLink;
     });
   }
 
