@@ -101,7 +101,7 @@ function moveDownOrRedirect(newTab, altKey) {
     if (newTab) {
       return window.open(location.origin + path.string, '_blank');
     } else {
-      return updateView(path, Link.selectALink(path));
+      return updateView(path, link);
     }
   }
 

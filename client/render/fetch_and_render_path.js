@@ -12,7 +12,7 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
 
   let preexistingElement = Path.elementAtRelativePath(pathToDisplay.firstSegment, parentElement);
   if (preexistingElement) {
-    if (!Path.connectingLinkValid(parentElement, pathToDisplay)) return Promise.resolve(parentElement);
+    if (!Path.connectingLinkValid(parentElement, pathToDisplay)) return Promise.resolve();
     return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement);
   }
 
