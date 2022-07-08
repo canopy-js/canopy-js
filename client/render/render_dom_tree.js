@@ -20,6 +20,7 @@ function renderDomTree(renderContext) {
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
   let blocksOfParagraph = paragraphsBySubtopic[subtopicName];
+  if (!blocksOfParagraph) throw `Paragraph with subtopic not found: ${subtopicName}`;
   let blockElements = renderElementsForBlocks(blocksOfParagraph, renderContext);
 
   blockElements.forEach((blockElement) => {
