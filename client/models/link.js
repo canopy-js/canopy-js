@@ -50,7 +50,10 @@ class Link {
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
-      if (!link) throw ("Link selector callback didn't select link");
+      if (!link) {
+        console.error("Link selector callback didn't select link");
+        return;
+      }
       this.element = link.element;
       return this.linkElement;
     }
@@ -338,12 +341,8 @@ class Link {
     return this.isGlobal || this.isLocal || this.isImport;
   }
 
-  get isNull() {
-    return !this.element && !this.selectorCallback();
-  }
-
   get present() {
-    return !this.isNull;
+    return !!this.element;
   }
 
   static select(linkToSelect) {
