@@ -314,6 +314,10 @@ class Link {
     return !this.isOpen;
   }
 
+  get isSelected() {
+    return this.element.classList.contains('canopy-selected-link');
+  }
+
   get isGlobal() {
     return this.type === 'global';
   }

@@ -1,7 +1,13 @@
 let fs = require('fs-extra');
 let buildProvisionalNamespaceObject = require('./build_provisional_namespace_object.js');
 let jsonForExplFile = require('./json_for_expl_file.js');
-let { slugFor, topicKeyOfFile, listExplFilesRecursive, validateImportReferenceTargets } = require('./helpers');
+let {
+  slugFor,
+  topicKeyOfFile,
+  listExplFilesRecursive,
+  validateImportReferenceTargets,
+  validateJsonFileName
+} = require('./helpers');
 
 function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -17,12 +23,8 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
     if (!topicKeyOfFile(path)) return;
 
     let json = jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents);
-    let explFileNameWithoutExtension = path.match(/\/([\w-]+)\.\w+$/)[1];
-
-    if (explFileNameWithoutExtension.includes(' ')) {
-      console.error('Data filenames may not contain spaces: ' + path);
-      process.exit();
-    }
+    let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
+    validateJsonFileName(explFileNameWithoutExtension);
 
     let destinationPath = `${destinationDataDirectory}/${explFileNameWithoutExtension}.json`;
 
@@ -30,7 +32,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log();
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
-
+    fs.ensureDir(destinationDataDirectory);
     fs.writeFileSync(destinationPath, json);
 
     if (makeFolders) {

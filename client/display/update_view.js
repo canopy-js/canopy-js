@@ -15,7 +15,7 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
       linkToSelect,
       displayOptions
     );
-  });
+  }).catch((error) => console.error(error));
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {

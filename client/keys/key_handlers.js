@@ -95,17 +95,7 @@ function moveDownOrRedirect(newTab, altKey) {
     }
   }
 
-  if (Link.selection.isGlobalOrImport && !altKey) { // inline
-    let { path, link } = downwardPathAndLink();
-
-    if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
-    } else {
-      return updateView(path, link);
-    }
-  }
-
-  if (Link.selection.isGlobalOrImport && altKey) { // redirect
+  if (Link.selection.isGlobalOrImport) { // redirect
     let path = Link.selection.targetPath.lastSegment;
 
     if (newTab) {

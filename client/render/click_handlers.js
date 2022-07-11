@@ -38,7 +38,7 @@ function onGlobalLinkClick (link) {
 
     let path, linkToSelect;
     if (!e.altKey) {
-      if (link.isOpen) { // close global child
+      if (link.isSelected) { // close global child
         path = link.enclosingParagraph.path;
       } else { // open global child
         path = link.pathToDisplay;

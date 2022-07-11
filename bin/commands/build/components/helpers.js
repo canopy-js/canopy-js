@@ -220,6 +220,13 @@ const slugFor = (string) => {
   return string.replace(/ /g, '_');
 }
 
+function validateJsonFileName(filename) {
+  if (filename.includes(' ')) {
+    console.error(`Filename may not contain spaces: ${filename}`);
+    process.exit();
+  }
+}
+
 module.exports = {
   paragraphsOfFile,
   linesByBlockOf,
@@ -230,6 +237,7 @@ module.exports = {
   validateImportReferenceMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences,
+  validateJsonFileName,
   removeLengthKeys,
   slugFor
 };
