@@ -2,22 +2,23 @@ let fs = require('fs');
 let parseParagraph = require('./parse_paragraph');
 let {
   paragraphsOfFile,
-  extractKeyAndParagraph,
   validateRedundantLocalReferences,
   TopicName
 } = require('./helpers');
+let Paragraph = require('../shared/paragraph');
 
 function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents) {
   let paragraphsWithKeys = paragraphsOfFile(path);
-  let tokenizedParagraphsByKey = {};
-  let currentTopic = new TopicName(extractKeyAndParagraph(paragraphsWithKeys[0]).key);
+  let paragraphsBySubtopic = {};
+  let paragraph = new Paragraph(paragraphsWithKeys[0]);
+  let currentTopic = new TopicName(paragraph.key);
   let redundantLocalReferences = [];
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
-    let paragraphData = extractKeyAndParagraph(paragraphWithKey);
-    if (!paragraphData.key) { return; }
-    let currentSubtopic = new TopicName(paragraphData.key);
-    let textWithoutKey = paragraphData.paragraph;
+    let paragraph = new Paragraph(paragraphWithKey);
+    if (!paragraph.key) { return; }
+    let currentSubtopic = new TopicName(paragraph.key);
+    let textWithoutKey = paragraph.paragraph;
 
     let tokensOfParagraph = parseParagraph(
       textWithoutKey,
@@ -31,15 +32,15 @@ function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopi
       }
     );
 
-    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
-    // console.log(`Parsed [${currentTopic}, ${paragraphData.key}]`)
+    paragraphsBySubtopic[currentSubtopic.mixedCase] = tokensOfParagraph;
+    // console.log(`Parsed [${currentTopic}, ${paragraph.key}]`)
   });
 
   validateRedundantLocalReferences(subtopicParents, redundantLocalReferences);
 
   let jsonObject = {
     displayTopicName: currentTopic.display,
-    paragraphsBySubtopic: tokenizedParagraphsByKey
+    paragraphsBySubtopic
   }
 
   return JSON.stringify(

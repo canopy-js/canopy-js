@@ -1,5 +1,6 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
+let Paragraph = require('../shared/paragraph');
 
 function paragraphsOfFile(path) {
   let fileContents = fs.readFileSync(path, 'utf8');
@@ -139,29 +140,9 @@ function listExplFilesRecursive(rootDirectory) {
   return filePaths;
 }
 
-
-function extractKeyAndParagraph(paragraphWithKey) {
-  let match = paragraphWithKey.match(/^(?!-)([^:.,;]+):\s+/);
-
-  if (!match) {
-    return {
-      key: null,
-      paragraph: paragraphWithKey
-    }
-  }
-
-  let key = match[1];
-  let paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
-
-  return {
-    key: key,
-    paragraph: paragraphWithoutKey
-  };
-}
-
 function topicKeyOfFile(path) {
   let paragraphsWithKeys = paragraphsOfFile(path);
-  return extractKeyAndParagraph(paragraphsWithKeys[0]).key;
+  return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
 function validateImportReferenceMatching(tokens, topic, subtopic) {
@@ -222,14 +203,14 @@ function validateJsonFileName(filename) {
 class TopicName {
   // There are several permutations of the topic key:
   // There is the "display" topic, this is the string precisely as it appears in the expl file
-  // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ `
+  // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ ` and a trailing question mark.
   // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
   // Filenames at some point may be url encoded versions of the mixed case topic.
   constructor(string) {
     this.display = string;
-    this.caps = string.toUpperCase();
-    this.mixedCase = removeStyleCharacters(string);
-    this.mixedCaseSlug = slugFor(this.mixedCase);
+    this.mixedCase = removeStyleCharacters(string).replace(/\?$/, '');
+    this.slug = slugFor(this.mixedCase);
+    this.caps = this.mixedCase.toUpperCase();
   }
 }
 
@@ -253,7 +234,6 @@ module.exports = {
   linesByBlockOf,
   consolidateTextTokens,
   topicKeyOfFile,
-  extractKeyAndParagraph,
   listExplFilesRecursive,
   validateImportReferenceMatching,
   validateImportReferenceTargets,
