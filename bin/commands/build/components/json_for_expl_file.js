@@ -2,45 +2,45 @@ let fs = require('fs');
 let parseParagraph = require('./parse_paragraph');
 let {
   paragraphsOfFile,
-  extractKeyAndParagraph,
-  validateRedundantLocalReferences
+  validateRedundantLocalReferences,
+  TopicName
 } = require('./helpers');
+let Paragraph = require('../shared/paragraph');
 
 function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents) {
   let paragraphsWithKeys = paragraphsOfFile(path);
-  let tokenizedParagraphsByKey = {};
-  let displayTopicOfFile = extractKeyAndParagraph(paragraphsWithKeys[0]).key;
-  let topicOfFile = displayTopicOfFile.toUpperCase();
+  let paragraphsBySubtopic = {};
+  let paragraph = new Paragraph(paragraphsWithKeys[0]);
+  let currentTopic = new TopicName(paragraph.key);
   let redundantLocalReferences = [];
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
-    let paragraphData = extractKeyAndParagraph(paragraphWithKey);
-    if (!paragraphData.key) { return; }
-    let currentSubtopic = paragraphData.key;
-    let currentSubtopicCaps = currentSubtopic.toUpperCase();
-    let textWithoutKey = paragraphData.paragraph;
+    let paragraph = new Paragraph(paragraphWithKey);
+    if (!paragraph.key) { return; }
+    let currentSubtopic = new TopicName(paragraph.key);
+    let textWithoutKey = paragraph.paragraph;
 
     let tokensOfParagraph = parseParagraph(
       textWithoutKey,
       {
         topicSubtopics: namespaceObject,
-        currentSubtopicCaps,
-        currentTopicCaps: topicOfFile,
+        currentSubtopic,
+        currentTopic,
         importReferencesToCheck,
         subtopicParents,
         redundantLocalReferences
       }
     );
 
-    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
-    // console.log(`Parsed [${topicOfFile}, ${paragraphData.key}]`)
+    paragraphsBySubtopic[currentSubtopic.mixedCase] = tokensOfParagraph;
+    // console.log(`Parsed [${currentTopic}, ${paragraph.key}]`)
   });
 
   validateRedundantLocalReferences(subtopicParents, redundantLocalReferences);
 
   let jsonObject = {
-    displayTopicName: displayTopicOfFile,
-    paragraphsBySubtopic: tokenizedParagraphsByKey
+    displayTopicName: currentTopic.display,
+    paragraphsBySubtopic
   }
 
   return JSON.stringify(

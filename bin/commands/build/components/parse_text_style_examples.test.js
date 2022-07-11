@@ -1,40 +1,30 @@
 let parseText = require('./parse_text');
 
-test('it creates markdown urls', () => {
-  let parsingContext = {
-    markdownOnly: true,
-    currentSubtopic: 'The state capital'
-  }
-
-  let text = 'This is a clause with [google.com](a markdown link).'
+test('it creates urls', () => {
+  let text = 'This is a clause with [google.com](a link).'
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
   expect(result[0].text).toEqual('This is a clause with ');
 
   expect(result[1].type).toEqual('url');
-  expect(result[1].text).toEqual('a markdown link');
+  expect(result[1].text).toEqual('a link');
   expect(result[1].url).toEqual('google.com');
 
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');
 });
 
-test('markdown urls with empty parens use url as link', () => {
-  let parsingContext = {
-    markdownOnly: true,
-    currentSubtopic: 'The state capital'
-  }
-
+test('urls with empty parens use url as link', () => {
   let text = 'This is a clause with [google.com]().'
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
@@ -49,30 +39,23 @@ test('markdown urls with empty parens use url as link', () => {
 });
 
 test("it doesn't treat square brackets specially", () => {
-  let parsingContext = {};
-
   let text = 'These [brackets] do not imply a hyperlink.';
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
   expect(result[0].text).toEqual('These [brackets] do not imply a hyperlink.');
 });
 
-test('it creates markdown automatic urls', () => {
-  let parsingContext = {
-    markdownOnly: true,
-    currentSubtopic: 'The state capital'
-  }
-
+test('it creates automatic urls', () => {
   let text = 'This is a clause with a link to http://google.com.';
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
@@ -86,14 +69,12 @@ test('it creates markdown automatic urls', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates markdown images', () => {
-  let parsingContext = {}
-
+test('it creates images', () => {
   let text = 'This is an ![image](example.com/image "Title").';
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
@@ -108,13 +89,12 @@ test('it creates markdown images', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates linked markdown images', () => {
-  let parsingContext = {}
+test('it creates linked images', () => {
   let text = 'This is an [![image](example.com/image "Title")](google.com).';
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');
@@ -130,13 +110,11 @@ test('it creates linked markdown images', () => {
 });
 
 test('it parses raw html', () => {
-  let parsingContext = {};
-
   let text = 'This is <b> raw html </b>.';
 
   let result = parseText(
     text,
-    parsingContext
+    {}
   )
 
   expect(result[0].type).toEqual('text');

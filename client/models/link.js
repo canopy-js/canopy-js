@@ -338,6 +338,14 @@ class Link {
     return this.isGlobal || this.isLocal || this.isImport;
   }
 
+  get isNull() {
+    return !this.element && !this.selectorCallback();
+  }
+
+  get present() {
+    return !this.isNull;
+  }
+
   static select(linkToSelect) {
     linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
     Link.persistInHistory(linkToSelect);
@@ -381,7 +389,7 @@ class Link {
   static persistInSession(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
-    let linkData = link && JSON.stringify(link.metadata);
+    let linkData = link.present && JSON.stringify(link.metadata);
     sessionStorage.setItem(location.pathname + location.hash, linkData || null);
   }
 
@@ -389,7 +397,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link && link.metadata || null,
+      link.present && link.metadata || null,
       document.title,
       window.location.href
     );

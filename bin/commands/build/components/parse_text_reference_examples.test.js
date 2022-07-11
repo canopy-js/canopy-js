@@ -1,14 +1,15 @@
 let parseText = require('./parse_text');
+let { TopicName } = require('./helpers')
 
 test('it creates text tokens', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': { mixedCase: 'Idaho'},
+        'IDAHO': new TopicName('Idaho'),
       }
     },
-    currentTopicCaps: 'Idaho',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }
@@ -29,13 +30,13 @@ test('it matches local references', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': { mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: { 'IDAHO': {} },
     importReferencesToCheck: []
   }
@@ -67,17 +68,17 @@ test('it matches global references', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': { mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       },
       'WYOMING': {
-        'WYOMING': { mixedCase: 'Wyoming'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital}'}
+        'WYOMING': new TopicName('Wyoming'),
+        'THE STATE CAPITAL': new TopicName('The state capital')
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }
@@ -109,17 +110,17 @@ test('it lets you give arbitrary names to references', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': { mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       },
       'WYOMING': {
-        'WYOMING': { mixedCase: 'Wyoming'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital}'}
+        'WYOMING': new TopicName('Wyoming'),
+        'THE STATE CAPITAL': new TopicName('The state capital')
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }
@@ -151,17 +152,17 @@ test('it matches import references', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': { mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       },
       'WYOMING': {
-        'WYOMING': { mixedCase: 'Wyoming' },
-        'YELLOWSTONE NATIONAL PARK': { mixedCase: 'Yellowstone National Park'},
+        'WYOMING': new TopicName('Wyoming'),
+        'YELLOWSTONE NATIONAL PARK': new TopicName('Yellowstone National Park'),
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }
@@ -203,17 +204,17 @@ test('it matches import references in any order within a sentence', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': {mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       },
       'WYOMING': {
-        'WYOMING': { mixedCase: 'Wyoming'},
-        'YELLOWSTONE NATIONAL PARK': { mixedCase: 'Yellowstone National Park'}
+        'WYOMING': new TopicName('Wyoming'),
+        'YELLOWSTONE NATIONAL PARK': new TopicName('Yellowstone National Park')
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }
@@ -255,17 +256,17 @@ test('it matches import references with explicit syntax and lets you rename the 
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
-        'IDAHO': {mixedCase: 'Idaho'},
-        'THE STATE CAPITAL': { mixedCase: 'The state capital'},
-        'THE STATE FLOWER': { mixedCase: 'The state flower'}
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
       },
       'WYOMING': {
-        'WYOMING': { mixedCase: 'Wyoming'},
-        'YELLOWSTONE NATIONAL PARK': { mixedCase: 'Yellowstone National Park'}
+        'WYOMING': new TopicName('Wyoming'),
+        'YELLOWSTONE NATIONAL PARK': new TopicName('Yellowstone National Park')
       }
     },
-    currentTopicCaps: 'IDAHO',
-    currentSubtopicCaps: 'THE STATE CAPITAL',
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
     importReferencesToCheck: []
   }

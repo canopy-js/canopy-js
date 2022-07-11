@@ -14,7 +14,7 @@ import {
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
-  if (linkToSelect && linkToSelect.contradicts(pathToDisplay)) {
+  if (linkToSelect.present && linkToSelect.contradicts(pathToDisplay)) {
     return updateView(linkToSelect.pathToDisplay, linkToSelect, displayOptions);
   }
 
@@ -24,7 +24,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect
 
-  displayPathTo(pathToDisplay.paragraph, linkToSelect);
+  displayPathTo(pathToDisplay.paragraph);
   window.scrollTo(0, canopyContainer.scrollHeight);
 };
 

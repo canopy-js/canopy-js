@@ -24,9 +24,8 @@ function codeBlockFor(lines) {
 }
 
 function quoteBlockFor(lines, parsingContext) {
-  let modifiedParsingContext = { markdownOnly: true, ...parsingContext }
   let tokensByLine = lines.map((line) => line.match(/^\s*>\s?(.*)$/)[1]).map(
-    (line) => parseText(line, modifiedParsingContext)
+    (line) => parseText(line, parsingContext)
   );
 
   return {

@@ -1,18 +1,18 @@
 let fs = require('fs-extra');
-let buildProvisionalNamespaceObject = require('./build_provisional_namespace_object.js');
+let buildNamespaceObject = require('./build_namespace_object.js');
 let jsonForExplFile = require('./json_for_expl_file.js');
 let {
-  slugFor,
   topicKeyOfFile,
   listExplFilesRecursive,
   validateImportReferenceTargets,
-  validateJsonFileName
+  validateJsonFileName,
+  TopicName
 } = require('./helpers');
 
 function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let explFilePaths = listExplFilesRecursive(sourceDirectory);
-  let namespaceObject = buildProvisionalNamespaceObject(explFilePaths);
+  let namespaceObject = buildNamespaceObject(explFilePaths);
   let importReferencesToCheck = [];
   let subtopicParents = {};
 
@@ -32,14 +32,15 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log();
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
+
     fs.ensureDir(destinationDataDirectory);
     fs.writeFileSync(destinationPath, json);
 
     if (makeFolders) {
-      let capitalizedKeySlug = slugFor(topicKeyOfFile(path));
-      let topicFolderPath = destinationBuildDirectory + '/' + capitalizedKeySlug;
+      let fileTopic = new TopicName(topicKeyOfFile(path));
+      let topicFolderPath = destinationBuildDirectory + '/' + fileTopic.slug;
       fs.rmSync(topicFolderPath, { recursive: true, force: true });
-      fs.mkdirSync(destinationBuildDirectory + '/' + capitalizedKeySlug);
+      fs.mkdirSync(destinationBuildDirectory + '/' + fileTopic.slug);
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });

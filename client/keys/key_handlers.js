@@ -104,10 +104,7 @@ function moveDownOrRedirect(newTab, altKey) {
       return updateView(
         path,
         Link.selectALink(path)
-      ).catch((e) => {
-        console.error('No link on new page to select');
-        updateView(path);
-      });
+      )
     }
   }
 

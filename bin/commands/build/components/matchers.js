@@ -3,13 +3,13 @@ let {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  markdownItalicMarkerToken,
-  markdownBoldMarkerToken,
-  markdownCodeMarkerToken,
-  markdownUrlToken,
-  markdownImageToken,
-  markdownFootnoteToken,
-  markdownHtmlToken
+  ItalicMarkerToken,
+  BoldMarkerToken,
+  CodeMarkerToken,
+  UrlToken,
+  ImageToken,
+  FootnoteToken,
+  HtmlToken
 } = require('./tokens');
 
 const Matchers = [
@@ -17,45 +17,44 @@ const Matchers = [
   globalReferenceMatcher,
   importReferenceMatcher,
   escapedCharacterMatcher,
-  markdownFootnoteMatcher,
-  markdownImageMatcher,
-  markdownHyperlinkMatcher,
-  markdownUrlMatcher,
-  markdownLinkedImageMatcher,
-  markdownHtmlMatcher,
+  footnoteMatcher,
+  imageMatcher,
+  hyperlinkMatcher,
+  urlMatcher,
+  linkedImageMatcher,
+  htmlMatcher,
 ]
 
-let { GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
+let { GlobalLinkNeedingAddingToNamespacesError, TopicName } = require('./helpers');
 
 function localReferenceMatcher(string, parsingContext) {
-  let { topicSubtopics, currentTopicCaps, currentSubtopicCaps, subtopicParents, redundantLocalReferences } = parsingContext;
+  let { topicSubtopics, currentTopic, currentSubtopic, subtopicParents, redundantLocalReferences } = parsingContext;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
-  let currentStringAsKey = linkTarget.toUpperCase();
-  subtopicParents[currentTopicCaps] = subtopicParents[currentTopicCaps] || {};
+  let currentStringAsTopic = new TopicName(linkTarget);
+  subtopicParents[currentTopic.caps] = subtopicParents[currentTopic.caps] || {};
 
-  if (topicSubtopics[currentTopicCaps].hasOwnProperty(currentStringAsKey)) {
-    if (subtopicParents[currentTopicCaps][currentStringAsKey]) {
+  if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentStringAsTopic.caps)) {
+    if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) {
       redundantLocalReferences.push([
-        subtopicParents[currentTopicCaps][currentStringAsKey],
-        currentSubtopicCaps,
-        currentTopicCaps,
-        currentStringAsKey
+        subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
+        currentSubtopic.caps,
+        currentTopic.caps,
+        currentStringAsTopic.caps
       ]);
     }
 
-    subtopicParents[currentTopicCaps][currentStringAsKey] = currentSubtopicCaps;
+    subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic.caps;
 
-    if (currentSubtopicCaps !== currentStringAsKey && currentTopicCaps !== currentStringAsKey) {
-      return new LocalReferenceToken(
-        topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
-        topicSubtopics[currentTopicCaps][currentStringAsKey].mixedCase,
-        topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
-        topicSubtopics[currentTopicCaps][currentSubtopicCaps].mixedCase,
-        linkText,
-        fullText.length
-      );
+    if (currentSubtopic.caps !== currentStringAsTopic.caps && currentTopic.caps !== currentStringAsTopic.caps) {
+      return [new LocalReferenceToken(
+        topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+        topicSubtopics[currentTopic.caps][currentStringAsTopic.caps].mixedCase,
+        topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+        topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+        linkText
+      ), fullText.length];
     } else {
       return null;
     }
@@ -63,21 +62,20 @@ function localReferenceMatcher(string, parsingContext) {
 }
 
 function globalReferenceMatcher(string, parsingContext) {
-  let { topicSubtopics, currentTopicCaps, currentSubtopicCaps } = parsingContext;
+  let { topicSubtopics, currentTopic, currentSubtopic } = parsingContext;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
-  let stringAsCapsKey = linkTarget.toUpperCase();
+  let stringAsTopic = new TopicName(linkTarget);
 
-  if (topicSubtopics.hasOwnProperty(stringAsCapsKey)) {
-    return new GlobalReferenceToken(
-      topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
-      topicSubtopics[stringAsCapsKey][stringAsCapsKey].mixedCase,
-      topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
-      topicSubtopics[currentTopicCaps][currentSubtopicCaps].mixedCase,
-      linkText,
-      fullText.length
-    );
+  if (topicSubtopics.hasOwnProperty(stringAsTopic.caps)) {
+    return [new GlobalReferenceToken(
+      topicSubtopics[stringAsTopic.caps][stringAsTopic.caps].mixedCase,
+      topicSubtopics[stringAsTopic.caps][stringAsTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+      linkText
+    ), fullText.length];
   } else {
     return null;
   }
@@ -86,44 +84,43 @@ function globalReferenceMatcher(string, parsingContext) {
 function importReferenceMatcher(string, parsingContext) {
   let {
     topicSubtopics,
-    currentTopicCaps,
-    currentSubtopicCaps,
+    currentTopic,
+    currentSubtopic,
     topicReferences,
     importReferencesToCheck
   } = parsingContext;
 
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
-  let { targetTopicCaps, targetSubtopicCaps } = determineTopicAndSubtopic(linkTarget, linkFragment);
+  let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
 
-
-  if (!targetTopicCaps) {
-    topicReferences.map(topicName => topicName.toUpperCase()).forEach(topicName => {
-      if ((topicSubtopics[topicName]||{}).hasOwnProperty(targetSubtopicCaps)) {
-        if (targetTopicCaps) {
-          console.error(`Error: Import reference ${fullText} in [${currentTopicCaps}, ${currentSubtopicCaps}] omits topic with multiple matching topic references.`)
+  if (!targetTopic) {
+    topicReferences.map(topicName => new TopicName(topicName).caps).forEach(topicName => {
+      if ((topicSubtopics[topicName]||{}).hasOwnProperty(targetSubtopic.caps)) {
+        if (targetTopic) {
+          console.error(`Error: Import reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] omits topic with multiple matching topic references.`)
           console.error(`Try using the explicit import reference syntax, eg [[Topic#Subtopic]]`);
-          process.exit();
+          // process.exit();
         }
-        targetTopicCaps = topicName;
+        targetTopic = new TopicName(topicName);
       }
     });
-    if (!targetTopicCaps) {
-      console.error(`Error: Reference ${fullText} in [${currentTopicCaps}, ${currentSubtopicCaps}] matches no global, local, or import reference.`)
-      process.exit();
+
+    if (!targetTopic) {
+      console.error(`Error: Reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] matches no global, local, or import reference.`)
+      // process.exit();
     }
   }
 
-  importReferencesToCheck.push([currentTopicCaps, currentSubtopicCaps, targetTopicCaps, targetSubtopicCaps]);
+  importReferencesToCheck.push([currentTopic.caps, currentSubtopic.caps, targetTopic.caps, targetSubtopic.caps]);
 
-  return new ImportReferenceToken(
-    topicSubtopics[targetTopicCaps][targetTopicCaps].mixedCase,
-    topicSubtopics[targetTopicCaps][targetSubtopicCaps].mixedCase,
-    topicSubtopics[currentTopicCaps][currentTopicCaps].mixedCase,
-    topicSubtopics[currentTopicCaps][currentSubtopicCaps].mixedCase,
-    linkText,
-    fullText.length
-  );
+  return [new ImportReferenceToken(
+    topicSubtopics[targetTopic.caps][targetTopic.caps].mixedCase,
+    topicSubtopics[targetTopic.caps][targetSubtopic.caps].mixedCase,
+    topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+    topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+    linkText
+  ), fullText.length];
 }
 
 function parseLink(string) {
@@ -139,99 +136,100 @@ function parseLink(string) {
 }
 
 function determineTopicAndSubtopic(linkTarget, linkFragment) {
-  let stringAsCapsKey = linkTarget.toUpperCase();
-
-  let targetTopicCaps, targetSubtopicCaps;
+  let targetTopic, targetSubtopic;
   if (linkFragment) {
-    targetTopicCaps = linkTarget.toUpperCase();
-    targetSubtopicCaps = linkFragment.toUpperCase();
+    targetTopic = new TopicName(linkTarget);
+    targetSubtopic = new TopicName(linkFragment);
   } else {
-    targetTopicCaps = null;
-    targetSubtopicCaps = linkTarget.toUpperCase();
+    targetTopic = null;
+    targetSubtopic = new TopicName(linkTarget);
   }
 
   return {
-    targetTopicCaps,
-    targetSubtopicCaps
+    targetTopic,
+    targetSubtopic
   }
 }
 
 function escapedCharacterMatcher(string) {
   let match = string.match(/^\\(.)/);
   if (match) {
-    return new TextToken(match[1], match[0].length);
+    return [new TextToken(match[1]), match[0].length];
   }
 }
 
-function markdownFootnoteMatcher(string) {
+function footnoteMatcher(string) {
   let match = string.match(/^\[\^([^\]]+)\]/);
   if (match) {
-    return new markdownFootnoteToken(
-      match[1],
+    return [
+      new FootnoteToken(match[1]),
       match[0].length
-    )
+    ]
   }
 }
 
-function markdownHyperlinkMatcher(string, parsingContext) {
+function hyperlinkMatcher(string, parsingContext) {
   let match = string.match(/^\[([^!\s\]]+)\](?:\(([^)]*)\))/);
 
   if (match) {
-    return new markdownUrlToken(
-      match[1],
-      match[2],
+    return [
+      new UrlToken(match[1], match[2]),
       match[0].length
-    )
+    ]
   }
 }
 
-function markdownUrlMatcher(string, parsingContext) {
+function urlMatcher(string, parsingContext) {
   let match = string.match(/^(\S+:\/\/\S+[^.\s])/);
   if (match) {
-    return new markdownUrlToken(
-      match[1],
-      match[1],
-      match[0].length
-    )
+    return [
+      new UrlToken(match[1]),
+      match[1].length
+    ]
   }
 }
 
-function markdownImageMatcher(string) {
+function imageMatcher(string) {
   let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
 
   if (match) {
-    return new markdownImageToken(
-      match[1],
-      match[2],
-      match[3],
-      null,
-      match[0].length
-    )
+    return [
+      new ImageToken(
+        match[1],
+        match[2],
+        match[3],
+        null
+      ), match[0].length
+    ]
   }
 }
 
-function markdownLinkedImageMatcher(string) {
+function linkedImageMatcher(string) {
   let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)/);
 
   if (match) {
-    return new markdownImageToken(
-      match[1],
-      match[2],
-      match[3],
-      match[4],
+    return [
+      new ImageToken(
+        match[1],
+        match[2],
+        match[3],
+        match[4]
+      ),
       match[0].length
-    )
+    ]
   }
 }
 
-function markdownHtmlMatcher(string) {
+function htmlMatcher(string) {
   let match = string.match(/^<([^>]+)>[\s\S]*<\/([^>]+)>/);
 
   if (match) {
-    return new markdownHtmlToken(
-      match[0],
+    return [
+      new HtmlToken(
+        match[0]
+      ),
       match[0].length
-    )
+    ]
   }
 }
 
