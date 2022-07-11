@@ -66,12 +66,12 @@ function globalReferenceMatcher(string, parsingContext) {
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
-  let stringAsKey = new TopicName(linkTarget);
+  let stringAsTopic = new TopicName(linkTarget);
 
-  if (topicSubtopics.hasOwnProperty(stringAsKey.caps)) {
+  if (topicSubtopics.hasOwnProperty(stringAsTopic.caps)) {
     return [new GlobalReferenceToken(
-      topicSubtopics[stringAsKey.caps][stringAsKey.caps].mixedCase,
-      topicSubtopics[stringAsKey.caps][stringAsKey.caps].mixedCase,
+      topicSubtopics[stringAsTopic.caps][stringAsTopic.caps].mixedCase,
+      topicSubtopics[stringAsTopic.caps][stringAsTopic.caps].mixedCase,
       topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
       topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
       linkText
