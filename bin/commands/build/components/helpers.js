@@ -154,7 +154,7 @@ function validateImportReferenceMatching(tokens, topic, subtopic) {
 
     if(!globalToken) {
       console.error(`Error: Import reference [${importReferenceToken.targetTopic}, ${importReferenceToken.targetSubtopic}] in [${topic}, ${subtopic}] lacks global reference to topic [${importReferenceToken.targetTopic}].`);
-      // process.exit();
+      process.exit();
     }
   });
 }

@@ -38,7 +38,7 @@ function ImportReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text,
+    text
   ) {
   this.text = text;
   this.type = 'import';
@@ -80,5 +80,5 @@ module.exports = {
   UrlToken,
   ImageToken,
   FootnoteToken,
-  HtmlToken,
+  HtmlToken
 }

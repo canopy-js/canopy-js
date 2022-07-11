@@ -389,7 +389,7 @@ class Link {
   static persistInSession(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
-    let linkData = link.present && JSON.stringify(link.metadata);
+    let linkData = link?.present && JSON.stringify(link.metadata);
     sessionStorage.setItem(location.pathname + location.hash, linkData || null);
   }
 
@@ -397,7 +397,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link.present && link.metadata || null,
+      link?.present && link.metadata || null,
       document.title,
       window.location.href
     );

@@ -19,7 +19,7 @@ test('it creates urls', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('urls with empty parens use url as link', () => {
+test('markdown urls with empty parens use url as link', () => {
   let text = 'This is a clause with [google.com]().'
 
   let result = parseText(
@@ -50,7 +50,7 @@ test("it doesn't treat square brackets specially", () => {
   expect(result[0].text).toEqual('These [brackets] do not imply a hyperlink.');
 });
 
-test('it creates automatic urls', () => {
+test('it creates markdown automatic urls', () => {
   let text = 'This is a clause with a link to http://google.com.';
 
   let result = parseText(
@@ -69,7 +69,7 @@ test('it creates automatic urls', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates images', () => {
+test('it creates markdown images', () => {
   let text = 'This is an ![image](example.com/image "Title").';
 
   let result = parseText(
@@ -89,7 +89,7 @@ test('it creates images', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates linked images', () => {
+test('it creates linked markdown images', () => {
   let text = 'This is an [![image](example.com/image "Title")](google.com).';
 
   let result = parseText(

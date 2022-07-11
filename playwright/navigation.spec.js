@@ -54,14 +54,14 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
   });
 
-  test('Pressing return on global opens link', async ({ page }) => {
+  test('Pressing return on global redirects to new page', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('United_States/New_York#Southern_border'); // Link selected on redirect
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page).toHaveURL('New_York#Southern_border'); // Link selected on redirect
+    await expect(page.locator('h1')).toHaveText('New York');
   });
 
   test('Pressing clicking on global opens link', async ({ page }) => {
