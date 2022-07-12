@@ -48,6 +48,12 @@ function deselectAllLinks() {
   });
 }
 
+function deselectSectionElement() {
+  Array.from(document.querySelectorAll('.canopy-selected-section')).forEach((sectionElement) => {
+    sectionElement.classList.remove('canopy-selected-section');
+  });
+}
+
 function hideSectionElement(sectionElement) {
   sectionElement.style.display = 'none';
 }
@@ -73,6 +79,7 @@ function tryPathPrefix(path, displayOptions) {
 const resetDom = () => {
   deselectAllLinks();
   hideAllSectionElements();
+  deselectSectionElement();
 }
 
 function pathForUrl(pathToDisplay, link) {
