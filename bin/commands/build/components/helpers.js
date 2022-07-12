@@ -1,6 +1,6 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
-let Paragraph = require('../shared/paragraph');
+let { Paragraph } = require('../../shared');
 
 function paragraphsOfFile(path) {
   let fileContents = fs.readFileSync(path, 'utf8');
@@ -187,45 +187,10 @@ function hasConnection(subtopic, topic, subtopicParents) {
   return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
 }
 
-const slugFor = (string) => {
-  if (!string) {return string}
-
-  return string.replace(/ /g, '_');
-}
-
 function validateJsonFileName(filename) {
   if (filename.includes(' ')) {
     console.error(`Filename may not contain spaces: ${filename}`);
     process.exit();
-  }
-}
-
-class TopicName {
-  // There are several permutations of the topic key:
-  // There is the "display" topic, this is the string precisely as it appears in the expl file
-  // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ ` and a trailing question mark.
-  // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
-  // Filenames at some point may be url encoded versions of the mixed case topic.
-  constructor(string) {
-    this.display = string;
-    this.mixedCase = removeStyleCharacters(string).replace(/\?$/, '');
-    this.slug = slugFor(this.mixedCase);
-    this.caps = this.mixedCase.toUpperCase();
-  }
-}
-
-/*
-This function removes style characters from a string, eg '*_a_* -> 'a'
-In order to remove multiple layers of wrapping, eg *_a_*, each call removes the outermost layer,
-  then, if there was a difference between the previous value and this one, we try once more.
-  If there was no difference, then we have run out of style tokens and can return.
-*/
-function removeStyleCharacters(string) {
-  let newString = string.replace(/([^_`*~A-Za-z]*)([_`*~])(.*?)\2(\W+|$)/, '$1$3$4');
-  if (newString !== string) {
-    return removeStyleCharacters(newString);
-  } else {
-    return string;
   }
 }
 
@@ -235,9 +200,8 @@ module.exports = {
   consolidateTextTokens,
   topicKeyOfFile,
   listExplFilesRecursive,
+  validateJsonFileName,
   validateImportReferenceMatching,
   validateImportReferenceTargets,
-  validateRedundantLocalReferences,
-  TopicName,
-  removeStyleCharacters
+  validateRedundantLocalReferences
 };

@@ -1,10 +1,6 @@
 let fs = require('fs-extra');
 let recursiveReadSync = require('recursive-readdir-sync');
 
-function keyFromString(fileText) {
-  return (fileText.match(/^(?!-)([^:.,;]+):/)||{})[1] || null;
-}
-
 function fileNameFor(string) {
   return string.replace(/ /g, '_').toLowerCase();
 }
@@ -72,7 +68,6 @@ function groupByPath(fileList) {
 }
 
 module.exports = {
-  keyFromString,
   fileNameFor,
   takeDirectoryPath,
   recursiveDirectoryFind,

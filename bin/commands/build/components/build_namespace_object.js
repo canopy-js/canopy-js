@@ -1,5 +1,6 @@
-let { paragraphsOfFile, TopicName } = require('./helpers');
-let Paragraph = require('../shared/paragraph');
+let { paragraphsOfFile } = require('./helpers');
+let { TopicName } = require('../../shared');
+let { Paragraph } = require('../../shared');
 
 function buildNamespaceObject(pathList) {
   let namespacesObject = {};
