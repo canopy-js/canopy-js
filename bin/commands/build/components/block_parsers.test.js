@@ -47,7 +47,7 @@ test('it parses a quote block', () => {
     ' > To be or not to be;',
     ' > that is the question.'
   ]
-  let result = quoteBlockFor(lines);
+  let result = quoteBlockFor(lines, {});
 
   expect(result.type).toEqual('quote');
   expect(result.tokensByLine[0][0].text).toEqual('To be or not to be;');

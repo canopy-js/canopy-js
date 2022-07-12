@@ -33,8 +33,8 @@ function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopi
       }
     );
 
-    tokenizedParagraphsByKey[currentSubtopic] = tokensOfParagraph;
-    // console.log(`Parsed [${topicOfFile}, ${paragraphData.key}]`)
+    tokenizedParagraphsByKey[currentSubtopic.mixedCase] = tokensOfParagraph;
+    // console.log(`Parsed [${currentTopic}, ${paragraphData.key}]`)
   });
 
   validateRedundantLocalReferences(subtopicParents, redundantLocalReferences);

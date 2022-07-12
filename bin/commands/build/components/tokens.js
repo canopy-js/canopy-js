@@ -1,7 +1,6 @@
-function TextToken(text, length) {
+function TextToken(text) {
   this.text = text;
   this.type = 'text';
-  this.length = length || text.length;
 }
 
 function LocalReferenceToken(
@@ -9,8 +8,7 @@ function LocalReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text,
-    length
+    text
   ) {
   this.text = text;
   this.type = 'local';
@@ -18,7 +16,6 @@ function LocalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.length = length;
 }
 
 function GlobalReferenceToken(
@@ -26,8 +23,7 @@ function GlobalReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text,
-    length
+    text
   ) {
   this.text = text;
   this.type = 'global';
@@ -35,7 +31,6 @@ function GlobalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.length = length;
 }
 
 function ImportReferenceToken(
@@ -43,8 +38,7 @@ function ImportReferenceToken(
     targetSubtopic,
     enclosingTopic,
     enclosingSubtopic,
-    text,
-    length,
+    text
   ) {
   this.text = text;
   this.type = 'import';
@@ -52,35 +46,30 @@ function ImportReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
-  this.length = length;
 }
 
-function markdownUrlToken(url, text, length) {
+function UrlToken(url, text) {
   this.type = 'url';
   this.text = text || url;
   this.url = url;
-  this.length = length;
 }
 
-function markdownImageToken(alt, resourceUrl, title, anchorUrl, length) {
+function ImageToken(alt, resourceUrl, title, anchorUrl) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title || null;
   this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
-  this.length = length;
 }
 
-function markdownFootnoteToken(superscript, length) {
+function FootnoteToken(superscript) {
   this.type = 'footnote';
   this.text = superscript;
-  this.length = length;
 }
 
-function markdownHtmlToken(html, length) {
+function HtmlToken(html) {
   this.type = 'html';
   this.html = html;
-  this.length = length;
 }
 
 module.exports = {
@@ -88,8 +77,8 @@ module.exports = {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  markdownUrlToken,
-  markdownImageToken,
-  markdownFootnoteToken,
-  markdownHtmlToken,
+  UrlToken,
+  ImageToken,
+  FootnoteToken,
+  HtmlToken
 }
