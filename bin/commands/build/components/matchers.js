@@ -25,7 +25,8 @@ const Matchers = [
   htmlMatcher,
 ]
 
-let { GlobalLinkNeedingAddingToNamespacesError, TopicName } = require('./helpers');
+let { GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
+let { TopicName } = require('../../shared');
 
 function localReferenceMatcher(string, parsingContext) {
   let { topicSubtopics, currentTopic, currentSubtopic, subtopicParents, redundantLocalReferences } = parsingContext;

@@ -50,10 +50,7 @@ class Link {
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
-      if (!link) {
-        console.error("Link selector callback didn't select link");
-        return;
-      }
+      if (!link) throw 'Link selector callback provided no link';
       this.element = link.element;
       return this.linkElement;
     }
@@ -71,7 +68,7 @@ class Link {
   transferDataset() {
     // This is just to make it easier to inspect and debug DOM elements
     // Getters are used instead of properties to allow lazy access for callback-specified links
-    if (!this.linkElement) throw 'Link element must be present';
+    if (!this.linkElement) return;
     this._targetTopic = this.linkElement.dataset.targetTopic;
     this._targetSubtopic = this.linkElement.dataset.targetSubtopic;
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
@@ -341,10 +338,6 @@ class Link {
     return this.isGlobal || this.isLocal || this.isImport;
   }
 
-  get present() {
-    return !!this.element;
-  }
-
   static select(linkToSelect) {
     linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
     Link.persistInHistory(linkToSelect);
@@ -388,7 +381,7 @@ class Link {
   static persistInSession(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
-    let linkData = link?.present && JSON.stringify(link.metadata);
+    let linkData = link && JSON.stringify(link.metadata);
     sessionStorage.setItem(location.pathname + location.hash, linkData || null);
   }
 
@@ -396,7 +389,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link?.present && link.metadata || null,
+      link && link.metadata || null,
       document.title,
       window.location.href
     );

@@ -1,6 +1,6 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
-let Paragraph = require('../shared/paragraph');
+let { Paragraph } = require('../../shared');
 
 function paragraphsOfFile(path) {
   let fileContents = fs.readFileSync(path, 'utf8');
@@ -16,7 +16,7 @@ function linesByBlockOf(string) {
     let lastBlock = blocks[blocks.length - 1];
 
     if (line.match(/^\s*#/)) {
-      if (lastBlock && lastBlock.type === 'code') {
+      if (lastBlock?.type === 'code') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -27,7 +27,7 @@ function linesByBlockOf(string) {
         );
       }
     } else if (line.match(/^\s*>/)) {
-      if (lastBlock && lastBlock.type === 'quote') {
+      if (lastBlock?.type === 'quote') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -37,8 +37,8 @@ function linesByBlockOf(string) {
           }
         );
       }
-    } else if (line.match(/^\s*(\S+\.|[+*-])\s+\S/)) {
-      if (lastBlock && lastBlock.type === 'list') {
+    } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])/)) {
+      if (lastBlock?.type === 'list') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -49,7 +49,7 @@ function linesByBlockOf(string) {
         );
       }
     } else if (line.match(/^\|([^|\n]*\|)+/)) {
-      if (lastBlock && lastBlock.type === 'table') {
+      if (lastBlock?.type === 'table') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -62,7 +62,7 @@ function linesByBlockOf(string) {
     } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
       footnoteLines.push(line);
     } else if (line.match(/\<.*\>/)) {
-      if (lastBlock && lastBlock.type === 'html') {
+      if (lastBlock?.type === 'html') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -73,7 +73,7 @@ function linesByBlockOf(string) {
         );
       }
     } else {
-      if (lastBlock && lastBlock.type === 'text') {
+      if (lastBlock?.type === 'text') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -187,45 +187,11 @@ function hasConnection(subtopic, topic, subtopicParents) {
   return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
 }
 
-const slugFor = (string) => {
-  if (!string) {return string}
-
-  return string.replace(/ /g, '_');
-}
-
 function validateJsonFileName(filename) {
-  if (filename.includes(' ')) {
-    console.error(`Filename may not contain spaces: ${filename}`);
+  let illegalCharacters = [' ', '/']
+  if (illegalCharacters.find(char => filename.includes(char))) {
+    console.error(`Illegal character "${char}" in filename: ${filename}`);
     process.exit();
-  }
-}
-
-class TopicName {
-  // There are several permutations of the topic key:
-  // There is the "display" topic, this is the string precisely as it appears in the expl file
-  // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ ` and a trailing question mark.
-  // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
-  // Filenames at some point may be url encoded versions of the mixed case topic.
-  constructor(string) {
-    this.display = string;
-    this.mixedCase = removeStyleCharacters(string).replace(/\?$/, '');
-    this.slug = slugFor(this.mixedCase);
-    this.caps = this.mixedCase.toUpperCase();
-  }
-}
-
-/*
-This function removes style characters from a string, eg '*_a_* -> 'a'
-In order to remove multiple layers of wrapping, eg *_a_*, each call removes the outermost layer,
-  then, if there was a difference between the previous value and this one, we try once more.
-  If there was no difference, then we have run out of style tokens and can return.
-*/
-function removeStyleCharacters(string) {
-  let newString = string.replace(/([^_`*~A-Za-z]*)([_`*~])(.*?)\2(\W+|$)/, '$1$3$4');
-  if (newString !== string) {
-    return removeStyleCharacters(newString);
-  } else {
-    return string;
   }
 }
 
@@ -235,12 +201,8 @@ module.exports = {
   consolidateTextTokens,
   topicKeyOfFile,
   listExplFilesRecursive,
+  validateJsonFileName,
   validateImportReferenceMatching,
   validateImportReferenceTargets,
-  validateRedundantLocalReferences,
-  validateJsonFileName,
-  TopicName,
-  removeStyleCharacters
+  validateRedundantLocalReferences
 };
-
-
