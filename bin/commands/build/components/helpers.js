@@ -16,7 +16,7 @@ function linesByBlockOf(string) {
     let lastBlock = blocks[blocks.length - 1];
 
     if (line.match(/^\s*#/)) {
-      if (lastBlock && lastBlock.type === 'code') {
+      if (lastBlock?.type === 'code') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -27,7 +27,7 @@ function linesByBlockOf(string) {
         );
       }
     } else if (line.match(/^\s*>/)) {
-      if (lastBlock && lastBlock.type === 'quote') {
+      if (lastBlock?.type === 'quote') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -38,7 +38,7 @@ function linesByBlockOf(string) {
         );
       }
     } else if (line.match(/^\s*(\S+\.|[+*-])\s+\S/)) {
-      if (lastBlock && lastBlock.type === 'list') {
+      if (lastBlock?.type === 'list') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -49,7 +49,7 @@ function linesByBlockOf(string) {
         );
       }
     } else if (line.match(/^\|([^|\n]*\|)+/)) {
-      if (lastBlock && lastBlock.type === 'table') {
+      if (lastBlock?.type === 'table') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -62,7 +62,7 @@ function linesByBlockOf(string) {
     } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
       footnoteLines.push(line);
     } else if (line.match(/\<.*\>/)) {
-      if (lastBlock && lastBlock.type === 'html') {
+      if (lastBlock?.type === 'html') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(
@@ -73,7 +73,7 @@ function linesByBlockOf(string) {
         );
       }
     } else {
-      if (lastBlock && lastBlock.type === 'text') {
+      if (lastBlock?.type === 'text') {
         lastBlock.lines.push(line);
       } else {
         blocks.push(

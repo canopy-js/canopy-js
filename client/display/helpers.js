@@ -21,16 +21,13 @@ function determineParagraphToDisplay(linkToSelect, paragraph, displayOptions) {
 }
 
 function displaySectionBelowLink(linkToSelect) {
-  return linkToSelect &&
-    (
-      linkToSelect.dataset.type === 'local' ||
-      redundantParentLinkInSameParagraphAsPrimary(linkToSelect)
-    );
+  return
+    linkToSelect?.dataset.type === 'local' ||
+    redundantParentLinkInSameParagraphAsPrimary(linkToSelect)
 }
 
 function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
-  return linkToSelect &&
-    linkToSelect.dataset.type === 'redundant-local' &&
+  return linkToSelect?.dataset.type === 'redundant-local' &&
     siblingOfLinkLike(linkToSelect, (linkElement) => {
       return linkElement.dataset &&
         linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic &&
