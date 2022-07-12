@@ -188,8 +188,9 @@ function hasConnection(subtopic, topic, subtopicParents) {
 }
 
 function validateJsonFileName(filename) {
-  if (filename.includes(' ')) {
-    console.error(`Filename may not contain spaces: ${filename}`);
+  let illegalCharacters = [' ', '/']
+  if (illegalCharacters.find(char => filename.includes(char))) {
+    console.error(`Illegal character "${char}" in filename: ${filename}`);
     process.exit();
   }
 }
