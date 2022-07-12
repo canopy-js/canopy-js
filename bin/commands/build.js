@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const child_process = require('child_process');
+const buildProject = require('./build/build_project');
 
 function build({ symlinks, projectPathPrefix, hashUrls }) {
 	if (!fs.existsSync('./topics')) console.error('There must be a topics directory present, try running "canopy init"') || process.exit();
@@ -28,8 +29,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 		</body>
 		</html>`;
 
-	let result = child_process.execSync(`node ${canopyLocation}/dist/parser.js . ${symlinks ? '--for-static-assets' : '' }`).toString();
-	if (result) console.log(result);
+	buildProject('.', symlinks);
 
 	fs.writeFileSync('build/index.html', html);
 

@@ -1,8 +1,8 @@
-import { TextToken } from './tokens';
-jest.mock('./parse_sentence', () => ({
-  __esModule: true,
-  default: jest.fn((clauseString) => [{ type: 'text', text: clauseString }])
-}));
+let { TextToken } = require('./tokens');
+// jest.mock('./parse_text', () => ({
+//   __esModule: true,
+//   default: jest.fn((clauseString) => [{ type: 'text', text: clauseString }])
+// }));
 
 import {
   textBlockFor,
@@ -105,7 +105,7 @@ test('it parses a table block', () => {
   let lines = [
     '| Header | Second column |',
     '| ====== | ============= |',
-    '| data\\| | data2 |',
+    '| data \\| | data2 |',
   ];
   let result = tableBlockFor(lines, {});
 
@@ -113,7 +113,8 @@ test('it parses a table block', () => {
 
   expect(result.tokensByCellByRow[0][0][0].text).toEqual(' Header ');
   expect(result.tokensByCellByRow[0][1][0].text).toEqual(' Second column ');
-  expect(result.tokensByCellByRow[1][0][0].text).toEqual(' data\\| ');
+  expect(result.tokensByCellByRow[1][0][0].text).toEqual(' data ');
+  expect(result.tokensByCellByRow[1][0][1].text).toEqual('|');
   expect(result.tokensByCellByRow[1][1][0].text).toEqual(' data2 ');
 });
 

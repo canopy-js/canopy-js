@@ -91,5 +91,6 @@ export {
   setHeader,
   displaySectionBelowLink,
   resetDom,
-  tryPathPrefix
+  tryPathPrefix,
+  pathForUrl
 };

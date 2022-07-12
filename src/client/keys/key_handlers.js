@@ -24,25 +24,20 @@ function moveDownward() {
   let oldLink = Link.selection;
 
   if (oldLink.isParent) {
-    let newLink = oldLink.targetParagraph.firstLink;
 
-    if (!newLink){
-      return;
-    }
-
-    if (newLink.isLocal) {
+    if (oldLink.isImport) {
       return updateView(
-        newLink.pathWhenSelected,
-        newLink
+        oldLink.pathToDisplay,
+        oldLink.targetParagraph.parentLink
       );
     }
 
-    if (newLink.isGlobal && newLink.targetParagraph.hasLinks) {
-      return updateView(
-        Path.current.addSegment(newLink.targetTopic, newLink.targetTopic),
-        Link.selection.targetParagraph.firstLink
-      );
-    }
+    let newLink = oldLink.targetParagraph.firstLink || oldLink.targetParagraph.parentLink;
+
+    return updateView(
+      newLink.pathToDisplay,
+      newLink
+    );
   }
 }
 
@@ -68,7 +63,7 @@ function moveDownOrRedirect(newTab, altKey) {
     return moveDownward();
   }
 
-  if (Link.selection.isGlobal) {
+  if (Link.selection.isGlobalOrImport) {
     let path;
     let link;
 
@@ -133,7 +128,7 @@ function depthFirstSearch(dfsDirectionInteger) {
     );
   }
 
-  if (link.isGlobal) {
+  if (link.isGlobalOrImport) {
     let linkToSelect = link.parentLink.nextSibling || link.grandParentLink;
     return updateView(
       linkToSelect.enclosingParagraph.path,

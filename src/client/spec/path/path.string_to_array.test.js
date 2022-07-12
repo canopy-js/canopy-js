@@ -1,4 +1,8 @@
 import Path from 'models/path';
+jest.mock('../../helpers/getters', () => ({
+  __esModule: true,
+  canopyContainer: []
+}));
 
 test('just topic', () => {
   const pathString = '/Topic';

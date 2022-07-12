@@ -1,26 +1,23 @@
-import fs from 'fs';
-import listExplFilesRecursive from 'helpers/list_expl_files_recursive.js';
-import buildProvisionalNamespaceObject from 'components/build_provisional_namespace_object.js';
-import buildFinalNamespaceObject from 'components/build_final_namespace_object.js';
-import jsonForExplFile from 'components/json_for_expl_file.js';
-import topicKeyOfFile from 'helpers/topic_key_of_file';
-import { slugFor } from 'helpers/identifiers';
-import rimraf from 'rimraf';
-import { removeMarkdownTokens } from 'helpers/identifiers';
+let fs = require('fs');
+let buildProvisionalNamespaceObject = require('./build_provisional_namespace_object.js');
+let jsonForExplFile = require('./json_for_expl_file.js');
+let { slugFor, topicKeyOfFile, listExplFilesRecursive, removeMarkdownTokens, validateImportReferenceTargets } = require('./helpers');
+let rimraf = require('rimraf');
 
-function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
+function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let explFilePaths = listExplFilesRecursive(sourceDirectory);
   let namespaceObject = buildProvisionalNamespaceObject(explFilePaths);
+  let importReferencesToCheck = [];
+  let subtopicParents = {};
 
   rimraf.sync(destinationDataDirectory);
   fs.mkdirSync(destinationDataDirectory);
 
   explFilePaths.forEach(function(path) {
-    if (!topicKeyOfFile(path)) return; // For note files
+    if (!topicKeyOfFile(path)) return;
 
-    let finalNamespaceObject = buildFinalNamespaceObject(explFilePaths, namespaceObject);
-    let json = jsonForExplFile(path, finalNamespaceObject);
+    let json = jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents);
     let explFileNameWithoutExtension = path.match(/\/([\w-]+)\.\w+$/)[1];
 
     if (explFileNameWithoutExtension.includes(' ')) {
@@ -48,6 +45,8 @@ function jsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, mak
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });
+
+  validateImportReferenceTargets(importReferencesToCheck, subtopicParents);
 }
 
-export default jsonForProjectDirectory;
+module.exports = generateJsonForProjectDirectory;

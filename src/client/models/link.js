@@ -119,18 +119,20 @@ class Link {
   get targetParagraph() {
     if (!this.isParent) return null;
 
-    let childNodes = Array.from(this.enclosingParagraph.sectionElement.childNodes);
+    let pathDepth = this.enclosingParagraph.pathDepth;
+    if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
-    let paragraphElement = childNodes.find((childElement) =>
-        childElement.tagName === 'SECTION' &&
-        childElement.dataset.topicName === this.targetTopic &&
-        childElement.dataset.subtopicName === this.targetSubtopic);
+    let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
+        `section[data-topic-name="${this.targetTopic}"]` +
+        `[data-subtopic-name="${this.targetSubtopic}"]` +
+        `[data-path-depth="${pathDepth}"`
+      );
 
-    if (!paragraphElement) {
-      throw `Did not find paragraph child element matching link ${this.targetTopic}/${this.targetSubtopic}`;
+    if (!sectionElement) {
+      throw `Did not find paragraph child element matching link [${this.targetTopic}, ${this.targetSubtopic}]`;
     }
 
-    return new Paragraph(paragraphElement);
+    return new Paragraph(sectionElement);
   }
 
   atNewPath(newPath) { // get matching link at new path
@@ -146,7 +148,7 @@ class Link {
   }
 
   get localPathWhenSelected() {
-    if (this.isGlobal) {
+    if (this.isGlobalOrImport) {
       return new Path(this.pathWhenSelected.pathArray.slice(-2));
     } else {
       return this.pathWhenSelected.lastSegment;
@@ -184,7 +186,7 @@ class Link {
   }
 
   get targetPath() {
-    if (this.isGlobal) {
+    if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
@@ -198,7 +200,7 @@ class Link {
   }
 
   get pathWhenSelected() {
-    if (this.isGlobal) {
+    if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
@@ -309,12 +311,20 @@ class Link {
     return this.type === 'global';
   }
 
+  get isImport() {
+    return this.type === 'import';
+  }
+
+  get isGlobalOrImport() {
+    return this.type === 'global' || this.type === 'import';
+  }
+
   get isLocal() {
     return this.type === 'local';
   }
 
   get isParent() {
-    return this.isGlobal || this.isLocal;
+    return this.isGlobal || this.isLocal || this.isImport;
   }
 
   get present() {
@@ -390,15 +400,6 @@ class Link {
       let paragraph = path.paragraph;
       return paragraph.parentLink || paragraph.firstLink;
     });
-  }
-
-  static hasTarget(topic, subtopic) {
-    if (!topic) throw "No topic provided";
-
-    return (link) => {
-      return link.targetTopic === topic &&
-        link.targetSubtopic === (subtopic || topic);
-    }
   }
 
   static current() {
