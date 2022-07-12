@@ -37,7 +37,7 @@ function linesByBlockOf(string) {
           }
         );
       }
-    } else if (line.match(/^\s*(\S+\.|[+*-])\s+\S/)) {
+    } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])\s+\S+/)) {
       if (lastBlock?.type === 'list') {
         lastBlock.lines.push(line);
       } else {
