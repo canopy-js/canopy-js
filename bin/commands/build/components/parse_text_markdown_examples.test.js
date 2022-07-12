@@ -1,4 +1,4 @@
-import parseSentence from './parse_sentence';
+let parseText = require('./parse_text');
 
 test('it creates markdown urls', () => {
   let parsingContext = {
@@ -6,10 +6,10 @@ test('it creates markdown urls', () => {
     currentSubtopic: 'The state capital'
   }
 
-  let clauseWithPunctuation = 'This is a clause with [google.com](a markdown link).'
+  let text = 'This is a clause with [google.com](a markdown link).'
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -30,10 +30,10 @@ test('markdown urls with empty parens use url as link', () => {
     currentSubtopic: 'The state capital'
   }
 
-  let clauseWithPunctuation = 'This is a clause with [google.com]().'
+  let text = 'This is a clause with [google.com]().'
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -49,14 +49,12 @@ test('markdown urls with empty parens use url as link', () => {
 });
 
 test("it doesn't treat square brackets specially", () => {
-  let parsingContext = {
-    markdownOnly: true
-  }
+  let parsingContext = {};
 
-  let clauseWithPunctuation = 'These [brackets] do not imply a hyperlink.';
+  let text = 'These [brackets] do not imply a hyperlink.';
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -70,10 +68,10 @@ test('it creates markdown automatic urls', () => {
     currentSubtopic: 'The state capital'
   }
 
-  let clauseWithPunctuation = 'This is a clause with a link to http://google.com.';
+  let text = 'This is a clause with a link to http://google.com.';
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -89,14 +87,12 @@ test('it creates markdown automatic urls', () => {
 });
 
 test('it creates markdown images', () => {
-  let parsingContext = {
-    markdownOnly: true
-  }
+  let parsingContext = {}
 
-  let clauseWithPunctuation = 'This is an ![image](example.com/image "Title").';
+  let text = 'This is an ![image](example.com/image "Title").';
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -113,14 +109,11 @@ test('it creates markdown images', () => {
 });
 
 test('it creates linked markdown images', () => {
-  let parsingContext = {
-    markdownOnly: true
-  }
+  let parsingContext = {}
+  let text = 'This is an [![image](example.com/image "Title")](google.com).';
 
-  let clauseWithPunctuation = 'This is an [![image](example.com/image "Title")](google.com).';
-
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 
@@ -137,14 +130,12 @@ test('it creates linked markdown images', () => {
 });
 
 test('it parses raw html', () => {
-  let parsingContext = {
-    markdownOnly: true
-  }
+  let parsingContext = {};
 
-  let clauseWithPunctuation = 'This is <b> raw html </b>.';
+  let text = 'This is <b> raw html </b>.';
 
-  let result = parseSentence(
-    clauseWithPunctuation,
+  let result = parseText(
+    text,
     parsingContext
   )
 

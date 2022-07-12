@@ -1,13 +1,13 @@
-import linesByBlockOf from 'helpers/lines_by_block_of';
-import { textToken } from 'components/tokens';
-import {
+let { linesByBlockOf } = require('./helpers');
+let { textToken } = require('./tokens');
+let {
   textBlockFor,
   codeBlockFor,
   quoteBlockFor,
   listBlockFor,
   tableBlockFor,
   footnoteBlockFor
-} from 'components/block_parsers';
+} = require('./block_parsers');
 
 function parseParagraph(textWithoutKey, parsingContext) {
   let linesContainerObjects = linesByBlockOf(textWithoutKey);
@@ -31,4 +31,4 @@ function parseParagraph(textWithoutKey, parsingContext) {
   return blockObjects;
 }
 
-export default parseParagraph;
+module.exports = parseParagraph;

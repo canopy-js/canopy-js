@@ -7,7 +7,8 @@ import {
   setHeader,
   addSelectedLinkClass,
   tryPathPrefix,
-  resetDom
+  resetDom,
+  pathForUrl
 } from 'display/helpers';
 
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
@@ -20,7 +21,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
 
   resetDom();
 
-  if (!displayOptions.pathAlreadySet) Path.setPath(pathToDisplay);
+  if (!displayOptions.pathAlreadySet) Path.setPath(pathForUrl(pathToDisplay, linkToSelect));
   setHeader(Paragraph.pageRoot.displayTopicName);
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect

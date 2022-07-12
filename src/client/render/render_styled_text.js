@@ -1,7 +1,7 @@
 function renderStyledText(text) {
   let buffer = '';
   let escaped = false;
-  let styles = {
+  let isStyleActivated = {
     B: false,
     I: false,
     S: false,
@@ -24,8 +24,8 @@ function renderStyledText(text) {
       let styleElementHead;
       let styleElementTail;
 
-      Object.keys(styles).forEach(function(styleKey) {
-        if (styles[styleKey]) {
+      Object.keys(isStyleActivated).forEach(function(styleKey) {
+        if (isStyleActivated[styleKey]) {
           let element = document.createElement(styleKey);
           styleElementTail && styleElementTail.appendChild(element);
           styleElementHead = styleElementHead || element;
@@ -39,7 +39,7 @@ function renderStyledText(text) {
       } else {
         elements.push(textNode);
       }
-      styles[stylesByText[text[i]]] = !styles[stylesByText[text[i]].toUpperCase()];
+      isStyleActivated[stylesByText[text[i]]] = !isStyleActivated[stylesByText[text[i]].toUpperCase()];
     } else if (!escaped && text[i] === '\\') {
       escaped = true;
     } else {

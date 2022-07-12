@@ -1,4 +1,8 @@
 import Path from 'models/path';
+jest.mock('../../helpers/getters', () => ({
+  __esModule: true,
+  canopyContainer: []
+}));
 
 test('Topic and subtopic', () => {
   const pathArray = [['Topic', 'Subtopic']];

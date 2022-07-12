@@ -8,7 +8,7 @@ function serve(options) {
 
   let validBuild = ['build', 'build/index.html', 'build/_data', 'build/canopy.js'].map(s => fs.existsSync(s)).every(Boolean);
   if (!validBuild) {
-    console.error(`Build directory is invalid, try running \`canopy build\``);
+    console.error(`Error: Build directory is invalid, try running \`canopy build\``);
     process.exit();
   }
 
