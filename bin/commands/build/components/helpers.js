@@ -206,14 +206,6 @@ function hasConnection(subtopic, topic, subtopicParents) {
   return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
 }
 
-function removeLengthKeys(tokens) {
-  tokens.forEach(token => {
-    if (token.hasOwnProperty('length')) {
-      delete token.length;
-    }
-  });
-}
-
 function removeMarkdownTokens(string) {
   if (!string) return string;
   return string.
@@ -233,6 +225,5 @@ module.exports = {
   validateImportReferenceMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences,
-  removeLengthKeys,
   removeMarkdownTokens
 };
