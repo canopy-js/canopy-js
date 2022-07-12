@@ -4,10 +4,10 @@ let jsonForExplFile = require('./json_for_expl_file.js');
 let {
   topicKeyOfFile,
   listExplFilesRecursive,
-  validateImportReferenceTargets,
-  validateJsonFileName,
-  TopicName
+  validateImportReferenceTargets
 } = require('./helpers');
+
+let { TopicName } = require('../../shared');
 
 function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -24,7 +24,8 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
 
     let json = jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
-    validateJsonFileName(explFileNameWithoutExtension);
+    let topicName = new TopicName(explFileNameWithoutExtension);
+    let fileName = topicName.fileName;
 
     let destinationPath = `${destinationDataDirectory}/${explFileNameWithoutExtension}.json`;
 

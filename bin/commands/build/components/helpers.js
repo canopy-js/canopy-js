@@ -145,7 +145,7 @@ function topicKeyOfFile(path) {
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
-function validateImportReferenceMatching(tokens, topic, subtopic) {
+function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
   tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
     let globalToken = tokens.find(
       token => token.targetTopic === importReferenceToken.targetTopic &&
@@ -187,22 +187,13 @@ function hasConnection(subtopic, topic, subtopicParents) {
   return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
 }
 
-function validateJsonFileName(filename) {
-  let illegalCharacters = [' ', '/']
-  if (illegalCharacters.find(char => filename.includes(char))) {
-    console.error(`Illegal character "${char}" in filename: ${filename}`);
-    process.exit();
-  }
-}
-
 module.exports = {
   paragraphsOfFile,
   linesByBlockOf,
   consolidateTextTokens,
   topicKeyOfFile,
   listExplFilesRecursive,
-  validateJsonFileName,
-  validateImportReferenceMatching,
+  validateImportReferenceGlobalMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences
 };

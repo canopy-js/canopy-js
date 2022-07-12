@@ -3,11 +3,13 @@ import { canopyContainer, defaultTopic, projectPathPrefix } from 'helpers/getter
 import updateView from 'display/update_view';
 import REQUEST_CACHE from 'requests/request_cache';
 import Path from 'models/path';
+import TopicName from 'requests/topic_name';
 
-const requestJson = (topicName) => {
+const requestJson = (topicNameString) => {
   if (REQUEST_CACHE[topicName]) return Promise.resolve(REQUEST_CACHE[topicName]);
 
-  let dataPath = projectPathPrefix + '/_data/' + slugFor(topicName) + '.json';
+  let topicName = new TopicName(topicNameString);
+  let dataPath = projectPathPrefix + '/_data/' + topicName.fileName + '.json';
 
   return fetch(dataPath).
     then(res => {

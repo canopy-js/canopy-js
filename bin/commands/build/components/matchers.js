@@ -101,7 +101,7 @@ function importReferenceMatcher(string, parsingContext) {
         if (targetTopic) {
           console.error(`Error: Import reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] omits topic with multiple matching topic references.`)
           console.error(`Try using the explicit import reference syntax, eg [[Topic#Subtopic]]`);
-          // process.exit();
+          process.exit();
         }
         targetTopic = new TopicName(topicName);
       }
@@ -109,7 +109,7 @@ function importReferenceMatcher(string, parsingContext) {
 
     if (!targetTopic) {
       console.error(`Error: Reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] matches no global, local, or import reference.`)
-      // process.exit();
+      process.exit();
     }
   }
 

@@ -22,8 +22,12 @@ function reconstructProjectFiles(dataFile, originalFileList) {
       if (key) {
         let topicName = new TopicName(key);
         directoryPath = `topics/${path.replace(/ /g,'_')}`;
-        fullPath = `${directoryPath}/${topicName.slug}.expl`;
+        fullPath = `${directoryPath}/${topicName.fileName}.expl`;
         directoriesToEnsure.push(directoryPath);
+        if (filesToWrite.hasOwnProperty(fullPath)) {
+          console.error(`Bulk file writes two file in two places: ${fullPath}`)
+          process.exit();
+        }
         filesToWrite[fullPath] = fileContents.trim();
       } else {
         if (fileContents.trim()) {
