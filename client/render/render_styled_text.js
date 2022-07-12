@@ -22,8 +22,8 @@ function renderStyledText(text) {
     if (!escaped && styleStack[0] !== '`' && openMatch) { // we ignore further characters within ` blocks
       let [_, pretext, styleCharacter] = openMatch;
 
-      if (buffer) {
-        let textNode = document.createTextNode(buffer);
+      if (buffer || pretext) {
+        let textNode = document.createTextNode(buffer + pretext);
         buffer = '';
         if (styleParent) {
           styleParent.appendChild(textNode);
