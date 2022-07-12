@@ -3,13 +3,13 @@ let {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  markdownItalicMarkerToken,
-  markdownBoldMarkerToken,
-  markdownCodeMarkerToken,
-  markdownUrlToken,
-  markdownImageToken,
-  markdownFootnoteToken,
-  markdownHtmlToken
+  ItalicMarkerToken,
+  BoldMarkerToken,
+  CodeMarkerToken,
+  UrlToken,
+  ImageToken,
+  FootnoteToken,
+  HtmlToken
 } = require('./tokens');
 
 const Matchers = [
@@ -17,12 +17,12 @@ const Matchers = [
   globalReferenceMatcher,
   importReferenceMatcher,
   escapedCharacterMatcher,
-  markdownFootnoteMatcher,
-  markdownImageMatcher,
-  markdownHyperlinkMatcher,
-  markdownUrlMatcher,
-  markdownLinkedImageMatcher,
-  markdownHtmlMatcher,
+  footnoteMatcher,
+  imageMatcher,
+  hyperlinkMatcher,
+  urlMatcher,
+  linkedImageMatcher,
+  htmlMatcher,
 ]
 
 let { removeMarkdownTokens, capitalize, GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
@@ -163,75 +163,78 @@ function escapedCharacterMatcher(string) {
   }
 }
 
-function markdownFootnoteMatcher(string) {
+function footnoteMatcher(string) {
   let match = string.match(/^\[\^([^\]]+)\]/);
   if (match) {
-    return new markdownFootnoteToken(
-      match[1],
+    return [
+      new FootnoteToken(match[1]),
       match[0].length
-    )
+    ];
   }
 }
 
-function markdownHyperlinkMatcher(string, parsingContext) {
+function hyperlinkMatcher(string, parsingContext) {
   let match = string.match(/^\[([^!\s\]]+)\](?:\(([^)]*)\))/);
 
   if (match) {
-    return new markdownUrlToken(
-      match[1],
-      match[2],
+    return [
+      new UrlToken(match[1], match[2]),
       match[0].length
-    )
+    ];
   }
 }
 
-function markdownUrlMatcher(string, parsingContext) {
+function urlMatcher(string, parsingContext) {
   let match = string.match(/^(\S+:\/\/\S+[^.\s])/);
   if (match) {
-    return new markdownUrlToken(
-      match[1],
-      match[1],
-      match[0].length
-    )
+    return [
+      new UrlToken(match[1]),
+      match[1].length
+    ];
   }
 }
 
-function markdownImageMatcher(string) {
+function imageMatcher(string) {
   let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
 
   if (match) {
-    return new markdownImageToken(
-      match[1],
-      match[2],
-      match[3],
-      null,
-      match[0].length
-    )
+    return [
+      new ImageToken(
+        match[1],
+        match[2],
+        match[3],
+        null
+      ), match[0].length
+    ]
   }
 }
 
-function markdownLinkedImageMatcher(string) {
+function linkedImageMatcher(string) {
   let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)/);
 
   if (match) {
-    return new markdownImageToken(
-      match[1],
-      match[2],
-      match[3],
-      match[4],
+    return [
+      new ImageToken(
+        match[1],
+        match[2],
+        match[3],
+        match[4]
+      ),
       match[0].length
-    )
+    ];
   }
 }
 
-function markdownHtmlMatcher(string) {
+function htmlMatcher(string) {
   let match = string.match(/^<([^>]+)>[\s\S]*<\/([^>]+)>/);
 
   if (match) {
-    return new markdownHtmlToken(
-      match[0],
+    return [
+      new HtmlToken(
+        match[0]
+      ),
       match[0].length
-    )
+    ];
   }
 }
 

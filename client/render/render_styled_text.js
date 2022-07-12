@@ -1,12 +1,8 @@
 function renderStyledText(text) {
   let buffer = '';
   let escaped = false;
-  let isStyleActivated = {
-    B: false,
-    I: false,
-    S: false,
-    CODE: false
-  };
+
+  let styleStack = [];
 
   let stylesByText = {
     '_': 'I',
@@ -16,30 +12,46 @@ function renderStyledText(text) {
   }
 
   let elements = [];
+  let styleParent;
 
   for (let i = 0; i < text.length; i++) {
-    if (!escaped && ['_', '*', '~', '`'].includes(text[i])) {
-      let textNode = document.createTextNode(buffer);
-      buffer = '';
-      let styleElementHead;
-      let styleElementTail;
+    let openMatch = text.slice(i).match(/^([^_`*~A-Za-z]*)([_`*~]).*\2(?:\W+|$)/); // eg (_abc_)
+    let closeMatch = text.slice(i).match(/^([_`*~])(?:[^_`*~A-Za-z]+|$)/); // eg _)
+    let closeStyle = closeMatch && styleStack.slice(-1)[0] === closeMatch[1];
 
-      Object.keys(isStyleActivated).forEach(function(styleKey) {
-        if (isStyleActivated[styleKey]) {
-          let element = document.createElement(styleKey);
-          styleElementTail && styleElementTail.appendChild(element);
-          styleElementHead = styleElementHead || element;
-          styleElementTail = element;
+    if (!escaped && styleStack[0] !== '`' && openMatch) { // we ignore further characters within ` blocks
+      let [_, pretext, styleCharacter] = openMatch;
+
+      if (buffer) {
+        let textNode = document.createTextNode(buffer);
+        buffer = '';
+        if (styleParent) {
+          styleParent.appendChild(textNode);
+        } else {
+          elements.push(textNode);
         }
-      });
-
-      if (styleElementTail) {
-        styleElementTail.appendChild(textNode);
-        elements.push(styleElementHead);
-      } else {
-        elements.push(textNode);
       }
-      isStyleActivated[stylesByText[text[i]]] = !isStyleActivated[stylesByText[text[i]].toUpperCase()];
+
+      let styleElement = document.createElement(stylesByText[styleCharacter]);
+      if (styleParent) {
+        styleParent.appendChild(styleElement);
+      } else {
+        elements.push(styleElement);
+      }
+      styleParent = styleElement;
+      styleStack.push(styleCharacter);
+    } else if (closeStyle) {
+      if (buffer) {
+        let textNode = document.createTextNode(buffer);
+        buffer = '';
+        if (styleParent) {
+          styleParent.appendChild(textNode);
+        } else {
+          elements.push(textNode);
+        }
+      }
+      styleParent = styleParent.parentNode || null;
+      styleStack.pop();
     } else if (!escaped && text[i] === '\\') {
       escaped = true;
     } else {
