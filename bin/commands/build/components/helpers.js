@@ -145,7 +145,7 @@ function topicKeyOfFile(path) {
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
-function validateImportReferenceMatching(tokens, topic, subtopic) {
+function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
   tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
     let globalToken = tokens.find(
       token => token.targetTopic === importReferenceToken.targetTopic &&
@@ -202,7 +202,7 @@ module.exports = {
   topicKeyOfFile,
   listExplFilesRecursive,
   validateJsonFileName,
-  validateImportReferenceMatching,
+  validateImportReferenceGlobalMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences
 };
