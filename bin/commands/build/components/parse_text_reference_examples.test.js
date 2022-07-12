@@ -1,5 +1,5 @@
 let parseText = require('./parse_text');
-let { TopicName } = require('./helpers')
+let { TopicName } = require('../../shared');
 
 test('it creates text tokens', () => {
   let parsingContext = {

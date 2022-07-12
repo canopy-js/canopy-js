@@ -1,4 +1,4 @@
-let { removeStyleCharacters } = require('./helpers');
+let { removeStyleCharacters } = require('../../shared');
 
 test('it handles style characters at the front of the string', () => {
   let text = '*a*'

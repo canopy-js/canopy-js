@@ -3,9 +3,9 @@ let parseParagraph = require('./parse_paragraph');
 let {
   paragraphsOfFile,
   validateRedundantLocalReferences,
-  TopicName
 } = require('./helpers');
-let Paragraph = require('../shared/paragraph');
+let { TopicName } = require('../../shared');
+let { Paragraph } = require('../../shared');
 
 function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents) {
   let paragraphsWithKeys = paragraphsOfFile(path);

@@ -1,5 +1,6 @@
 let fs = require('fs-extra');
 let { keyFromString } = require('./helpers');
+let { TopicName, Paragraph } = require('../shared');
 
 function reconstructProjectFiles(dataFile, originalFileList) {
   let pathHandled = {};
@@ -14,13 +15,14 @@ function reconstructProjectFiles(dataFile, originalFileList) {
     let filesToWrite = {};
 
     fileTexts.forEach(fileContents => {
-      let key = keyFromString(fileContents) || '';
+      let paragraph = new Paragraph(fileContents);
+      let key = paragraph.key || '';
       let directoryPath, fullPath;
 
       if (key) {
-        let keySlug = key.replace(/ /g,'_');
+        let topicName = new TopicName(key);
         directoryPath = `topics/${path.replace(/ /g,'_')}`;
-        fullPath = `${directoryPath}/${keySlug}.expl`;
+        fullPath = `${directoryPath}/${topicName.slug}.expl`;
         directoriesToEnsure.push(directoryPath);
         filesToWrite[fullPath] = fileContents.trim();
       } else {
