@@ -14,7 +14,7 @@ import {
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
-  if (linkToSelect?.present && linkToSelect.contradicts(pathToDisplay)) {
+  if (linkToSelect && linkToSelect.contradicts(pathToDisplay)) {
     return updateView(linkToSelect.pathToDisplay, linkToSelect, displayOptions);
   }
 
