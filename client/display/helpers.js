@@ -80,7 +80,7 @@ const resetDom = () => {
 
 function pathForUrl(pathToDisplay, link) {
   // Import references display the path to the target paragraph, but the URL should be the link's enclosing paragraph
-  if (link?.present && link.type === 'import') {
+  if (link && link.type === 'import') {
     return link.enclosingParagraph.path;
   } else {
     return pathToDisplay; // otherwise the path of the displayed paragraph should be the path used in the URL

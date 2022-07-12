@@ -15,12 +15,22 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
       linkToSelect,
       displayOptions
     );
-  }).catch((error) => console.error(error));
+  }).catch(handleError(pathToDisplay, displayOptions));
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {
-  if (!(pathToDisplay instanceof Path)) throw "Invalid path argument";
-  if (linkToSelect && !(linkToSelect instanceof Link)) throw "Invalid link selection argument";
+  if (!(pathToDisplay instanceof Path)) throw 'Invalid path argument';
+  if (linkToSelect && !(linkToSelect instanceof Link)) throw 'Invalid link selection argument';
+}
+
+function handleError(pathToDisplay, displayOptions) {
+  return (e) => {
+    if (e === 'Link selector callback provided no link') {
+      displayPath(pathToDisplay, displayOptions);
+    } else {
+      console.error(e);
+    }
+  }
 }
 
 export default updateView;
