@@ -1,4 +1,3 @@
-import { htmlIdFor } from 'helpers/identifiers';
 import displayPath from 'display/display_path';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import BlockRenderers from 'render/block_renderers';
@@ -118,13 +117,12 @@ function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopicName) {
     linkElement.dataset.targetTopic === openGlobalLinkTargetTopic &&
     linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic;
 
-  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopicName === 
+  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopicName ===
     subtopicOfPathContainingOpenGlobalReference;
 
   return openGlobalLinkExists &&
     thisGlobalLinkIsPointingToTheRightThingToBeOpen &&
     thisGlobalLinkIsInCorrectSubtopicToBeOpen;
-    
 }
 
 export default renderDomTree;
