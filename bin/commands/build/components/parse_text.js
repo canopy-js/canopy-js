@@ -9,24 +9,26 @@ function parseText(text, parsingContext) {
   let characters = text.split('');
   let tokens = [];
   let buffer = '';
+
   for (let i = 0; i < characters.length; i++) {
     let string = characters.slice(i).join('');
+    let result;
     for (let j = 0; j < Matchers.length; j++) {
-      let result = Matchers[j](string, parsingContext);
+      result = Matchers[j](string, parsingContext);
       if (result) {
         let [token, length] = result;
-        tokens.push(new TextToken(buffer));
+        if (buffer) tokens.push(new TextToken(buffer));
         buffer = '';
         tokens.push(token);
-        i += length;
+        i += length - 1; // after loop finishes it will increment to the next unprocessed character
         break;
       }
     }
-
+    if (result) continue;
     buffer += characters[i];
   }
 
-  tokens.push(new TextToken(buffer));
+  if (buffer) tokens.push(new TextToken(buffer));
   validateImportReferenceMatching(tokens, parsingContext.currentTopic, parsingContext.currentSubtopic);
   return tokens;
 }
