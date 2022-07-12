@@ -187,21 +187,12 @@ function hasConnection(subtopic, topic, subtopicParents) {
   return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
 }
 
-function validateJsonFileName(filename) {
-  let illegalCharacters = [' ', '/']
-  if (illegalCharacters.find(char => filename.includes(char))) {
-    console.error(`Illegal character "${char}" in filename: ${filename}`);
-    process.exit();
-  }
-}
-
 module.exports = {
   paragraphsOfFile,
   linesByBlockOf,
   consolidateTextTokens,
   topicKeyOfFile,
   listExplFilesRecursive,
-  validateJsonFileName,
   validateImportReferenceGlobalMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences

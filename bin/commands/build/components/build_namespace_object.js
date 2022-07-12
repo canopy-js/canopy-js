@@ -4,6 +4,8 @@ let { Paragraph } = require('../../shared');
 
 function buildNamespaceObject(pathList) {
   let namespacesObject = {};
+  let uniquenessCheck = {};
+  let pathsForTopics = {};
 
   pathList.forEach(function(path){
     let paragraphsWithKeys = paragraphsOfFile(path);
@@ -12,11 +14,30 @@ function buildNamespaceObject(pathList) {
     let currentTopic = new TopicName(topicParargaph.key);
     namespacesObject[currentTopic.caps] = {};
 
+    if (uniquenessCheck.hasOwnProperty(currentTopic.capsFile)) {
+      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}"`);
+      console.error(`- One file is in: ${path}`);
+      console.error(`- Another file is defined in: ${pathsForTopics[currentTopic.capsFile]}`);
+      process.exit();
+    } else {
+      // Topics must be unique to the level of filename, which is the strongest level
+      uniquenessCheck[currentTopic.capsFile] = {};
+      pathsForTopics[currentTopic.capsFile] = path;
+    }
+
     paragraphsWithKeys.forEach(function(paragraphText) {
       let paragraph = new Paragraph(paragraphText);
       if (paragraph.key) {
-        let subtopic = new TopicName(paragraph.key);
-        namespacesObject[currentTopic.caps][subtopic.caps] = subtopic;
+        let currentSubtopic = new TopicName(paragraph.key);
+        namespacesObject[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
+
+        if (uniquenessCheck[currentTopic.capsFile].hasOwnProperty(currentSubtopic.mixedCase)) {
+          console.error(`Error: Subtopic "${currentSubtopic.mixedCase}" or similar appears twice in topic: "${currentTopic.mixedCase}"`);
+          process.exit();
+        } else {
+          // Subtopics need only have a unique mixed case name, which gives them a unique URL
+          uniquenessCheck[currentTopic.capsFile][currentSubtopic.mixedCase] = currentSubtopic;
+        }
       }
     });
   });
