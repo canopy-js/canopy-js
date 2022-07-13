@@ -99,17 +99,15 @@ function importReferenceMatcher(string, parsingContext) {
     topicReferences.map(topicName => new TopicName(topicName).caps).forEach(topicName => {
       if ((topicSubtopics[topicName]||{}).hasOwnProperty(targetSubtopic.caps)) {
         if (targetTopic) {
-          console.error(`Error: Import reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] omits topic with multiple matching topic references.`)
-          console.error(`Try using the explicit import reference syntax, eg [[Topic#Subtopic]]`);
-          process.exit();
+          throw `Error: Import reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] omits topic with multiple matching topic references.` +
+          `Try using the explicit import reference syntax, eg [[Topic#Subtopic]]`;
         }
         targetTopic = new TopicName(topicName);
       }
     });
 
     if (!targetTopic) {
-      console.error(`Error: Reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] matches no global, local, or import reference.`)
-      process.exit();
+      throw `Error: Reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] matches no global, local, or import reference.`;
     }
   }
 

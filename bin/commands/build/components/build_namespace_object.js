@@ -15,10 +15,9 @@ function buildNamespaceObject(pathList) {
     namespacesObject[currentTopic.caps] = {};
 
     if (uniquenessCheck.hasOwnProperty(currentTopic.capsFile)) {
-      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}"`);
-      console.error(`- One file is in: ${path}`);
-      console.error(`- Another file is defined in: ${pathsForTopics[currentTopic.capsFile]}`);
-      process.exit();
+      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}"` +
+      `- One file is in: ${path}` +
+      `- Another file is defined in: ${pathsForTopics[currentTopic.capsFile]}`)
     } else {
       // Topics must be unique to the level of filename, which is the strongest level
       uniquenessCheck[currentTopic.capsFile] = {};
@@ -32,8 +31,7 @@ function buildNamespaceObject(pathList) {
         namespacesObject[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
 
         if (uniquenessCheck[currentTopic.capsFile].hasOwnProperty(currentSubtopic.mixedCase)) {
-          console.error(`Error: Subtopic "${currentSubtopic.mixedCase}" or similar appears twice in topic: "${currentTopic.mixedCase}"`);
-          process.exit();
+          throw `Error: Subtopic "${currentSubtopic.mixedCase}" or similar appears twice in topic: "${currentTopic.mixedCase}"`;
         } else {
           // Subtopics need only have a unique mixed case name, which gives them a unique URL
           uniquenessCheck[currentTopic.capsFile][currentSubtopic.mixedCase] = currentSubtopic;

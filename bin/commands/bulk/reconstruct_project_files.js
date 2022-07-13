@@ -76,8 +76,7 @@ function reconstructProjectFiles(dataFile, originalFileList) {
         fullPath = `${directoryPath}/${topicName.fileName}.expl`;
         directoriesToEnsure.push(directoryPath);
         if (filesToWrite.hasOwnProperty(fullPath)) {
-          console.error(`Bulk file writes two file in two places: ${fullPath}`)
-          process.exit();
+          throw `Bulk file writes two file in two places: ${fullPath}`;
         }
         filesToWrite[fullPath] = fileContents.trim();
       } else {

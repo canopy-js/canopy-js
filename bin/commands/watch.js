@@ -16,10 +16,18 @@ function watch(mode, options) {
 	const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true });
 
 	watcher.on('change', () => {
-		build(options);
+		buildWrapper(options);
 	});
 
-	build(options);
+	buildWrapper(options);
+}
+
+function buildWrapper(options) {
+	try {
+		build(options)
+	} catch (e) {
+		console.error(e);
+	}
 }
 
 module.exports = watch;

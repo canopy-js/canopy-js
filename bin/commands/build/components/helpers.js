@@ -37,7 +37,7 @@ function linesByBlockOf(string) {
           }
         );
       }
-    } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])/)) {
+    } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])\s+\S+/)) {
       if (lastBlock?.type === 'list') {
         lastBlock.lines.push(line);
       } else {
@@ -153,8 +153,7 @@ function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
     );
 
     if(!globalToken) {
-      console.error(`Error: Import reference [${importReferenceToken.targetTopic}, ${importReferenceToken.targetSubtopic}] in [${topic}, ${subtopic}] lacks global reference to topic [${importReferenceToken.targetTopic}].`);
-      process.exit();
+      throw `Error: Import reference [${importReferenceToken.targetTopic}, ${importReferenceToken.targetSubtopic}] in [${topic}, ${subtopic}] lacks global reference to topic [${importReferenceToken.targetTopic}].`;
     }
   });
 }
@@ -162,7 +161,7 @@ function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
 function validateImportReferenceTargets(importReferencesToCheck, subtopicParents) {
   importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic]) => {
     if (!hasConnection(targetSubtopic, targetTopic, subtopicParents)) {
-      console.error(`Error: Import reference in [${enclosingTopic}, ${enclosingSubtopic}] is refering to unsubsumed subtopic [${targetTopic}, ${targetSubtopic}]`);
+      throw `Error: Import reference in [${enclosingTopic}, ${enclosingSubtopic}] is refering to unsubsumed subtopic [${targetTopic}, ${targetSubtopic}]`;
     }
   });
 }
@@ -170,13 +169,12 @@ function validateImportReferenceTargets(importReferencesToCheck, subtopicParents
 function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) {
   redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => {
     if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
-      console.error(`Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]`);
-      console.error(`  One reference is in [${enclosingSubtopic1}]`);
-      console.error(`  One reference is in [${enclosingSubtopic2}]`);
-      console.error(`  Multiple local references to the same subtopic are not permitted.`);
-      console.error(`  Consider making one of these local references a self import reference.`);
-      console.error(`  (This will require explicit import syntax ie [[A#B]]).`);
-      process.exit();
+      throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]` +
+      `  One reference is in [${enclosingSubtopic1}]` +
+      `  One reference is in [${enclosingSubtopic2}]` +
+      `  Multiple local references to the same subtopic are not permitted.` +
+      `  Consider making one of these local references a self import reference.` +
+      `  (This will require explicit import syntax ie [[A#B]]).`;
     }
   });
 }
