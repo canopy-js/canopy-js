@@ -28,6 +28,8 @@ program.command('build')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
+  .option('-n, --new-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .action((options) => {
     try {
     	build(options);

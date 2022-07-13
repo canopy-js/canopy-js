@@ -3,35 +3,37 @@ const dedent = require('dedent-js');
 const child_process = require('child_process');
 const buildProject = require('./build/build_project');
 
-function build({ symlinks, projectPathPrefix, hashUrls }) {
+function build({ symlinks, projectPathPrefix, hashUrls, newBuildDirectory, manualHtml }) {
 	if (!fs.existsSync('./topics')) throw 'There must be a topics directory present, try running "canopy init"';
 	if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
 
 	let defaultTopic = fs.readFileSync('.canopy_default_topic').toString().trim();
 	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
 
-	fs.rmSync('build', { recursive: true, force: true });
-	fs.mkdirSync('build');
+	if (newBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
+	fs.ensureDirSync('build');
 
-	let html = dedent`
-		<html>
-		<head>
-		<meta charset="utf-8">
-		</head>
-		<body>
-		<div
-		  id="_canopy"
-		  data-default-topic="${defaultTopic}"
-		  data-project-path-prefix="${projectPathPrefix}"
-		  data-hash-urls="${hashUrls || ''}">
-		</div>
-		<script src="${projectPathPrefix}/canopy.js"></script>
-		</body>
-		</html>`;
+	if (!manualHtml) {
+		let html = dedent`
+			<html>
+			<head>
+			<meta charset="utf-8">
+			</head>
+			<body>
+			<div
+			  id="_canopy"
+			  data-default-topic="${defaultTopic}"
+			  data-project-path-prefix="${projectPathPrefix}"
+			  data-hash-urls="${hashUrls || ''}">
+			</div>
+			<script src="${projectPathPrefix}/canopy.js"></script>
+			</body>
+			</html>`;
+
+		fs.writeFileSync('build/index.html', html);
+	}
 
 	buildProject('.', symlinks);
-
-	fs.writeFileSync('build/index.html', html);
 
 	if (symlinks) {
 		let topicDirectories = getDirectories('build');
@@ -44,10 +46,20 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 		});
 	}
 
-	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) throw 'No Canopy js build found';
+	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) {
+		throw 'No Canopy js build found';
+	}
+
 	fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
-	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
-	if (fs.existsSync(`assets`)) fs.copySync('assets', 'build/_assets', { overwrite: true });
+
+	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) {
+		fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
+	}
+
+	if (fs.existsSync(`assets`)) {
+		fs.copySync('assets', 'build/_assets', { overwrite: true });
+	}
+
 	console.log(`Built at: ${'' + new Date()}`)
 }
 
