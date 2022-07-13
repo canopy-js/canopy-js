@@ -16,8 +16,8 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
   let importReferencesToCheck = [];
   let subtopicParents = {};
 
-  fs.rmSync(destinationDataDirectory, { recursive: true, force: true });
-  fs.mkdirSync(destinationDataDirectory);
+  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
+  fs.ensureDirSync(destinationDataDirectory);
 
   explFilePaths.forEach(function(path) {
     if (!topicKeyOfFile(path)) return;
@@ -34,14 +34,13 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
 
-    fs.ensureDir(destinationDataDirectory);
+    fs.ensureDirSync(destinationDataDirectory);
     fs.writeFileSync(destinationPath, json);
 
     if (makeFolders) {
-      let fileTopic = new TopicName(topicKeyOfFile(path));
-      let topicFolderPath = destinationBuildDirectory + '/' + fileTopic.slug;
-      fs.rmSync(topicFolderPath, { recursive: true, force: true });
-      fs.mkdirSync(destinationBuildDirectory + '/' + fileTopic.slug);
+      let folderTopic = new TopicName(topicKeyOfFile(path));
+      let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.slug;
+      fs.ensureDirSync(destinationBuildDirectory + '/' + folderTopic.slug);
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });
