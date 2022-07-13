@@ -34,24 +34,28 @@ const bulk = async function(fileList, options) {
       postProcess = p => `${p}.expl`;
     }
 	  const fzf = new Fzf().multi().result(postProcess);
-    fileList = (await fzf.run(optionList)).flat();
+    fileList = fileList.concat((await fzf.run(optionList)).flat());
 	}
 
   if (options.git) {
     // `git diff` gets us the changed files and `git ls-files` gets us the new untracked files
-    fileList = child_process
+    fileList = fileList.concat(
+      child_process
       .execSync('{ git diff --name-only head && git ls-files --others --exclude-standard; }')
       .toString()
       .trim()
-      .split("\n");
+      .split("\n")
+    );
   }
 
   if (options.search) {
-    fileList = child_process
+    fileList = fileList.concat(
+      child_process
       .execSync(`find topics | grep -i ${options.search} | grep .expl`)
       .toString()
       .trim()
       .split("\n")
+    )
   }
 
   if (fileList.length === 0) {
