@@ -304,3 +304,87 @@ test('it matches import references with explicit syntax and lets you rename the 
   expect(result[4].text).toEqual('.');
 });
 
+test('it matches back to back global references', () => {
+  let parsingContext = {
+    topicSubtopics: {
+      'IDAHO': {
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
+      },
+      'WYOMING': {
+        'WYOMING': new TopicName('Wyoming'),
+        'THE STATE CAPITAL': new TopicName('The state capital')
+      }
+    },
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
+    subtopicParents: {},
+    importReferencesToCheck: []
+  }
+
+  let text = 'The state of Idaho borders [[Wyoming]][[Wyoming]]';
+
+  let result = parseText(
+    text,
+    parsingContext
+  )
+
+  expect(result.length).toEqual(3);
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('The state of Idaho borders ');
+
+  expect(result[1].type).toEqual('global');
+  expect(result[1].text).toEqual('Wyoming');
+  expect(result[1].targetTopic).toEqual('Wyoming');
+  expect(result[1].targetSubtopic).toEqual('Wyoming');
+  expect(result[1].enclosingTopic).toEqual('Idaho');
+  expect(result[1].enclosingSubtopic).toEqual('The state capital');
+
+  expect(result[2].type).toEqual('global');
+  expect(result[2].text).toEqual('Wyoming');
+  expect(result[2].targetTopic).toEqual('Wyoming');
+  expect(result[2].targetSubtopic).toEqual('Wyoming');
+  expect(result[2].enclosingTopic).toEqual('Idaho');
+  expect(result[2].enclosingSubtopic).toEqual('The state capital');
+});
+
+test('it matches global references at the end of strings', () => {
+  let parsingContext = {
+    topicSubtopics: {
+      'IDAHO': {
+        'IDAHO': new TopicName('Idaho'),
+        'THE STATE CAPITAL': new TopicName('The state capital'),
+        'THE STATE FLOWER': new TopicName('The state flower')
+      },
+      'WYOMING': {
+        'WYOMING': new TopicName('Wyoming'),
+        'THE STATE CAPITAL': new TopicName('The state capital')
+      }
+    },
+    currentTopic: new TopicName('Idaho'),
+    currentSubtopic: new TopicName('The State Capital'),
+    subtopicParents: {},
+    importReferencesToCheck: []
+  }
+
+  let text = 'The state of Idaho borders [[Wyoming]]';
+
+  let result = parseText(
+    text,
+    parsingContext
+  )
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('The state of Idaho borders ');
+
+  expect(result[1].type).toEqual('global');
+  expect(result[1].text).toEqual('Wyoming');
+  expect(result[1].targetTopic).toEqual('Wyoming');
+  expect(result[1].targetSubtopic).toEqual('Wyoming');
+  expect(result[1].enclosingTopic).toEqual('Idaho');
+  expect(result[1].enclosingSubtopic).toEqual('The state capital');
+
+  expect(result.length).toEqual(2);
+});
