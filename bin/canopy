@@ -16,7 +16,11 @@ program
 program.command('init')
   .description('Initialize a Canopy project')
   .action(() => {
-  	init();
+  	try {
+      init();
+    } catch (e) {
+      console.error(e);
+    }
   });
 
 program.command('build')
@@ -25,7 +29,11 @@ program.command('build')
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
   .action((options) => {
-  	build(options);
+    try {
+    	build(options);
+    } catch (e) {
+      console.error(e);
+    }
   });
 
 program.command('watch')
@@ -43,7 +51,11 @@ program.command('serve')
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT').default(8000))
   .option('-s, --static', 'run a static assets server instead of a node.js server', false)
   .action((options) => {
-  	serve(options);
+    try {
+      serve(options);
+    } catch (e) {
+      console.error(e);
+    }
   });
 
 program.command('bulk')

@@ -16,7 +16,7 @@ let {
 } = require('./helpers');
 
 const bulk = async function(fileList, options) {
-  if (!fs.existsSync('./topics')) console.error("Must be in a projects directory with a topics folder") || process.exit();
+  if (!fs.existsSync('./topics')) throw "Must be in a projects directory with a topics folder";
 	let editorMode = !!!(options.start || options.finish);
   options.clear && fs.writeFileSync('.canopy_bulk_backup_log', '');
 
