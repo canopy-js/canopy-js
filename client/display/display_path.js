@@ -25,7 +25,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   Link.select(linkToSelect); // if null, persists deselect
 
   displayPathTo(pathToDisplay.paragraph);
-  window.scrollTo(0, canopyContainer.scrollHeight);
+  if (!displayOptions.noScrolling) window.scrollTo(0, canopyContainer.scrollHeight);
 };
 
 const displayPathTo = (paragraph) => {

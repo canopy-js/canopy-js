@@ -54,6 +54,8 @@ function downwardPathAndLink() {
       path: newLink.pathToDisplay,
       link: newLink
     };
+  } else {
+    return oldLink;
   }
 }
 
