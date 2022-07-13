@@ -11,7 +11,8 @@ import {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
-  depthFirstSearch,
+  depthFirstSearchForward,
+  depthFirstSearchBackward,
   zoomOnLocalPath,
   removeSelection
 } from 'keys/key_handlers';
@@ -65,8 +66,8 @@ const shortcutRelationships = {
   'alt-return': moveDownOrRedirect.bind(null, false, true),
   'command-alt-return': moveDownOrRedirect.bind(null, true, true),
 
-  'tab': depthFirstSearch.bind(null, 1),
-  'shift-tab': depthFirstSearch.bind(null, -1)
+  'tab': depthFirstSearchForward,
+  'shift-tab': depthFirstSearchBackward
 }
 
 const keyNames = {
