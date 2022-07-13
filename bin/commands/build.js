@@ -48,7 +48,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 	fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
 	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
 	if (fs.existsSync(`assets`)) fs.copySync('assets', 'build/_assets', { overwrite: true });
-
+	console.log(`Built at: ${'' + new Date()}`)
 }
 
 function getDirectories(path) {
