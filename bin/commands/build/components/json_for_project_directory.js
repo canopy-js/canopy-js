@@ -33,6 +33,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
 
+    fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
     fs.ensureDirSync(destinationDataDirectory);
     fs.writeFileSync(destinationPath, json);
 

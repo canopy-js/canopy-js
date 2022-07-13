@@ -24,9 +24,12 @@ let { TopicName, Paragraph } = require('../shared');
 
   * Topic3: ABC.
 
+  * File without key.
+
   -- File ends --
 
   This file should produce the following files and folders:
+
   - topics/A/B/C/Topic1.expl:
     Topic1: ABC.
 
@@ -42,6 +45,8 @@ let { TopicName, Paragraph } = require('../shared');
 
   - topics/A/C/C.expl:
     Notes without asterisk.
+
+    File without key.
 
 */
 
