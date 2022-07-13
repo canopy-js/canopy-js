@@ -28,7 +28,7 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       linkToSelect = link;
     }
 
-    updateView(newPath, linkToSelect);
+    updateView(newPath, linkToSelect, { noScrolling: true });
   };
 };
 
@@ -54,7 +54,7 @@ function onGlobalLinkClick (link) {
         '_blank'
       );
     } else {
-      updateView(path, linkToSelect)
+      updateView(path, linkToSelect, { noScrolling: true })
     }
   }
 }
