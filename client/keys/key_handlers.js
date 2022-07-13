@@ -119,57 +119,101 @@ function moveDownOrRedirect(newTab, altKey) {
   }
 }
 
-function depthFirstSearch(dfsDirectionInteger) {
+function depthFirstSearchForward() {
   let link = Link.selection;
 
   // Open a parent link
-  if (link.isLocal && link.isClosed) {
+  if (link.isLocal && link.hasChildren) {
+    let nextLink = link.firstChildLink || link.nextSibling || link;
     return updateView(
-      Path.current.replaceTerminalSubtopic(link.targetSubtopic),
-      link.firstChildLink || link,
-    );
-  }
-
-  // Close a parent link
-  if (link.isLocal && link.isClosed && !link.targetParagraph.hasLinks) {
-    return updateView(
-      Path.current.replaceTerminalSubtopic(link.targetSubtopic),
-      link.parentLink.nextSibling || link.grandParentLink,
+      nextLink.pathToDisplay,
+      nextLink
     );
   }
 
   if (link.isGlobalOrImport) {
-    let linkToSelect = link.parentLink.nextSibling || link.grandParentLink;
+    let linkToSelect = link.nextSibling || link.parentLink?.nextSibling || link.enclosingParagraph.firstLink;
     return updateView(
       linkToSelect.enclosingParagraph.path,
-      { linkToSelect }
+      linkToSelect
     );
   }
 
   // Move to the next sibling including parent link with no children
-  if (dfsDirectionInteger === 1 && link.nextSibling && !link.nextSibling.equals(link)) {
+  if (link.nextSibling && !link.nextSibling.equals(link)) {
     return updateView(
       link.nextSibling.enclosingParagraph.path,
       link.nextSibling,
     );
   }
 
-  if (dfsDirectionInteger === -1 && link.previousSibling && !link.previousSibling.equals(link)) {
+  // Move to next parent sibling, grandparent sibling, etc.
+  if (link.lastSibling.equals(link)) {
+    let linkToSelect = (function parentSibling (link) {
+      if (!link.parentLink) {
+        return link.enclosingParagraph.firstLink; // cycle
+      } else if (link.parentLink.nextSibling) {
+        return link.parentLink.nextSibling;
+      } else {
+        return parentSibling(link.parentLink)
+      }
+    })(link);
+
     return updateView(
-      link.nextSibling.enclosingParagraph.path,
+      linkToSelect.pathToDisplay,
+      linkToSelect
+    );
+  }
+}
+
+function depthFirstSearchBackward() {
+  let link = Link.selection;
+
+  // Open a parent link
+  if (link.isLocal && link.hasChildren) {
+    let nextLink = link.lastChildLink || link.previousSibling || link;
+    return updateView(
+      nextLink.pathToDisplay,
+      nextLink
+    );
+  }
+
+  if (link.isGlobalOrImport) {
+    let linkToSelect = link.previousSibling || link.parentLink?.previousSibling || link.enclosingParagraph.lastLink;
+    return updateView(
+      linkToSelect.enclosingParagraph.path,
+      linkToSelect
+    );
+  }
+
+  // Move to the next sibling including parent link with no children
+  if (link.previousSibling && !link.previousSibling.equals(link)) {
+    return updateView(
+      link.previousSibling.enclosingParagraph.path,
       link.previousSibling,
     );
   }
 
-  // Cycle
-  if (dfsDirectionInteger === 1 && link.topicParagraph.lastLink) {
+  // Move to next parent sibling, grandparent sibling, etc.
+  if (link.firstSibling.equals(link)) {
+    let linkToSelect = (function parentSibling (link) {
+      if (!link.parentLink) {
+        return link.enclosingParagraph.lastLink; // cycle
+      } else if (link.parentLink.previousSibling) {
+        return link.parentLink.previousSibling;
+      } else {
+        return parentSibling(link.parentLink)
+      }
+    })(link);
+
     return updateView(
-      Path.current,
-      link.firstSibling,
+      linkToSelect.pathToDisplay,
+      linkToSelect
     );
   }
 
-  if (dfsDirectionInteger === -1 && link.topicParagraph.firstLink) {
+  // Cycle
+  if (link.topicParagraph.firstLink) {
     return updateView(
       Path.current,
       link.lastSibling,
@@ -200,7 +244,8 @@ export {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
-  depthFirstSearch,
+  depthFirstSearchForward,
+  depthFirstSearchBackward,
   zoomOnLocalPath,
   removeSelection
 };

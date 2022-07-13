@@ -291,7 +291,7 @@ class Link {
   }
 
   get grandParentLink() {
-    return this.parentLink.parentLink;
+    return this.parentLink?.parentLink;
   }
 
   get topicParagraph() {
@@ -336,6 +336,10 @@ class Link {
 
   get isParent() {
     return this.isGlobal || this.isLocal || this.isImport;
+  }
+
+  get hasChildren() {
+    return this.targetParagraph.hasLinks;
   }
 
   static select(linkToSelect) {
