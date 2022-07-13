@@ -4,8 +4,8 @@ const child_process = require('child_process');
 const buildProject = require('./build/build_project');
 
 function build({ symlinks, projectPathPrefix, hashUrls }) {
-	if (!fs.existsSync('./topics')) console.error('There must be a topics directory present, try running "canopy init"') || process.exit();
-	if (!fs.existsSync('./.canopy_default_topic')) console.error('There must be a default topic dotfile present, try running "canopy init"') || process.exit();
+	if (!fs.existsSync('./topics')) throw 'There must be a topics directory present, try running "canopy init"';
+	if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
 
 	let defaultTopic = fs.readFileSync('.canopy_default_topic').toString().trim();
 	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
@@ -44,7 +44,7 @@ function build({ symlinks, projectPathPrefix, hashUrls }) {
 		});
 	}
 
-	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) console.error('No Canopy js build found') || process.exit();
+	if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) throw 'No Canopy js build found';
 	fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
 	if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
 	if (fs.existsSync(`assets`)) fs.copySync('assets', 'build/_assets', { overwrite: true });
