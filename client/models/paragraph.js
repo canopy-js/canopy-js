@@ -179,6 +179,10 @@ class Paragraph {
     return Path.current.paragraph;
   }
 
+  get select() {
+    this.sectionElement.classList.add('canopy-selected-section');
+  }
+
   static get pageRoot() {
     let path = Path.forTopic(Path.current.firstTopic);
     return path.paragraph;

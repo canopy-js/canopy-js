@@ -23,12 +23,12 @@
     padding-top: 40px;
   }
 
+  section.canopy-selected-section {
+    padding-bottom: 100px;
+  }
+
   section {
     padding-top: 30px;
-
-    &:last-child {
-      padding-bottom: 30px;
-    }
   }
 
   p {

@@ -24,6 +24,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect
 
+  pathToDisplay.paragraph.select;
   displayPathTo(pathToDisplay.paragraph);
   if (!displayOptions.noScrolling) window.scrollTo(0, canopyContainer.scrollHeight);
 };
