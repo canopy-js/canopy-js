@@ -22,18 +22,18 @@ function generateDataFile(filesByPath, blank) {
 }
 
 function defaultText() {
-	return dedent`Topic A:
+	return dedent`[Topic A]
 
-      Topic A: Here is a paragraph for Topic A.
+      * Topic A: Here is a paragraph for Topic A.
 
-      Subtopic of A: Here is a paragraph for a subtopic of A.
+      * Subtopic of A: Here is a paragraph for a subtopic of A.
 
 
-      Topic A/Topic B:
+      [Topic A/Topic B]
 
-      Topic B: Here is a paragraph for Topic B.
+      * Topic B: Here is a paragraph for Topic B.
 
-      Subtopic of B: Here is a paragraph for a subtopic of A.
+      * Subtopic of B: Here is a paragraph for a subtopic of A.
 
       ` + "\n\n";
 }
