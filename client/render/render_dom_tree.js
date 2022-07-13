@@ -14,7 +14,7 @@ function renderDomTree(renderContext) {
 
   let sectionElement = createSectionElement(renderContext);
 
-  renderContext.promises = [];
+  renderContext.displayBlockingPromises = [];
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
@@ -27,7 +27,7 @@ function renderDomTree(renderContext) {
     paragraph.paragraphElement.appendChild(blockElement);
   });
 
-  return Promise.all(renderContext.promises).then((_) => sectionElement);
+  return Promise.all(renderContext.displayBlockingPromises).then((_) => sectionElement);
 }
 
 function localLinkSubtreeCallback(sectionElement, renderContext) {
@@ -42,7 +42,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
       sectionElement.appendChild(subtree);
     });
 
-    renderContext.promises.push(promisedSubtree);
+    renderContext.displayBlockingPromises.push(promisedSubtree);
   }
 }
 
@@ -51,7 +51,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
     pathToDisplay,
     pathDepth,
     subtopicName,
-    promises
+    displayBlockingPromises
   } = renderContext;
 
   return (token, linkElement) => {
@@ -60,7 +60,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
     if (globalLinkIsOpen(linkElement, pathToDisplay, subtopicName)) {
       let newPath = pathToDisplay.withoutFirstSegment;
       let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement);
-      promises.push(whenTopicTreeAppended)
+      displayBlockingPromises.push(whenTopicTreeAppended)
     }
   }
 }
