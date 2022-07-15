@@ -40,9 +40,9 @@ function localReferenceMatcher(string, parsingContext) {
     if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) {
       redundantLocalReferences.push([
         subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
-        currentSubtopic.caps,
-        currentTopic.caps,
-        currentStringAsTopic.caps
+        currentSubtopic,
+        currentTopic,
+        currentStringAsTopic
       ]);
     }
 
@@ -96,22 +96,30 @@ function importReferenceMatcher(string, parsingContext) {
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
 
   if (!targetTopic) {
-    topicReferences.map(topicName => new TopicName(topicName).caps).forEach(topicName => {
-      if ((topicSubtopics[topicName]||{}).hasOwnProperty(targetSubtopic.caps)) {
-        if (targetTopic) {
-          throw `Error: Import reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] omits topic with multiple matching topic references.` +
-          `Try using the explicit import reference syntax, eg [[Topic#Subtopic]]`;
+    topicReferences.map(topicName => new TopicName(topicName)).forEach(topicName => {
+      if ((topicSubtopics[topicName.caps]||{}).hasOwnProperty(targetSubtopic.caps)) {
+        if (targetTopic) { // we already found this subtopic belonging to another global reference nearby
+          throw `Error: Import reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] omits topic with multiple matching topic references.` +
+          `Try using the explicit import reference syntax, eg [[${topicName}#${linkTarget}]] or [[${targetTopic}#${linkTarget}]]`;
         }
-        targetTopic = new TopicName(topicName);
+        targetTopic = topicName;
       }
     });
 
     if (!targetTopic) {
-      throw `Error: Reference ${fullText} in [${currentTopic.caps}, ${currentSubtopic.caps}] matches no global, local, or import reference.`;
+      throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
     }
   }
 
-  importReferencesToCheck.push([currentTopic.caps, currentSubtopic.caps, targetTopic.caps, targetSubtopic.caps]);
+  if (!topicSubtopics.hasOwnProperty(targetTopic.caps)) {
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic`;
+  }
+
+  if (topicSubtopics.hasOwnProperty(targetTopic.caps) && !topicSubtopics[targetTopic.caps].hasOwnProperty(targetSubtopic.caps)) {
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic in ${targetTopic.mixedCase}`;
+  }
+
+  importReferencesToCheck.push([currentTopic, currentSubtopic, targetTopic, targetSubtopic]);
 
   return [new ImportReferenceToken(
     topicSubtopics[targetTopic.caps][targetTopic.caps].mixedCase,

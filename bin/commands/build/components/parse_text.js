@@ -3,6 +3,8 @@ let { TextToken } = require('./tokens');
 let { validateImportReferenceGlobalMatching, removeLengthKeys } = require('./helpers');
 
 function parseText(text, parsingContext) {
+  let { currentTopic, currentSubtopic, topicSubtopics } = parsingContext;
+
   let topicReferences = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
   parsingContext.topicReferences = topicReferences;
 
@@ -29,7 +31,14 @@ function parseText(text, parsingContext) {
   }
 
   if (buffer) tokens.push(new TextToken(buffer));
-  validateImportReferenceGlobalMatching(tokens, parsingContext.currentTopic, parsingContext.currentSubtopic);
+
+  validateImportReferenceGlobalMatching(
+    tokens,
+    currentTopic,
+    currentSubtopic,
+    topicSubtopics
+  );
+
   return tokens;
 }
 
