@@ -1,0 +1,5 @@
+build/
+.canopy_bulk_file
+.canopy_bulk_backup_log
+canopy_bulk_file
+**/.DS_Store
