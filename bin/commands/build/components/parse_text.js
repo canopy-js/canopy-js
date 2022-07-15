@@ -5,8 +5,8 @@ let { validateImportReferenceGlobalMatching, removeLengthKeys } = require('./hel
 function parseText(text, parsingContext) {
   let { currentTopic, currentSubtopic, topicSubtopics } = parsingContext;
 
-  let topicReferences = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
-  parsingContext.topicReferences = topicReferences;
+  let topicReferencesInText = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
+  parsingContext.topicReferencesInText = topicReferencesInText;
 
   let characters = text.split('');
   let tokens = [];
