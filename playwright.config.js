@@ -75,7 +75,7 @@ const config = {
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'cd playwright/test_project && canopy serve -p 3000',
+    command: 'cd playwright/test_project && canopy build && canopy serve -p 3000',
     port: 3000
   },
 };
