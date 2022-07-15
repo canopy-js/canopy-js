@@ -171,15 +171,21 @@ function validateImportReferenceTargets(importReferencesToCheck, subtopicParents
   });
 }
 
-function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) {
-  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => {
+function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) { // can only be done after we've seen every local reference
+  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
     if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
       throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]\n` +
+
       `  One reference is in [${enclosingSubtopic1}]\n` +
       `  One reference is in [${enclosingSubtopic2}]\n` +
+      `  \n` +
       `  Multiple local references to the same subtopic are not permitted.\n` +
       `  Consider making one of these local references a self import reference.\n` +
-      `  That would look like either [[${enclosingSubtopic1}#${referencedSubtopic}]] or [[${enclosingSubtopic2}#${referencedSubtopic}]].\n`;
+      `  That would look like either [[${enclosingSubtopic1}#${referencedSubtopic}]] or [[${enclosingSubtopic2}#${referencedSubtopic}]].\n`
+      `  \n` +
+      `  (It is also possible you meant one of these as an import reference,\n` +
+      `  However, when the enclosing topic and the target topic both have a given subtopic,\n`
+      `  The import reference must be given in extended format eg [[Topic#Subtopic]].\n`
     }
   });
 }

@@ -36,8 +36,14 @@ function localReferenceMatcher(string, parsingContext) {
   let currentStringAsTopic = new TopicName(linkTarget);
   subtopicParents[currentTopic.caps] = subtopicParents[currentTopic.caps] || {};
 
-  if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentStringAsTopic.caps)) {
-    if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) {
+  if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentStringAsTopic.caps)) { // the reference could be to a subtopic of current topic
+    if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) { // that subtopic already has a parent
+      topicReferencesInText.map(topicName => new TopicName(topicName)).forEach(topicName => {
+        if (topicSubtopics[topicName.caps]?.hasOwnProperty(targetSubtopic.caps)) { // the text could be an import reference
+          return null; // skip and let the importReferenceMatcher match this as an import reference
+        }
+      });
+
       redundantLocalReferences.push([
         subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
         currentSubtopic,
@@ -46,19 +52,17 @@ function localReferenceMatcher(string, parsingContext) {
       ]);
     }
 
-    subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic.caps;
+    subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic.caps; // mark this subtopic as claimed
 
-    if (currentSubtopic.caps !== currentStringAsTopic.caps && currentTopic.caps !== currentStringAsTopic.caps) {
-      return [new LocalReferenceToken(
-        topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
-        topicSubtopics[currentTopic.caps][currentStringAsTopic.caps].mixedCase,
-        topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
-        topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
-        linkText
-      ), fullText.length];
-    } else {
-      return null;
-    }
+    return [new LocalReferenceToken(
+      topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentStringAsTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+      linkText
+    ), fullText.length];
+  } else {
+    return null;
   }
 }
 
@@ -87,7 +91,7 @@ function importReferenceMatcher(string, parsingContext) {
     topicSubtopics,
     currentTopic,
     currentSubtopic,
-    topicReferences,
+    topicReferencesInText,
     importReferencesToCheck
   } = parsingContext;
 
@@ -95,14 +99,14 @@ function importReferenceMatcher(string, parsingContext) {
   if (!linkTarget) return;
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
 
-  if (!targetTopic) {
-    topicReferences.map(topicName => new TopicName(topicName)).forEach(topicName => {
-      if ((topicSubtopics[topicName.caps]||{}).hasOwnProperty(targetSubtopic.caps)) {
+  if (!targetTopic) { // The user chose to just give the subtopic
+    topicReferencesInText.map(topicName => new TopicName(topicName)).forEach(topicName => {
+      if (topicSubtopics[topicName.caps]?.hasOwnProperty(targetSubtopic.caps)) {
         if (targetTopic) { // we already found this subtopic belonging to another global reference nearby
           throw `Error: Import reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] omits topic with multiple matching topic references.` +
           `Try using the explicit import reference syntax, eg [[${topicName}#${linkTarget}]] or [[${targetTopic}#${linkTarget}]]`;
         }
-        targetTopic = topicName;
+        targetTopic = topicName; // We're going with the assumption that the subtopic belongs to this global reference
       }
     });
 
