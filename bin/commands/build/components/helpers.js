@@ -145,7 +145,7 @@ function topicKeyOfFile(path) {
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
-function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
+function validateImportReferenceGlobalMatching(tokens, enclosingTopic, enclosingSubtopic, topicSubtopics) {
   tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
     let globalToken = tokens.find(
       token => token.targetTopic === importReferenceToken.targetTopic &&
@@ -153,7 +153,12 @@ function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
     );
 
     if(!globalToken) {
-      throw `Error: Import reference [${importReferenceToken.targetTopic}, ${importReferenceToken.targetSubtopic}] in [${topic}, ${subtopic}] lacks global reference to topic [${importReferenceToken.targetTopic}].`;
+      let targetTopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetTopic];
+      let targetSubtopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetSubtopic];
+      let enclosingTopic = topicSubtopics[enclosingTopic][enclosingTopic];
+      let enclosingSubtopic = topicSubtopics[enclosingTopic][enclosingSubtopic];
+
+      throw `Error: Import reference to [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopic.mixedCase}].`;
     }
   });
 }
@@ -161,28 +166,34 @@ function validateImportReferenceGlobalMatching(tokens, topic, subtopic) {
 function validateImportReferenceTargets(importReferencesToCheck, subtopicParents) {
   importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic]) => {
     if (!hasConnection(targetSubtopic, targetTopic, subtopicParents)) {
-      throw `Error: Import reference in [${enclosingTopic}, ${enclosingSubtopic}] is refering to unsubsumed subtopic [${targetTopic}, ${targetSubtopic}]`;
+      throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
     }
   });
 }
 
-function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) {
-  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => {
+function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) { // can only be done after we've seen every local reference
+  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
     if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
-      throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]` +
-      `  One reference is in [${enclosingSubtopic1}]` +
-      `  One reference is in [${enclosingSubtopic2}]` +
-      `  Multiple local references to the same subtopic are not permitted.` +
-      `  Consider making one of these local references a self import reference.` +
-      `  (This will require explicit import syntax ie [[A#B]]).`;
+      throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]\n` +
+
+      `  One reference is in [${enclosingSubtopic1}]\n` +
+      `  One reference is in [${enclosingSubtopic2}]\n` +
+      `  \n` +
+      `  Multiple local references to the same subtopic are not permitted.\n` +
+      `  Consider making one of these local references a self import reference.\n` +
+      `  That would look like either [[${enclosingSubtopic1}#${referencedSubtopic}]] or [[${enclosingSubtopic2}#${referencedSubtopic}]].\n`
+      `  \n` +
+      `  (It is also possible you meant one of these as an import reference,\n` +
+      `  However, when the enclosing topic and the target topic both have a given subtopic,\n`
+      `  The import reference must be given in extended format eg [[Topic#Subtopic]].\n`
     }
   });
 }
 
 function hasConnection(subtopic, topic, subtopicParents) {
-  if (subtopic === topic) return true;
-  if (subtopicParents[topic] && !subtopicParents[topic][subtopic]) return false;
-  return hasConnection(subtopicParents[topic][subtopic], topic, subtopicParents)
+  if (subtopic.caps === topic.caps) return true;
+  if (subtopicParents[topic.caps] && !subtopicParents[topic.caps][subtopic.caps]) return false;
+  return hasConnection(subtopicParents[topic.caps][subtopic.caps], topic.caps, subtopicParents)
 }
 
 module.exports = {

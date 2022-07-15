@@ -4,7 +4,8 @@
   "description": "A library for creating and browsing explanation graphs",
   "main": "dist/parser.js",
   "scripts": {
-    "test": "jest bin client",
+    "jest": "jest bin client",
+    "test": "npm run jest && npx playwright test",
     "develop": "webpack --mode development --watch",
     "build": "webpack --mode development",
     "build-prod": "webpack --mode production"

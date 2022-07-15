@@ -13,7 +13,7 @@ function generateDataFile(filesByPath, blank) {
     let filesOfPath = filePaths.map(filePath => {
       let fileContents = '* ' + fs.readFileSync(filePath).toString().trim();
       return fileContents;
-    }).join("\n\n");
+    }).join("\n\n\n");
 
     dataText += filesOfPath;
 

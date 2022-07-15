@@ -16,6 +16,7 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
   let importReferencesToCheck = [];
   let subtopicParents = {};
 
+  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
   fs.ensureDirSync(destinationDataDirectory);
 
   explFilePaths.forEach(function(path) {
@@ -33,7 +34,6 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
 
-    fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
     fs.ensureDirSync(destinationDataDirectory);
     fs.writeFileSync(destinationPath, json);
 

@@ -17,7 +17,7 @@ program.command('init')
   .description('Initialize a Canopy project')
   .action(() => {
   	try {
-      init(options);
+      init();
     } catch (e) {
       console.log(e);
     }
