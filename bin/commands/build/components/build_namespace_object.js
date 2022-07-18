@@ -15,9 +15,9 @@ function buildNamespaceObject(pathList) {
     namespacesObject[currentTopic.caps] = {};
 
     if (uniquenessCheck.hasOwnProperty(currentTopic.capsFile)) {
-      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}"` +
-      `- One file is in: ${path}` +
-      `- Another file is defined in: ${pathsForTopics[currentTopic.capsFile]}`)
+      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}\n"` +
+      `- One file is: ${path}\n` +
+      `- Another file is: ${pathsForTopics[currentTopic.capsFile]}`)
     } else {
       // Topics must be unique to the level of filename, which is the strongest level
       uniquenessCheck[currentTopic.capsFile] = {};
