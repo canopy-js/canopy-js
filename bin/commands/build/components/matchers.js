@@ -52,7 +52,7 @@ function localReferenceMatcher(string, parsingContext, index) {
         return null // allow text to be matched as import reference in importReferenceMatcher
       }
       if (priorLocalReferenceCouldBeImport(provisionalLocalReferences)) {
-        convertPriorLocalToImport(provisionalLocalReferences);
+        convertPriorLocalReferenceToImport(provisionalLocalReferences);
       } else {
         redundantLocalReferences.push([
           subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
@@ -103,7 +103,7 @@ function localReferenceMatcher(string, parsingContext, index) {
     return localReferenceCouldBeImport(text, index);
   }
 
-  function convertPriorLocalToImport(provisionalLocalReferences) {
+  function convertPriorLocalReferenceToImport(provisionalLocalReferences) {
     let {
       tokens,
       tokenIndex,
