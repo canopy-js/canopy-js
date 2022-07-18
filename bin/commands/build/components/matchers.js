@@ -25,7 +25,7 @@ const Matchers = [
   htmlMatcher,
 ]
 
-let { GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
+let { GlobalLinkNeedingAddingToNamespacesError, linkProximityCalculator } = require('./helpers');
 let { TopicName } = require('../../shared');
 
 function localReferenceMatcher(string, parsingContext) {
@@ -86,33 +86,32 @@ function globalReferenceMatcher(string, parsingContext) {
   }
 }
 
-function importReferenceMatcher(string, parsingContext) {
+function importReferenceMatcher(string, parsingContext, index) {
   let {
     topicSubtopics,
     currentTopic,
     currentSubtopic,
     topicReferencesInText,
-    importReferencesToCheck
+    importReferencesToCheck,
+    text
   } = parsingContext;
 
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
-  if (!linkTarget) return;
+  if (!linkTarget) return; // not a well-formed link
+
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
 
-  if (!targetTopic) { // The user chose to just give the subtopic
-    topicReferencesInText.map(topicName => new TopicName(topicName)).forEach(topicName => {
-      if (topicSubtopics[topicName.caps]?.hasOwnProperty(targetSubtopic.caps)) {
-        if (targetTopic) { // we already found this subtopic belonging to another global reference nearby
-          throw `Error: Import reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] omits topic with multiple matching topic references.` +
-          `Try using the explicit import reference syntax, eg [[${topicName}#${linkTarget}]] or [[${targetTopic}#${linkTarget}]]`;
-        }
-        targetTopic = topicName; // We're going with the assumption that the subtopic belongs to this global reference
-      }
-    });
+  if (!targetTopic) { // The user chose to just give the subtopic and imply the topic by proximity
+    let calculator = new linkProximityCalculator(text);
+    let linksByProximity = calculator.linksByProximity(index);
 
-    if (!targetTopic) {
-      throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
-    }
+    targetTopic = linksByProximity.map(topicName => new TopicName(topicName)).find(topicName => {
+      return topicSubtopics[topicName.caps]?.hasOwnProperty(targetSubtopic.caps);
+    });
+  }
+
+  if (!targetTopic) {
+    throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
   }
 
   if (!topicSubtopics.hasOwnProperty(targetTopic.caps)) {
@@ -125,13 +124,15 @@ function importReferenceMatcher(string, parsingContext) {
 
   importReferencesToCheck.push([currentTopic, currentSubtopic, targetTopic, targetSubtopic]);
 
-  return [new ImportReferenceToken(
-    topicSubtopics[targetTopic.caps][targetTopic.caps].mixedCase,
-    topicSubtopics[targetTopic.caps][targetSubtopic.caps].mixedCase,
-    topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
-    topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
-    linkText
-  ), fullText.length];
+  return [
+    new ImportReferenceToken(
+      topicSubtopics[targetTopic.caps][targetTopic.caps].mixedCase,
+      topicSubtopics[targetTopic.caps][targetSubtopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+      linkText
+    ), fullText.length
+  ];
 }
 
 function parseLink(string) {
@@ -139,10 +140,10 @@ function parseLink(string) {
   let match = string.match(/^\[\[([^|#\[\]]+)(?:#([^|#\[\]]+))?(?:\|([^|#\[\]]+))?\]\]/);
 
   return {
-    linkTarget: match && match[1] || null,
-    linkFragment: match && match[2] || null,
-    linkText: match && (match[3] || match[2] || match[1] || null),
-    fullText: match && match[0]
+    linkTarget: match && match[1] || null, // eg "France"
+    linkFragment: match && match[2] || null, // eg "Paris"
+    linkText: match && (match[3] || match[2] || match[1] || null), // The specified link text, defaulting to subtopic
+    fullText: match && match[0] // the whole reference eg "[[France#Paris]]""
   }
 }
 
