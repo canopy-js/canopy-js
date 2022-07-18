@@ -56,17 +56,11 @@ function reconstructProjectFiles(dataFile, originalFileList) {
 
   sections.filter(Boolean).forEach(section => {
     let blocks = section.split("\n\n");
-    let path = blocks[0].match(/\[(.*)\]/)[1]; //
+    let path = blocks[0].match(/\[(.*)\]/)[1];
+    let pathWithUnderscores = path.replace(/ /g,'_');
     let pathSegments = path.split('/');
-    let fileTexts = blocks.slice(1).join("\n\n").split(/(?=^\* )/gm); // Take the
+    let fileTexts = blocks.slice(1).join("\n\n").split(/^\* /gm).filter(a => a);
     let categoryNotes = [];
-
-    if (!fileTexts[0].startsWith("* ")) { // Notes without asterisk before first asterisk
-      categoryNotes.push(fileTexts[0]) // Keep a list of uncategorized notes to put in A/B/C/C.expl eg.
-      fileTexts = fileTexts.slice(1);
-    }
-
-    fileTexts = fileTexts.map(text => text.slice(2)) // remove "* " before file contents
     let directoriesToEnsure = [];
     let filesToWrite = {};
 
@@ -77,13 +71,15 @@ function reconstructProjectFiles(dataFile, originalFileList) {
 
       if (key) {
         let topicName = new TopicName(key);
-        directoryPath = `topics/${path.replace(/ /g,'_')}`;
+        directoryPath = `topics/${pathWithUnderscores}`;
         fullPath = `${directoryPath}/${topicName.fileName}.expl`;
         directoriesToEnsure.push(directoryPath);
-        if (filesToWrite.hasOwnProperty(fullPath)) {
-          throw `Bulk file writes two file in two places: ${fullPath}`;
+
+        if (filesToWrite.hasOwnProperty(fullPath)) { // the same file was open in this session
+          filesToWrite[fullPath] += "\n\n" + fileContents.trim();
+        } else {
+          filesToWrite[fullPath] = fileContents.trim();
         }
-        filesToWrite[fullPath] = fileContents.trim();
       } else {
         if (fileContents.trim()) {
           categoryNotes.push(fileContents.trim());
@@ -91,8 +87,10 @@ function reconstructProjectFiles(dataFile, originalFileList) {
       }
     });
 
-    let categoryName = pathSegments.slice(-1)[0];
-    let categoryNotePath = `topics/${path}/${categoryName}.expl`;
+    let categoryName = new TopicName(pathSegments.slice(-1)[0]);
+    let categoryNoteDirectoryPath = `topics/${pathWithUnderscores}`
+    let categoryNotePath = `${categoryNoteDirectoryPath}/${categoryName.fileName}.expl`;
+    directoriesToEnsure.push(categoryNoteDirectoryPath);
     if (categoryNotes.length > 0) {
       if (filesToWrite[categoryNotePath]) { // If there is a real file already existing at A/B/C/C.expl, add to it
         filesToWrite[categoryNotePath] = filesToWrite[categoryNotePath] + "\n\n" + categoryNotes.join("\n\n");
