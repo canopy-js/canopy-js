@@ -1,12 +1,10 @@
 let Matchers = require('./matchers');
 let { TextToken } = require('./tokens');
-let { validateImportReferenceGlobalMatching, removeLengthKeys } = require('./helpers');
+let { validateImportReferenceGlobalMatching } = require('./helpers');
 
 function parseText(text, parsingContext) {
   let { currentTopic, currentSubtopic, topicSubtopics } = parsingContext;
-
-  let topicReferencesInText = Array.from(text.matchAll(/\[\[([^|\]]+)(?!\|([^\]]+))\]\]/g)).map(match => match[1]);
-  parsingContext.topicReferencesInText = topicReferencesInText;
+  parsingContext.text = text;
 
   let characters = text.split('');
   let tokens = [];
@@ -16,7 +14,7 @@ function parseText(text, parsingContext) {
     let string = characters.slice(i).join('');
     let result;
     for (let j = 0; j < Matchers.length; j++) {
-      result = Matchers[j](string, parsingContext);
+      result = Matchers[j](string, parsingContext, i);
       if (result) {
         let [token, length] = result;
         if (buffer) tokens.push(new TextToken(buffer));

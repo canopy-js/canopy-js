@@ -148,7 +148,7 @@ test('it lets you give arbitrary names to references', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it matches import references', () => {
+test('it matches implicit import references', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
@@ -200,7 +200,7 @@ test('it matches import references', () => {
   expect(result[4].text).toEqual('.');
 });
 
-test('it matches import references in any order within a sentence', () => {
+test('it matches implicit import references in any order within a sentence', () => {
   let parsingContext = {
     topicSubtopics: {
       'IDAHO': {
@@ -250,6 +250,79 @@ test('it matches import references in any order within a sentence', () => {
 
   expect(result[4].type).toEqual('text');
   expect(result[4].text).toEqual('.');
+});
+
+test('it matches an implicit import reference to the closest candidate link', () => {
+  let parsingContext = {
+    topicSubtopics: {
+      'MY VACATION': {
+        'MY VACATION': new TopicName('My vacation'),
+        'PLACES TO GO': new TopicName('Places to go')
+      },
+      'OHIO': {
+        'OHIO': new TopicName('Ohio'),
+        'COLUMBUS': new TopicName('Columbus'),
+        'LONDON': new TopicName('London')
+      },
+      'ENGLAND': {
+        'ENGLAND': new TopicName('England'),
+        'LONDON': new TopicName('London')
+      }
+    },
+    currentTopic: new TopicName('My vacation'),
+    currentSubtopic: new TopicName('Places to go'),
+    subtopicParents: {},
+    importReferencesToCheck: []
+  }
+
+  let text = "I would like to visit [[Columbus]], [[Ohio]] and [[London]], [[England]]"; // There is also a London, Ohio
+
+  let result = parseText(
+    text,
+    parsingContext
+  )
+
+  expect(result.length).toEqual(8);
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual("I would like to visit ");
+
+  expect(result[1].type).toEqual('import');
+  expect(result[1].text).toEqual('Columbus');
+  expect(result[1].targetTopic).toEqual('Ohio');
+  expect(result[1].targetSubtopic).toEqual('Columbus');
+  expect(result[1].enclosingTopic).toEqual('My vacation');
+  expect(result[1].enclosingSubtopic).toEqual('Places to go');
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual(', ');
+
+  expect(result[3].type).toEqual('global');
+  expect(result[3].text).toEqual('Ohio');
+  expect(result[3].targetTopic).toEqual('Ohio');
+  expect(result[3].targetSubtopic).toEqual('Ohio');
+  expect(result[3].enclosingTopic).toEqual('My vacation');
+  expect(result[3].enclosingSubtopic).toEqual('Places to go');
+
+  expect(result[4].type).toEqual('text');
+  expect(result[4].text).toEqual(' and ');
+
+  expect(result[5].type).toEqual('import');
+  expect(result[5].text).toEqual('London');
+  expect(result[5].targetTopic).toEqual('England');
+  expect(result[5].targetSubtopic).toEqual('London');
+  expect(result[5].enclosingTopic).toEqual('My vacation');
+  expect(result[5].enclosingSubtopic).toEqual('Places to go');
+
+  expect(result[6].type).toEqual('text');
+  expect(result[6].text).toEqual(', ');
+
+  expect(result[7].type).toEqual('global');
+  expect(result[7].text).toEqual('England');
+  expect(result[7].targetTopic).toEqual('England');
+  expect(result[7].targetSubtopic).toEqual('England');
+  expect(result[7].enclosingTopic).toEqual('My vacation');
+  expect(result[7].enclosingSubtopic).toEqual('Places to go');
 });
 
 test('it matches import references with explicit syntax and lets you rename the link', () => {
