@@ -13,6 +13,7 @@ function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopi
   let paragraph = new Paragraph(paragraphsWithKeys[0]);
   let currentTopic = new TopicName(paragraph.key);
   let redundantLocalReferences = [];
+  let provisionalLocalReferences = {};
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraph = new Paragraph(paragraphWithKey);
@@ -28,7 +29,8 @@ function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopi
         currentTopic,
         importReferencesToCheck,
         subtopicParents,
-        redundantLocalReferences
+        redundantLocalReferences,
+        provisionalLocalReferences
       }
     );
 

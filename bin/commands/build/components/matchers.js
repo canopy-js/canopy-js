@@ -28,8 +28,18 @@ const Matchers = [
 let { GlobalLinkNeedingAddingToNamespacesError, linkProximityCalculator } = require('./helpers');
 let { TopicName } = require('../../shared');
 
-function localReferenceMatcher(string, parsingContext) {
-  let { topicSubtopics, currentTopic, currentSubtopic, subtopicParents, redundantLocalReferences } = parsingContext;
+function localReferenceMatcher(string, parsingContext, index) {
+  let {
+    topicSubtopics,
+    currentTopic,
+    currentSubtopic,
+    subtopicParents,
+    redundantLocalReferences,
+    provisionalLocalReferences,
+    tokens,
+    text
+  } = parsingContext;
+
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
   if (linkFragment) return;
@@ -38,21 +48,31 @@ function localReferenceMatcher(string, parsingContext) {
 
   if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentStringAsTopic.caps)) { // the reference could be to a subtopic of current topic
     if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) { // that subtopic already has a parent
-      topicReferencesInText.map(topicName => new TopicName(topicName)).forEach(topicName => {
-        if (topicSubtopics[topicName.caps]?.hasOwnProperty(targetSubtopic.caps)) { // the text could be an import reference
-          return null; // skip and let the importReferenceMatcher match this as an import reference
-        }
-      });
-
-      redundantLocalReferences.push([
-        subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
-        currentSubtopic,
-        currentTopic,
-        currentStringAsTopic
-      ]);
+      if (localReferenceCouldBeImport(text, index, topicSubtopics)) {
+        return null // allow text to be matched as import reference in importReferenceMatcher
+      }
+      if (priorLocalReferenceCouldBeImport(provisionalLocalReferences)) {
+        convertPriorLocalReferenceToImport(provisionalLocalReferences);
+      } else {
+        redundantLocalReferences.push([
+          subtopicParents[currentTopic.caps][currentStringAsTopic.caps],
+          currentSubtopic,
+          currentTopic,
+          currentStringAsTopic
+        ]);
+      }
     }
 
     subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic.caps; // mark this subtopic as claimed
+    provisionalLocalReferences[currentStringAsTopic.caps] = { // local references to convert to imports if found redundant
+      tokens,
+      text,
+      tokenIndex: tokens.length + 1,
+      index,
+      currentTopic,
+      currentSubtopic,
+      linkText
+    };
 
     return [new LocalReferenceToken(
       topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
@@ -63,6 +83,54 @@ function localReferenceMatcher(string, parsingContext) {
     ), fullText.length];
   } else {
     return null;
+  }
+
+  function localReferenceCouldBeImport(text, index) {
+    let calculator = new linkProximityCalculator(text);
+    let linksByProximity = calculator.linksByProximity(index);
+    if (linksByProximity.find(value => {
+      let potentialTopic = new TopicName(value);
+      return topicSubtopics[potentialTopic.caps]?.hasOwnProperty(currentStringAsTopic.caps)
+    })) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function priorLocalReferenceCouldBeImport(provisionalLocalReferences) {
+    let { tokens, text, index } = provisionalLocalReferences[currentStringAsTopic.caps];
+    return localReferenceCouldBeImport(text, index);
+  }
+
+  function convertPriorLocalReferenceToImport(provisionalLocalReferences) {
+    let {
+      tokens,
+      tokenIndex,
+      text,
+      index,
+      currentTopic,
+      currentSubtopic,
+      linkText
+    } = provisionalLocalReferences[currentStringAsTopic.caps];
+
+    let calculator = new linkProximityCalculator(text);
+    let linksByProximity = calculator.linksByProximity(index);
+    let potentialTopic = new TopicName(linksByProximity.find(value => {
+      let topic = new TopicName(value);
+      return topicSubtopics[topic.caps]?.hasOwnProperty(currentStringAsTopic.caps);
+    }));
+
+    let importReference = new ImportReferenceToken(
+      topicSubtopics[potentialTopic.caps][potentialTopic.caps].mixedCase,
+      topicSubtopics[potentialTopic.caps][currentStringAsTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentTopic.caps].mixedCase,
+      topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
+      linkText
+    )
+    console.log(tokens)
+    tokens.splice(tokenIndex, 1, importReference);
+    console.log(tokens)
   }
 }
 
