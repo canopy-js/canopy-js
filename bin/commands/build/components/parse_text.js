@@ -4,10 +4,12 @@ let { validateImportReferenceGlobalMatching } = require('./helpers');
 
 function parseText(text, parsingContext) {
   let { currentTopic, currentSubtopic, topicSubtopics } = parsingContext;
+
+  let tokens = [];
   parsingContext.text = text;
+  parsingContext.tokens = tokens;
 
   let characters = text.split('');
-  let tokens = [];
   let buffer = '';
 
   for (let i = 0; i < characters.length; i++) {

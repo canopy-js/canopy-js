@@ -11,7 +11,8 @@ test('it creates text tokens', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'This is a clause with no links.';
@@ -38,7 +39,8 @@ test('it matches local references', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: { 'IDAHO': {} },
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'This is a clause about [[the state flower]].';
@@ -80,7 +82,8 @@ test('it matches global references', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'The state of Idaho borders [[Wyoming]].';
@@ -122,7 +125,8 @@ test('it lets you give arbitrary names to references', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'The state of Idaho borders [[Wyoming|Kentucky]].';
@@ -164,7 +168,8 @@ test('it matches implicit import references', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = "Idaho's state capital is near [[Wyoming]] and its [[Yellowstone National Park]].";
@@ -216,7 +221,8 @@ test('it matches implicit import references in any order within a sentence', () 
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = "Idaho's state capital is near [[Yellowstone National Park]], of [[Wyoming]].";
@@ -272,7 +278,8 @@ test('it matches an implicit import reference to the closest candidate link', ()
     currentTopic: new TopicName('My vacation'),
     currentSubtopic: new TopicName('Places to go'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = "I would like to visit [[Columbus]], [[Ohio]] and [[London]], [[England]]"; // There is also a London, Ohio
@@ -341,7 +348,8 @@ test('it matches import references with explicit syntax and lets you rename the 
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = "Idaho's state capital is near [[Wyoming#Yellowstone National Park|the park]], of [[Wyoming]].";
@@ -393,7 +401,8 @@ test('it matches back to back global references', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'The state of Idaho borders [[Wyoming]][[Wyoming]]';
@@ -439,7 +448,8 @@ test('it matches global references at the end of strings', () => {
     currentTopic: new TopicName('Idaho'),
     currentSubtopic: new TopicName('The State Capital'),
     subtopicParents: {},
-    importReferencesToCheck: []
+    importReferencesToCheck: [],
+    provisionalLocalReferences: {}
   }
 
   let text = 'The state of Idaho borders [[Wyoming]]';
