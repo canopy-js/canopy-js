@@ -7,8 +7,8 @@ let {
 let { TopicName } = require('../../shared');
 let { Paragraph } = require('../../shared');
 
-function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents) {
-  let paragraphsWithKeys = paragraphsOfFile(path);
+function jsonForExplFile(path, explFileData, namespaceObject, importReferencesToCheck, subtopicParents) {
+  let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);
   let paragraphsBySubtopic = {};
   let paragraph = new Paragraph(paragraphsWithKeys[0]);
   let currentTopic = new TopicName(paragraph.key);

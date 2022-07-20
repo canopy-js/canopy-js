@@ -48,10 +48,12 @@ function localReferenceMatcher(string, parsingContext, index) {
 
   if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentStringAsTopic.caps)) { // the reference could be to a subtopic of current topic
     if (subtopicParents[currentTopic.caps][currentStringAsTopic.caps]) { // that subtopic already has a parent
-      if (localReferenceCouldBeImport(text, index, topicSubtopics)) {
+      let currentLinkCouldBeImport = localReferenceCouldBeImport(text, index, topicSubtopics);
+      let otherLinkCouldBeImport = priorLocalReferenceCouldBeImport(provisionalLocalReferences);
+
+      if (currentLinkCouldBeImport && !otherLinkCouldBeImport) {
         return null // allow text to be matched as import reference in importReferenceMatcher
-      }
-      if (priorLocalReferenceCouldBeImport(provisionalLocalReferences)) {
+      } else if (!currentLinkCouldBeImport && otherLinkCouldBeImport) {
         convertPriorLocalReferenceToImport(provisionalLocalReferences);
       } else {
         redundantLocalReferences.push([
@@ -63,7 +65,7 @@ function localReferenceMatcher(string, parsingContext, index) {
       }
     }
 
-    subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic.caps; // mark this subtopic as claimed
+    subtopicParents[currentTopic.caps][currentStringAsTopic.caps] = currentSubtopic; // mark this subtopic as claimed
     provisionalLocalReferences[currentStringAsTopic.caps] = { // local references to convert to imports if found redundant
       tokens,
       text,
@@ -128,9 +130,8 @@ function localReferenceMatcher(string, parsingContext, index) {
       topicSubtopics[currentTopic.caps][currentSubtopic.caps].mixedCase,
       linkText
     )
-    console.log(tokens)
+
     tokens.splice(tokenIndex, 1, importReference);
-    console.log(tokens)
   }
 }
 
@@ -138,7 +139,7 @@ function globalReferenceMatcher(string, parsingContext) {
   let { topicSubtopics, currentTopic, currentSubtopic } = parsingContext;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return;
-  if (linkFragment) return;
+  if (linkFragment && linkTarget !== linkFragment) return;
   let stringAsTopic = new TopicName(linkTarget);
 
   if (topicSubtopics.hasOwnProperty(stringAsTopic.caps)) {
@@ -183,11 +184,11 @@ function importReferenceMatcher(string, parsingContext, index) {
   }
 
   if (!topicSubtopics.hasOwnProperty(targetTopic.caps)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic`;
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]`;
   }
 
   if (topicSubtopics.hasOwnProperty(targetTopic.caps) && !topicSubtopics[targetTopic.caps].hasOwnProperty(targetSubtopic.caps)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic in ${targetTopic.mixedCase}`;
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]`;
   }
 
   importReferencesToCheck.push([currentTopic, currentSubtopic, targetTopic, targetSubtopic]);

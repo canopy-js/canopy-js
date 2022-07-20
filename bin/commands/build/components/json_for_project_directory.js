@@ -2,27 +2,31 @@ let fs = require('fs-extra');
 let buildNamespaceObject = require('./build_namespace_object.js');
 let jsonForExplFile = require('./json_for_expl_file.js');
 let {
-  topicKeyOfFile,
+  topicKeyOfString,
   listExplFilesRecursive,
-  validateImportReferenceTargets
+  validateImportReferenceTargets,
+  validateSubtopicDefinitions
 } = require('./helpers');
 
 let { TopicName } = require('../../shared');
 
-function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirectory, makeFolders) {
+function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
+  let sourceDirectory = `${projectDir}/topics`;
+  let destinationBuildDirectory = `${projectDir}/build`
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let explFilePaths = listExplFilesRecursive(sourceDirectory);
-  let namespaceObject = buildNamespaceObject(explFilePaths);
+  let doubleDefinedSubtopics = [];
+  let namespaceObject = buildNamespaceObject(explFileData, doubleDefinedSubtopics);
   let importReferencesToCheck = [];
   let subtopicParents = {};
+  let directoriesToEnsure = [];
+  let filesToWrite = {};
 
-  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
-  fs.ensureDirSync(destinationDataDirectory);
+  directoriesToEnsure.push(destinationDataDirectory);
 
-  explFilePaths.forEach(function(path) {
-    if (!topicKeyOfFile(path)) return;
+  Object.keys(explFileData).forEach(function(path) {
+    if (!topicKeyOfString(explFileData[path])) return;
 
-    let json = jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents);
+    let json = jsonForExplFile(path, explFileData, namespaceObject, importReferencesToCheck, subtopicParents);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
     let topicName = new TopicName(explFileNameWithoutExtension);
     let fileName = topicName.fileName;
@@ -34,18 +38,19 @@ function generateJsonForProjectDirectory(sourceDirectory, destinationBuildDirect
       console.log("WRITING TO " + destinationPath + ": " + json);
     }
 
-    fs.ensureDirSync(destinationDataDirectory);
-    fs.writeFileSync(destinationPath, json);
+    filesToWrite[destinationPath] = json;
 
     if (makeFolders) {
-      let folderTopic = new TopicName(topicKeyOfFile(path));
+      let folderTopic = new TopicName(topicKeyOfString(explFileData[path]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.slug;
-      fs.ensureDirSync(destinationBuildDirectory + '/' + folderTopic.slug);
+      directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.slug);
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });
 
   validateImportReferenceTargets(importReferencesToCheck, subtopicParents);
+  validateSubtopicDefinitions(doubleDefinedSubtopics, subtopicParents)
+  return { directoriesToEnsure, filesToWrite }
 }
 
-module.exports = generateJsonForProjectDirectory;
+module.exports = jsonForProjectDirectory;

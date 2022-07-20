@@ -1,11 +1,8 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 let { Paragraph } = require('../../shared');
-
-function paragraphsOfFile(path) {
-  let fileContents = fs.readFileSync(path, 'utf8');
-  return fileContents.trim().split(/\n\n+/);
-}
+let dedent = require('dedent-js');
+let { TopicName } = require('../../shared');
 
 function linesByBlockOf(string) {
   let lines = string.split(/\n/);
@@ -140,8 +137,8 @@ function listExplFilesRecursive(rootDirectory) {
   return filePaths;
 }
 
-function topicKeyOfFile(path) {
-  let paragraphsWithKeys = paragraphsOfFile(path);
+function topicKeyOfString(string) {
+  let paragraphsWithKeys = string.trim().split(/\n\n+/);
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
@@ -153,12 +150,12 @@ function validateImportReferenceGlobalMatching(tokens, enclosingTopic, enclosing
     );
 
     if(!globalToken) {
-      let targetTopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetTopic];
-      let targetSubtopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetSubtopic];
-      let enclosingTopic = topicSubtopics[enclosingTopic][enclosingTopic];
-      let enclosingSubtopic = topicSubtopics[enclosingTopic][enclosingSubtopic];
+      let targetTopicName = new TopicName(importReferenceToken.targetTopic);
+      let targetSubtopicName = new TopicName(importReferenceToken.targetSubtopic);
+      let targetTopic = topicSubtopics[targetTopicName.caps, targetTopicName.caps];
+      let targetSubtopic = topicSubtopics[targetTopicName.caps, targetSubtopicName.caps];
 
-      throw `Error: Import reference to [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopic.mixedCase}].`;
+      throw `Error: Import reference to [${targetTopicName.mixedCase}, ${targetSubtopicName.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopicName.mixedCase}].`;
     }
   });
 }
@@ -171,21 +168,31 @@ function validateImportReferenceTargets(importReferencesToCheck, subtopicParents
   });
 }
 
+function validateSubtopicDefinitions(doubleDefinedSubtopics, subtopicParents) {
+  doubleDefinedSubtopics.forEach(([topic, subtopic]) => {
+    if (subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) {
+      throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]`;
+    }
+  });
+}
+
 function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) { // can only be done after we've seen every local reference
   redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
     if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
-      throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]\n` +
+      throw dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
-      `  One reference is in [${enclosingSubtopic1}]\n` +
-      `  One reference is in [${enclosingSubtopic2}]\n` +
-      `  \n` +
-      `  Multiple local references to the same subtopic are not permitted.\n` +
-      `  Consider making one of these local references a self import reference.\n` +
-      `  That would look like either [[${enclosingSubtopic1}#${referencedSubtopic}]] or [[${enclosingSubtopic2}#${referencedSubtopic}]].\n`
-      `  \n` +
-      `  (It is also possible you meant one of these as an import reference,\n` +
-      `  However, when the enclosing topic and the target topic both have a given subtopic,\n`
-      `  The import reference must be given in extended format eg [[Topic#Subtopic]].\n`
+          - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}]
+          - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}]
+
+          Multiple local references to the same subtopic are not permitted.
+          Consider making one of these local references a self-import reference.
+          That would look like using [[${topic.mixedCase}#${referencedSubtopic.mixedCase}]] in the same paragraph as
+          a reference to [[${topic.mixedCase}]].
+
+          (It is also possible you meant one of these as an import reference, however,
+          if both links could be either local or import references, you must clarify
+          which is the import reference using explicit import syntax ie [[Other Topic#${referencedSubtopic.mixedCase}]])
+          `;
     }
   });
 }
@@ -193,7 +200,9 @@ function validateRedundantLocalReferences(subtopicParents, redundantLocalReferen
 function hasConnection(subtopic, topic, subtopicParents) {
   if (subtopic.caps === topic.caps) return true;
   if (subtopicParents[topic.caps] && !subtopicParents[topic.caps][subtopic.caps]) return false;
-  return hasConnection(subtopicParents[topic.caps][subtopic.caps], topic.caps, subtopicParents)
+  if (!subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
+  if (!subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
+  return hasConnection(subtopicParents[topic.caps][subtopic.caps], topic, subtopicParents)
 }
 
 /*
@@ -250,14 +259,36 @@ class linkProximityCalculator {
   }
 }
 
+function updateFilesystem(directoriesToEnsure, filesToWrite, destinationDataDirectory) {
+  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
+
+  directoriesToEnsure.forEach(directoryPath => {
+    fs.ensureDirSync(directoryPath);
+  });
+
+  Object.keys(filesToWrite).forEach(filePath => {
+    fs.writeFileSync(filePath, filesToWrite[filePath]);
+  });
+}
+
+function getExplFileData(topicsPath) {
+  let explFilePaths = listExplFilesRecursive(topicsPath);
+  return explFilePaths.reduce((fileData, filePath) => {
+    fileData[filePath] = fs.readFileSync(filePath, 'utf8');
+    return fileData;
+  }, {});
+}
+
 module.exports = {
-  paragraphsOfFile,
   linesByBlockOf,
   consolidateTextTokens,
-  topicKeyOfFile,
+  topicKeyOfString,
   listExplFilesRecursive,
   validateImportReferenceGlobalMatching,
   validateImportReferenceTargets,
   validateRedundantLocalReferences,
-  linkProximityCalculator
+  validateSubtopicDefinitions,
+  linkProximityCalculator,
+  updateFilesystem,
+  getExplFileData
 };
