@@ -57,11 +57,11 @@ let { TopicName, Paragraph } = require('../shared');
 
 */
 
-function reconstructProjectFiles(dataFile, originalFileList) {
+function reconstructProjectFiles(dataFile, originalFileList, options) {
   let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
   let fileSystemData = collectFileSystemData(filesToWrite, originalFileList);
   let { messages, filesToWriteFinal, pathsToDelete } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
-  saveBackup(filesToWriteFinal, fileSystemData);
+  if (!options.noBackup) saveBackup(filesToWriteFinal, fileSystemData);
   updateFileSystem(filesToWriteFinal, directoriesToEnsure, pathsToDelete);
   messages.forEach(message => console.log(message));
 }

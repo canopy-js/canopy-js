@@ -18,7 +18,7 @@ let {
 const bulk = async function(fileList, options) {
   if (!fs.existsSync('./topics')) throw "Must be in a projects directory with a topics folder";
 	let editorMode = !!!(options.start || options.finish);
-  options.clear && fs.writeFileSync('.canopy_bulk_backup_log', '');
+  options.noBackup && fs.existsSync('.canopy_bulk_backup_log') && fs.unlinkSync('.canopy_bulk_backup_log');
 
 	if (options.pick) {
     let callback, optionList, postProcess;
@@ -75,10 +75,15 @@ const bulk = async function(fileList, options) {
 		fs.writeFileSync('.canopy_bulk_file', initialData);
 		editor('.canopy_bulk_file', (code, sig) => {
 			let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
-			reconstructProjectFiles(finishedData, fileList);
+			reconstructProjectFiles(finishedData, fileList, options);
       fs.unlink('.canopy_bulk_file');
 		});
 	}
+
+  if (options.continue) {
+    let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
+    reconstructProjectFiles(finishedData, fileList, options);
+  }
 
 	if (options.start) { // non-editor mode
     fs.writeFileSync('canopy_bulk_file', initialData);
@@ -88,7 +93,7 @@ const bulk = async function(fileList, options) {
 	if (options.finish) { // non-editor mode
 		let finishedData = fs.readFileSync('canopy_bulk_file').toString();
     let fileList = JSON.parse(fs.readFileSync('.canopy_bulk_original_file_list').toString());
-		reconstructProjectFiles(finishedData, fileList);
+		reconstructProjectFiles(finishedData, fileList, options);
     fs.unlink('canopy_bulk_file');
     fs.unlink('.canopy_bulk_original_file_list');
 	}
