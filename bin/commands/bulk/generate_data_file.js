@@ -1,17 +1,16 @@
 let dedent = require('dedent');
-let fs = require('fs-extra');
 let fsPath = require('path');
 let { keyFromFile, takeDirectoryPath } = require('./helpers');
 
-function generateDataFile(filesByPath, blank) {
-	if (filesByPath.length === 0) return blank ? '' : defaultText();
+function generateDataFile(filesByPath, fileSystemData, options) {
+	if (filesByPath.length === 0) return options.blank ? '' : defaultText();
 	return Object.keys(filesByPath).map((directoryPath) => {
     let filePaths = filesByPath[directoryPath];
     let displayPath = directoryPath.match(/topics\/([^.]+)$/)[1].replace(/_/g, ' ');
     let dataText = `[${displayPath}]\n\n`;
 
     let filesOfPath = filePaths.map(filePath => {
-      let fileContents = '* ' + fs.readFileSync(filePath).toString().trim();
+      let fileContents = '* ' + fileSystemData[filePath].toString().trim();
       return fileContents;
     }).join("\n\n\n");
 

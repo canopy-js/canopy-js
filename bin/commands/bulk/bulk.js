@@ -3,7 +3,7 @@ let	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink 
 let fs = require('fs-extra');
 let editor = require('editor');
 let generateDataFile = require('./generate_data_file');
-let reconstructProjectFiles = require('./reconstruct_project_files');
+let { reconstructProjectFiles } = require('./reconstruct_project_files');
 let Fzf = require('@dgoguerra/fzf').Fzf;
 let {
   recursiveDirectoryFind,
@@ -66,9 +66,10 @@ const bulk = async function(fileList, options) {
     }
   }
 
+  fileSystemData = collectFileSystemData(fileList);
   fileList = deduplicate(fileList).sort(pathComparator);
   filesByPath = groupByPath(fileList);
-	let initialData = generateDataFile(filesByPath, options.blank);
+	let initialData = generateDataFile(filesByPath, fileSystemData, options);
 
 	if (editorMode) {
 		fs.writeFileSync('.canopy_bulk_file', initialData);
@@ -91,6 +92,18 @@ const bulk = async function(fileList, options) {
     fs.unlink('canopy_bulk_file');
     fs.unlink('.canopy_bulk_original_file_list');
 	}
+}
+
+function collectFileSystemData(fileList) {
+  let fileSystemData = {};
+
+  fileList.forEach(filePath => {
+    if (fs.existsSync(filePath)) {
+      fileSystemData[filePath] = fs.readFileSync(filePath).toString();
+    }
+  });
+
+  return fileSystemData;
 }
 
 module.exports = bulk;
