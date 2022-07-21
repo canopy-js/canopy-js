@@ -6,12 +6,12 @@ import Path from 'models/path';
 import TopicName from 'requests/topic_name';
 
 const requestJson = (topicNameString) => {
-  if (REQUEST_CACHE[topicName]) return Promise.resolve(REQUEST_CACHE[topicName]);
+  if (REQUEST_CACHE[topicName]) return REQUEST_CACHE[topicName];
 
   let topicName = new TopicName(topicNameString);
   let dataPath = projectPathPrefix + '/_data/' + topicName.fileName + '.json';
 
-  return fetch(dataPath).
+  let promise = fetch(dataPath).
     then(res => {
       return res.json().then((json) => {
         REQUEST_CACHE[topicName] = json;
@@ -23,6 +23,10 @@ const requestJson = (topicNameString) => {
       }
       return Promise.reject(`Unrecognized topic: "${topicName.mixedCase}"`);
     });
+
+  REQUEST_CACHE[topicName] = promise;
+
+  return promise;
 }
 
 export default requestJson;

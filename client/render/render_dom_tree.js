@@ -1,7 +1,7 @@
 import displayPath from 'display/display_path';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import BlockRenderers from 'render/block_renderers';
-import eagerLoad from 'requests/eager_load';
+import requestJson from 'requests/request_json';
 import Path from 'models/path'
 import Paragraph from 'models/paragraph';
 
@@ -55,7 +55,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   } = renderContext;
 
   return (token, linkElement) => {
-    eagerLoad(token.targetTopic);
+    requestJson(token.targetTopic); // eager-load and cache
 
     if (globalLinkIsOpen(linkElement, pathToDisplay, subtopicName)) {
       let newPath = pathToDisplay.withoutFirstSegment;
