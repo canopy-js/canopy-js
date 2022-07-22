@@ -40,19 +40,20 @@ program.command('build')
 
 program.command('watch')
   .description('watch a Canopy project and rebuild JSON assets on text change')
-  .argument('[mode]', 'whether to start or stop Canopy watch', 'start')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
   .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
-  .action((argument, options) => {
-  	watch(argument, options);
+  .action((options) => {
+  	watch(options);
   });
 
 program.command('serve')
   .description('run a server for a Canopy project')
-  .addOption(new Option('-p, --port <number>', 'port number').env('PORT').default(8000))
+  .argument('[portArgument]', 'Additional way of specifying port', 8000)
+  .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
   .option('-s, --static', 'run a static assets server instead of a node.js server', false)
-  .action((options) => {
+  .action((portArgument, options) => {
+    options.port = options.port || Number(portArgument) || 8000;
     try {
       serve(options);
     } catch (e) {
