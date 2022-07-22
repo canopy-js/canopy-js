@@ -51,17 +51,18 @@ const bulk = async function(fileList, options) {
   if (options.search) {
     fileList = fileList.concat(
       child_process
-      .execSync(`find topics | grep -i ${options.search} | grep .expl`)
+      .execSync(`find topics | { grep -i ${options.search} | grep .expl || true; }`) // suppress error on no results
       .toString()
       .trim()
       .split("\n")
+      .filter(Boolean)
     )
   }
 
   if (fileList.length === 0) {
-    if (options.blank) {
+    if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       fileList = [];
-    } else {
+    } else { // the user didn't specify any paths, but didn't indicate they wanted a blank result either
       fileList = getRecursiveSubdirectoryFiles('topics');
     }
   }
@@ -75,7 +76,11 @@ const bulk = async function(fileList, options) {
 		fs.writeFileSync('.canopy_bulk_file', initialData);
 		editor('.canopy_bulk_file', (code, sig) => {
 			let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
-			reconstructProjectFiles(finishedData, fileList, options);
+			try {
+        reconstructProjectFiles(finishedData, fileList, options);
+      } catch (e) {
+        console.error(e);
+      }
       fs.unlink('.canopy_bulk_file');
 		});
 	}

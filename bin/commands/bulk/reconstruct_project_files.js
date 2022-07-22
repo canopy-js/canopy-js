@@ -69,11 +69,11 @@ function reconstructProjectFiles(dataFile, originalFileList, options) {
 function parseDataFile(dataFile) {
   let filesToWrite = {};
   let directoriesToEnsure = [];
-  let sections = dataFile.split(/(?=^\[.*\]\n)/gm); // Take the path-initial sections
+  let sections = dataFile.split(/(?=^\[.*\]\n)/gm).map(s => s.trim()).filter(Boolean); // Take the path-initial sections
 
-  sections.filter(Boolean).forEach(section => {
+  sections.forEach(section => {
     let path = section.split("\n")[0].match(/\[([^/].*[^/])\]/)?.[1];
-    if (!path) throw `Invalid path: ${section.split("\n")[0]}`;
+    if (!path) throw `Invalid directory path: "${section.split("\n")[0]}"`;
     let pathWithUnderscores = path.replace(/ /g,'_');
     let pathSegments = path.split('/');
     let directoryPath = `topics/${pathWithUnderscores}`;

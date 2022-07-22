@@ -201,7 +201,7 @@ describe('parseDataFile', function() {
 
     * Topic: Paragraph.\n`;
 
-    expect(() => parseDataFile(dataFile)).toThrow('Invalid path');
+    expect(() => parseDataFile(dataFile)).toThrow('Invalid directory path: "[]"');
   });
 
   test('it throws for slash-initial path', () => {
@@ -209,7 +209,7 @@ describe('parseDataFile', function() {
 
     * Topic: Paragraph.\n\n`;
 
-    expect(() => parseDataFile(dataFile)).toThrow('Invalid path: [/A/B/C]');
+    expect(() => parseDataFile(dataFile)).toThrow('Invalid directory path: "[/A/B/C]"');
   });
 
   test('it throws for slash-final path', () => {
@@ -217,7 +217,7 @@ describe('parseDataFile', function() {
 
     * Topic: Paragraph.\n`;
 
-    expect(() => parseDataFile(dataFile)).toThrow('Invalid path: [A/B/C/]');
+    expect(() => parseDataFile(dataFile)).toThrow('Invalid directory path: "[A/B/C/]"');
   });
 });
 
