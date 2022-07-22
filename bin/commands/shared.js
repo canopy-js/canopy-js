@@ -9,7 +9,7 @@ class TopicName {
     this.mixedCase = removeStyleCharacters(string).replace(/\?$/, '');
     this.slug = this.mixedCase.replace(/ /g, '_');
     this.caps = this.mixedCase.toUpperCase();
-    this.fileName = this.slug.replace(/['"\\\/]/g, '');
+    this.fileName = this.slug;
     this.capsFile = this.fileName.toUpperCase();
   }
 }

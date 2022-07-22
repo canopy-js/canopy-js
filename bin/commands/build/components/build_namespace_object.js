@@ -20,7 +20,6 @@ function buildNamespaceObject(explFileData, doubleDefinedSubtopics) {
       - Another file is: ${path}
       `;
     } else {
-      // Topics must be unique to the level of filename, which is the strongest level because we remove quotation marks
       pathsForTopics[currentTopic.capsFile] = path;
     }
 

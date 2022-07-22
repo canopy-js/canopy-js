@@ -17,7 +17,7 @@ class Path {
       }
       this.pathString = Path.arrayToString(this.pathArray);
     } else if (typeof argument === 'string' || argument instanceof String) {
-      this.pathString = argument;
+      this.pathString = decodeURI(argument);
       this.pathArray = Path.stringToArray(this.pathString);
     }
   }
@@ -268,8 +268,8 @@ class Path {
     let currentNode = rootElement;
     if (rootElement === canopyContainer) {
       currentNode = rootElement.querySelector(
-        `[data-topic-name="${path.firstTopic}"]` +
-        `[data-subtopic-name="${path.firstSubtopic}"]` +
+        `[data-topic-name="${path.firstTopic.replace(/"/g,'\\\"')}"]` +
+        `[data-subtopic-name="${path.firstSubtopic.replace(/"/g,'\\\"')}"]` +
         `[data-path-depth="${0}"]`
       );
       if (path.length === 1) { return currentNode; }
@@ -282,8 +282,8 @@ class Path {
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
 
       currentNode = currentNode.querySelector(
-        `[data-topic-name="${subpath.firstTopic}"]` +
-        `[data-subtopic-name="${subpath.firstSubtopic}"]` +
+        `[data-topic-name="${subpath.firstTopic.replace(/"/g,'\\\"')}"]` +
+        `[data-subtopic-name="${subpath.firstSubtopic.replace(/"/g,'\\\"')}"]` +
         `[data-path-depth="${newPathDepth}"]`
       );
 

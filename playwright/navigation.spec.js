@@ -20,7 +20,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await expect(page).toHaveURL('/United_States/New_York');
-    await expect(page.locator('text=The state of New York has a southern border.')).toHaveCount(1);
+    await expect(page.locator('text=The state of New York has a southern border')).toHaveCount(1);
 
     // For a local link
     await page.locator('body').press('ArrowDown');
@@ -421,7 +421,7 @@ test.describe('Navigation', () => {
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
-    await page.locator('text=The state of New York has a southern border.').press('ArrowDown');
+    await page.locator('text=The state of New York has a southern border').press('ArrowDown');
     await page.locator('text=The southern border of New York abuts the northern border of New Jersey.').press('z');
     await expect(page).toHaveURL('/New_York#Southern_border');
     await expect(page.locator('h1')).toHaveText('New York');
@@ -494,5 +494,35 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await page.reload();
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  });
+
+  test('it renders everything properly for topics with single and double quotation marks', async ({ page, context }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
+
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator('text=the word "vinyard"').click({
+        modifiers: ['Meta']
+      })
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
   });
 });
