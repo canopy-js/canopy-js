@@ -1,5 +1,5 @@
 import { slugFor } from 'helpers/identifiers';
-import { onLocalLinkClick, onGlobalLinkClick } from 'render/click_handlers';
+import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
 import Link from 'models/link';
@@ -98,7 +98,7 @@ function createGlobalLinkElement(token) {
   linkElement.href = `/${slugFor(token.targetTopic)}`;
   linkElement.addEventListener(
     'click',
-    onGlobalLinkClick(new Link(linkElement))
+    onGlobalAndImportLinkClick(new Link(linkElement))
   );
   return linkElement
 }
@@ -135,7 +135,7 @@ function createImportLinkElement(token) {
 
   linkElement.addEventListener(
     'click',
-    onGlobalLinkClick(new Link(linkElement))
+    onGlobalAndImportLinkClick(new Link(linkElement))
   );
 
   return linkElement
