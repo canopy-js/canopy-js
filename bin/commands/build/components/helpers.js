@@ -142,78 +142,15 @@ function topicKeyOfString(string) {
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
-function validateImportReferenceGlobalMatching(tokens, enclosingTopic, enclosingSubtopic, topicSubtopics) {
-  tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
-    let globalToken = tokens.find(
-      token => token.targetTopic === importReferenceToken.targetTopic &&
-      token.targetSubtopic === importReferenceToken.targetTopic
-    );
-
-    if(!globalToken) {
-      let targetTopicName = new TopicName(importReferenceToken.targetTopic);
-      let targetSubtopicName = new TopicName(importReferenceToken.targetSubtopic);
-      let targetTopic = topicSubtopics[targetTopicName.caps, targetTopicName.caps];
-      let targetSubtopic = topicSubtopics[targetTopicName.caps, targetSubtopicName.caps];
-
-      throw `Error: Import reference to [${targetTopicName.mixedCase}, ${targetSubtopicName.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopicName.mixedCase}].`;
-    }
-  });
-}
-
-function validateImportReferenceTargets(importReferencesToCheck, subtopicParents) {
-  importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic]) => {
-    if (!hasConnection(targetSubtopic, targetTopic, subtopicParents)) {
-      throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
-    }
-  });
-}
-
-function validateSubtopicDefinitions(doubleDefinedSubtopics, subtopicParents) {
-  doubleDefinedSubtopics.forEach(([topic, subtopic]) => {
-    if (subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) {
-      throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]`;
-    }
-  });
-}
-
-function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) { // can only be done after we've seen every local reference
-  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
-    if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
-      throw dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
-
-          - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}]
-          - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}]
-
-          Multiple local references to the same subtopic are not permitted.
-          Consider making one of these local references a self-import reference.
-          That would look like using [[${topic.mixedCase}#${referencedSubtopic.mixedCase}]] in the same paragraph as
-          a reference to [[${topic.mixedCase}]].
-
-          (It is also possible you meant one of these as an import reference, however,
-          if both links could be either local or import references, you must clarify
-          which is the import reference using explicit import syntax ie [[Other Topic#${referencedSubtopic.mixedCase}]])
-          `;
-    }
-  });
-}
-
-function hasConnection(subtopic, topic, subtopicParents) {
-  if (subtopic.caps === topic.caps) return true;
-  if (subtopicParents[topic.caps] && !subtopicParents[topic.caps][subtopic.caps]) return false;
-  if (!subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
-  if (!subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
-  return hasConnection(subtopicParents[topic.caps][subtopic.caps], topic, subtopicParents)
-}
-
 /*
 
 When a link could be an import reference from one of two global references, we want to assign
-it to the closest candidate link. linkProximityCalculator takes a string with links, and returns
+it to the closest candidate link. LinkProximityCalculator takes a string with links, and returns
 and object that can be used to retreive for a given link by index, a sorted list of other links
 by proximity to that link.
 
 */
-class linkProximityCalculator {
+class LinkProximityCalculator {
   constructor(text) {
     this.links = Array.from(
       text.matchAll(/\[\[((?:.(?!\]\]))*.)\]\]/g) // [[ followed by any number of not ]], followed by ]]
@@ -284,11 +221,7 @@ module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
   listExplFilesRecursive,
-  validateImportReferenceGlobalMatching,
-  validateImportReferenceTargets,
-  validateRedundantLocalReferences,
-  validateSubtopicDefinitions,
-  linkProximityCalculator,
   updateFilesystem,
-  getExplFileData
+  getExplFileData,
+  LinkProximityCalculator
 };

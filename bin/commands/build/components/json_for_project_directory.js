@@ -1,5 +1,4 @@
 let fs = require('fs-extra');
-let buildNamespaceObject = require('./build_namespace_object.js');
 let jsonForExplFile = require('./json_for_expl_file.js');
 let {
   topicKeyOfString,
@@ -7,17 +6,14 @@ let {
   validateImportReferenceTargets,
   validateSubtopicDefinitions
 } = require('./helpers');
-
+let ParserState = require('./parser_state');
 let { TopicName } = require('../../shared');
 
 function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
   let sourceDirectory = `${projectDir}/topics`;
   let destinationBuildDirectory = `${projectDir}/build`
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let doubleDefinedSubtopics = [];
-  let namespaceObject = buildNamespaceObject(explFileData, doubleDefinedSubtopics);
-  let importReferencesToCheck = [];
-  let subtopicParents = {};
+  let parserState = new ParserState(explFileData);
   let directoriesToEnsure = [];
   let filesToWrite = {};
 
@@ -26,7 +22,7 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
   Object.keys(explFileData).forEach(function(path) {
     if (!topicKeyOfString(explFileData[path])) return;
 
-    let json = jsonForExplFile(path, explFileData, namespaceObject, importReferencesToCheck, subtopicParents);
+    let json = jsonForExplFile(path, explFileData, parserState);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
     let topicName = new TopicName(explFileNameWithoutExtension);
     let fileName = topicName.fileName;
@@ -48,8 +44,10 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
     }
   });
 
-  validateImportReferenceTargets(importReferencesToCheck, subtopicParents);
-  validateSubtopicDefinitions(doubleDefinedSubtopics, subtopicParents)
+  parserState.validateImportReferenceTargets();
+  parserState.validateSubtopicDefinitions();
+  parserState.validateImportReferenceGlobalMatching();
+
   return { directoriesToEnsure, filesToWrite }
 }
 

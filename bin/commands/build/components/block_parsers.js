@@ -1,9 +1,9 @@
 let { TextToken } = require('./tokens');
 let parseText = require('./parse_text');
 
-function textBlockFor(lines, parsingContext) {
+function textBlockFor(lines, parserState) {
   let tokensByLine = lines.map(
-    (line) => parseText(line, parsingContext)
+    (line) => parseText(line, parserState)
   )
 
   return {
@@ -23,9 +23,9 @@ function codeBlockFor(lines) {
   }
 }
 
-function quoteBlockFor(lines, parsingContext) {
+function quoteBlockFor(lines, parserState) {
   let tokensByLine = lines.map((line) => line.match(/^\s*>\s?(.*)$/)[1]).map(
-    (line) => parseText(line, parsingContext)
+    (line) => parseText(line, parserState)
   );
 
   return {
@@ -34,7 +34,7 @@ function quoteBlockFor(lines, parsingContext) {
   }
 }
 
-function listBlockFor(lines, parsingContext) {
+function listBlockFor(lines, parserState) {
   let topLevelNodes = [];
   let lastNode;
 
@@ -46,7 +46,7 @@ function listBlockFor(lines, parsingContext) {
 
     let ordinal = match[1];
     let lineContents = match[2];
-    let tokensOfLine = parseText(lineContents, parsingContext);
+    let tokensOfLine = parseText(lineContents, parserState);
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -101,7 +101,7 @@ function removeExtraKeys(node) {
   node.children.forEach(removeExtraKeys);
 }
 
-function tableBlockFor(lines, parsingContext) {
+function tableBlockFor(lines, parserState) {
   let rows = lines.map((line) => line.
       replace(/(?:^|([^\\]))\|/g, '$1||').
       split('||').
@@ -115,7 +115,7 @@ function tableBlockFor(lines, parsingContext) {
   let tokensByCellByRow = rows.map((cellsOfRow) =>
     cellsOfRow.map(
       (cell) => Array.prototype.concat.apply(
-        [], parseText(cell, parsingContext)
+        [], parseText(cell, parserState)
       )
     )
   );
@@ -126,13 +126,13 @@ function tableBlockFor(lines, parsingContext) {
   }
 }
 
-function footnoteBlockFor(lines, parsingContext) {
+function footnoteBlockFor(lines, parserState) {
   let footnoteObjects = lines.map((footnote) => {
     let match = footnote.match(/^\[\^([^\]]+)]\:(.*$)/);
     let superscript = match[1];
     let text = match[2];
 
-    let tokens = parseText(text, parsingContext);
+    let tokens = parseText(text, parserState);
 
     return {
       superscript,

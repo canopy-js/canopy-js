@@ -996,7 +996,7 @@ test('it throws error if import reference lacks matching global reference', () =
     `,
     'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].
 
-    Idaho: This subtopic makes Idaho above a local reference and Boise shouldn't be a valid import reference.
+    Idaho: This subtopic makes Idaho above a local reference and so the link to Boise shouldn't be a valid import reference.
     `,
   };
 

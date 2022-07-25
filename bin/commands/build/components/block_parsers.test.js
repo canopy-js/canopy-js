@@ -1,8 +1,4 @@
 let { TextToken } = require('./tokens');
-// jest.mock('./parse_text', () => ({
-//   __esModule: true,
-//   default: jest.fn((clauseString) => [{ type: 'text', text: clauseString }])
-// }));
 
 import {
   textBlockFor,
@@ -19,7 +15,12 @@ test('it parses a text block', () => {
     'This is also a line.'
   ]
 
-  let result = textBlockFor(lines, {});
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = textBlockFor(lines, parserState);
 
   expect(result.type).toEqual('text');
   expect(result.tokensByLine.length).toEqual(2);
@@ -34,7 +35,12 @@ test('it parses a code block', () => {
     ' # }'
   ]
 
-  let result = codeBlockFor(lines, {});
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = codeBlockFor(lines, parserState);
 
   expect(result.type).toEqual('code');
   expect(result.lines[0]).toEqual('if (x) { ');
@@ -47,7 +53,13 @@ test('it parses a quote block', () => {
     ' > To be or not to be;',
     ' > that is the question.'
   ]
-  let result = quoteBlockFor(lines, {});
+
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = quoteBlockFor(lines, parserState);
 
   expect(result.type).toEqual('quote');
   expect(result.tokensByLine[0][0].text).toEqual('To be or not to be;');
@@ -64,7 +76,12 @@ test('it parses a list block', () => {
     '  * This is the last line.'
   ]
 
-  let result = listBlockFor(lines, {});
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = listBlockFor(lines, parserState);
 
   expect(result.type).toEqual('list');
 
@@ -107,7 +124,13 @@ test('it parses a table block', () => {
     '| ====== | ============= |',
     '| data \\| | data2 |',
   ];
-  let result = tableBlockFor(lines, {});
+
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = tableBlockFor(lines, parserState);
 
   expect(result.type).toEqual('table');
 
@@ -124,7 +147,12 @@ test('it parses a footnote block', () => {
     '[^2]: This is the second footnote'
   ];
 
-  let result = footnoteBlockFor(lines, {});
+  let parserState = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    validateImportReferenceGlobalMatching: jest.fn()
+  }
+
+  let result = footnoteBlockFor(lines, parserState);
   expect(result.type).toEqual('footnote');
   expect(result.footnoteObjects.length).toEqual(2);
   expect(result.footnoteObjects[0].superscript).toEqual('1');

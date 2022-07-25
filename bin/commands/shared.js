@@ -51,7 +51,7 @@ class Paragraph {
     let paragraphWithoutKey = paragraphWithKey.slice(match[0].length);
 
     this.key = key;
-    this.paragraph = paragraphWithoutKey;
+    this.text = paragraphWithoutKey;
   }
 }
 

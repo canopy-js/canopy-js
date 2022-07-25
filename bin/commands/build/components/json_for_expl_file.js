@@ -7,41 +7,27 @@ let {
 let { TopicName } = require('../../shared');
 let { Paragraph } = require('../../shared');
 
-function jsonForExplFile(path, explFileData, namespaceObject, importReferencesToCheck, subtopicParents) {
+function jsonForExplFile(path, explFileData, parserState) {
   let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);
+  let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
+  let currentTopicString = rootParagraph.key;
   let paragraphsBySubtopic = {};
-  let paragraph = new Paragraph(paragraphsWithKeys[0]);
-  let currentTopic = new TopicName(paragraph.key);
-  let redundantLocalReferences = [];
-  let provisionalLocalReferences = {};
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraph = new Paragraph(paragraphWithKey);
     if (!paragraph.key) { return; }
-    let currentSubtopic = new TopicName(paragraph.key);
-    let textWithoutKey = paragraph.paragraph;
 
-    let tokensOfParagraph = parseParagraph(
-      textWithoutKey,
-      {
-        topicSubtopics: namespaceObject,
-        currentSubtopic,
-        currentTopic,
-        importReferencesToCheck,
-        subtopicParents,
-        redundantLocalReferences,
-        provisionalLocalReferences
-      }
-    );
+    parserState.setTopicAndSubtopic(rootParagraph.key, paragraph.key);
 
-    paragraphsBySubtopic[currentSubtopic.mixedCase] = tokensOfParagraph;
-    // console.log(`Parsed [${currentTopic}, ${paragraph.key}]`)
+    let tokensOfParagraph = parseParagraph(paragraph.text, parserState);
+
+    paragraphsBySubtopic[parserState.currentSubtopic.mixedCase] = tokensOfParagraph;
   });
 
-  validateRedundantLocalReferences(subtopicParents, redundantLocalReferences);
+  parserState.validateRedundantLocalReferences();
 
   let jsonObject = {
-    displayTopicName: currentTopic.display,
+    displayTopicName: rootParagraph.key,
     paragraphsBySubtopic
   }
 

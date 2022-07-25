@@ -9,22 +9,22 @@ let {
   footnoteBlockFor
 } = require('./block_parsers');
 
-function parseParagraph(textWithoutKey, parsingContext) {
-  let linesContainerObjects = linesByBlockOf(textWithoutKey);
+function parseParagraph(text, parserState) {
+  let linesContainerObjects = linesByBlockOf(text);
 
   let blockObjects = linesContainerObjects.map((linesContainerObject) => {
     if (linesContainerObject.type === 'text') {
-      return textBlockFor(linesContainerObject.lines, parsingContext);
+      return textBlockFor(linesContainerObject.lines, parserState);
     } else if (linesContainerObject.type === 'code') {
       return codeBlockFor(linesContainerObject.lines);
     } else if (linesContainerObject.type === 'quote') {
-      return quoteBlockFor(linesContainerObject.lines, parsingContext);
+      return quoteBlockFor(linesContainerObject.lines, parserState);
     } else if (linesContainerObject.type === 'list') {
-      return listBlockFor(linesContainerObject.lines, parsingContext);
+      return listBlockFor(linesContainerObject.lines, parserState);
     } else if (linesContainerObject.type === 'table') {
-      return tableBlockFor(linesContainerObject.lines, parsingContext);
+      return tableBlockFor(linesContainerObject.lines, parserState);
     } else if (linesContainerObject.type === 'footnote') {
-      return footnoteBlockFor(linesContainerObject.lines, parsingContext);
+      return footnoteBlockFor(linesContainerObject.lines, parserState);
     }
   });
 
