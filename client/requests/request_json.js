@@ -19,7 +19,7 @@ const requestJson = (topicNameString) => {
       });
     }).catch((e) => {
       if (canopyContainer.childNodes.length === 0 && topicName !== defaultTopic) {
-        updateView(Path.default)
+        updateView(Path.default);
       }
       return Promise.reject(`Unrecognized topic: "${topicName.mixedCase}"`);
     });

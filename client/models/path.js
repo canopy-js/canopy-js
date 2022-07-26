@@ -7,10 +7,10 @@ import Link from 'models/link';
 class Path {
   constructor(argument) {
     if (!argument) {
-      this.pathArray = [['', '']];
+      this.pathArray = [];
     } else if (Array.isArray(argument)) {
       if (argument.length === 0) {
-        this.pathArray = [['', '']];
+        this.pathArray = [];
       } else {
         this.pathArray = JSON.parse(JSON.stringify(argument));
         Path.validatePathArray(this.pathArray);
@@ -104,7 +104,7 @@ class Path {
   }
 
   get length() {
-    if (this.pathArray[0][0] === '') {
+    if (!this.pathArray[0]) {
       return 0;
     } else {
       return this.pathArray.length;
@@ -124,7 +124,7 @@ class Path {
   }
 
   get empty() {
-    return this.pathArray[0][0] === '';
+    return !this.pathArray[0];
   }
 
   static get default() {
@@ -167,7 +167,7 @@ class Path {
     }
 
     if (pathString === '/') {
-      return [['','']];
+      return [];
     }
 
     let slashSeparatedUnits = pathString.
