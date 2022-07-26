@@ -2,6 +2,7 @@ import { canopyContainer } from 'helpers/getters';
 
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
+import Link from 'models/link';
 
 function setHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
@@ -91,10 +92,20 @@ function pathForUrl(pathToDisplay, link) {
   }
 }
 
+function scrollPage() {
+  window.scrollTo(
+    {
+      top: Link.selection.enclosingParagraph.paragraphElement.offsetTop - (window.screen.height * .3),
+      behavior: 'smooth'
+    }
+  );
+}
+
 export {
   setHeader,
   displaySectionBelowLink,
   resetDom,
   tryPathPrefix,
-  pathForUrl
+  pathForUrl,
+  scrollPage
 };

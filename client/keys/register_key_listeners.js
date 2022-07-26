@@ -30,7 +30,7 @@ const registerKeyListeners = () => {
     let keyName = keyNames[e.keyCode];
     let shortcutName = modifiers + keyName;
 
-    if (keyName === 'tab') {
+    if (['tab', 'down', 'up'].includes(keyName)) {
       e.preventDefault();
     }
 

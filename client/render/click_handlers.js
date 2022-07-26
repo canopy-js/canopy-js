@@ -28,7 +28,7 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       linkToSelect = link;
     }
 
-    updateView(newPath, linkToSelect, { noScrolling: true });
+    updateView(newPath, linkToSelect);
   };
 };
 
@@ -48,7 +48,7 @@ function onGlobalAndImportLinkClick (link) {
       } else { // Redirect to global child
         path = Path.forSegment(link.targetTopic, link.targetSubtopic);
       }
-      return updateView(path, linkToSelect, { noScrolling: true })
+      return updateView(path, linkToSelect)
     }
 
     if (e.metaKey) {

@@ -176,10 +176,10 @@ class Paragraph {
   }
 
   static get current() {
-    return Path.current.paragraph;
+    return new Paragraph(document.querySelector('canopy-selected-section'));
   }
 
-  get select() {
+  select() {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 

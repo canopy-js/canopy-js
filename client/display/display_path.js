@@ -8,7 +8,8 @@ import {
   addSelectedLinkClass,
   tryPathPrefix,
   resetDom,
-  pathForUrl
+  pathForUrl,
+  scrollPage
 } from 'display/helpers';
 
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
@@ -24,9 +25,9 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect
 
-  pathToDisplay.paragraph.select;
+  pathToDisplay.paragraph.select();
   displayPathTo(pathToDisplay.paragraph);
-  if (!displayOptions.noScrolling) window.scrollTo(0, canopyContainer.scrollHeight);
+  if (linkToSelect) scrollPage();
 };
 
 const displayPathTo = (paragraph) => {
