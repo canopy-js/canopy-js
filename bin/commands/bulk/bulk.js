@@ -20,22 +20,24 @@ const bulk = async function(fileList, options) {
 	let editorMode = !!!(options.start || options.finish);
   options.noBackup && fs.existsSync('.canopy_bulk_backup_log') && fs.unlinkSync('.canopy_bulk_backup_log');
 
-	if (options.pick) {
-    let callback, optionList, postProcess;
-    if (options.directories) {
-      optionList = recursiveDirectoryFind('topics');
-      postProcess = p => getDirectoryFiles(p);
-    } else if (options.recursive) {
-      optionList = recursiveDirectoryFind('topics').map(p => p + '/**');
-      postProcess = p => getRecursiveSubdirectoryFiles(p.match(/([^*]+)(\/\*\*)?/)[1]);
-    } else {
-      optionPrep = p => p.match(/([^.]+)\.expl/)[1];
-      optionList = getRecursiveSubdirectoryFiles('topics').map(optionPrep);
-      postProcess = p => `${p}.expl`;
-    }
-	  const fzf = new Fzf().multi().result(postProcess);
+	if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
+    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
+    const fzf = new Fzf().multi().result(p => `topics/${p}`); // put back on topics prefix
     fileList = fileList.concat((await fzf.run(optionList)).flat());
-	}
+  }
+
+  if (options.pick && options.directories) {
+    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1]);
+    const fzf = new Fzf().multi().result(p => getDirectoryFiles(`topics/${p}`));
+    fileList = fileList.concat((await fzf.run(optionList)).flat());
+  }
+
+  if (options.pick && options.recursive) {
+    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**'); // Add the /**
+    postProcess = p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`); // Remove the /**
+    const fzf = new Fzf().multi().result(postProcess);
+    fileList = fileList.concat((await fzf.run(optionList)).flat());
+  }
 
   if (options.git) {
     // `git diff` gets us the changed files and `git ls-files` gets us the new untracked files
