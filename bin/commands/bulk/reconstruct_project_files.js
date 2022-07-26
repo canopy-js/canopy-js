@@ -167,16 +167,17 @@ function compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, origina
   return { messages, filesToWriteFinal, directoriesToEnsure, pathsToDelete };
 }
 
-function saveBackup(dataFile, fileSystemData) {
+function saveBackup(filesToWriteFinal, fileSystemData) {
   let priorLog = fs.existsSync('.canopy_bulk_backup_log') && fs.readFileSync('.canopy_bulk_backup_log');
+
   fs.writeFileSync(
     '.canopy_bulk_backup_log',
-    (priorLog && (priorLog + "\n\n")) +
-    'Old files: ' +
-    JSON.stringify(fileSystemData) +
-    "\n\nNew files: " +
-    JSON.stringify(dataFile) +
-    "\n\n"
+    (priorLog && (priorLog + "\n\n\n")) +
+    "Old files: \n\n" +
+    Object.keys(fileSystemData).map(p => `* ${p}\n\n${fileSystemData[p]}\n\n`).join('') +
+    "\n\n\nNew and changed files: " +
+    Object.keys(filesToWriteFinal).map(p => `${p}\n\n${filesToWriteFinal[p]}\n\n`).join('') +
+    "\n"
   );
 }
 
