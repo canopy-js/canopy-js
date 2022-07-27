@@ -6,6 +6,7 @@ import { defaultTopic, canopyContainer } from 'helpers/getters';
 
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   validatePathAndLink(pathToDisplay, linkToSelect);
+  if (pathToDisplay.empty) pathToDisplay = Path.default;
 
   let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer);
 
@@ -26,7 +27,7 @@ function validatePathAndLink(pathToDisplay, linkToSelect) {
 function handleError(pathToDisplay, displayOptions) {
   return (e) => {
     if (e === 'Link selector callback provided no link') {
-      displayPath(pathToDisplay, displayOptions);
+      displayPath(pathToDisplay, null, displayOptions);
     } else {
       console.error(e);
     }

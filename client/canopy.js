@@ -9,6 +9,6 @@ registerKeyListeners();
 registerPopStateListener();
 
 updateView(
-  Path.initial,
+  Path.currentOrDefault,
   Link.priorSelection
 );

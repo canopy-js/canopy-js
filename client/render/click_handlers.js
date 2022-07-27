@@ -42,7 +42,7 @@ function onGlobalAndImportLinkClick (link) {
         if (link.isSelected) { // close global child
           path = link.enclosingParagraph.path;
         } else { // open global child
-          path = link.pathToDisplay;
+          path = link.paragraphPathWhenSelected;
           linkToSelect = link;
         }
       } else { // Redirect to global child
@@ -53,7 +53,7 @@ function onGlobalAndImportLinkClick (link) {
 
     if (e.metaKey) {
       if (!e.altKey) { // inline
-        path = link.pathToDisplay; // open the link in new tab
+        path = link.paragraphPathWhenSelected; // open the link in new tab
       } else { // Redirect to global child
         path = Path.forSegment(link.targetTopic, link.targetSubtopic);
       }

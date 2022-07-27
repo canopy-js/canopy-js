@@ -473,8 +473,12 @@ test.describe('Navigation', () => {
 
   test('Link selection is remembered with browser history', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.goBack();
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await page.goForward();
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowDown');
@@ -484,6 +488,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('url');
     await page.goBack();
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New Jersey');
     await page.goForward();
     await expect(page.locator('.canopy-selected-link')).toHaveText('url');
   });
@@ -524,5 +529,14 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('h1')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
+  });
+
+  test('Browser back to empty path redirects to default topic', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States');
+    await page.goto('/');
+    await expect(page).toHaveURL('United_States');
+    await page.goBack();
+    await expect(page).toHaveURL('United_States');
   });
 });

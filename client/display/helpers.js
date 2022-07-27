@@ -73,7 +73,8 @@ function tryPathPrefix(path, displayOptions) {
   if (path.length > 1) {
     return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {
-    throw "Invalid path: " + path.array;
+    console.error("Invalid path: " + path.array);
+    return updateView(Path.default);
   }
 }
 
@@ -81,15 +82,6 @@ const resetDom = () => {
   deselectAllLinks();
   hideAllSectionElements();
   deselectSectionElement();
-}
-
-function pathForUrl(pathToDisplay, link) {
-  // Import references display the path to the target paragraph, but the URL should be the link's enclosing paragraph
-  if (link && link.type === 'import') {
-    return link.enclosingParagraph.path;
-  } else {
-    return pathToDisplay; // otherwise the path of the displayed paragraph should be the path used in the URL
-  }
 }
 
 function scrollPage() {
@@ -106,6 +98,5 @@ export {
   displaySectionBelowLink,
   resetDom,
   tryPathPrefix,
-  pathForUrl,
   scrollPage
 };

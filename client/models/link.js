@@ -39,7 +39,7 @@ class Link {
 
   contradicts(path) {
     if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
-    return this.pathToDisplay.string !== path.string;
+    return this.paragraphPathWhenSelected.string !== path.string;
   }
 
   get element () {
@@ -156,9 +156,9 @@ class Link {
 
   get localPathWhenSelected() {
     if (this.isGlobalOrImport) {
-      return new Path(this.pathToDisplay.pathArray.slice(-2));
+      return new Path(this.paragraphPathWhenSelected.pathArray.slice(-2));
     } else {
-      return this.pathToDisplay.lastSegment;
+      return this.paragraphPathWhenSelected.lastSegment;
     }
   }
 
@@ -203,16 +203,28 @@ class Link {
   }
 
   get path() {
-    throw "Depreciated in favor of #pathToDisplay";
+    throw "Depreciated in favor of #paragraphPathWhenSelected";
   }
 
   get pathToDisplay() {
+    throw "Depreciated in favor of #paragraphPathWhenSelected";
+  }
+
+  get paragraphPathWhenSelected() {
     if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
     } else {
       return this.enclosingParagraph.path;
+    }
+  }
+
+  get urlPathWhenSelected() {
+    if (this.type === 'import') {
+      return this.enclosingParagraph.path;
+    } else {
+      return this.paragraphPathWhenSelected;
     }
   }
 

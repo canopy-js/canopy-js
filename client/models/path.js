@@ -143,7 +143,7 @@ class Path {
     return new Path(pathString);
   }
 
-  static get initial() {
+  static get currentOrDefault() {
     if (Path.current.empty) {
       return Path.default;
     } else {

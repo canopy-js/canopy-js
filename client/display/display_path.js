@@ -8,7 +8,6 @@ import {
   addSelectedLinkClass,
   tryPathPrefix,
   resetDom,
-  pathForUrl,
   scrollPage
 } from 'display/helpers';
 
@@ -16,12 +15,12 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
   if (linkToSelect?.contradicts(pathToDisplay)) {
-    return updateView(linkToSelect.pathToDisplay, linkToSelect, displayOptions);
+    return updateView(linkToSelect.paragraphPathWhenSelected, linkToSelect, displayOptions);
   }
 
   resetDom();
-  if (!displayOptions.pathAlreadySet) Path.setPath(pathForUrl(pathToDisplay, linkToSelect));
-  setHeader(Paragraph.pageRoot.displayTopicName);
+  Path.setPath(linkToSelect?.urlPathWhenSelected || pathToDisplay);
+  setHeader(pathToDisplay.rootTopicPath.paragraph.displayTopicName);
   document.title = pathToDisplay.firstTopic;
   Link.select(linkToSelect); // if null, persists deselect
 

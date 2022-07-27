@@ -14,7 +14,7 @@ function moveUpward() {
   }
 
   return updateView(
-    link.parentLink.pathToDisplay,
+    link.parentLink.paragraphPathWhenSelected,
     link.parentLink
   );
 }
@@ -24,7 +24,7 @@ function topicParentLink() {
   let newLink = link.enclosingParagraph.topicParagraph.parentLink
 
   return updateView(
-    newLink?.pathToDisplay || Path.current,
+    newLink?.paragraphPathWhenSelected || Path.current,
     newLink || link
   );
 }
@@ -42,7 +42,7 @@ function downwardPathAndLink() {
   if (oldLink.isParent) {
     if (oldLink.isImport) {
       return {
-        path: oldLink.pathToDisplay,
+        path: oldLink.paragraphPathWhenSelected,
         link: oldLink.targetParagraph.parentLink
       }
     }
@@ -50,7 +50,7 @@ function downwardPathAndLink() {
     let newLink = oldLink.targetParagraph.firstLink || oldLink.targetParagraph.parentLink;
 
     return {
-      path: newLink.pathToDisplay,
+      path: newLink.paragraphPathWhenSelected,
       link: newLink
     };
   } else {
@@ -61,7 +61,7 @@ function downwardPathAndLink() {
 function moveLeftward() {
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
-    link.pathToDisplay,
+    link.paragraphPathWhenSelected,
     link
   );
 }
@@ -70,7 +70,7 @@ function moveRightward() {
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
-    link.pathToDisplay,
+    link.paragraphPathWhenSelected,
     link
   );
 }
@@ -138,7 +138,7 @@ function depthFirstSearch() {
   if (link.isLocal && link.hasChildren) {
     let nextLink = link.firstChildLink || link.nextSibling || link;
     return updateView(
-      nextLink.pathToDisplay,
+      nextLink.paragraphPathWhenSelected,
       nextLink
     );
   }
@@ -172,7 +172,7 @@ function depthFirstSearch() {
     })(link);
 
     return updateView(
-      linkToSelect.pathToDisplay,
+      linkToSelect.paragraphPathWhenSelected,
       linkToSelect
     );
   }
