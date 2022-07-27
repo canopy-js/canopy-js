@@ -81,7 +81,32 @@ test.describe('Navigation', () => {
   test('Clicking on global inlines link', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('United States');
 
-    await page.locator('text=New York').click()
+    await page.locator('text=New York').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page).toHaveURL('United_States/New_York');
+  });
+
+  test('Clicking on a selected global deselects', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+
+    await page.locator('a:has-text("New York")').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(page).toHaveURL('United_States');
+  });
+
+  test('Clicking on an open global selects it', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+
+    await page.locator('a:has-text("New York")').click();
 
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -234,6 +259,37 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
+
+  test('Clicking on a selected local deselects', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
+    await page.locator('a:has-text("southern border")').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page).toHaveURL('United_States/New_York');
+  });
+
+  test('Clicking on an open local selects it', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+
+    await page.locator('a[data-type="local"]:has-text("southern border")').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border');
+  });
+
 
   test('Alt-clicking on local zooms to the lowest path segment', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('United States');

@@ -21,10 +21,10 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       return updateView(path, link.atNewPath(path));
     }
 
-    if (link.isOpen) {
-      newPath = pathToLink.replaceTerminalSubtopic(link.enclosingParagraph.subtopicName);
+    if (link.isSelected) {
+      newPath = link.parentLink?.paragraphPathWhenSelected;
     } else {
-      newPath = pathToLink.replaceTerminalSubtopic(link.targetSubtopic);
+      newPath = link.paragraphPathWhenSelected;
       linkToSelect = link;
     }
 
