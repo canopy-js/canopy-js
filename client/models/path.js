@@ -1,8 +1,8 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
 import { selectedLink, metadataForLink } from 'helpers/getters';
-import { slugFor } from 'helpers/identifiers';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
+import Topic from '../../bin/commands/shared/topic';
 
 class Path {
   constructor(argument) {
@@ -12,13 +12,13 @@ class Path {
       if (argument.length === 0) {
         this.pathArray = [];
       } else {
-        this.pathArray = JSON.parse(JSON.stringify(argument));
+        this.pathArray = argument.slice();
         Path.validatePathArray(this.pathArray);
       }
       this.pathString = Path.arrayToString(this.pathArray);
     } else if (typeof argument === 'string' || argument instanceof String) {
-      this.pathString = decodeURI(argument);
-      this.pathArray = Path.stringToArray(this.pathString);
+      this.pathString = argument;
+      this.pathArray = Path.stringToArray(argument);
     }
   }
 
@@ -29,7 +29,7 @@ class Path {
   static validatePathArray(array) {
     array.forEach(tuple => {
       if (tuple.length !== 2) throw `Invalid path segment format: ${tuple}`;
-      if (typeof tuple[0] !== 'string' || typeof tuple[1] !== 'string') throw `Invalid path segment format: ${tuple}`;
+      if (!(tuple[0] instanceof Topic) || !(tuple[1] instanceof Topic)) throw `Invalid path segment format: ${tuple}`;
     })
   }
 
@@ -40,7 +40,7 @@ class Path {
 
   replaceTerminalSubtopic(newSubtopic) {
     let lastSegment = this.lastSegment;
-    return this.withoutLastSegment.addSegment(lastSegment.topic, newSubtopic);
+    return this.withoutLastSegment.addSegment(lastSegment.firstTopic, newSubtopic);
   }
 
   toString() {
@@ -59,12 +59,8 @@ class Path {
     return this.pathArray[0][0];
   }
 
-  get topic() {
-    return this.pathArray[0][0];
-  }
-
   get rootTopicPath() {
-    return new Path([[this.topic, this.topic]]);
+    return new Path([[this.firstTopic, this.firstTopic]]);
   }
 
   get firstSubtopic() {
@@ -99,10 +95,6 @@ class Path {
     return new Path(this.pathArray.slice(0, -1));
   }
 
-  get clone() {
-    return new Path(JSON.parse(JSON.stringify(this.pathArray)));
-  }
-
   get length() {
     if (!this.pathArray[0]) {
       return 0;
@@ -128,7 +120,8 @@ class Path {
   }
 
   static get default() {
-    return new Path([[defaultTopic, defaultTopic]]);
+    let topic = new Topic(defaultTopic);
+    return new Path([[topic, topic]]);
   }
 
   static get current() {
@@ -186,6 +179,8 @@ class Path {
       ];
     }).filter((segment) => segment[0] !== null);
 
+    pathArray = pathArray.map(([topicString, subtopicString]) => [new Topic(topicString), new Topic(subtopicString)]);
+
     return pathArray;
   }
 
@@ -203,9 +198,9 @@ class Path {
     let pathString = '/';
 
     pathString += pathArray.map(([topic, subtopic]) => {
-      let pathSegmentString = slugFor(topic);
-      if (subtopic && subtopic !== topic) {
-        pathSegmentString += "#" + slugFor(subtopic);
+      let pathSegmentString = topic.encodedSlug;
+      if (subtopic && subtopic.encodedSlug !== topic.encodedSlug) {
+        pathSegmentString += "#" + subtopic.encodedSlug;
       }
       return pathSegmentString;
     }).join('/');
@@ -263,27 +258,27 @@ class Path {
 
     let rootElement = suppliedRootElement;
     if (!suppliedRootElement) { rootElement = canopyContainer; }
-    let path = suppliedPath.clone;
+    let path = suppliedPath;
 
     let currentNode = rootElement;
     if (rootElement === canopyContainer) {
       currentNode = rootElement.querySelector(
-        `[data-topic-name="${path.firstTopic.replace(/"/g,'\\\"')}"]` +
-        `[data-subtopic-name="${path.firstSubtopic.replace(/"/g,'\\\"')}"]` +
+        `[data-topic-name="${path.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${path.firstSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${0}"]`
       );
+
       if (path.length === 1) { return currentNode; }
       if (!currentNode) return null;
       path = path.withoutFirstSegment;
     }
 
-    let subpath = path.clone;
+    let subpath = path;
     for (let i = 0; i < path.length; i++) {
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
-
       currentNode = currentNode.querySelector(
-        `[data-topic-name="${subpath.firstTopic.replace(/"/g,'\\\"')}"]` +
-        `[data-subtopic-name="${subpath.firstSubtopic.replace(/"/g,'\\\"')}"]` +
+        `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${subpath.firstSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${newPathDepth}"]`
       );
 
@@ -298,7 +293,7 @@ class Path {
     if (!newPath instanceof Path) throw 'newPath must be Path object';
 
     let oldPath = Path.current;
-    let documentTitle = newPath.firstTopic;
+    let documentTitle = newPath.firstTopic.display;
     let historyApiFunction = newPath.equals(oldPath) ? replaceState : pushState;
     let fullPathString = (projectPathPrefix ? `/${projectPathPrefix}` : '') + (hashUrls ? '/#' : '') + newPath.string;
 

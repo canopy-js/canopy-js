@@ -354,15 +354,19 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
 
     // When an import reference is navigated to inline, both the parent global link and the import link should be "open"
-    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")', { has: page.locator('a:text("northern border").canopy-open-link')})).toHaveCount(1);
-    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")', { has: page.locator('a:text("New Jersey").canopy-open-link')})).toHaveCount(1);
+    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+      { has: page.locator('a:text("northern border").canopy-open-link')})).toHaveCount(1);
+    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+      { has: page.locator('a:text("New Jersey").canopy-open-link')})).toHaveCount(1);
 
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Attractions');
 
     // Now that we have navigated away from the import path, only the global parent link should be open
-    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")', { has: page.locator('a:text("northern border").canopy-open-link')})).toHaveCount(0);
-    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")', { has: page.locator('a:text("New Jersey").canopy-open-link')})).toHaveCount(1);
+    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+      { has: page.locator('a:text("northern border").canopy-open-link')})).toHaveCount(0);
+    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+      { has: page.locator('a:text("New Jersey").canopy-open-link')})).toHaveCount(1);
   });
 
   test('Enter on import reference redirects to target', async ({ page }) => {
@@ -572,6 +576,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
+    await expect(page.locator('text=This is a word in English')).toHaveCount(1);
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -585,6 +590,38 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('h1')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
+    await expect(newPage.locator('text=This is a word in English')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with pound signs marks', async ({ page, context }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
+    await expect(page.locator('text=This is a great gift shop')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=the world's #1 gift shop").click({
+        modifiers: ['Meta']
+      })
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
+    await expect(page.locator('text=This is a great gift shop')).toHaveCount(1);
   });
 
   test('Browser back to empty path redirects to default topic', async ({ page }) => {

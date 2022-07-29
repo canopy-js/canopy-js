@@ -21,7 +21,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   resetDom();
   Path.setPath(linkToSelect?.urlPathWhenSelected || pathToDisplay);
   setHeader(pathToDisplay.rootTopicPath.paragraph.displayTopicName);
-  document.title = pathToDisplay.firstTopic;
+  document.title = pathToDisplay.firstTopic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect
 
   pathToDisplay.paragraph.select();

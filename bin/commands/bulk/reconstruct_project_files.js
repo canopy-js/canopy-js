@@ -1,6 +1,7 @@
 let fs = require('fs-extra');
 let { keyFromString } = require('./helpers');
-let { TopicName, Paragraph } = require('../shared');
+let Paragraph = require('../shared/paragraph');
+let Topic = require('../shared/topic');
 
 /*
 
@@ -94,8 +95,8 @@ function parseDataFile(dataFile) {
       let key = paragraph.key || '';
 
       if (key) {
-        let topicName = new TopicName(key);
-        let fullPath = `${directoryPath}/${topicName.fileName}.expl`;
+        let topic = new Topic(key);
+        let fullPath = `${directoryPath}/${topic.fileName}.expl`;
 
         if (filesToWrite.hasOwnProperty(fullPath)) { // the same file was open in this session already
           filesToWrite[fullPath] += "\n\n" + fileText + "\n";
@@ -108,7 +109,7 @@ function parseDataFile(dataFile) {
     });
 
 
-    let categoryName = new TopicName(pathSegments.slice(-1)[0]);
+    let categoryName = new Topic(pathSegments.slice(-1)[0]);
     let categoryNotePath = `${directoryPath}/${categoryName.fileName}.expl`;
 
     if (categoryNotes.length > 0) {

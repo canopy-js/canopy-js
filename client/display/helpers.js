@@ -3,6 +3,8 @@ import { canopyContainer } from 'helpers/getters';
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
+import Path from 'models/path';
+import updateView from 'display/update_view';
 
 function setHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
@@ -68,8 +70,8 @@ function showsectionElementContainingLink(linkElement) {
 }
 
 function tryPathPrefix(path, displayOptions) {
-  console.log("No section element found for path: ", JSON.stringify(path.toString()));
-  console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
+  console.log("No section element found for path: ", path.string);
+  console.log("Trying: ", path.withoutLastSegment.string);
   if (path.length > 1) {
     return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {

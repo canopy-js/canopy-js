@@ -1,6 +1,6 @@
 let { paragraphsOfFile } = require('./helpers');
-let { TopicName } = require('../../shared');
-let { Paragraph } = require('../../shared');
+let Topic = require('../../shared/topic');
+let Paragraph = require('../../shared/paragraph');
 let dedent = require('dedent-js');
 
 function buildNamespaceObject(explFileData, doubleDefinedSubtopics) {
@@ -12,7 +12,7 @@ function buildNamespaceObject(explFileData, doubleDefinedSubtopics) {
     let paragraphsWithKeys = fileContents.trim().split(/\n\n+/);
     let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
     if (!topicParargaph.key) return;
-    let currentTopic = new TopicName(topicParargaph.key);
+    let currentTopic = new Topic(topicParargaph.key);
 
     if (namespacesObject.hasOwnProperty(currentTopic.capsFile)) {
       throw dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
@@ -28,7 +28,7 @@ function buildNamespaceObject(explFileData, doubleDefinedSubtopics) {
     paragraphsWithKeys.forEach(function(paragraphText) {
       let paragraph = new Paragraph(paragraphText);
       if (paragraph.key) {
-        let currentSubtopic = new TopicName(paragraph.key);
+        let currentSubtopic = new Topic(paragraph.key);
 
         if (namespacesObject[currentTopic.caps].hasOwnProperty(currentSubtopic.caps)) {
           doubleDefinedSubtopics.push([currentTopic, currentSubtopic]);

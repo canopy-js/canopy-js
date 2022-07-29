@@ -21,8 +21,8 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
-        topicName: pathToDisplay.firstTopic,
-        subtopicName: pathToDisplay.firstTopic,
+        topic: pathToDisplay.firstTopic,
+        subtopic: pathToDisplay.firstTopic,
         pathToDisplay,
         displayTopicName,
         paragraphsBySubtopic,

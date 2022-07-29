@@ -4,8 +4,8 @@ let {
   paragraphsOfFile,
   validateRedundantLocalReferences,
 } = require('./helpers');
-let { TopicName } = require('../../shared');
-let { Paragraph } = require('../../shared');
+let Topic = require('../../shared/topic');
+let Paragraph = require('../../shared/paragraph');
 
 function jsonForExplFile(path, explFileData, parserState) {
   let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);

@@ -1,7 +1,8 @@
-import { ancestorElement } from 'helpers/getters';
+import { getAncestorElement } from 'helpers/getters';
 import { canopyContainer } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
+import Topic from '../../bin/commands/shared/topic';
 
 class Link {
   constructor(argument) {
@@ -77,16 +78,16 @@ class Link {
   }
 
   get targetTopic() {
-    return this.element.dataset.targetTopic;
+    return new Topic(this.element.dataset.targetTopic);
   }
   get targetSubtopic() {
-    return this.element.dataset.targetSubtopic;
+    return new Topic(this.element.dataset.targetSubtopic);
   }
   get enclosingTopic() {
-    return this.element.dataset.enclosingTopic;
+    return new Topic(this.element.dataset.enclosingTopic);
   }
   get enclosingSubtopic() {
-    return this.element.dataset.enclosingSubtopic;
+    return new Topic(this.element.dataset.enclosingSubtopic);
   }
 
   get topicName() {
@@ -102,7 +103,7 @@ class Link {
   }
 
   get enclosingSectionElement() {
-    return ancestorElement(this.element, 'canopy-section');
+    return getAncestorElement(this.element, 'canopy-section');
   }
 
   get sectionElement() {
@@ -110,7 +111,7 @@ class Link {
   }
 
   get enclosingParagraphElement() {
-    return ancestorElement(this.element, 'canopy-paragraph');
+    return getAncestorElement(this.element, 'canopy-paragraph');
   }
 
   get parentParagraphElement() {
@@ -128,8 +129,8 @@ class Link {
     if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.targetTopic}"]` +
-        `[data-subtopic-name="${this.targetSubtopic}"]` +
+        `section[data-topic-name="${this.targetTopic.mixedCase}"]` +
+        `[data-subtopic-name="${this.targetSubtopic.mixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
@@ -307,7 +308,7 @@ class Link {
   }
 
   get topicParagraph() {
-    return ancestorElement(this.element, 'canopy-topic-section');
+    return getAncestorElement(this.element, 'canopy-topic-section');
   }
 
   get selected() {

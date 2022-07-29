@@ -1,5 +1,5 @@
 let buildNamespaceObject = require('./build_namespace_object.js');
-let { TopicName } = require('../../shared');
+let Topic = require('../../shared/topic');
 let { LinkProximityCalculator } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
@@ -17,8 +17,8 @@ class ParserState {
   }
 
   setTopicAndSubtopic(topicString, subtopicString) {
-    this.currentTopic = new TopicName(topicString);
-    this.currentSubtopic = new TopicName(subtopicString);
+    this.currentTopic = new Topic(topicString);
+    this.currentSubtopic = new Topic(subtopicString);
     this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
   }
 
@@ -45,11 +45,11 @@ class ParserState {
     return this.tokens;
   }
 
-  getOriginalTopicName(givenTopic) {
+  getOriginalTopic(givenTopic) {
     return this.topicSubtopics[givenTopic.caps][givenTopic.caps];
   }
 
-  getOriginalSubtopicName(currentTopic, givenSubtopic) {
+  getOriginalSubTopic(currentTopic, givenSubtopic) {
     if (!givenSubtopic) throw 'two arguments required';
     return this.topicSubtopics[currentTopic.caps][givenSubtopic.caps];
   }
@@ -101,8 +101,8 @@ class ParserState {
     let calculator = new LinkProximityCalculator(text || this.currentText);
     let linksByProximity = calculator.linksByProximity(index);
 
-    let targetTopic = linksByProximity.map(topicString => new TopicName(topicString)).find(topicName => {
-      return this.topicHasSubtopic(topicName, targetSubtopic);
+    let targetTopic = linksByProximity.map(topicString => new Topic(topicString)).find(Topic => {
+      return this.topicHasSubtopic(Topic, targetSubtopic);
     });
 
     return targetTopic;
@@ -136,7 +136,7 @@ class ParserState {
 
     let importReference = new ImportReferenceToken(
       targetTopic.mixedCase,
-      this.getOriginalSubtopicName(targetTopic, targetSubtopic).mixedCase,
+      this.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
       enclosingTopic.mixedCase,
       enclosingSubtopic.mixedCase,
       linkText
@@ -160,12 +160,12 @@ class ParserState {
         );
 
         if(!globalToken) {
-          let targetTopicName = new TopicName(importReferenceToken.targetTopic);
-          let targetSubtopicName = new TopicName(importReferenceToken.targetSubtopic);
-          let targetTopic = this.getOriginalTopicName(targetTopicName);
-          let targetSubtopic = this.getOriginalSubtopicName(targetTopicName, targetSubtopicName);
+          let targetTopic = new Topic(importReferenceToken.targetTopic);
+          let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
+          let originalTargetTopic = this.getOriginalTopic(targetTopic);
+          let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
 
-          throw `Error: Import reference to [${targetTopicName.mixedCase}, ${targetSubtopicName.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopicName.mixedCase}].`;
+          throw `Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].`;
         }
       });
     });

@@ -7,7 +7,7 @@ let {
   validateSubtopicDefinitions
 } = require('./helpers');
 let ParserState = require('./parser_state');
-let { TopicName } = require('../../shared');
+let Topic = require('../../shared/topic');
 
 function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
   let sourceDirectory = `${projectDir}/topics`;
@@ -24,10 +24,9 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
 
     let json = jsonForExplFile(path, explFileData, parserState);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
-    let topicName = new TopicName(explFileNameWithoutExtension);
-    let fileName = topicName.fileName;
+    let topic = new Topic(explFileNameWithoutExtension);
 
-    let destinationPath = `${destinationDataDirectory}/${explFileNameWithoutExtension}.json`;
+    let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
     if (process.env['CANOPY_LOGGING']) {
       console.log();
@@ -37,9 +36,9 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
     filesToWrite[destinationPath] = json;
 
     if (makeFolders) {
-      let folderTopic = new TopicName(topicKeyOfString(explFileData[path]));
-      let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.slug;
-      directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.slug);
+      let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
+      let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
+      directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.fileName);
       if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
     }
   });

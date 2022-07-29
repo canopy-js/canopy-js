@@ -25,15 +25,14 @@ const Matchers = [
   htmlMatcher,
 ]
 
-let { GlobalLinkNeedingAddingToNamespacesError } = require('./helpers');
-let { TopicName } = require('../../shared');
+let Topic = require('../../shared/topic');
 
 function localReferenceMatcher(string, parserState, index) {
   let { currentTopic, currentSubtopic } = parserState.currentTopicAndSubtopic;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return; // This is not a valid link
   if (linkFragment) return; // Any link with a # symbol is a global or import
-  let targetSubtopic = new TopicName(linkTarget);
+  let targetSubtopic = new Topic(linkTarget);
 
   if (parserState.currentTopicHasSubtopic(targetSubtopic)) {
     if (parserState.subtopicReferenceIsRedundant(targetSubtopic)) {
@@ -54,7 +53,7 @@ function localReferenceMatcher(string, parserState, index) {
     return [
       new LocalReferenceToken(
         currentTopic.mixedCase,
-        parserState.getOriginalSubtopicName(currentTopic, targetSubtopic).mixedCase,
+        parserState.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
         currentTopic.mixedCase,
         currentSubtopic.mixedCase,
         linkText
@@ -70,13 +69,13 @@ function globalReferenceMatcher(string, parserState) {
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return; // invalid link
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
-  let targetTopic = new TopicName(linkTarget);
+  let targetTopic = new Topic(linkTarget);
 
   if (parserState.topicExists(targetTopic)) {
     return [
       new GlobalReferenceToken(
-        parserState.getOriginalTopicName(targetTopic).mixedCase,
-        parserState.getOriginalTopicName(targetTopic).mixedCase,
+        parserState.getOriginalTopic(targetTopic).mixedCase,
+        parserState.getOriginalTopic(targetTopic).mixedCase,
         currentTopic.mixedCase,
         currentSubtopic.mixedCase,
         linkText
@@ -112,8 +111,8 @@ function importReferenceMatcher(string, parserState, index) {
 
   return [
     new ImportReferenceToken(
-      parserState.getOriginalTopicName(targetTopic).mixedCase,
-      parserState.getOriginalSubtopicName(targetTopic, targetSubtopic).mixedCase,
+      parserState.getOriginalTopic(targetTopic).mixedCase,
+      parserState.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
       linkText
@@ -122,8 +121,8 @@ function importReferenceMatcher(string, parserState, index) {
 }
 
 function parseLink(string) {
-  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]]
-  let match = string.match(/^\[\[([^|#\[\]]+)(?:#([^|#\[\]]+))?(?:\|([^|#\[\]]+))?\]\]/);
+  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
+  let match = string.match(/^\[\[((?:(?:\\.)|[^|#\[\]])+)(?:#((?:(?:\\.)|[^|#\[\]])+))?(?:\|([^|#\[\]]+))?\]\]/);
 
   return {
     linkTarget: match && match[1] || null, // eg "France"
@@ -136,11 +135,11 @@ function parseLink(string) {
 function determineTopicAndSubtopic(linkTarget, linkFragment) {
   let targetTopic, targetSubtopic;
   if (linkFragment) {
-    targetTopic = new TopicName(linkTarget);
-    targetSubtopic = new TopicName(linkFragment);
+    targetTopic = new Topic(linkTarget);
+    targetSubtopic = new Topic(linkFragment);
   } else {
     targetTopic = null;
-    targetSubtopic = new TopicName(linkTarget);
+    targetSubtopic = new Topic(linkTarget);
   }
 
   return {

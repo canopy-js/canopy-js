@@ -1,7 +1,8 @@
 import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
-import { ancestorElement } from 'helpers/getters';
+import { getAncestorElement } from 'helpers/getters';
+import Topic from '../../bin/commands/shared/topic';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not
@@ -34,17 +35,27 @@ class Paragraph {
   }
 
   transferDataset() {
-    this.topicName = this.sectionElement.dataset.topicName;
-    this.subtopicName = this.sectionElement.dataset.subtopicName;
+    this._topicName = this.sectionElement.dataset.topicName;
+    this._subtopicName = this.sectionElement.dataset.subtopicName;
     this.pathDepth = this.sectionElement.dataset.pathDepth;
   }
 
-  get topic() {
-    throw "Depreciated in favor of #topicName";
+  get topic () {
+    return new Topic(this.sectionElement.dataset.topicName);
   }
 
-  get subtopic() {
-    throw "Depreciated in favor of #subtopicName";
+  get subtopic () {
+    return new Topic(this.sectionElement.dataset.subtopicName);
+  }
+
+  get topicName() {
+    console.trace();
+    throw "Depreciated in favor of #topic";
+  }
+
+  get subtopicName() {
+    console.trace();
+    throw "Depreciated in favor of #subtopic";
   }
 
   get paragraphElement() {
@@ -63,8 +74,8 @@ class Paragraph {
       let currentTopic = currentElement.dataset.topicName;
 
       pathArray.unshift([
-        currentTopic,
-        currentElement.dataset.subtopicName
+        new Topic(currentTopic),
+        new Topic(currentElement.dataset.subtopicName)
       ]);
 
       while (currentElement.dataset.topicName === currentTopic) {
@@ -95,7 +106,7 @@ class Paragraph {
   }
 
   get isTopic() {
-    return this.topicName === this.subtopicName;
+    return this.topic.mixedCase === this.subtopic.mixedCase;
   }
 
   get hasLinks() {
@@ -114,7 +125,7 @@ class Paragraph {
     targetSubtopic = targetSubtopic || targetTopic;
 
     return this.linkBySelector(
-      (link) => link.targetTopic === targetTopic && link.targetSubtopic === targetSubtopic
+      (link) => link.targetTopic.mixedCase === targetTopic.mixedCase && link.targetSubtopic.mixedCase === targetSubtopic.mixedCase
     );
   }
 
@@ -122,8 +133,8 @@ class Paragraph {
     if (this.sectionElement.parentNode === canopyContainer) { return null; }
 
     return this.parentParagraph && this.parentParagraph.linkByTarget(
-      this.topicName,
-      this.subtopicName
+      this.topic,
+      this.subtopic
     );
   }
 
@@ -132,8 +143,9 @@ class Paragraph {
 
     return this.parentParagraph.linksBySelector(
       link => {
-        return this.topicName === link.targetTopic &&
-          this.subtopicName === link.targetSubtopic;
+        return (link.isLocal || link.isGlobal) &&
+          this.topic.mixedCase === link.targetTopic.mixedCase &&
+          this.subtopic.mixedCase === link.targetSubtopic.mixedCase;
       }
     );
   }
@@ -144,8 +156,9 @@ class Paragraph {
 
     return this.topicParagraph.parentParagraph.linksBySelector(
       link => {
-        return this.topicName === link.targetTopic &&
-          this.subtopicName === link.targetSubtopic;
+        return link.isImport &&
+          this.topic.mixedCase === link.targetTopic.mixedCase &&
+          this.subtopic.mixedCase === link.targetSubtopic.mixedCase;
       }
     );
   }
@@ -156,7 +169,7 @@ class Paragraph {
 
   get parentParagraph() {
     if (this.sectionElement) {
-      let parentElement = ancestorElement(this.sectionElement, 'canopy-section');
+      let parentElement = getAncestorElement(this.sectionElement, 'canopy-section');
       return parentElement ? new Paragraph(parentElement) : null;
     } else {
       return null;
@@ -167,7 +180,7 @@ class Paragraph {
     if (this.isTopic) {
       return this;
     } else {
-      return new Paragraph(ancestorElement(this.sectionElement, 'canopy-topic-section'));
+      return new Paragraph(getAncestorElement(this.sectionElement, 'canopy-topic-section'));
     }
   }
 
@@ -184,13 +197,13 @@ class Paragraph {
   }
 
   static get pageRoot() {
-    let path = Path.forTopic(Path.current.firstTopic);
+    let path = Path.current.rootTopicPath;
     return path.paragraph;
   }
 
   static containingLink(link) {
     if (!link instanceof Link) throw "Must provide link instance argument";
-    let sectionElement = ancestorElement(link.element, 'canopy-section');
+    let sectionElement = getAncestorElement(link.element, 'canopy-section');
     return new Paragraph(sectionElement);
   }
 

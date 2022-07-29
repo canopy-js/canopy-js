@@ -1,8 +1,8 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
-let { Paragraph } = require('../../shared');
+let Paragraph = require('../../shared/paragraph');
 let dedent = require('dedent-js');
-let { TopicName } = require('../../shared');
+let Topic = require('../../shared/topic');
 
 function linesByBlockOf(string) {
   let lines = string.split(/\n/);

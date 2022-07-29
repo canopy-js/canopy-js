@@ -1,5 +1,4 @@
 let jsonForProjectDirectory = require('./json_for_project_directory');
-let { TopicName } = require('../../shared');
 let dedent = require('dedent-js');
 
 test('it creates a data directory', () => {

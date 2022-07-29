@@ -67,7 +67,6 @@ function createLocalLinkElement(token) {
 function renderGlobalLink(token, renderContext) {
   let {
     pathArray,
-    subtopicName,
     globalLinkSubtreeCallback
   } = renderContext;
 
@@ -106,7 +105,6 @@ function createGlobalLinkElement(token) {
 function renderImportLink(token, renderContext) {
   let {
     pathArray,
-    subtopicName,
     globalLinkSubtreeCallback
   } = renderContext;
 
