@@ -29,14 +29,11 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey.')).toHaveCount(1);
   });
 
-  test('Selecting import reference previews path', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowDown');
+  test('It renders properly when page is initialized to a multi-segment path', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States'); // wait for original page, or outstanding requests will error
+    let response = await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
   });
 
@@ -340,6 +337,17 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('h1')).toHaveText('New York');
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(newPage).toHaveURL('New_York#Southern_border');
+  });
+
+  test('Selecting import reference previews path', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York.')).toHaveCount(1);
   });
 
   test('Down on import reference selects target', async ({ page }) => {
