@@ -17,7 +17,7 @@ const requestJson = (topic) => {
       if (canopyContainer.childNodes.length === 0 && topicName !== defaultTopic) {
         updateView(Path.default);
       }
-      return Promise.reject(`Unrecognized topic: "${topic.mixedCase}"`);
+      return Promise.reject(`Requesting invalid topic: "${topic.mixedCase}"`);
     });
 
   REQUEST_CACHE[topic.mixedCase] = promise;
