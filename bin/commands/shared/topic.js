@@ -7,13 +7,14 @@ class Topic {
   // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
   // Filenames are the mixed case topic name sans characters that cause problems in file paths, like quotation marks.
   constructor(string) {
-    this.display = string.replace(/\\/g, '');
-    this.mixedCase = decodeURIComponent(removeStyleCharacters(this.display).replace(/\?$/, ''));
+    this.display = decodeURIComponent(string.replace(/\\/g, ''));
+    this.mixedCase = removeStyleCharacters(this.display);
     this.escapedMixedCase = this.mixedCase.replace(/"/g, '\\"').replace(/'/g, "\\'");
     this.slug = this.mixedCase.replace(/ /g, '_');
     this.encodedSlug = this.mixedCase.replace(/ /g, '_').replace(/#/g, '%23');
-    this.caps = this.mixedCase.toUpperCase();
-    this.fileName = encodeURIComponent(this.slug);
+    this.caps = this.mixedCase.toUpperCase().replace(/\?$/, '').replace(/"/, '').replace(/'/, '');
+    this.fileName = this.slug;
+    this.requestFileName = encodeURIComponent(this.slug);
     this.capsFile = this.fileName.toUpperCase();
   }
 }

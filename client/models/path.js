@@ -125,7 +125,7 @@ class Path {
   }
 
   static get current() {
-    let pathString = window.location.pathname + window.location.hash;
+    let pathString = window.location.href.slice(window.location.origin.length)
 
     if (projectPathPrefix && pathString.indexOf(`/${projectPathPrefix}`) === 0) {
       pathString = pathString.slice(projectPathPrefix.length + 1);

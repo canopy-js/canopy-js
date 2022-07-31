@@ -6,7 +6,7 @@ import Path from 'models/path';
 
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
-  let dataPath = projectPathPrefix + '/_data/' + topic.fileName + '.json';
+  let dataPath = projectPathPrefix + '/_data/' + topic.requestFileName + '.json';
 
   let promise = fetch(dataPath).
     then(res => {

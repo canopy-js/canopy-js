@@ -569,7 +569,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
   });
 
-  test('it renders everything properly for topics with single and double quotation marks', async ({ page, context }) => {
+  test('it renders everything properly for topics with single quotation marks', async ({ page, context }) => {
     await expect(page.locator('h1')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -581,6 +581,30 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
 
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator(`text="Martha's Vineyard"`).click({
+        modifiers: ['Meta']
+      })
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard");
+    await expect(newPage.locator(`text=Martha's Vineyard is a an Island in Massachusetts`)).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with double quotation marks', async ({ page, context }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
@@ -629,6 +653,41 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('h1')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
+    await expect(page.locator('text=This is a great gift shop')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with question marks', async ({ page, context }) => {
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?");
+    await expect(page.locator('text=There are a lot of them.')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=What attractions are nearby Martha's Vineyard?").click({
+        modifiers: ['Meta']
+      })
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?");
     await expect(page.locator('text=This is a great gift shop')).toHaveCount(1);
   });
 
