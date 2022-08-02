@@ -86,11 +86,13 @@ const resetDom = () => {
   deselectSectionElement();
 }
 
-function scrollPage() {
+function scrollPage(displayOptions) {
+  let behavior = displayOptions.initialPageLoad ? 'auto' : 'smooth';
+
   window.scrollTo(
     {
       top: Link.selection.enclosingParagraph.paragraphElement.offsetTop - (window.screen.height * .3),
-      behavior: 'smooth'
+      behavior: behavior
     }
   );
 }

@@ -10,5 +10,6 @@ registerPopStateListener();
 
 updateView(
   Path.currentOrDefault,
-  Link.priorSelection
+  Link.priorSelection,
+  { initialPageLoad: true }
 );
