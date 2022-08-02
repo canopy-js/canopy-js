@@ -688,4 +688,14 @@ test.describe('Navigation', () => {
     await page.goBack();
     await expect(page).toHaveURL('United_States');
   });
+
+  test('for an invalid path it tries subpaths', async ({ page }) => {
+    await page.goto('/United_States/New_York/Mars');
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States/New_York');
+
+    await page.goto('/United_States/New_York/New_Jersey'); // valid topic but no link from New York -> New Jersey
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States/New_York');
+  });
 });
