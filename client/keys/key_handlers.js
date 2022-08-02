@@ -13,6 +13,13 @@ function moveUpward() {
     return updateView(link.enclosingParagraph.path); // deselect link
   }
 
+  if (link.isLocal && link.targetParagraph.ancestorImportReferences.length > 0) {
+    return updateView(
+      link.topicParagraph.parentParagraph.path,
+      link.targetParagraph.ancestorImportReferences[0]
+    );
+  }
+
   return updateView(
     link.parentLink.paragraphPathWhenSelected,
     link.parentLink
