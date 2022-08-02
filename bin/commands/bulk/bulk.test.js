@@ -219,6 +219,23 @@ describe('parseDataFile', function() {
 
     expect(() => parseDataFile(dataFile)).toThrow('Invalid directory path: "[A/B/C/]"');
   });
+
+  test('it parses data file with atypical keys', () => {
+    let dataFile = dedent`[A/B/C]
+    * Topic1? Paragraph.
+
+    * Topic\\: two: Paragraph.
+
+    * Topic #4: Hello world.\n\n`;
+
+    let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
+
+    expect(filesToWrite).toEqual({
+      'topics/A/B/C/Topic1?.expl': "Topic1? Paragraph.\n",
+      'topics/A/B/C/Topic:_two.expl': "Topic\\: two: Paragraph.\n",
+      'topics/A/B/C/Topic_#4.expl': "Topic #4: Hello world.\n"
+    });
+  });
 });
 
 describe('compareChangesWithFileSystem', function() {
