@@ -1,10 +1,6 @@
-// @ts-check
 const { test, expect } = require('@playwright/test');
 
-
 test.beforeEach(async ({ page }) => {
-  await page.goto('localhost:3000');
-
   page.on("console", (message) => {
     if (message.type() === "error") {
       console.error(message.text());
@@ -14,8 +10,10 @@ test.beforeEach(async ({ page }) => {
 
 
 test.describe('Navigation', () => {
-  test('Selecting a global link previews child paragraph', async ({ page }) => {
+  test('Selecting a global or local link previews child paragraph', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
+
     // For a global link
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -30,16 +28,14 @@ test.describe('Navigation', () => {
   });
 
   test('It renders properly when page is initialized to a multi-segment path', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States'); // wait for original page, or outstanding requests will error
-    let response = await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
   test('Pressing down on global link advances path', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -48,8 +44,7 @@ test.describe('Navigation', () => {
   });
 
   test('Pressing enter on global redirects to new page', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     await page.locator('body').press('Enter');
@@ -60,8 +55,7 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-enter on global link opens new tab to redirected path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     const [newPage] = await Promise.all([
@@ -76,6 +70,7 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on global inlines link', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
 
     await page.locator('text=New York').click();
@@ -86,8 +81,7 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on a selected global deselects', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     await page.locator('a:has-text("New York")').click();
@@ -98,10 +92,8 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on an open global selects it', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('a:has-text("New York")').click();
 
@@ -111,7 +103,9 @@ test.describe('Navigation', () => {
   });
 
   test('Alt-clicking on global redirects the page', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
+
     await page.locator('text=New York').click({
       modifiers: ['Alt']
     });
@@ -121,7 +115,8 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-clicking on open global opens new tab to inlined path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -138,6 +133,7 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-clicking on closed global opens new tab to inlined path', async ({ page, context }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
 
     const [newPage] = await Promise.all([
@@ -155,8 +151,7 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-alt-clicking on global link opens new tab to redirected path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     const [newPage] = await Promise.all([
@@ -172,35 +167,30 @@ test.describe('Navigation', () => {
     await expect(newPage).toHaveURL('New_York');
   });
 
-  test('Pressing down on local link advances path and previews child paragraph', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+  test('Pressing down on local link advances path', async ({ page }) => {
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
     await page.locator('body').press('ArrowDown');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
   test('Pressing enter on local link advances path', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
     await page.locator('body').press('Enter');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
   test('Pressing Alt+enter on local zooms on selected path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('body').press('Alt+Enter')
@@ -211,10 +201,7 @@ test.describe('Navigation', () => {
   });
 
   test('Pressing Meta+enter on local redirects to new tab with same path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     const [newPage] = await Promise.all([
@@ -230,10 +217,7 @@ test.describe('Navigation', () => {
   });
 
   test('Pressing alt-meta-enter on local zooms to lowest path segment', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     const [newPage] = await Promise.all([
@@ -249,19 +233,17 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on local inlines link', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('text=New York').click()
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('a:has-text("southern border")').click()
+
+    await page.locator('a:has-text("southern border")').click();
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
 
   test('Clicking on a selected local deselects', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('a:has-text("southern border")').click();
@@ -272,10 +254,7 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on an open local selects it', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
@@ -289,9 +268,9 @@ test.describe('Navigation', () => {
 
 
   test('Alt-clicking on local zooms to the lowest path segment', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('text=New York').click()
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+
     await page.locator('a:has-text("southern border")').click({
       modifiers: ['Alt']
     })
@@ -302,10 +281,8 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-clicking on local opens new tab to that path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -321,10 +298,8 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-option-clicking on local opens new tab to the zoomed path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
+    await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -340,25 +315,23 @@ test.describe('Navigation', () => {
   });
 
   test('Selecting import reference previews path', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
     await page.locator('body').press('ArrowDown');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
   test('Down on import reference selects target', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // import reference
+
     await page.locator('body').press('ArrowDown'); // skips a level
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
 
     // When an import reference is navigated to inline, both the parent global link and the import link should be "open"
@@ -378,10 +351,7 @@ test.describe('Navigation', () => {
   });
 
   test('Enter on import reference redirects to target', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // import reference
@@ -394,10 +364,8 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on an import inlines the import path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('a:has-text("northern border")').click()
 
@@ -405,19 +373,23 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
 
+    // The import reference should be selected and open
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
       { has: page.locator('a:text("northern border").canopy-open-link.canopy-selected-link >> visible=true')})).toHaveCount(1);
+
+    // The global reference should be open but not selected
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
       { has: page.locator('a:text("New Jersey").canopy-open-link >> visible=true')})).toHaveCount(1);
 
-    await expect(page.locator('body')).toContainText('The northern border of New Jersey abuts the southern border of New York.');
+    await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+      { has: page.locator('a:text("New Jersey").canopy-open-link.canopy-selected-link >> visible=true')})).toHaveCount(0);
+
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
   test('Alt-clicking on an import redirects to the import path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('a:has-text("northern border")').click({
       modifiers: ['Alt']
@@ -429,10 +401,8 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-clicking on an import opens to the import path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -448,10 +418,8 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-alt-clicking on an import opens to the import path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -467,10 +435,7 @@ test.describe('Navigation', () => {
   });
 
   test('Meta-enter on an import opens to the import path', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
@@ -487,20 +452,16 @@ test.describe('Navigation', () => {
   });
 
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await page.locator('text=The state of New York has a southern border').press('ArrowDown');
-    await page.locator('text=The southern border of New York abuts the northern border of New Jersey.').press('z');
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('z');
     await expect(page).toHaveURL('/New_York#Southern_border');
     await expect(page.locator('h1')).toHaveText('New York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
   });
 
   test('Pressing shift-up goes to previous topic', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('body').press('Shift+ArrowUp');
@@ -517,12 +478,7 @@ test.describe('Navigation', () => {
   });
 
   test('Pressing tab goes through local references in DFS', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New Jersey');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_Jersey#Northern_part');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
 
     await page.locator('body').press('Tab');
@@ -540,6 +496,7 @@ test.describe('Navigation', () => {
   });
 
   test('Link selection is remembered with browser history', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
     await page.locator('body').press('ArrowRight');
@@ -562,6 +519,7 @@ test.describe('Navigation', () => {
   });
 
   test('Link selection persists over refresh', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -570,10 +528,7 @@ test.describe('Navigation', () => {
   });
 
   test('it renders everything properly for topics with single quotation marks', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
+    await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('body').press('ArrowRight');
@@ -597,15 +552,12 @@ test.describe('Navigation', () => {
   });
 
   test('it renders everything properly for topics with double quotation marks', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowRight');
+    await page.goto("/United_States/New_York/Martha's_Vineyard");
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
+
     await page.locator('body').press('ArrowDown');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
     await expect(page.locator('text=This is a word in English >> visible=true')).toHaveCount(1);
@@ -626,17 +578,11 @@ test.describe('Navigation', () => {
   });
 
   test('it renders everything properly for topics with pound signs marks', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
-    await page.locator('body').press('ArrowDown');
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_word_"vinyard"`);
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
+
     await page.locator('body').press('ArrowRight');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
     await expect(page.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
@@ -657,17 +603,7 @@ test.describe('Navigation', () => {
   });
 
   test('it renders everything properly for topics with question marks', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
-    await page.locator('body').press('ArrowRight');
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
@@ -692,23 +628,11 @@ test.describe('Navigation', () => {
   });
 
   test('it renders everything properly for topics with colons', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
-    await page.locator('body').press('ArrowRight');
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
+
     await page.locator('body').press('ArrowRight');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history");
     await expect(page.locator('text=This is a good book. >> visible=true')).toHaveCount(1);
@@ -729,23 +653,7 @@ test.describe('Navigation', () => {
   });
 
   test('it allows self-import references', async ({ page, context }) => {
-    await expect(page.locator('h1')).toHaveText('United States');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
-    await page.locator('body').press('ArrowRight');
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
     await page.locator('body').press('ArrowRight');
@@ -772,6 +680,7 @@ test.describe('Navigation', () => {
 
 
   test('Browser back to empty path redirects to default topic', async ({ page }) => {
+    await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
     await page.goto('/');
