@@ -69,17 +69,20 @@ class Paragraph {
   get path() {
     let pathArray = [];
     let currentElement = this.sectionElement;
+    let currentParagraph = this;
+    let currentTopicParagraph = this.topicParagraph;
 
     while (currentElement !== canopyContainer) {
-      let currentTopic = currentElement.dataset.topicName;
+      currentTopicParagraph = currentParagraph.topicParagraph;
 
       pathArray.unshift([
-        new Topic(currentTopic),
+        new Topic(currentElement.dataset.topicName),
         new Topic(currentElement.dataset.subtopicName)
       ]);
 
-      while (currentElement.dataset.topicName === currentTopic) {
+      while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {
         currentElement = currentElement.parentNode;
+        if (currentElement !== canopyContainer) currentParagraph = new Paragraph(currentElement);
       }
     }
 
