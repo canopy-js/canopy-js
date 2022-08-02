@@ -245,7 +245,8 @@ class Path {
 
     let parentParagraph = new Paragraph(parentElement);
     if (!parentParagraph.linkByTarget(pathToDisplay.firstTopic)) {
-      console.error("Parent element has no connecting link to subsequent path segment");
+      console.error(`Parent element [${parentParagraph.topic.mixedCase}, ${parentParagraph.subtopic.mixedCase}] has no ` +
+        `connecting link to subsequent path segment [${pathToDisplay.firstTopic}, ${pathToDisplay.firstTopic}]`);
       return false;
     } else {
       return true;
