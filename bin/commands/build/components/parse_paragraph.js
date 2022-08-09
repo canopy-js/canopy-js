@@ -1,34 +1,31 @@
 let { linesByBlockOf } = require('./helpers');
 let { textToken } = require('./tokens');
-let {
-  textBlockFor,
-  codeBlockFor,
-  quoteBlockFor,
-  listBlockFor,
-  tableBlockFor,
-  footnoteBlockFor
-} = require('./block_parsers');
+let parseLine = require('./parse_line');
 
 function parseParagraph(text, parserState) {
-  let linesContainerObjects = linesByBlockOf(text);
+  let tokens = [];
+  let lines = text.split("\n");
 
-  let blockObjects = linesContainerObjects.map((linesContainerObject) => {
-    if (linesContainerObject.type === 'text') {
-      return textBlockFor(linesContainerObject.lines, parserState);
-    } else if (linesContainerObject.type === 'code') {
-      return codeBlockFor(linesContainerObject.lines);
-    } else if (linesContainerObject.type === 'quote') {
-      return quoteBlockFor(linesContainerObject.lines, parserState);
-    } else if (linesContainerObject.type === 'list') {
-      return listBlockFor(linesContainerObject.lines, parserState);
-    } else if (linesContainerObject.type === 'table') {
-      return tableBlockFor(linesContainerObject.lines, parserState);
-    } else if (linesContainerObject.type === 'footnote') {
-      return footnoteBlockFor(linesContainerObject.lines, parserState);
-    }
+  lines.forEach(line => {
+    parseLine(line, tokens, parserState);
   });
 
-  return blockObjects;
+  removeCircularKeys(tokens);
+
+  return tokens;
+}
+
+function removeCircularKeys(tokens) {
+  tokens.filter(token => token.type === 'list').forEach(token => {
+    delete token.lastNode;
+    token.topLevelNodes.forEach(node => removeExtraKeys(node))
+  });
+}
+
+function removeExtraKeys(node) {
+  delete node.parentNode;
+  delete node.indentation;
+  node.children.forEach(removeExtraKeys);
 }
 
 module.exports = parseParagraph;

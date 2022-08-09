@@ -21,20 +21,12 @@ test('it creates text tokens', () => {
   expect(JSON.parse(filesToWrite['/example/project/build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
-      "paragraphsBySubtopic" :
-       {
-          "Idaho": [
-            {
-              "type" : "text",
-              "tokensByLine": [
-                [
-                  {
-                    "text" : "Idaho is a midwestern state.",
-                    "type":"text"
-                  }
-                ]
-              ]
-            }
+      "paragraphsBySubtopic": {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state.",
+            "type":"text"
+          }
         ]
       }
     }
@@ -58,42 +50,29 @@ test('it matches local references', () => {
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state. Idaho has a ",
-                  "type":"text"
-                },
-                {
-                  "text": "state capital",
-                  "type": "local",
-                  "targetSubtopic": "State Capital",
-                  "targetTopic": "Idaho",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : ".",
-                  "type":"text"
-                },
-              ]
-            ]
-          }
+            "text" : "Idaho is a midwestern state. Idaho has a ",
+            "type":"text"
+          },
+          {
+            "text": "state capital",
+            "type": "local",
+            "targetSubtopic": "State Capital",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          },
         ],
 
         "State Capital": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "The state capital of Idaho is Boise.",
-                  "type":"text"
-                }
-              ]
-            ]
+            "text" : "The state capital of Idaho is Boise.",
+            "type":"text"
           }
+
         ]
       }
     }
@@ -115,29 +94,22 @@ test('it matches global references', () => {
         "paragraphsBySubtopic" : {
           "Idaho": [
             {
-              "type" : "text",
-              "tokensByLine": [
-                [
-                  {
-                    "text" : "Idaho is a midwestern state, like ",
-                    "type":"text"
-                  },
-                  {
-                    "text": "Wyoming",
-                    "type": "global",
-                    "targetSubtopic": "Wyoming",
-                    "targetTopic": "Wyoming",
-                    "enclosingTopic": "Idaho",
-                    "enclosingSubtopic" : "Idaho"
-                  },
-                  {
-                    "text" : ".",
-                    "type":"text"
-                  },
-                ]
-              ]
-            }
-          ],
+              "text" : "Idaho is a midwestern state, like ",
+              "type":"text"
+            },
+            {
+              "text": "Wyoming",
+              "type": "global",
+              "targetSubtopic": "Wyoming",
+              "targetTopic": "Wyoming",
+              "enclosingTopic": "Idaho",
+              "enclosingSubtopic" : "Idaho"
+            },
+            {
+              "text" : ".",
+              "type":"text"
+            },
+          ]
         }
       }
     );
@@ -148,17 +120,10 @@ test('it matches global references', () => {
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Wyoming is a midwestern state.",
-                  "type":"text"
-                }
-              ]
-            ]
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
           }
-        ],
+        ]
       }
     }
   );
@@ -182,54 +147,40 @@ test('it matches global references using explicit syntax to override local refer
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state, which contains ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "local",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Idaho",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : " the small town, and is like ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : " the US State.",
-                  "type":"text"
-                },
-              ]
-            ]
+            "text" : "Idaho is a midwestern state, which contains ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "local",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : " the small town, and is like ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : " the US State.",
+            "type":"text"
           }
         ],
 
         "Wyoming": [
           {
-            "tokensByLine": [
-              [
-                {
-                  "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
-                  "type": "text",
-                },
-              ],
-            ],
+            "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
             "type": "text",
-          },
+          }
         ],
       }
     }
@@ -241,15 +192,8 @@ test('it matches global references using explicit syntax to override local refer
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Wyoming is a midwestern state.",
-                  "type":"text"
-                }
-              ]
-            ]
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
           }
         ],
       }
@@ -272,27 +216,20 @@ test('it lets you give arbitrary names to references', () => {
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state, like ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : ".",
-                  "type":"text"
-                },
-              ]
-            ]
+            "text" : "Idaho is a midwestern state, like ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
           }
         ],
       }
@@ -305,17 +242,10 @@ test('it lets you give arbitrary names to references', () => {
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Wyoming is a midwestern state.",
-                  "type":"text"
-                }
-              ]
-            ]
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
           }
-        ],
+        ]
       }
     }
   )
@@ -335,10 +265,7 @@ test('it matches implicit import references', () => {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
         "Idaho": [
-          {
-            "type" : "text",
-            "tokensByLine": [
-              [
+
                 {
                   "text" : "Idaho is a midwestern state, like ",
                   "type":"text"
@@ -356,9 +283,6 @@ test('it matches implicit import references', () => {
                   "type":"text"
                 },
               ]
-            ]
-          }
-        ],
       }
     }
   )
@@ -381,10 +305,7 @@ test('it matches implicit import references in any order within a sentence', () 
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
         "Idaho": [
-          {
-            "type" : "text",
-            "tokensByLine": [
-              [
+
                 {
                   "text" : "Idaho is a midwestern state, near ",
                   "type":"text"
@@ -414,9 +335,6 @@ test('it matches implicit import references in any order within a sentence', () 
                   "type":"text"
                 },
               ]
-            ]
-          }
-        ],
       }
     }
   )
@@ -448,10 +366,7 @@ test('it matches an implicit import reference to the closest candidate link', ()
       "displayTopicName": "Vacation",
       "paragraphsBySubtopic" : {
         "Vacation": [
-          {
-            "type" : "text",
-            "tokensByLine": [
-              [
+
                 {
                   "text" : "I'd like to go to ",
                   "type":"text"
@@ -506,9 +421,6 @@ test('it matches an implicit import reference to the closest candidate link', ()
                   "type":"text"
                 },
               ]
-            ]
-          }
-        ],
       }
     }
   )
@@ -534,82 +446,72 @@ test('it makes local references into import references if that resolves redundan
   }
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, false);
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"][0]).toEqual(
-    {
-      "type" : "text",
-      "tokensByLine": [
-        [
-          {
-            "text" : "England is a European country. England has various ",
-            "type":"text"
-          },
-          {
-            "text": "cities",
-            "type": "local",
-            "targetSubtopic": "Cities",
-            "targetTopic": "England",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "England"
-          },
-          {
-            "text" : ". One of England's cities is ",
-            "type":"text"
-          },
-          {
-            "text": "London",
-            "type": "local",
-            "targetSubtopic": "London",
-            "targetTopic": "England",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "England"
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      ]
-    });
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
+    [
+      {
+        "text" : "England is a European country. England has various ",
+        "type":"text"
+      },
+      {
+        "text": "cities",
+        "type": "local",
+        "targetSubtopic": "Cities",
+        "targetTopic": "England",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "England"
+      },
+      {
+        "text" : ". One of England's cities is ",
+        "type":"text"
+      },
+      {
+        "text": "London",
+        "type": "local",
+        "targetSubtopic": "London",
+        "targetTopic": "England",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "England"
+      },
+      {
+        "text" : ".",
+        "type":"text"
+      },
+    ]);
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["Cities"][0]).toEqual(
-    {
-      "type" : "text",
-      "tokensByLine": [
-        [
-          {
-            "text" : "England has various cities, but none are so nice as ",
-            "type":"text"
-          },
-          {
-            "text": "London",
-            "type": "import",
-            "targetSubtopic": "London",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "Cities"
-          },
-          {
-            "text" : ", ",
-            "type":"text"
-          },
-          {
-            "text": "Ohio",
-            "type": "global",
-            "targetSubtopic": "Ohio",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "Cities"
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      ]
-    });
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["Cities"]).toEqual(
+    [
+      {
+        "text" : "England has various cities, but none are so nice as ",
+        "type":"text"
+      },
+      {
+        "text": "London",
+        "type": "import",
+        "targetSubtopic": "London",
+        "targetTopic": "Ohio",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "Cities"
+      },
+      {
+        "text" : ", ",
+        "type":"text"
+      },
+      {
+        "text": "Ohio",
+        "type": "global",
+        "targetSubtopic": "Ohio",
+        "targetTopic": "Ohio",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "Cities"
+      },
+      {
+        "text" : ".",
+        "type":"text"
+      },
+    ]);
 });
 
-test('it converts local references to import if later found redundant', () => {
+test('it converts local references to import references if later found redundant', () => {
   let projectDir = '/example/project';
   let explFileData = { // first we think the first [[London]] is local, then we see later it isn't
     'topics/England/England.expl':
@@ -629,54 +531,141 @@ test('it converts local references to import if later found redundant', () => {
   }
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, false);
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"][0]).toEqual(
-    {
-      "type" : "text",
-      "tokensByLine": [
-        [
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
+    [
+      {
+        "text" : "England is a European country. England has various ",
+        "type":"text"
+      },
+      {
+        "text": "cities",
+        "type": "local",
+        "targetSubtopic": "Cities",
+        "targetTopic": "England",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "England"
+      },
+      {
+        "text" : ". I'd also like to go to ",
+        "type":"text"
+      },
+      {
+        "text": "London",
+        "type": "import",
+        "targetTopic": "Ohio",
+        "targetSubtopic": "London",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "England"
+      },
+      {
+        "text" : ", ",
+        "type":"text"
+      },
+      {
+        "text": "Ohio",
+        "type": "global",
+        "targetTopic": "Ohio",
+        "targetSubtopic": "Ohio",
+        "enclosingTopic": "England",
+        "enclosingSubtopic" : "England"
+      },
+      {
+        "text" : ".",
+        "type":"text"
+      },
+    ]);
+});
+
+test('it converts local references within lists to import references if later found redundant', () => {
+  let projectDir = '/example/project';
+  let explFileData = { // first we think the first [[London]] is local, then we see later it isn't
+    'topics/England/England.expl':
+      dedent`England:
+      1. England is a European country. England has various [[cities]].
+      2. I'd also like to go to [[London]], [[Ohio]].
+
+      Cities: England has various cities, including its capital [[London]].
+
+      London: London is a large city in England.`,
+
+    'topics/Ohio/Ohio.expl':
+      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
+
+      Columbus: Columbus is a large city in Ohio.
+
+      London: London is a small city in Ohio.
+      `
+  }
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, false);
+
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
+    [
+      {
+        "topLevelNodes": [
           {
-            "text" : "England is a European country. England has various ",
-            "type":"text"
+            "ordinal": "1",
+            "ordered": true,
+            "tokensOfLine": [
+              {
+                "text": "England is a European country. England has various ",
+                "type": "text"
+              },
+              {
+                "text": "cities",
+                "type": "local",
+                "targetTopic": "England",
+                "targetSubtopic": "Cities",
+                "enclosingTopic": "England",
+                "enclosingSubtopic": "England"
+              },
+              {
+                "text": ".",
+                "type": "text"
+              }
+            ],
+            "children": []
           },
           {
-            "text": "cities",
-            "type": "local",
-            "targetSubtopic": "Cities",
-            "targetTopic": "England",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "England"
-          },
-          {
-            "text" : ". I'd also like to go to ",
-            "type":"text"
-          },
-          {
-            "text": "London",
-            "type": "import",
-            "targetSubtopic": "London",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "England"
-          },
-          {
-            "text" : ", ",
-            "type":"text"
-          },
-          {
-            "text": "Ohio",
-            "type": "global",
-            "targetSubtopic": "Ohio",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "England",
-            "enclosingSubtopic" : "England"
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      ]
-    });
+            "ordinal": "2",
+            "ordered": true,
+            "tokensOfLine": [
+              {
+                "text": "I'd also like to go to ",
+                "type": "text"
+              },
+              {
+                "text": "London",
+                "type": "import",
+                "targetTopic": "Ohio",
+                "targetSubtopic": "London",
+                "enclosingTopic": "England",
+                "enclosingSubtopic": "England"
+              },
+              {
+                "text": ", ",
+                "type": "text"
+              },
+              {
+                "text": "Ohio",
+                "type": "global",
+                "targetTopic": "Ohio",
+                "targetSubtopic": "Ohio",
+                "enclosingTopic": "England",
+                "enclosingSubtopic": "England"
+              },
+              {
+                "text": ".",
+                "type": "text"
+              }
+            ],
+            "children": []
+          }
+        ],
+        "type": "list",
+        "text": "1. England is a European country. England has various [[cities]].\n2. I'd also like to go to [[London]], [[Ohio]].\n"
+      }
+    ]
+  );
 });
 
 test('it throws error for redundant local references where both could be import references', () => {
@@ -733,41 +722,34 @@ test('it matches import references with explicit syntax and lets you rename the 
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state, near ",
-                  "type":"text"
-                },
-                {
-                  "text": "my favorite park",
-                  "type": "import",
-                  "targetSubtopic": "Yellowstone National Park",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : " in ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : ".",
-                  "type":"text"
-                },
-              ]
-            ]
-          }
-        ],
+            "text" : "Idaho is a midwestern state, near ",
+            "type":"text"
+          },
+          {
+            "text": "my favorite park",
+            "type": "import",
+            "targetSubtopic": "Yellowstone National Park",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : " in ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          },
+        ]
       }
     }
   )
@@ -787,37 +769,30 @@ test('it matches back-to-back global references', () => {
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state, near ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                },
-                {
-                  "text" : ".",
-                  "type":"text"
-                },
-              ]
-            ]
-          }
-        ],
+            "text" : "Idaho is a midwestern state, near ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          },
+        ]
       }
     }
   )
@@ -837,25 +812,18 @@ test('it matches global references at the end of strings', () => {
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
-            "type" : "text",
-            "tokensByLine": [
-              [
-                {
-                  "text" : "Idaho is a midwestern state, near ",
-                  "type":"text"
-                },
-                {
-                  "text": "Wyoming",
-                  "type": "global",
-                  "targetSubtopic": "Wyoming",
-                  "targetTopic": "Wyoming",
-                  "enclosingTopic": "Idaho",
-                  "enclosingSubtopic" : "Idaho"
-                }
-              ]
-            ]
+            "text" : "Idaho is a midwestern state, near ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
           }
-        ],
+        ]
       }
     }
   )

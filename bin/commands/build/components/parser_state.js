@@ -83,13 +83,12 @@ class ParserState {
     ]);
   }
 
-  registerLocalReference(targetSubtopic, index, linkText) {
+  registerLocalReference(targetSubtopic, index, linkText, token) {
     this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps] = this.currentSubtopic;
 
     this.provisionalLocalReferences[targetSubtopic.caps] = { // local references to convert to imports if found redundant
-      tokens: this.tokens,
+      token,
       text: this.text,
-      tokenIndex: this.tokens.length + 1,
       index,
       enclosingTopic: this.currentTopic,
       enclosingSubtopic: this.currentSubtopic,
@@ -123,8 +122,7 @@ class ParserState {
 
   convertPriorLocalReferenceToImport(targetSubtopic) {
     let {
-      tokens,
-      tokenIndex,
+      token,
       text,
       index,
       enclosingTopic,
@@ -134,15 +132,13 @@ class ParserState {
 
     let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, index, text);
 
-    let importReference = new ImportReferenceToken(
-      targetTopic.mixedCase,
-      this.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
-      enclosingTopic.mixedCase,
-      enclosingSubtopic.mixedCase,
-      linkText
-    )
-
-    tokens.splice(tokenIndex, 1, importReference);
+    token.type = 'import';
+    token.targetTopic = targetTopic.mixedCase;
+    token.targetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase;
+    token.enclosingTopic = enclosingTopic.mixedCase;
+    token.enclosingSubtopic = enclosingSubtopic.mixedCase;
+    token.text = linkText;
+    token.constructor = ImportReferenceToken;
   }
 
   registerImportReference(enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic) {

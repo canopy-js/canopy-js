@@ -1,10 +1,10 @@
 import displayPath from 'display/display_path';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
-import BlockRenderers from 'render/block_renderers';
 import requestJson from 'requests/request_json';
 import Path from 'models/path'
 import Paragraph from 'models/paragraph';
 import Topic from '../../bin/commands/shared/topic';
+import renderTokenElement from 'render/render_token_element';
 
 function renderDomTree(renderContext) {
   let {
@@ -14,18 +14,18 @@ function renderDomTree(renderContext) {
   } = renderContext;
 
   let sectionElement = createSectionElement(renderContext);
+  let paragraph = new Paragraph(sectionElement);
 
   renderContext.displayBlockingPromises = [];
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
-  let blocksOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
-  if (!blocksOfParagraph) throw `Paragraph with subtopic not found: ${subtopic.mixedCase}`;
-  let blockElements = renderElementsForBlocks(blocksOfParagraph, renderContext);
+  let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
+  if (!tokensOfParagraph) throw `Paragraph with subtopic not found: ${subtopic.mixedCase}`;
 
-  blockElements.forEach((blockElement) => {
-    let paragraph = new Paragraph(sectionElement);
-    paragraph.paragraphElement.appendChild(blockElement);
+  tokensOfParagraph.forEach((token) => {
+    let element = renderTokenElement(token, renderContext);
+    paragraph.paragraphElement.appendChild(element);
   });
 
   return Promise.all(renderContext.displayBlockingPromises).then((_) => sectionElement);

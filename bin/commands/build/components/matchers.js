@@ -33,9 +33,7 @@ function localReferenceMatcher(string, parserState, index) {
   if (!linkTarget) return; // This is not a valid link
   if (linkFragment) return; // Any link with a # symbol is a global or import
   let targetSubtopic = new Topic(linkTarget);
-
   if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
-
   if (parserState.currentTopicHasSubtopic(targetSubtopic)) {
     if (parserState.subtopicReferenceIsRedundant(targetSubtopic)) {
       let currentLinkCouldBeImport = parserState.localReferenceCouldBeImport(targetSubtopic, index);
@@ -50,17 +48,17 @@ function localReferenceMatcher(string, parserState, index) {
       }
     }
 
-    parserState.registerLocalReference(targetSubtopic, index, linkText);
-
-    return [
-      new LocalReferenceToken(
+    let localReferenceToken = new LocalReferenceToken(
         currentTopic.mixedCase,
         parserState.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
         currentTopic.mixedCase,
         currentSubtopic.mixedCase,
         linkText
-      ), fullText.length
-    ];
+      );
+
+    parserState.registerLocalReference(targetSubtopic, index, linkText, localReferenceToken);
+
+    return [localReferenceToken, fullText.length];
   } else {
     return null;
   }
