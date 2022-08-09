@@ -308,7 +308,7 @@ class Link {
   }
 
   get topicParagraph() {
-    return new Paragraph(getAncestorElement(this.element, 'canopy-topic-section'));
+    return getAncestorElement(this.element, 'canopy-topic-section');
   }
 
   get selected() {
