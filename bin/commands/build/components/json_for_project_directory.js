@@ -6,14 +6,14 @@ let {
   validateImportReferenceTargets,
   validateSubtopicDefinitions
 } = require('./helpers');
-let ParserState = require('./parser_state');
+let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
 function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
   let sourceDirectory = `${projectDir}/topics`;
   let destinationBuildDirectory = `${projectDir}/build`
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let parserState = new ParserState(explFileData);
+  let parserContext = new ParserContext(explFileData);
   let directoriesToEnsure = [];
   let filesToWrite = {};
 
@@ -22,7 +22,7 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
   Object.keys(explFileData).forEach(function(path) {
     if (!topicKeyOfString(explFileData[path])) return;
 
-    let json = jsonForExplFile(path, explFileData, parserState);
+    let json = jsonForExplFile(path, explFileData, parserContext);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
     let topic = new Topic(explFileNameWithoutExtension);
 
@@ -43,9 +43,9 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
     }
   });
 
-  parserState.validateImportReferenceTargets();
-  parserState.validateSubtopicDefinitions();
-  parserState.validateImportReferenceGlobalMatching();
+  parserContext.validateImportReferenceTargets();
+  parserContext.validateSubtopicDefinitions();
+  parserContext.validateImportReferenceGlobalMatching();
 
   return { directoriesToEnsure, filesToWrite }
 }

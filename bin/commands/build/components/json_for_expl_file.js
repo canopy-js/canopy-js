@@ -7,7 +7,7 @@ let {
 let Topic = require('../../shared/topic');
 let Paragraph = require('../../shared/paragraph');
 
-function jsonForExplFile(path, explFileData, parserState) {
+function jsonForExplFile(path, explFileData, parserContext) {
   let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);
   let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
   let currentTopicString = rootParagraph.key;
@@ -17,14 +17,14 @@ function jsonForExplFile(path, explFileData, parserState) {
     let paragraph = new Paragraph(paragraphWithKey);
     if (!paragraph.key) { return; }
 
-    parserState.setTopicAndSubtopic(rootParagraph.key, paragraph.key);
+    parserContext.setTopicAndSubtopic(rootParagraph.key, paragraph.key);
 
-    let tokensOfParagraph = parseParagraph(paragraph.text, parserState);
+    let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
-    paragraphsBySubtopic[parserState.currentSubtopic.mixedCase] = tokensOfParagraph;
+    paragraphsBySubtopic[parserContext.currentSubtopic.mixedCase] = tokensOfParagraph;
   });
 
-  parserState.validateRedundantLocalReferences();
+  parserContext.validateRedundantLocalReferences();
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,

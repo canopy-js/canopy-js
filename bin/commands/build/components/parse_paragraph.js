@@ -2,12 +2,12 @@ let { linesByBlockOf } = require('./helpers');
 let { textToken } = require('./tokens');
 let parseLine = require('./parse_line');
 
-function parseParagraph(text, parserState) {
+function parseParagraph(text, parserContext) {
   let tokens = [];
   let lines = text.split("\n");
 
   lines.forEach(line => {
-    parseLine(line, tokens, parserState);
+    parseLine(line, tokens, parserContext);
   });
 
   removeCircularKeys(tokens);

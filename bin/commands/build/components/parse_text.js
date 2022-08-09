@@ -1,10 +1,10 @@
 let Matchers = require('./matchers');
 let { TextToken } = require('./tokens');
 
-function parseText(text, parserState) {
+function parseText(text, parserContext) {
   let tokens = [];
-  parserState.currentText = text;
-  parserState.currentTokens = tokens;
+  parserContext.currentText = text;
+  parserContext.currentTokens = tokens;
 
   let characters = text.split('');
   let buffer = '';
@@ -13,7 +13,7 @@ function parseText(text, parserState) {
     let string = characters.slice(i).join('');
     let result;
     for (let j = 0; j < Matchers.length; j++) {
-      result = Matchers[j](string, parserState, i);
+      result = Matchers[j](string, parserContext, i);
       if (result) {
         let [token, length] = result;
         if (buffer) tokens.push(new TextToken(buffer));

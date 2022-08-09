@@ -4,7 +4,7 @@ let { LinkProximityCalculator } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 
-class ParserState {
+class parserContext {
   constructor(explFileData) {
     this.doubleDefinedSubtopics = [];
     this.topicSubtopics = buildNamespaceObject(explFileData, this.doubleDefinedSubtopics);
@@ -214,4 +214,4 @@ class ParserState {
 
 }
 
-module.exports = ParserState;
+module.exports = parserContext;
