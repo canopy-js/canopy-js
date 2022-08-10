@@ -24,8 +24,7 @@ jobs:
     - name: Run regular tests
       run: npm run test
     - name: Run Playwright tests
-      with:
-        run: npx playwright test
+      run: npx playwright test
     - uses: actions/upload-artifact@v2
       if: always()
       with:
