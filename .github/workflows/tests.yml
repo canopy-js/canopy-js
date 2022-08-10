@@ -24,9 +24,8 @@ jobs:
     - name: Run regular tests
       run: npm run test
     - name: Run Playwright tests
-      uses: GabrielBB/xvfb-action@v1
       with:
-        run: npx playwright test --headed
+        run: npx playwright test
     - uses: actions/upload-artifact@v2
       if: always()
       with:
