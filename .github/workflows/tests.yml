@@ -22,11 +22,9 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run regular tests
-      run: npm run test
+      run: npm run jest
     - name: Run Playwright tests
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: npx playwright test --headed
+      run: npx playwright test
     - uses: actions/upload-artifact@v2
       if: always()
       with:
