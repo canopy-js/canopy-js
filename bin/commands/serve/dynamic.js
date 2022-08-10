@@ -8,6 +8,13 @@ if (!process.cwd().match(/build\/?$/)){
   buildPath += '/build/';
 }
 
+app.use(function(req, res, next) {
+  res.on('finish', function() {
+    console.log(`${req.url} - ${res.statusCode}`);
+  })
+  next();
+})
+
 // static file serve
 app.use('*/canopy.js', express.static(buildPath + 'canopy.js'));
 app.use('*/canopy.js.map', express.static(buildPath + 'canopy.js.map'));

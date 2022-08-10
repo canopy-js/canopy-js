@@ -9,6 +9,7 @@ registerKeyListeners();
 registerPopStateListener();
 
 updateView(
-  Path.initial,
-  Link.priorSelection
+  Path.currentOrDefault,
+  Link.priorSelection,
+  { initialPageLoad: true }
 );

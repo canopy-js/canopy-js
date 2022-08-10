@@ -11,6 +11,7 @@ function build({ symlinks, projectPathPrefix, hashUrls, newBuildDirectory, manua
 	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
 
 	if (newBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
+	fs.rmSync('build/_data', { recursive: true, force: true });
 	fs.ensureDirSync('build');
 
 	if (!manualHtml) {

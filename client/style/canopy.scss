@@ -24,7 +24,12 @@
   }
 
   section.canopy-selected-section {
-    padding-bottom: 100px;
+    /* Removing DOM elements from the bottom of the screen can force the page to scroll upward to the existing elements
+    which is not animated. If we keep a padding on the bottom of the last element just beyond the viewport, then
+    removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
+    the scroll upwards can be animated using the window.scrollTo method. */
+
+    padding-bottom: calc(60vh);
   }
 
   section {
@@ -83,13 +88,13 @@
     */
   }
 
-///////////// Markdown styles /////////////////
+/////////////////////////////////////////////
 
   span.canopy-text-span {
     display: block;
   }
 
-  hr.footnote-rule {
+  hr.canopy-footnote-rule {
     width: 700px;
     display: block;
     height: 1px;
@@ -104,7 +109,7 @@
     padding: 2px;
   }
 
-  .footnote-span {
+  .canopy-footnote-span {
     font-size: 80%;
   }
 

@@ -21,42 +21,49 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       return updateView(path, link.atNewPath(path));
     }
 
-    if (link.isOpen) {
-      newPath = pathToLink.replaceTerminalSubtopic(link.enclosingParagraph.subtopicName);
+    if (link.isSelected) {
+      newPath = link.parentLink?.paragraphPathWhenSelected;
     } else {
-      newPath = pathToLink.replaceTerminalSubtopic(link.targetSubtopic);
+      newPath = link.paragraphPathWhenSelected;
       linkToSelect = link;
     }
 
-    updateView(newPath, linkToSelect, { noScrolling: true });
+    updateView(newPath, linkToSelect);
   };
 };
 
-function onGlobalLinkClick (link) {
+function onGlobalAndImportLinkClick (link) {
   return (e) => {
     e.preventDefault();
-
     let path, linkToSelect;
-    if (!e.altKey) {
-      if (link.isSelected) { // close global child
-        path = link.enclosingParagraph.path;
-      } else { // open global child
-        path = link.pathToDisplay;
-        linkToSelect = link;
+
+    if (!e.metaKey) {
+      if (!e.altKey) { // inline
+        if (link.isSelected) { // close global child
+          path = link.enclosingParagraph.path;
+        } else { // open global child
+          path = link.paragraphPathWhenSelected;
+          linkToSelect = link;
+        }
+      } else { // Redirect to global child
+        path = Path.forSegment(link.targetTopic, link.targetSubtopic);
       }
-    } else { // Redirect to global child
-      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
+      return updateView(path, linkToSelect)
     }
 
     if (e.metaKey) {
+      if (!e.altKey) { // inline
+        path = link.paragraphPathWhenSelected; // open the link in new tab
+      } else { // Redirect to global child
+        path = Path.forSegment(link.targetTopic, link.targetSubtopic);
+      }
+
       window.open(
         location.origin + path.string,
         '_blank'
       );
-    } else {
-      updateView(path, linkToSelect, { noScrolling: true })
     }
   }
 }
 
-export { onLocalLinkClick, onGlobalLinkClick };
+export { onLocalLinkClick, onGlobalAndImportLinkClick };

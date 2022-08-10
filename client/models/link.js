@@ -1,7 +1,8 @@
-import { ancestorElement } from 'helpers/getters';
+import { getAncestorElement } from 'helpers/getters';
 import { canopyContainer } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
+import Topic from '../../bin/commands/shared/topic';
 
 class Link {
   constructor(argument) {
@@ -39,7 +40,7 @@ class Link {
 
   contradicts(path) {
     if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
-    return this.pathToDisplay.string !== path.string;
+    return this.paragraphPathWhenSelected.string !== path.string;
   }
 
   get element () {
@@ -77,16 +78,16 @@ class Link {
   }
 
   get targetTopic() {
-    return this.element.dataset.targetTopic;
+    return new Topic(this.element.dataset.targetTopic, true);
   }
   get targetSubtopic() {
-    return this.element.dataset.targetSubtopic;
+    return new Topic(this.element.dataset.targetSubtopic, true);
   }
   get enclosingTopic() {
-    return this.element.dataset.enclosingTopic;
+    return new Topic(this.element.dataset.enclosingTopic, true);
   }
   get enclosingSubtopic() {
-    return this.element.dataset.enclosingSubtopic;
+    return new Topic(this.element.dataset.enclosingSubtopic, true);
   }
 
   get topicName() {
@@ -102,7 +103,7 @@ class Link {
   }
 
   get enclosingSectionElement() {
-    return ancestorElement(this.element, 'canopy-section');
+    return getAncestorElement(this.element, 'canopy-section');
   }
 
   get sectionElement() {
@@ -110,7 +111,7 @@ class Link {
   }
 
   get enclosingParagraphElement() {
-    return ancestorElement(this.element, 'canopy-paragraph');
+    return getAncestorElement(this.element, 'canopy-paragraph');
   }
 
   get parentParagraphElement() {
@@ -128,8 +129,8 @@ class Link {
     if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.targetTopic}"]` +
-        `[data-subtopic-name="${this.targetSubtopic}"]` +
+        `section[data-topic-name="${this.targetTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${this.targetSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
@@ -156,9 +157,9 @@ class Link {
 
   get localPathWhenSelected() {
     if (this.isGlobalOrImport) {
-      return new Path(this.pathToDisplay.pathArray.slice(-2));
+      return new Path(this.paragraphPathWhenSelected.pathArray.slice(-2));
     } else {
-      return this.pathToDisplay.lastSegment;
+      return this.paragraphPathWhenSelected.lastSegment;
     }
   }
 
@@ -203,16 +204,28 @@ class Link {
   }
 
   get path() {
-    throw "Depreciated in favor of #pathToDisplay";
+    throw "Depreciated in favor of #paragraphPathWhenSelected";
   }
 
   get pathToDisplay() {
+    throw "Depreciated in favor of #paragraphPathWhenSelected";
+  }
+
+  get paragraphPathWhenSelected() {
     if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
       return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
     } else {
       return this.enclosingParagraph.path;
+    }
+  }
+
+  get urlPathWhenSelected() {
+    if (this.type === 'import') {
+      return this.enclosingParagraph.path;
+    } else {
+      return this.paragraphPathWhenSelected;
     }
   }
 
@@ -295,7 +308,7 @@ class Link {
   }
 
   get topicParagraph() {
-    return ancestorElement(this.element, 'canopy-topic-section');
+    return getAncestorElement(this.element, 'canopy-topic-section');
   }
 
   get selected() {

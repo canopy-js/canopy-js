@@ -1,13 +1,10 @@
 let Matchers = require('./matchers');
 let { TextToken } = require('./tokens');
-let { validateImportReferenceGlobalMatching } = require('./helpers');
 
-function parseText(text, parsingContext) {
-  let { currentTopic, currentSubtopic, topicSubtopics } = parsingContext;
-
+function parseText(text, parserContext) {
   let tokens = [];
-  parsingContext.text = text;
-  parsingContext.tokens = tokens;
+  parserContext.currentText = text;
+  parserContext.currentTokens = tokens;
 
   let characters = text.split('');
   let buffer = '';
@@ -16,7 +13,7 @@ function parseText(text, parsingContext) {
     let string = characters.slice(i).join('');
     let result;
     for (let j = 0; j < Matchers.length; j++) {
-      result = Matchers[j](string, parsingContext, i);
+      result = Matchers[j](string, parserContext, i);
       if (result) {
         let [token, length] = result;
         if (buffer) tokens.push(new TextToken(buffer));
@@ -31,13 +28,6 @@ function parseText(text, parsingContext) {
   }
 
   if (buffer) tokens.push(new TextToken(buffer));
-
-  validateImportReferenceGlobalMatching(
-    tokens,
-    currentTopic,
-    currentSubtopic,
-    topicSubtopics
-  );
 
   return tokens;
 }

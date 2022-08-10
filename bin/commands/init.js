@@ -21,12 +21,12 @@ function init() {
 	fs.writeFileSync( '.gitignore', gitignore );
 
 	const main = async () => {
-	  await requestDefaultTopicName((defaultTopicName) => {
-	  	if (!defaultTopicName) throw 'No default topic name given.';
-	  	let defaultTopicNameSlug = defaultTopicName.replace(/ /g, '_');
-			fs.writeFileSync('.canopy_default_topic', defaultTopicName + "\n");
-			fs.ensureDirSync(`topics/${defaultTopicNameSlug}`);
-			fs.writeFileSync(`topics/${defaultTopicNameSlug}/${defaultTopicNameSlug}.expl`, `${defaultTopicName}: Text here.\n`);
+	  await requestDefaultTopic((defaultTopic) => {
+	  	if (!defaultTopic) throw 'No default topic name given.';
+	  	let defaultTopicSlug = defaultTopic.replace(/ /g, '_');
+			fs.writeFileSync('.canopy_default_topic', defaultTopic + "\n");
+			fs.ensureDirSync(`topics/${defaultTopicSlug}`);
+			fs.writeFileSync(`topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`, `${defaultTopic}: Text here.\n`);
 	  });
 
 	  rl.close();
@@ -34,7 +34,7 @@ function init() {
 
 	main();
 
-	function requestDefaultTopicName(uponAnswerCallback) {
+	function requestDefaultTopic(uponAnswerCallback) {
 	  return new Promise((resolve, reject) => {
 	  	console.log()
 	  	console.log('Enter a default topic name.')

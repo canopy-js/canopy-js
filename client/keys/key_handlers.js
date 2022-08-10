@@ -14,7 +14,7 @@ function moveUpward() {
   }
 
   return updateView(
-    link.parentLink.pathToDisplay,
+    link.parentLink.paragraphPathWhenSelected,
     link.parentLink
   );
 }
@@ -24,8 +24,8 @@ function topicParentLink() {
   let newLink = link.enclosingParagraph.topicParagraph.parentLink
 
   return updateView(
-    newLink.pathToDisplay,
-    newLink
+    newLink?.paragraphPathWhenSelected || Path.current,
+    newLink || link
   );
 }
 
@@ -40,18 +40,17 @@ function downwardPathAndLink() {
   let newLink;
 
   if (oldLink.isParent) {
-
     if (oldLink.isImport) {
       return {
-        path: oldLink.pathToDisplay,
+        path: oldLink.paragraphPathWhenSelected,
         link: oldLink.targetParagraph.parentLink
       }
     }
 
-    let newLink = oldLink.targetParagraph.firstLink || oldLink.targetParagraph.parentLink;
+    let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph.parentLink;
 
     return {
-      path: newLink.pathToDisplay,
+      path: newLink.paragraphPathWhenSelected,
       link: newLink
     };
   } else {
@@ -62,8 +61,8 @@ function downwardPathAndLink() {
 function moveLeftward() {
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
-    link.pathToDisplay,
-    link,
+    link.paragraphPathWhenSelected,
+    link
   );
 }
 
@@ -71,8 +70,8 @@ function moveRightward() {
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
-    link.pathToDisplay,
-    link,
+    link.paragraphPathWhenSelected,
+    link
   );
 }
 
@@ -82,7 +81,7 @@ function moveDownOrRedirect(newTab, altKey) {
   if (Link.selection.isLocal && !altKey) { // no zoom
     let { path, link } = downwardPathAndLink();
     if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
+      return window.open(location.origin + Link.selection.targetPath, '_blank');
     } else {
       return updateView(path, link);
     }
@@ -91,13 +90,13 @@ function moveDownOrRedirect(newTab, altKey) {
   if (Link.selection.isLocal && altKey) { // zoom
     let { path, link } = downwardPathAndLink();
     if (newTab) {
-      return window.open(location.origin + path.lastSegment.string, '_blank');
+      return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank');
     } else {
-      return updateView(path.lastSegment, link.atNewPath(path.lastSegment));
+      return updateView(Link.selection.targetPath.lastSegment, link.atNewPath(Link.selection.targetPath.lastSegment));
     }
   }
 
-  if (Link.selection.isGlobalOrImport) { // redirect
+  if (Link.selection.isGlobal) { // redirect
     let path = Link.selection.targetPath.lastSegment;
 
     if (newTab) {
@@ -106,6 +105,19 @@ function moveDownOrRedirect(newTab, altKey) {
       return updateView(
         path,
         Link.selectALink(path)
+      )
+    }
+  }
+
+  if (Link.selection.isImport) { // redirect
+    let path = Link.selection.targetPath.lastSegment;
+
+    if (newTab) {
+      return window.open(location.origin + path.string, '_blank');
+    } else {
+      return updateView(
+        path,
+        Link.selection.parentLink.atNewPath(path)
       )
     }
   }
@@ -119,14 +131,14 @@ function moveDownOrRedirect(newTab, altKey) {
   }
 }
 
-function depthFirstSearchForward() {
+function depthFirstSearch() {
   let link = Link.selection;
 
   // Open a parent link
   if (link.isLocal && link.hasChildren) {
     let nextLink = link.firstChildLink || link.nextSibling || link;
     return updateView(
-      nextLink.pathToDisplay,
+      nextLink.paragraphPathWhenSelected,
       nextLink
     );
   }
@@ -150,73 +162,18 @@ function depthFirstSearchForward() {
   // Move to next parent sibling, grandparent sibling, etc.
   if (link.lastSibling.equals(link)) {
     let linkToSelect = (function parentSibling (link) {
-      if (!link.parentLink) {
-        return link.enclosingParagraph.firstLink; // cycle
-      } else if (link.parentLink.nextSibling) {
+      if (!(link.parentLink && link.parentLink.isLocal)) { // If there is no parent link that is local
+        return link.firstSibling; // cycle
+      } else if (link.parentLink.nextSibling) { // If there is a parent-sibling link select that
         return link.parentLink.nextSibling;
       } else {
-        return parentSibling(link.parentLink)
+        return parentSibling(link.parentLink) // otherwise repeat the above steps using the local parent link
       }
     })(link);
 
     return updateView(
-      linkToSelect.pathToDisplay,
+      linkToSelect.paragraphPathWhenSelected,
       linkToSelect
-    );
-  }
-}
-
-function depthFirstSearchBackward() {
-  let link = Link.selection;
-
-  // Open a parent link
-  if (link.isLocal && link.hasChildren) {
-    let nextLink = link.lastChildLink || link.previousSibling || link;
-    return updateView(
-      nextLink.pathToDisplay,
-      nextLink
-    );
-  }
-
-  if (link.isGlobalOrImport) {
-    let linkToSelect = link.previousSibling || link.parentLink?.previousSibling || link.enclosingParagraph.lastLink;
-    return updateView(
-      linkToSelect.enclosingParagraph.path,
-      linkToSelect
-    );
-  }
-
-  // Move to the next sibling including parent link with no children
-  if (link.previousSibling && !link.previousSibling.equals(link)) {
-    return updateView(
-      link.previousSibling.enclosingParagraph.path,
-      link.previousSibling,
-    );
-  }
-
-  // Move to next parent sibling, grandparent sibling, etc.
-  if (link.firstSibling.equals(link)) {
-    let linkToSelect = (function parentSibling (link) {
-      if (!link.parentLink) {
-        return link.enclosingParagraph.lastLink; // cycle
-      } else if (link.parentLink.previousSibling) {
-        return link.parentLink.previousSibling;
-      } else {
-        return parentSibling(link.parentLink)
-      }
-    })(link);
-
-    return updateView(
-      linkToSelect.pathToDisplay,
-      linkToSelect
-    );
-  }
-
-  // Cycle
-  if (link.topicParagraph.firstLink) {
-    return updateView(
-      Path.current,
-      link.lastSibling,
     );
   }
 }
@@ -244,8 +201,7 @@ export {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
-  depthFirstSearchForward,
-  depthFirstSearchBackward,
+  depthFirstSearch,
   zoomOnLocalPath,
   removeSelection
 };

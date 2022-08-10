@@ -2,6 +2,9 @@ import { canopyContainer } from 'helpers/getters';
 
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
+import Link from 'models/link';
+import Path from 'models/path';
+import updateView from 'display/update_view';
 
 function setHeader(topicName) {
   let existingHeader = document.querySelector('#_canopy h1')
@@ -67,12 +70,13 @@ function showsectionElementContainingLink(linkElement) {
 }
 
 function tryPathPrefix(path, displayOptions) {
-  console.log("No section element found for path: ", JSON.stringify(path.toString()));
-  console.log("Trying: ", JSON.stringify(path.withoutLastSegment));
+  console.log("No section element found for path: ", path.string);
+  console.log("Trying: ", path.withoutLastSegment.string);
   if (path.length > 1) {
     return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {
-    throw "Invalid path: " + path.array;
+    console.error("Invalid path: " + path.array);
+    return updateView(Path.default);
   }
 }
 
@@ -82,13 +86,15 @@ const resetDom = () => {
   deselectSectionElement();
 }
 
-function pathForUrl(pathToDisplay, link) {
-  // Import references display the path to the target paragraph, but the URL should be the link's enclosing paragraph
-  if (link && link.type === 'import') {
-    return link.enclosingParagraph.path;
-  } else {
-    return pathToDisplay; // otherwise the path of the displayed paragraph should be the path used in the URL
-  }
+function scrollPage(displayOptions) {
+  let behavior = displayOptions.initialPageLoad ? 'auto' : 'smooth';
+
+  window.scrollTo(
+    {
+      top: Link.selection.enclosingParagraph.paragraphElement.offsetTop - (window.screen.height * .3),
+      behavior: behavior
+    }
+  );
 }
 
 export {
@@ -96,5 +102,5 @@ export {
   displaySectionBelowLink,
   resetDom,
   tryPathPrefix,
-  pathForUrl
+  scrollPage
 };

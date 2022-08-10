@@ -11,8 +11,7 @@ import {
   moveLeftward,
   moveRightward,
   moveDownOrRedirect,
-  depthFirstSearchForward,
-  depthFirstSearchBackward,
+  depthFirstSearch,
   zoomOnLocalPath,
   removeSelection
 } from 'keys/key_handlers';
@@ -31,7 +30,7 @@ const registerKeyListeners = () => {
     let keyName = keyNames[e.keyCode];
     let shortcutName = modifiers + keyName;
 
-    if (keyName === 'tab') {
+    if (['tab', 'down', 'up'].includes(keyName)) {
       e.preventDefault();
     }
 
@@ -66,8 +65,7 @@ const shortcutRelationships = {
   'alt-return': moveDownOrRedirect.bind(null, false, true),
   'command-alt-return': moveDownOrRedirect.bind(null, true, true),
 
-  'tab': depthFirstSearchForward,
-  'shift-tab': depthFirstSearchBackward
+  'tab': depthFirstSearch,
 }
 
 const keyNames = {

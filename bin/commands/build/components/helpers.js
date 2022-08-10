@@ -1,11 +1,9 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
-let { Paragraph } = require('../../shared');
-
-function paragraphsOfFile(path) {
-  let fileContents = fs.readFileSync(path, 'utf8');
-  return fileContents.trim().split(/\n\n+/);
-}
+let Paragraph = require('../../shared/paragraph');
+let dedent = require('dedent-js');
+let Topic = require('../../shared/topic');
+let { TextToken } = require('./tokens');
 
 function linesByBlockOf(string) {
   let lines = string.split(/\n/);
@@ -99,29 +97,13 @@ function linesByBlockOf(string) {
 }
 
 function consolidateTextTokens(tokenArray) {
-  if (tokenArray.length === 0) { return []; }
-
-  let nextToken;
-  let numberOfTokensProcessed;
-
-  if (tokenArray[0].type !== 'text') {
-    nextToken = tokenArray[0];
-    numberOfTokensProcessed = 1;
-  } else {
-    let indexAfterLastTextToken = tokenArray.findIndex((item) => item.type !== 'text');
-    numberOfTokensProcessed = indexAfterLastTextToken > -1 ? indexAfterLastTextToken : tokenArray.length;
-
-    nextToken = new TextToken(
-      tokenArray.slice(0, numberOfTokensProcessed).map((token) => token.text).join('')
-    )
+  for (let i = 0; i < tokenArray.length; i++) {
+    if (tokenArray[i].type === 'text' && tokenArray[i+1]?.type === 'text') {
+      tokenArray.splice(i, 2, new TextToken(tokenArray[i].text + tokenArray[i+1].text));
+      i = 0;
+    }
   }
-
-  return flat([
-    nextToken,
-    consolidateTextTokens(
-      tokenArray.slice(numberOfTokensProcessed)
-    )
-  ]);
+  return tokenArray;
 }
 
 function unitsOf(string) {
@@ -140,71 +122,20 @@ function listExplFilesRecursive(rootDirectory) {
   return filePaths;
 }
 
-function topicKeyOfFile(path) {
-  let paragraphsWithKeys = paragraphsOfFile(path);
+function topicKeyOfString(string) {
+  let paragraphsWithKeys = string.trim().split(/\n\n+/);
   return (new Paragraph(paragraphsWithKeys[0])).key;
-}
-
-function validateImportReferenceGlobalMatching(tokens, enclosingTopic, enclosingSubtopic, topicSubtopics) {
-  tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
-    let globalToken = tokens.find(
-      token => token.targetTopic === importReferenceToken.targetTopic &&
-      token.targetSubtopic === importReferenceToken.targetTopic
-    );
-
-    if(!globalToken) {
-      let targetTopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetTopic];
-      let targetSubtopic = topicSubtopics[importReferenceToken.targetTopic, importReferenceToken.targetSubtopic];
-      let enclosingTopic = topicSubtopics[enclosingTopic][enclosingTopic];
-      let enclosingSubtopic = topicSubtopics[enclosingTopic][enclosingSubtopic];
-
-      throw `Error: Import reference to [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${targetTopic.mixedCase}].`;
-    }
-  });
-}
-
-function validateImportReferenceTargets(importReferencesToCheck, subtopicParents) {
-  importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic]) => {
-    if (!hasConnection(targetSubtopic, targetTopic, subtopicParents)) {
-      throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
-    }
-  });
-}
-
-function validateRedundantLocalReferences(subtopicParents, redundantLocalReferences) { // can only be done after we've seen every local reference
-  redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
-    if (hasConnection(enclosingSubtopic1, topic, subtopicParents) && hasConnection(enclosingSubtopic2, topic, subtopicParents)) {
-      throw `Error: Two local references exist in topic [${topic}] to [${referencedSubtopic}]\n` +
-
-      `  One reference is in [${enclosingSubtopic1}]\n` +
-      `  One reference is in [${enclosingSubtopic2}]\n` +
-      `  \n` +
-      `  Multiple local references to the same subtopic are not permitted.\n` +
-      `  Consider making one of these local references a self import reference.\n` +
-      `  That would look like either [[${enclosingSubtopic1}#${referencedSubtopic}]] or [[${enclosingSubtopic2}#${referencedSubtopic}]].\n`
-      `  \n` +
-      `  (It is also possible you meant one of these as an import reference,\n` +
-      `  However, when the enclosing topic and the target topic both have a given subtopic,\n`
-      `  The import reference must be given in extended format eg [[Topic#Subtopic]].\n`
-    }
-  });
-}
-
-function hasConnection(subtopic, topic, subtopicParents) {
-  if (subtopic.caps === topic.caps) return true;
-  if (subtopicParents[topic.caps] && !subtopicParents[topic.caps][subtopic.caps]) return false;
-  return hasConnection(subtopicParents[topic.caps][subtopic.caps], topic.caps, subtopicParents)
 }
 
 /*
 
 When a link could be an import reference from one of two global references, we want to assign
-it to the closest candidate link. linkProximityCalculator takes a string with links, and returns
+it to the closest candidate link. LinkProximityCalculator takes a string with links, and returns
 and object that can be used to retreive for a given link by index, a sorted list of other links
 by proximity to that link.
 
 */
-class linkProximityCalculator {
+class LinkProximityCalculator {
   constructor(text) {
     this.links = Array.from(
       text.matchAll(/\[\[((?:.(?!\]\]))*.)\]\]/g) // [[ followed by any number of not ]], followed by ]]
@@ -250,14 +181,32 @@ class linkProximityCalculator {
   }
 }
 
+function updateFilesystem(directoriesToEnsure, filesToWrite, destinationDataDirectory) {
+  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
+
+  directoriesToEnsure.forEach(directoryPath => {
+    fs.ensureDirSync(directoryPath);
+  });
+
+  Object.keys(filesToWrite).forEach(filePath => {
+    fs.writeFileSync(filePath, filesToWrite[filePath]);
+  });
+}
+
+function getExplFileData(topicsPath) {
+  let explFilePaths = listExplFilesRecursive(topicsPath);
+  return explFilePaths.reduce((fileData, filePath) => {
+    fileData[filePath] = fs.readFileSync(filePath, 'utf8');
+    return fileData;
+  }, {});
+}
+
 module.exports = {
-  paragraphsOfFile,
   linesByBlockOf,
   consolidateTextTokens,
-  topicKeyOfFile,
+  topicKeyOfString,
   listExplFilesRecursive,
-  validateImportReferenceGlobalMatching,
-  validateImportReferenceTargets,
-  validateRedundantLocalReferences,
-  linkProximityCalculator
+  updateFilesystem,
+  getExplFileData,
+  LinkProximityCalculator
 };

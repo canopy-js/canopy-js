@@ -21,8 +21,8 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
-        topicName: pathToDisplay.firstTopic,
-        subtopicName: pathToDisplay.firstTopic,
+        topic: pathToDisplay.firstTopic,
+        subtopic: pathToDisplay.firstTopic,
         pathToDisplay,
         displayTopicName,
         paragraphsBySubtopic,
@@ -32,14 +32,6 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   });
 
   return uponRender.then((domTree) => parentElement.appendChild(domTree));
-}
-
-function createPlaceholderElement(topicName, subtopicName, pathDepth) {
-  let sectionElement = document.createElement('section');
-  sectionElement.dataset.topicName = topicName;
-  sectionElement.dataset.subtopicName = subtopicName;
-  sectionElement.dataset.pathDepth = pathDepth;
-  return sectionElement;
 }
 
 export default fetchAndRenderPath;

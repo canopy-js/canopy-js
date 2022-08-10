@@ -1,41 +1,40 @@
 let { paragraphsOfFile } = require('./helpers');
-let { TopicName } = require('../../shared');
-let { Paragraph } = require('../../shared');
+let Topic = require('../../shared/topic');
+let Paragraph = require('../../shared/paragraph');
+let dedent = require('dedent-js');
 
-function buildNamespaceObject(pathList) {
+function buildNamespaceObject(explFileData, doubleDefinedSubtopics) {
   let namespacesObject = {};
-  let uniquenessCheck = {};
   let pathsForTopics = {};
 
-  pathList.forEach(function(path){
-    let paragraphsWithKeys = paragraphsOfFile(path);
+  Object.keys(explFileData).forEach(function(path){
+    let fileContents = explFileData[path];
+    let paragraphsWithKeys = fileContents.trim().split(/\n\n+/);
     let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
     if (!topicParargaph.key) return;
-    let currentTopic = new TopicName(topicParargaph.key);
-    namespacesObject[currentTopic.caps] = {};
+    let currentTopic = new Topic(topicParargaph.key);
 
-    if (uniquenessCheck.hasOwnProperty(currentTopic.capsFile)) {
-      console.error(`Error: Topic or similar appears twice in project: "${currentTopic.mixedCase}\n"` +
-      `- One file is: ${path}\n` +
-      `- Another file is: ${pathsForTopics[currentTopic.capsFile]}`)
+    if (namespacesObject.hasOwnProperty(currentTopic.capsFile)) {
+      throw dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
+      - One file is: ${pathsForTopics[currentTopic.capsFile]}
+      - Another file is: ${path}
+      `;
     } else {
-      // Topics must be unique to the level of filename, which is the strongest level
-      uniquenessCheck[currentTopic.capsFile] = {};
       pathsForTopics[currentTopic.capsFile] = path;
     }
+
+    namespacesObject[currentTopic.caps] = {};
 
     paragraphsWithKeys.forEach(function(paragraphText) {
       let paragraph = new Paragraph(paragraphText);
       if (paragraph.key) {
-        let currentSubtopic = new TopicName(paragraph.key);
-        namespacesObject[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
+        let currentSubtopic = new Topic(paragraph.key);
 
-        if (uniquenessCheck[currentTopic.capsFile].hasOwnProperty(currentSubtopic.mixedCase)) {
-          throw `Error: Subtopic "${currentSubtopic.mixedCase}" or similar appears twice in topic: "${currentTopic.mixedCase}"`;
-        } else {
-          // Subtopics need only have a unique mixed case name, which gives them a unique URL
-          uniquenessCheck[currentTopic.capsFile][currentSubtopic.mixedCase] = currentSubtopic;
+        if (namespacesObject[currentTopic.caps].hasOwnProperty(currentSubtopic.caps)) {
+          doubleDefinedSubtopics.push([currentTopic, currentSubtopic]);
         }
+
+        namespacesObject[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
       }
     });
   });

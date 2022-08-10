@@ -4,44 +4,30 @@ let {
   paragraphsOfFile,
   validateRedundantLocalReferences,
 } = require('./helpers');
-let { TopicName } = require('../../shared');
-let { Paragraph } = require('../../shared');
+let Topic = require('../../shared/topic');
+let Paragraph = require('../../shared/paragraph');
 
-function jsonForExplFile(path, namespaceObject, importReferencesToCheck, subtopicParents) {
-  let paragraphsWithKeys = paragraphsOfFile(path);
+function jsonForExplFile(path, explFileData, parserContext) {
+  let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);
+  let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
+  let currentTopicString = rootParagraph.key;
   let paragraphsBySubtopic = {};
-  let paragraph = new Paragraph(paragraphsWithKeys[0]);
-  let currentTopic = new TopicName(paragraph.key);
-  let redundantLocalReferences = [];
-  let provisionalLocalReferences = {};
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraph = new Paragraph(paragraphWithKey);
     if (!paragraph.key) { return; }
-    let currentSubtopic = new TopicName(paragraph.key);
-    let textWithoutKey = paragraph.paragraph;
 
-    let tokensOfParagraph = parseParagraph(
-      textWithoutKey,
-      {
-        topicSubtopics: namespaceObject,
-        currentSubtopic,
-        currentTopic,
-        importReferencesToCheck,
-        subtopicParents,
-        redundantLocalReferences,
-        provisionalLocalReferences
-      }
-    );
+    parserContext.setTopicAndSubtopic(rootParagraph.key, paragraph.key);
 
-    paragraphsBySubtopic[currentSubtopic.mixedCase] = tokensOfParagraph;
-    // console.log(`Parsed [${currentTopic}, ${paragraph.key}]`)
+    let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
+
+    paragraphsBySubtopic[parserContext.currentSubtopic.mixedCase] = tokensOfParagraph;
   });
 
-  validateRedundantLocalReferences(subtopicParents, redundantLocalReferences);
+  parserContext.validateRedundantLocalReferences();
 
   let jsonObject = {
-    displayTopicName: currentTopic.display,
+    displayTopicName: rootParagraph.key,
     paragraphsBySubtopic
   }
 

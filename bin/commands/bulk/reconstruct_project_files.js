@@ -1,6 +1,7 @@
 let fs = require('fs-extra');
 let { keyFromString } = require('./helpers');
-let { TopicName, Paragraph } = require('../shared');
+let Paragraph = require('../shared/paragraph');
+let Topic = require('../shared/topic');
 
 /*
 
@@ -26,6 +27,10 @@ let { TopicName, Paragraph } = require('../shared');
 
   * File without key.
 
+  [A/D]
+
+  Key: Note without asterisk
+
   -- File ends --
 
   This file should produce the following files and folders:
@@ -48,49 +53,65 @@ let { TopicName, Paragraph } = require('../shared');
 
     File without key.
 
+  - topics/A/D/Key.expl:
+    Key: Notes without asterisk
+
 */
 
-function reconstructProjectFiles(dataFile, originalFileList) {
-  let pathHandled = {};
-  let sections = dataFile.split(/(?=^\[.*\]\n)/gm); // Take the path-initial sections
+function reconstructProjectFiles(dataFile, originalFileList, options) {
+  let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
+  let fileSystemData = collectFileSystemData(filesToWrite, originalFileList);
+  let { messages, filesToWriteFinal, pathsToDelete } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
+  if (!options.noBackup) saveBackup(filesToWriteFinal, fileSystemData);
+  updateFileSystem(filesToWriteFinal, directoriesToEnsure, pathsToDelete);
+  messages.forEach(message => console.log(message));
+}
 
-  sections.filter(Boolean).forEach(section => {
-    let blocks = section.split("\n\n");
-    let path = blocks[0].match(/\[(.*)\]/)[1];
+function parseDataFile(dataFile) {
+  let filesToWrite = {};
+  let directoriesToEnsure = [];
+  let sections = dataFile.split(/(?=^\[.*\]\n)/gm).map(s => s.trim()).filter(Boolean); // Take the path-initial sections
+
+  sections.forEach(section => {
+    let path = section.split("\n")[0].match(/\[([^/].*[^/])\]/)?.[1];
+    if (!path) throw `Invalid directory path: "${section.split("\n")[0]}"`;
     let pathWithUnderscores = path.replace(/ /g,'_');
     let pathSegments = path.split('/');
-    let fileTexts = blocks.slice(1).join("\n\n").split(/^\* /gm).filter(a => a);
-    let categoryNotes = [];
-    let directoriesToEnsure = [];
-    let filesToWrite = {};
+    let directoryPath = `topics/${pathWithUnderscores}`;
+    directoriesToEnsure.push(directoryPath);
 
-    fileTexts.forEach(fileContents => {
-      let paragraph = new Paragraph(fileContents);
+    let fileTexts = section
+      .split("\n")
+      .slice(1) // remove the path
+      .join("\n")
+      .split(/^\* /gm)
+      .map(text => text.trim())
+      .filter(Boolean);
+
+    let categoryNotes = [];
+
+    fileTexts.forEach(fileText => {
+      let paragraph = new Paragraph(fileText);
       let key = paragraph.key || '';
-      let directoryPath, fullPath;
 
       if (key) {
-        let topicName = new TopicName(key);
-        directoryPath = `topics/${pathWithUnderscores}`;
-        fullPath = `${directoryPath}/${topicName.fileName}.expl`;
-        directoriesToEnsure.push(directoryPath);
+        let topic = new Topic(key);
+        let fullPath = `${directoryPath}/${topic.fileName}.expl`;
 
-        if (filesToWrite.hasOwnProperty(fullPath)) { // the same file was open in this session
-          filesToWrite[fullPath] += "\n\n" + fileContents.trim();
+        if (filesToWrite.hasOwnProperty(fullPath)) { // the same file was open in this session already
+          filesToWrite[fullPath] += "\n\n" + fileText + "\n";
         } else {
-          filesToWrite[fullPath] = fileContents.trim();
+          filesToWrite[fullPath] = fileText + "\n";
         }
-      } else {
-        if (fileContents.trim()) {
-          categoryNotes.push(fileContents.trim());
-        }
+      } else { // there was no key
+        categoryNotes.push(fileText);
       }
     });
 
-    let categoryName = new TopicName(pathSegments.slice(-1)[0]);
-    let categoryNoteDirectoryPath = `topics/${pathWithUnderscores}`
-    let categoryNotePath = `${categoryNoteDirectoryPath}/${categoryName.fileName}.expl`;
-    directoriesToEnsure.push(categoryNoteDirectoryPath);
+
+    let categoryName = new Topic(pathSegments.slice(-1)[0]);
+    let categoryNotePath = `${directoryPath}/${categoryName.fileName}.expl`;
+
     if (categoryNotes.length > 0) {
       if (filesToWrite[categoryNotePath]) { // If there is a real file already existing at A/B/C/C.expl, add to it
         filesToWrite[categoryNotePath] = filesToWrite[categoryNotePath] + "\n\n" + categoryNotes.join("\n\n");
@@ -98,40 +119,80 @@ function reconstructProjectFiles(dataFile, originalFileList) {
         filesToWrite[categoryNotePath] = categoryNotes.join("\n\n"); // Otherwise start a new one
       }
     }
+  });
 
-    directoriesToEnsure.forEach(directoryPath => fs.ensureDirSync(directoryPath));
-    Object.keys(filesToWrite).forEach(filePath => {
-      writeFile(filePath, filesToWrite[filePath]);
-    });
+  return { filesToWrite, directoriesToEnsure };
+}
+
+function collectFileSystemData(filesToWrite, originalFileList) {
+  let fileSystemData = {};
+
+  Object.keys(filesToWrite).forEach(filePath => {
+    if (fs.existsSync(filePath)) {
+      fileSystemData[filePath] = fs.readFileSync(filePath).toString();
+    }
+  });
+
+  originalFileList.forEach(filePath => {
+    fileSystemData[filePath] = fs.readFileSync(filePath).toString();
+  });
+
+  return fileSystemData;
+}
+
+function compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData) {
+  let messages = [];
+  let pathsToDelete = [];
+  let filesToWriteFinal = {};
+
+  Object.keys(filesToWrite).forEach(filePath => {
+    let alreadyOnDisk = fileSystemData.hasOwnProperty(filePath);
+    let wasLoadedInSession = originalFileList.includes(filePath);
+
+    if (alreadyOnDisk && !wasLoadedInSession) { // append
+      filesToWriteFinal[filePath] = fileSystemData[filePath] + "\n\n" + filesToWrite[filePath];
+      messages.push(`Appended to file: ${filePath}`);
+    } else if (filesToWrite[filePath] !== fileSystemData[filePath]) { // write
+      filesToWriteFinal[filePath] = filesToWrite[filePath];
+      messages.push(`Wrote to file: ${filePath}`);
+    }
   });
 
   originalFileList.forEach(originalFilePath => {
-    if (!pathHandled.hasOwnProperty(originalFilePath.toUpperCase())) {
-      writeLog(originalFilePath, 'File deleted.', 'Delete');
-      fs.unlinkSync(originalFilePath);
-      console.log(`Deleted file: ${originalFilePath}`);
-      deleteEmptyFolders(originalFilePath);
+    if (!filesToWrite.hasOwnProperty(originalFilePath)) {
+      messages.push(`Deleted file: ${originalFilePath}`);
+      pathsToDelete.push(originalFilePath);
     }
   });
 
-  function writeFile(fullPath, newFileContents) {
-    pathHandled[fullPath.toUpperCase()] = true;
+  return { messages, filesToWriteFinal, directoriesToEnsure, pathsToDelete };
+}
 
-    let oldFileContents = fs.existsSync(fullPath) && fs.readFileSync(fullPath).toString().trim();
+function saveBackup(filesToWriteFinal, fileSystemData) {
+  let priorLog = fs.existsSync('.canopy_bulk_backup_log') && fs.readFileSync('.canopy_bulk_backup_log');
 
-    if (oldFileContents !== newFileContents) {
-      if (originalFileList.includes(fullPath) || !oldFileContents) { // if file was loaded or is new, overwrite
-        writeLog(fullPath, newFileContents, 'Write');
-        fs.writeFileSync(fullPath, newFileContents + "\n");
-        console.log(`Wrote to file: ${fullPath}`);
-      } else {
-        writeLog(fullPath, newFileContents, 'Append');
-        fs.writeFileSync(fullPath, oldFileContents.trim() + "\n\n" + newFileContents + "\n");
-        console.log(`Appended to file: ${fullPath}`);
-      }
-    }
+  fs.writeFileSync(
+    '.canopy_bulk_backup_log',
+    (priorLog && (priorLog + "\n\n\n")) +
+    "Old files: \n\n" +
+    Object.keys(fileSystemData).map(p => `* ${p}\n\n${fileSystemData[p]}\n\n`).join('') +
+    "\n\n\nNew and changed files: " +
+    Object.keys(filesToWriteFinal).map(p => `${p}\n\n${filesToWriteFinal[p]}\n\n`).join('') +
+    "\n"
+  );
+}
 
-  }
+function updateFileSystem(filesToWrite, directoriesToEnsure, pathsToDelete) {
+  directoriesToEnsure.forEach(directoryPath => fs.ensureDirSync(directoryPath));
+
+  Object.keys(filesToWrite).forEach(filePath => {
+    fs.writeFileSync(filePath, filesToWrite[filePath]);
+  });
+
+  pathsToDelete.forEach(path => {
+    fs.unlinkSync(path);
+    deleteEmptyFolders(path);
+  });
 }
 
 function deleteEmptyFolders(path) {
@@ -145,14 +206,8 @@ function deleteEmptyFolders(path) {
   }
 }
 
-function writeLog(fullPath, newFileContents, message) {
-  let priorLog = fs.existsSync('.canopy_bulk_backup_log') && fs.readFileSync('.canopy_bulk_backup_log');
-  fs.writeFileSync(
-    '.canopy_bulk_backup_log',
-    (priorLog && priorLog + "\n\n") +
-    (fs.existsSync(fullPath) && `Old: ${fullPath}: ${fs.readFileSync(fullPath)}` + "\n\n" || '') +
-    `${message}: ${fullPath}: ${newFileContents.trim()}` + "\n\n"
-  );
+module.exports = {
+  reconstructProjectFiles,
+  parseDataFile,
+  compareChangesWithFileSystem
 }
-
-module.exports = reconstructProjectFiles;
