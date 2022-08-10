@@ -78,16 +78,16 @@ class Link {
   }
 
   get targetTopic() {
-    return new Topic(this.element.dataset.targetTopic);
+    return new Topic(this.element.dataset.targetTopic, true);
   }
   get targetSubtopic() {
-    return new Topic(this.element.dataset.targetSubtopic);
+    return new Topic(this.element.dataset.targetSubtopic, true);
   }
   get enclosingTopic() {
-    return new Topic(this.element.dataset.enclosingTopic);
+    return new Topic(this.element.dataset.enclosingTopic, true);
   }
   get enclosingSubtopic() {
-    return new Topic(this.element.dataset.enclosingSubtopic);
+    return new Topic(this.element.dataset.enclosingSubtopic, true);
   }
 
   get topicName() {

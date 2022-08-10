@@ -35,7 +35,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
-        subtopic: new Topic(token.targetSubtopic)
+        subtopic: new Topic(token.targetSubtopic, true)
       })
     );
 
@@ -56,7 +56,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   } = renderContext;
 
   return (token, linkElement) => {
-    let topic = new Topic(token.targetTopic);
+    let topic = new Topic(token.targetTopic, true);
     requestJson(topic); // eager-load and cache
 
     if (globalLinkIsOpen(linkElement, pathToDisplay, subtopic)) {

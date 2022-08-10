@@ -3,6 +3,7 @@ let fs = require('fs-extra');
 let Paragraph = require('../../shared/paragraph');
 let dedent = require('dedent-js');
 let Topic = require('../../shared/topic');
+let { TextToken } = require('./tokens');
 
 function linesByBlockOf(string) {
   let lines = string.split(/\n/);
@@ -96,29 +97,13 @@ function linesByBlockOf(string) {
 }
 
 function consolidateTextTokens(tokenArray) {
-  if (tokenArray.length === 0) { return []; }
-
-  let nextToken;
-  let numberOfTokensProcessed;
-
-  if (tokenArray[0].type !== 'text') {
-    nextToken = tokenArray[0];
-    numberOfTokensProcessed = 1;
-  } else {
-    let indexAfterLastTextToken = tokenArray.findIndex((item) => item.type !== 'text');
-    numberOfTokensProcessed = indexAfterLastTextToken > -1 ? indexAfterLastTextToken : tokenArray.length;
-
-    nextToken = new TextToken(
-      tokenArray.slice(0, numberOfTokensProcessed).map((token) => token.text).join('')
-    )
+  for (let i = 0; i < tokenArray.length; i++) {
+    if (tokenArray[i].type === 'text' && tokenArray[i+1]?.type === 'text') {
+      tokenArray.splice(i, 2, new TextToken(tokenArray[i].text + tokenArray[i+1].text));
+      i = 0;
+    }
   }
-
-  return flat([
-    nextToken,
-    consolidateTextTokens(
-      tokenArray.slice(numberOfTokensProcessed)
-    )
-  ]);
+  return tokenArray;
 }
 
 function unitsOf(string) {

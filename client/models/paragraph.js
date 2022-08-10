@@ -41,11 +41,11 @@ class Paragraph {
   }
 
   get topic () {
-    return new Topic(this.sectionElement.dataset.topicName);
+    return new Topic(this.sectionElement.dataset.topicName, true);
   }
 
   get subtopic () {
-    return new Topic(this.sectionElement.dataset.subtopicName);
+    return new Topic(this.sectionElement.dataset.subtopicName, true);
   }
 
   get topicName() {

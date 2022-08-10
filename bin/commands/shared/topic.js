@@ -6,14 +6,15 @@ class Topic {
   // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ ` and a trailing question mark.
   // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
   // Filenames are the mixed case topic name sans characters that cause problems in file paths, like quotation marks.
-  constructor(string) {
-    this.display = decodeURIComponent(string.replace(/\\/g, ''));
-    this.mixedCase = removeStyleCharacters(this.display);
+  // The fromMixedCase argument is when the topic class is instantiated with an already-mixed-case topic to avoid double processing
+  constructor(string, fromMixedCase) {
+    this.display = fromMixedCase ? null : string;
+    this.mixedCase = fromMixedCase ? string : removeStyleCharacters(string).replace(/\\/g, '');
     this.escapedMixedCase = this.mixedCase.replace(/"/g, '\\"').replace(/'/g, "\\'");
-    this.slug = this.mixedCase.replace(/ /g, '_');
-    this.encodedSlug = this.mixedCase.replace(/ /g, '_').replace(/#/g, '%23');
+    this.slug = this.mixedCase.replace(/_/g, '%255f').replace(/ /g, '_');
+    this.encodedSlug = this.slug.replace(/#/g, '%23');
     this.caps = this.mixedCase.toUpperCase().replace(/\?$/, '').replace(/"/, '').replace(/'/, '');
-    this.fileName = this.slug;
+    this.fileName = this.slug.replace(/\\/g, '');
     this.requestFileName = encodeURIComponent(this.slug);
     this.capsFile = this.fileName.toUpperCase();
   }

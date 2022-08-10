@@ -24,8 +24,7 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
 
     let json = jsonForExplFile(path, explFileData, parserContext);
     let explFileNameWithoutExtension = path.match(/\/([^\/]+)\.expl$/)[1];
-    let topic = new Topic(explFileNameWithoutExtension);
-
+    let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
     if (process.env['CANOPY_LOGGING']) {

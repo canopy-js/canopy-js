@@ -1,5 +1,6 @@
 let { TextToken } = require('./tokens');
 let parseText = require('./parse_text');
+let { consolidateTextTokens } = require('./helpers');
 
 function parseLine(line, tokens, parserContext) {
   if (line.match(/^```\s*/) || (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.open)) {
@@ -172,7 +173,7 @@ function handleFootnote(line, tokens, parserContext) {
 }
 
 function handleText(line, tokens, parserContext) {
-  parseText(line, parserContext).forEach(token => {
+  consolidateTextTokens(parseText(line, parserContext)).forEach(token => {
     tokens.push(token);
   });
 }

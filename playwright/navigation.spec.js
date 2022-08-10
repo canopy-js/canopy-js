@@ -652,6 +652,32 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('text=This is a good book. >> visible=true')).toHaveCount(1);
   });
 
+  test('it renders everything properly for topics with escaped style characters', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText("_Hello world_");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/%255fHello_world%255f");
+    await expect(page.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=And this is italics whereas this is _just plain text_. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=_Hello world_").click({
+        modifiers: ['Meta']
+      })
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("_Hello world_");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/%255fHello_world%255f");
+    await expect(newPage.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
+  });
+
   test('it allows self-import references', async ({ page, context }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");

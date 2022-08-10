@@ -126,7 +126,7 @@ function parseLink(string) {
     replace(/\\\#/g, '__LITERAL_AMPERSAND__').
     match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
 
-  match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '#'));
+  match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
 
   return {
     linkTarget: match && match[1] || null, // eg "France"
@@ -155,7 +155,7 @@ function determineTopicAndSubtopic(linkTarget, linkFragment) {
 function escapedCharacterMatcher(string) {
   let match = string.match(/^\\(.)/);
   if (match) {
-    return [new TextToken(match[1]), match[0].length];
+    return [new TextToken(match[0]), match[0].length];
   }
 }
 

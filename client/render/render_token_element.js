@@ -3,6 +3,7 @@ import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handl
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
 import Link from 'models/link';
+import Topic from '../../bin/commands/shared/topic';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -74,7 +75,10 @@ function createLocalLinkElement(token) {
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+
+  let targetTopic = new Topic(token.targetTopic);
+  let targetSubtopic = new Topic(token.targetSubtopic);
+  linkElement.href = `/${targetTopic.slug}#${targetSubtopic.slug}`;
   return linkElement;
 }
 
@@ -93,7 +97,6 @@ function renderGlobalLink(token, renderContext) {
 
 function createGlobalLinkElement(token) {
   let linkElement = document.createElement('a');
-
   let styleElements = renderStyledText(token.text);
   appendElementsToParent(styleElements, linkElement);
 
@@ -108,7 +111,9 @@ function createGlobalLinkElement(token) {
 
   linkElement.dataset.text = token.text;
 
-  linkElement.href = `/${slugFor(token.targetTopic)}`;
+  let targetTopic = new Topic(token.targetTopic, true);
+  linkElement.href = `/${targetTopic.slug}`;
+
   linkElement.addEventListener(
     'click',
     onGlobalAndImportLinkClick(new Link(linkElement))
@@ -143,7 +148,9 @@ function createImportLinkElement(token) {
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
 
-  linkElement.href = `/${slugFor(token.targetTopic)}#${slugFor(token.targetSubtopic)}`;
+  let targetTopic = new Topic(token.targetTopic);
+  let targetSubtopic = new Topic(token.targetSubtopic);
+  linkElement.href = `/${targetTopic.slug}#${targetSubtopic.slug}`;
 
   linkElement.addEventListener(
     'click',
