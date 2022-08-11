@@ -3,14 +3,14 @@ const dedent = require('dedent-js');
 const child_process = require('child_process');
 const buildProject = require('./build/build_project');
 
-function build({ symlinks, projectPathPrefix, hashUrls, newBuildDirectory, manualHtml }) {
+function build({ symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml }) {
 	if (!fs.existsSync('./topics')) throw 'There must be a topics directory present, try running "canopy init"';
 	if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
 
 	let defaultTopic = fs.readFileSync('.canopy_default_topic').toString().trim();
 	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
 
-	if (newBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
+	if (!keepBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
 	fs.rmSync('build/_data', { recursive: true, force: true });
 	fs.ensureDirSync('build');
 

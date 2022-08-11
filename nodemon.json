@@ -1,0 +1,11 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "**/playwright/**",
+    "**/dist/**"
+  ],
+  "verbose": true,
+  "ext": "js"
+}

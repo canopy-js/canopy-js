@@ -2,7 +2,6 @@
   "name": "canopy-js",
   "version": "0.2.51",
   "description": "A library for creating and browsing explanation graphs",
-  "main": "dist/parser.js",
   "scripts": {
     "jest": "jest bin client",
     "test": "npm run jest && npx playwright test",
