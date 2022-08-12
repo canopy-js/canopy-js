@@ -12,8 +12,6 @@ if (platform === 'darwin') {
 }
 
 test.beforeEach(async ({ page }) => {
-  await setSystemMetaKey(page);
-
   page.on("console", (message) => {
     if (message.type() === "error") {
       console.error(message.text());
