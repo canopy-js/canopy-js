@@ -76,6 +76,7 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab, altKey) {
+  console.log('moving down');
   let path, link;
 
   if (Link.selection.isLocal && !altKey) { // no zoom
@@ -98,6 +99,8 @@ function moveDownOrRedirect(newTab, altKey) {
 
   if (Link.selection.isGlobal) { // redirect
     let path = Link.selection.targetPath.lastSegment;
+
+    console.log('meta enter');
 
     if (newTab) {
       return window.open(location.origin + path.string, '_blank');
