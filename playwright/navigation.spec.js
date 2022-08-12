@@ -1,17 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
+const os = require('os');
+let platform = os.platform();
 let systemMetaKey;
-async function setSystemMetaKey(page) {
-  if (!systemMetaKey) {
-    let response = await page.evaluate(() => {
-      return navigator.userAgent;
-    })
-    if (response.indexOf('Win') != -1) systemMetaKey = 'Control';
-    if (response.indexOf('Mac') != -1) systemMetaKey = 'Meta';
-    if (response.indexOf('Linux') != -1) systemMetaKey = 'Control';
-    console.log(response)
-  }
-}
+console.log(platform)
 
 test.beforeEach(async ({ page }) => {
   await setSystemMetaKey(page);
