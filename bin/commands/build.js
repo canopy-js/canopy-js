@@ -3,7 +3,7 @@ const dedent = require('dedent-js');
 const child_process = require('child_process');
 const buildProject = require('./build/build_project');
 
-function build({ symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml }) {
+function build({ symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging }) {
 	if (!fs.existsSync('./topics')) throw 'There must be a topics directory present, try running "canopy init"';
 	if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
 
@@ -34,7 +34,7 @@ function build({ symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manu
 		fs.writeFileSync('build/index.html', html);
 	}
 
-	buildProject('.', symlinks);
+	buildProject('.', symlinks, logging);
 
 	if (symlinks) {
 		let topicDirectories = getDirectories('build');

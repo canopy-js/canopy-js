@@ -9,7 +9,7 @@ let {
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
-function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
+function jsonForProjectDirectory(projectDir, explFileData, makeFolders, logging) {
   let sourceDirectory = `${projectDir}/topics`;
   let destinationBuildDirectory = `${projectDir}/build`
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
@@ -27,9 +27,9 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
     let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
-    if (process.env['CANOPY_LOGGING']) {
-      console.log();
+    if (logging) {
       console.log("WRITING TO " + destinationPath + ": " + json);
+      console.log();
     }
 
     filesToWrite[destinationPath] = json;
@@ -38,7 +38,7 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
       directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.fileName);
-      if (process.env['CANOPY_LOGGING']) console.log('Created directory: ' + topicFolderPath);
+      if (logging) console.log('Created directory: ' + topicFolderPath);
     }
   });
 

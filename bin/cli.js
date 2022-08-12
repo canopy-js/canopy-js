@@ -28,6 +28,7 @@ program.command('build')
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
+  .option('-l, --logging', 'print logs', false)
   .action((options) => {
     try {
     	build(options);
@@ -41,6 +42,9 @@ program.command('watch')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
   .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
+  .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
+  .option('-l, --logging', 'print logs', false)
   .action((options) => {
   	watch(options);
   });
