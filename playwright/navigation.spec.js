@@ -3,7 +3,13 @@ const { test, expect } = require('@playwright/test');
 const os = require('os');
 let platform = os.platform();
 let systemMetaKey;
-console.log(platform)
+if (platform === 'darwin') {
+  systemMetaKey = 'Meta';
+} else if (platform === 'linux') {
+  systemMetaKey = 'Control';
+} else {
+  systemMetaKey = 'Meta';
+}
 
 test.beforeEach(async ({ page }) => {
   await setSystemMetaKey(page);
