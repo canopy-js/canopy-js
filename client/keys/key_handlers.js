@@ -103,8 +103,10 @@ function moveDownOrRedirect(newTab, altKey) {
     console.error('meta enter');
 
     if (newTab) {
+      console.error('new tab');
       return window.open(location.origin + path.string, '_blank');
     } else {
+      console.error('old tab');
       return updateView(
         path,
         Link.selectALink(path)
