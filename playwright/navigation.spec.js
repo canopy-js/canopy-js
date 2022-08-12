@@ -11,6 +11,8 @@ if (platform === 'darwin') {
   systemMetaKey = 'Meta';
 }
 
+console.log(`The system is ${platform} and the meta key is ${systemMetaKey}`)
+
 test.beforeEach(async ({ page }) => {
   page.on("console", (message) => {
     if (message.type() === "error") {

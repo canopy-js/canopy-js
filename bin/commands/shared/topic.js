@@ -13,7 +13,7 @@ class Topic {
     this.escapedMixedCase = this.mixedCase.replace(/"/g, '\\"').replace(/'/g, "\\'");
     this.slug = this.mixedCase.replace(/_/g, '%255f').replace(/ /g, '_');
     this.encodedSlug = this.slug.replace(/#/g, '%23');
-    this.caps = this.mixedCase.toUpperCase().replace(/\?$/, '').replace(/"/, '').replace(/'/, '');
+    this.caps = this.mixedCase.toUpperCase().replace(/\?$/, '').replace(/"/g, '').replace(/'/g, '');
     this.fileName = this.slug.replace(/\\/g, '');
     this.requestFileName = encodeURIComponent(this.slug);
     this.capsFile = this.fileName.toUpperCase();
