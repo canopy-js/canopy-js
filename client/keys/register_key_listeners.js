@@ -23,7 +23,7 @@ const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
     console.error(e.metaKey, e.altKey, e.ctrlKey, e.shiftKey, e.keyCode)
     let modifiers =
-      (e.metaKey ? 'command-' : '') +
+      ((e.metaKey || e.keyCode === 91) ? 'meta-' : '') +
       (e.altKey ? 'alt-' : '') +
       (e.ctrlKey ? 'ctrl-' : '') +
       (e.shiftKey ? 'shift-' : '');
@@ -64,9 +64,9 @@ const shortcutRelationships = {
   'z': zoomOnLocalPath,
 
   'return': moveDownOrRedirect,
-  'command-return': moveDownOrRedirect.bind(null, true),
+  'meta-return': moveDownOrRedirect.bind(null, true),
   'alt-return': moveDownOrRedirect.bind(null, false, true),
-  'command-alt-return': moveDownOrRedirect.bind(null, true, true),
+  'meta-alt-return': moveDownOrRedirect.bind(null, true, true),
 
   'tab': depthFirstSearch,
 }
