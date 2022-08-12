@@ -22,9 +22,9 @@ import Link from 'models/link';
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
     let modifiers =
-      (e.metaKey ? 'command-' : '') +
-      (e.altKey ? 'alt-' : '') +
+      (e.metaKey ? 'meta-' : '') +
       (e.ctrlKey ? 'ctrl-' : '') +
+      (e.altKey ? 'alt-' : '') +
       (e.shiftKey ? 'shift-' : '');
 
     let keyName = keyNames[e.keyCode];
@@ -60,10 +60,12 @@ const shortcutRelationships = {
   'escape': removeSelection,
   'z': zoomOnLocalPath,
 
-  'return': moveDownOrRedirect,
-  'command-return': moveDownOrRedirect.bind(null, true),
-  'alt-return': moveDownOrRedirect.bind(null, false, true),
-  'command-alt-return': moveDownOrRedirect.bind(null, true, true),
+  'enter': moveDownOrRedirect,
+  'meta-enter': moveDownOrRedirect.bind(null, true), // mac
+  'ctrl-enter': moveDownOrRedirect.bind(null, true), // windows & linux
+  'alt-enter': moveDownOrRedirect.bind(null, false, true),
+  'meta-alt-enter': moveDownOrRedirect.bind(null, true, true), // mac
+  'ctrl-alt-enter': moveDownOrRedirect.bind(null, true, true), // windows & linux
 
   'tab': depthFirstSearch,
 }
@@ -82,7 +84,7 @@ const keyNames = {
   186: ';',
   90: 'z',
 
-  13: 'return',
+  13: 'enter',
   9: 'tab',
   27: 'escape',
 

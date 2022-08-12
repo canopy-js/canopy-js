@@ -2,13 +2,13 @@ const { test, expect } = require('@playwright/test');
 
 const os = require('os');
 let platform = os.platform();
-let systemMetaKey;
+let systemNewTabKey;
 if (platform === 'darwin') {
-  systemMetaKey = 'Meta';
+  systemNewTabKey = 'Meta';
 } else if (platform === 'linux') {
-  systemMetaKey = 'Control';
+  systemNewTabKey = 'Control';
 } else {
-  systemMetaKey = 'Meta';
+  systemNewTabKey = 'Meta';
 }
 
 test.beforeEach(async ({ page }) => {
@@ -64,14 +64,15 @@ test.describe('Navigation', () => {
     await expect(page.locator('h1')).toHaveText('New York');
   });
 
-  test('Meta-enter on global link opens new tab to redirected path', async ({ page, context }) => {
+  test('Meta-enter on global link opens new tab to redirected path', async ({ page, context, browserName }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`${systemMetaKey}+Enter`)
+      page.keyboard.press(`${systemNewTabKey}+Enter`)
     ]);
+
     await newPage.waitForLoadState();
 
     await expect(newPage.locator('h1')).toHaveText('New York');
@@ -131,7 +132,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New York")').click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -149,7 +150,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New Jersey")').click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -167,7 +168,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New York")').click({
-        modifiers: [systemMetaKey, 'Alt']
+        modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -216,7 +217,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`${systemMetaKey}+Enter`)
+      page.locator('body').press(`${systemNewTabKey}+Enter`)
     ]);
 
     await newPage.waitForLoadState();
@@ -232,7 +233,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`Alt+${systemMetaKey}+Enter`)
+      page.locator('body').press(`Alt+${systemNewTabKey}+Enter`)
     ]);
 
     await newPage.waitForLoadState();
@@ -297,7 +298,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("southern border")').click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
     await newPage.waitForLoadState();
@@ -314,7 +315,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("southern border")').click({
-        modifiers: [systemMetaKey, 'Alt']
+        modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -417,7 +418,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("northern border")').click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
     await newPage.waitForLoadState();
@@ -434,7 +435,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("northern border")').click({
-        modifiers: [systemMetaKey, 'Alt']
+        modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -452,7 +453,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`${systemMetaKey}+Enter`)
+      page.locator('body').press(`${systemNewTabKey}+Enter`)
     ]);
     await newPage.waitForLoadState();
 
@@ -549,7 +550,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator(`a:visible:text-is("Martha's Vineyard")`).click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -575,7 +576,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('text=the word "vinyard"').click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -600,7 +601,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=the world's #1 gift shop").click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -625,7 +626,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=What attractions are nearby Martha's Vineyard?").click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -650,7 +651,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=Martha's Vineyard: a history").click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
@@ -676,7 +677,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=_Hello world_").click({
-        modifiers: [systemMetaKey]
+        modifiers: [systemNewTabKey]
       })
     ]);
 
