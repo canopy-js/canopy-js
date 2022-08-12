@@ -197,6 +197,7 @@ class parserContext {
     Object.keys(this.topicSubtopics).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       if (!this.connectedTopics[topic.caps]) {
+        console.log()
         console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]`);
       }
     });
@@ -215,6 +216,7 @@ class parserContext {
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
         if (!this.hasConnection(subtopic, topic)) {
+          console.log()
           console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]`)
         }
       });

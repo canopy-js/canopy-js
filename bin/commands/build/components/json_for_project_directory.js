@@ -28,8 +28,7 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
     if (options.logging) {
-      // console.log("WRITING TO " + destinationPath + ": " + json);
-      // console.log();
+      console.log("WRITING TO " + destinationPath);
     }
 
     filesToWrite[destinationPath] = json;
