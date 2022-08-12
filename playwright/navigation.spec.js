@@ -1,13 +1,27 @@
 const { test, expect } = require('@playwright/test');
 
+let systemMetaKey;
+async function setSystemMetaKey(page) {
+  if (!systemMetaKey) {
+    let response = await page.evaluate(() => {
+      return navigator.userAgent;
+    })
+    if (response.indexOf('Win') != -1) systemMetaKey = 'Control';
+    if (response.indexOf('Mac') != -1) systemMetaKey = 'Meta';
+    if (response.indexOf('Linux') != -1) systemMetaKey = 'Control';
+    console.log(response)
+  }
+}
+
 test.beforeEach(async ({ page }) => {
+  await setSystemMetaKey(page);
+
   page.on("console", (message) => {
     if (message.type() === "error") {
       console.error(message.text());
     }
   })
 });
-
 
 test.describe('Navigation', () => {
   test('Selecting a global or local link previews child paragraph', async ({ page }) => {
@@ -60,7 +74,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press('Meta+Enter')
+      page.locator('body').press(`${systemMetaKey}+Enter`)
     ]);
     await newPage.waitForLoadState();
 
@@ -121,7 +135,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New York")').click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -139,7 +153,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New Jersey")').click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -157,7 +171,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("New York")').click({
-        modifiers: ['Meta', 'Alt']
+        modifiers: [systemMetaKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -206,7 +220,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press('Meta+Enter')
+      page.locator('body').press(`${systemMetaKey}+Enter`)
     ]);
 
     await newPage.waitForLoadState();
@@ -222,7 +236,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press('Alt+Meta+Enter')
+      page.locator('body').press(`Alt+${systemMetaKey}+Enter`)
     ]);
 
     await newPage.waitForLoadState();
@@ -287,7 +301,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("southern border")').click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
     await newPage.waitForLoadState();
@@ -304,7 +318,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("southern border")').click({
-        modifiers: ['Meta', 'Alt']
+        modifiers: [systemMetaKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -407,7 +421,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("northern border")').click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
     await newPage.waitForLoadState();
@@ -424,7 +438,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('a:has-text("northern border")').click({
-        modifiers: ['Meta', 'Alt']
+        modifiers: [systemMetaKey, 'Alt']
       })
     ]);
     await newPage.waitForLoadState();
@@ -442,7 +456,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press('Meta+Enter')
+      page.locator('body').press(`${systemMetaKey}+Enter`)
     ]);
     await newPage.waitForLoadState();
 
@@ -539,7 +553,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator(`a:visible:text-is("Martha's Vineyard")`).click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -565,7 +579,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('text=the word "vinyard"').click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -590,7 +604,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=the world's #1 gift shop").click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -615,7 +629,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=What attractions are nearby Martha's Vineyard?").click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -640,7 +654,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=Martha's Vineyard: a history").click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 
@@ -666,7 +680,7 @@ test.describe('Navigation', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=_Hello world_").click({
-        modifiers: ['Meta']
+        modifiers: [systemMetaKey]
       })
     ]);
 

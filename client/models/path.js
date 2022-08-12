@@ -285,7 +285,6 @@ class Path {
     let subpath = path;
     for (let i = 0; i < path.length; i++) {
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
-      console.log(1, subpath.firstTopic)
       currentNode = currentNode.querySelector(
         `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
         `[data-subtopic-name="${subpath.firstSubtopic.escapedMixedCase}"]` +

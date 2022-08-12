@@ -47,7 +47,7 @@ function downwardPathAndLink() {
       }
     }
 
-    let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph.parentLink;
+    let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph?.parentLink;
 
     return {
       path: newLink.paragraphPathWhenSelected,

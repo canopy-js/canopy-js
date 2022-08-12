@@ -113,8 +113,6 @@ function createGlobalLinkElement(token) {
 
   let targetTopic = new Topic(token.targetTopic, true);
   linkElement.href = `/${targetTopic.slug}`;
-  console.log(44, targetTopic)
-  console.log(44, linkElement.href)
 
   linkElement.addEventListener(
     'click',

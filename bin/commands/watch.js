@@ -9,7 +9,7 @@ function watch(options) {
 		.toString().trim();
 
 	if (!fs.existsSync('topics')) {
-		console.log('You must be in a project directory with a topics folder');
+		console.log('Error: You must be in a project directory with a topics folder');
 		return;
 	}
 
