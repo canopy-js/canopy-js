@@ -79,103 +79,103 @@ test.describe('Navigation', () => {
     await expect(newPage).toHaveURL('New_York');
   });
 
-  test('Clicking on global inlines link', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+  // test('Clicking on global inlines link', async ({ page }) => {
+  //   await page.goto('/');
+  //   await expect(page.locator('h1')).toHaveText('United States');
 
-    await page.locator('text=New York').click();
+  //   await page.locator('text=New York').click();
 
-    await expect(page.locator('h1')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page).toHaveURL('United_States/New_York');
-  });
+  //   await expect(page.locator('h1')).toHaveText('United States');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  //   await expect(page).toHaveURL('United_States/New_York');
+  // });
 
-  test('Clicking on a selected global deselects', async ({ page }) => {
-    await page.goto('/United_States/New_York');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  // test('Clicking on a selected global deselects', async ({ page }) => {
+  //   await page.goto('/United_States/New_York');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('a:has-text("New York")').click();
+  //   await page.locator('a:has-text("New York")').click();
 
-    await expect(page.locator('h1')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
-    await expect(page).toHaveURL('United_States');
-  });
+  //   await expect(page.locator('h1')).toHaveText('United States');
+  //   await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
+  //   await expect(page).toHaveURL('United_States');
+  // });
 
-  test('Clicking on an open global selects it', async ({ page }) => {
-    await page.goto('/United_States/New_York#Southern_border');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+  // test('Clicking on an open global selects it', async ({ page }) => {
+  //   await page.goto('/United_States/New_York#Southern_border');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("New York")').click();
+  //   await page.locator('a:has-text("New York")').click();
 
-    await expect(page.locator('h1')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page).toHaveURL('United_States/New_York');
-  });
+  //   await expect(page.locator('h1')).toHaveText('United States');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  //   await expect(page).toHaveURL('United_States/New_York');
+  // });
 
-  test('Alt-clicking on global redirects the page', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+  // test('Alt-clicking on global redirects the page', async ({ page }) => {
+  //   await page.goto('/');
+  //   await expect(page.locator('h1')).toHaveText('United States');
 
-    await page.locator('text=New York').click({
-      modifiers: ['Alt']
-    });
-    await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
-    await expect(page).toHaveURL('New_York'); // Link selected on redirect
-    await expect(page.locator('h1')).toHaveText('New York');
-  });
+  //   await page.locator('text=New York').click({
+  //     modifiers: ['Alt']
+  //   });
+  //   await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
+  //   await expect(page).toHaveURL('New_York'); // Link selected on redirect
+  //   await expect(page.locator('h1')).toHaveText('New York');
+  // });
 
-  test('Meta-clicking on open global opens new tab to inlined path', async ({ page, context }) => {
-    await page.goto('/United_States/New_York#Southern_border');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+  // test('Meta-clicking on open global opens new tab to inlined path', async ({ page, context }) => {
+  //   await page.goto('/United_States/New_York#Southern_border');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    const [newPage] = await Promise.all([
-      context.waitForEvent('page'),
-      page.locator('a:has-text("New York")').click({
-        modifiers: [systemMetaKey]
-      })
-    ]);
+  //   const [newPage] = await Promise.all([
+  //     context.waitForEvent('page'),
+  //     page.locator('a:has-text("New York")').click({
+  //       modifiers: [systemMetaKey]
+  //     })
+  //   ]);
 
-    await newPage.waitForLoadState();
+  //   await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1')).toHaveText('United States');
-    await expect(newPage.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(newPage).toHaveURL('United_States/New_York');
-  });
+  //   await expect(newPage.locator('h1')).toHaveText('United States');
+  //   await expect(newPage.locator('.canopy-selected-link')).toHaveText('New York');
+  //   await expect(newPage).toHaveURL('United_States/New_York');
+  // });
 
-  test('Meta-clicking on closed global opens new tab to inlined path', async ({ page, context }) => {
-    await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+  // test('Meta-clicking on closed global opens new tab to inlined path', async ({ page, context }) => {
+  //   await page.goto('/');
+  //   await expect(page.locator('h1')).toHaveText('United States');
 
-    const [newPage] = await Promise.all([
-      context.waitForEvent('page'),
-      page.locator('a:has-text("New Jersey")').click({
-        modifiers: [systemMetaKey]
-      })
-    ]);
+  //   const [newPage] = await Promise.all([
+  //     context.waitForEvent('page'),
+  //     page.locator('a:has-text("New Jersey")').click({
+  //       modifiers: [systemMetaKey]
+  //     })
+  //   ]);
 
-    await newPage.waitForLoadState();
+  //   await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1')).toHaveText('United States');
-    await expect(newPage.locator('.canopy-selected-link')).toHaveText('New Jersey');
-    await expect(newPage).toHaveURL('United_States/New_Jersey');
-  });
+  //   await expect(newPage.locator('h1')).toHaveText('United States');
+  //   await expect(newPage.locator('.canopy-selected-link')).toHaveText('New Jersey');
+  //   await expect(newPage).toHaveURL('United_States/New_Jersey');
+  // });
 
-  test('Meta-alt-clicking on global link opens new tab to redirected path', async ({ page, context }) => {
-    await page.goto('/United_States/New_York');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  // test('Meta-alt-clicking on global link opens new tab to redirected path', async ({ page, context }) => {
+  //   await page.goto('/United_States/New_York');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    const [newPage] = await Promise.all([
-      context.waitForEvent('page'),
-      page.locator('a:has-text("New York")').click({
-        modifiers: [systemMetaKey, 'Alt']
-      })
-    ]);
-    await newPage.waitForLoadState();
+  //   const [newPage] = await Promise.all([
+  //     context.waitForEvent('page'),
+  //     page.locator('a:has-text("New York")').click({
+  //       modifiers: [systemMetaKey, 'Alt']
+  //     })
+  //   ]);
+  //   await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1')).toHaveText('New York');
-    await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
-    await expect(newPage).toHaveURL('New_York');
-  });
+  //   await expect(newPage.locator('h1')).toHaveText('New York');
+  //   await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
+  //   await expect(newPage).toHaveURL('New_York');
+  // });
 
   // test('Pressing down on local link advances path', async ({ page }) => {
   //   await page.goto('/United_States/New_York#Southern_border');
