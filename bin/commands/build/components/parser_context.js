@@ -5,13 +5,15 @@ let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 
 class parserContext {
-  constructor(explFileData) {
+  constructor(explFileData, defaultTopicString) {
     this.doubleDefinedSubtopics = [];
     this.topicSubtopics = buildNamespaceObject(explFileData, this.doubleDefinedSubtopics);
     this.subtopicParents = {};
     this.importReferencesToCheck = [];
     this.redundantLocalReferences = [];
     this.provisionalLocalReferences = {};
+    this.defaultTopic = new Topic(defaultTopicString);
+    this.topicConnections = {};
     this.currentTopic = null;
     this.currentSubtopic = null;
   }
@@ -180,6 +182,44 @@ class parserContext {
       if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessable, it is invalid data
         throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]`;
       }
+    });
+  }
+
+  registerGlobalReference(targetTopic, currentTopic) {
+    this.topicConnections[currentTopic.caps] = this.topicConnections[currentTopic.caps] || {};
+    this.topicConnections[currentTopic.caps][targetTopic.caps] = true;
+    this.topicConnections[targetTopic.caps] = this.topicConnections[targetTopic.caps] || {};
+  }
+
+  logGlobalOrphans() {
+    this.connectedTopics = {};
+    this.registerConnectedTopic(this.defaultTopic.caps);
+    Object.keys(this.topicSubtopics).forEach(topicCapsString => {
+      let topic = this.topicSubtopics[topicCapsString][topicCapsString];
+      if (!this.connectedTopics[topic.caps]) {
+        console.log()
+        console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]`);
+      }
+    });
+  }
+
+  registerConnectedTopic(givenTopicCapsString) {
+    if (!this.connectedTopics[givenTopicCapsString]) {
+      this.connectedTopics[givenTopicCapsString] = true;
+      Object.keys(this.topicConnections[givenTopicCapsString] || {}).forEach(targetTopicCapsString => this.registerConnectedTopic(targetTopicCapsString));
+    }
+  }
+
+  logLocalOrphans() {
+    Object.keys(this.subtopicParents).forEach(topicCapsString => {
+      let topic = this.topicSubtopics[topicCapsString][topicCapsString];
+      Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
+        let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
+        if (!this.hasConnection(subtopic, topic)) {
+          console.log()
+          console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]`)
+        }
+      });
     });
   }
 

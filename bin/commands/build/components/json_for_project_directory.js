@@ -9,11 +9,11 @@ let {
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
-function jsonForProjectDirectory(projectDir, explFileData, makeFolders, logging) {
+function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, options) {
   let sourceDirectory = `${projectDir}/topics`;
   let destinationBuildDirectory = `${projectDir}/build`
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let parserContext = new ParserContext(explFileData);
+  let parserContext = new ParserContext(explFileData, defaultTopicString);
   let directoriesToEnsure = [];
   let filesToWrite = {};
 
@@ -27,24 +27,25 @@ function jsonForProjectDirectory(projectDir, explFileData, makeFolders, logging)
     let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
-    if (logging) {
-      console.log("WRITING TO " + destinationPath + ": " + json);
-      console.log();
+    if (options.logging) {
+      console.log("WRITING TO " + destinationPath);
     }
 
     filesToWrite[destinationPath] = json;
 
-    if (makeFolders) {
+    if (options.makeFolders) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
       directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.fileName);
-      if (logging) console.log('Created directory: ' + topicFolderPath);
+      if (options.logging) console.log('Created directory: ' + topicFolderPath);
     }
   });
 
   parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
   parserContext.validateImportReferenceGlobalMatching();
+  if (options.logging) parserContext.logGlobalOrphans();
+  if (options.logging) parserContext.logLocalOrphans();
 
   return { directoriesToEnsure, filesToWrite }
 }
