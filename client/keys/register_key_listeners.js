@@ -63,10 +63,10 @@ const shortcutRelationships = {
   'escape': removeSelection,
   'z': zoomOnLocalPath,
 
-  'return': moveDownOrRedirect,
-  'meta-return': moveDownOrRedirect.bind(null, true),
-  'alt-return': moveDownOrRedirect.bind(null, false, true),
-  'meta-alt-return': moveDownOrRedirect.bind(null, true, true),
+  'enter': moveDownOrRedirect,
+  'meta-enter': moveDownOrRedirect.bind(null, true),
+  'alt-enter': moveDownOrRedirect.bind(null, false, true),
+  'meta-alt-enter': moveDownOrRedirect.bind(null, true, true),
 
   'tab': depthFirstSearch,
 }
@@ -85,7 +85,7 @@ const keyNames = {
   186: ';',
   90: 'z',
 
-  13: 'return',
+  13: 'enter',
   9: 'tab',
   27: 'escape',
 

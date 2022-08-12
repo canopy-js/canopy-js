@@ -68,6 +68,9 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
+    page.locator('body').press(`${systemMetaKey}+Enter`)
+    await page.screenshot({ path: 'screenshot.png', fullPage: true });
+
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('body').press(`${systemMetaKey}+Enter`)
