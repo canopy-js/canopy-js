@@ -6,7 +6,7 @@ let systemMetaKey;
 if (platform === 'darwin') {
   systemMetaKey = 'Meta';
 } else if (platform === 'linux') {
-  systemMetaKey = 'Control';
+  systemMetaKey = 'Meta';
 } else {
   systemMetaKey = 'Meta';
 }
