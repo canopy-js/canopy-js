@@ -21,7 +21,7 @@ import Link from 'models/link';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
-    console.error(JSON.stringify(Object.keys(e).map(key => [key, e[key]])));
+    console.error(e.metaKey, e.altKey, e.ctrlKey, e.shiftKey, e.keyCode)
     let modifiers =
       (e.metaKey ? 'command-' : '') +
       (e.altKey ? 'alt-' : '') +
