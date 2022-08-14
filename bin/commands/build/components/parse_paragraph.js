@@ -7,6 +7,7 @@ function parseParagraph(text, parserContext) {
   let lines = text.split("\n");
 
   lines.forEach(line => {
+    parserContext.incrementLineNumber();
     parseLine(line, tokens, parserContext);
   });
 

@@ -1,27 +1,83 @@
-let buildNamespaceObject = require('./build_namespace_object.js');
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator } = require('./helpers');
+let { LinkProximityCalculator, paragraphsOfFile } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
+let Paragraph = require('../../shared/paragraph');
 
-class parserContext {
+class ParserContext {
   constructor(explFileData, defaultTopicString) {
     this.doubleDefinedSubtopics = [];
-    this.topicSubtopics = buildNamespaceObject(explFileData, this.doubleDefinedSubtopics);
+    this.subtopicLineNumbers = {};
+    this.topicSubtopics = {};
     this.subtopicParents = {};
     this.importReferencesToCheck = [];
     this.redundantLocalReferences = [];
     this.provisionalLocalReferences = {};
     this.defaultTopic = new Topic(defaultTopicString);
     this.topicConnections = {};
+    this.topicFilePaths = {};
     this.currentTopic = null;
     this.currentSubtopic = null;
+    this.lineNumber = 0;
+    this.buildNamespaceObject(explFileData);
   }
 
-  setTopicAndSubtopic(topicString, subtopicString) {
-    this.currentTopic = new Topic(topicString);
-    this.currentSubtopic = new Topic(subtopicString);
+  buildNamespaceObject(explFileData) {
+    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
+
+    Object.keys(explFileData).forEach(function(path){
+      let fileContents = explFileData[path];
+      let paragraphsWithKeys = fileContents.trim().split(/\n\n+/);
+      let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
+      if (!topicParargaph.key) return;
+      let currentTopic = new Topic(topicParargaph.key);
+      let lineNumber = 1;
+
+      if (topicSubtopics.hasOwnProperty(currentTopic.capsFile)) {
+        throw dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
+        - One file is: ${topicFilePaths[currentTopic.capsFile]}
+        - Another file is: ${path}
+        `;
+      } else {
+        topicFilePaths[currentTopic.capsFile] = path;
+      }
+
+      topicSubtopics[currentTopic.caps] = {};
+
+      paragraphsWithKeys.forEach(function(paragraphText) {
+        let paragraph = new Paragraph(paragraphText);
+        if (paragraph.key) {
+          let currentSubtopic = new Topic(paragraph.key);
+
+          if (topicSubtopics[currentTopic.caps].hasOwnProperty(currentSubtopic.caps)) {
+            doubleDefinedSubtopics.push(
+              [
+                currentTopic,
+                currentSubtopic,
+                path,
+                lineNumber,
+                subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]
+              ]
+            );
+          }
+
+          topicSubtopics[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
+          subtopicLineNumbers[currentTopic.caps] = subtopicLineNumbers[currentTopic.caps] || {};
+          subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps] = lineNumber;
+        }
+
+        lineNumber += paragraphText.split("\n").length;
+      });
+    });
+
+    return topicSubtopics;
+  }
+
+  setTopicAndSubtopic(topic, subtopic) {
+    this.currentTopic = topic;
+    this.currentSubtopic = subtopic;
     this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
+    this.topicFilePaths[topic.caps] = this.filePath;
   }
 
   get currentTopicAndSubtopic() {
@@ -45,6 +101,18 @@ class parserContext {
 
   get currentTokens() {
     return this.tokens;
+  }
+
+  incrementLineNumber() {
+    this.lineNumber++;
+  }
+
+  set filePath(filePath) {
+    this.filePathString = filePath;
+  }
+
+  get filePath() {
+    return this.filePathString;
   }
 
   getOriginalTopic(givenTopic) {
@@ -94,7 +162,9 @@ class parserContext {
       index,
       enclosingTopic: this.currentTopic,
       enclosingSubtopic: this.currentSubtopic,
-      linkText
+      linkText,
+      filePath: this.filePath,
+      lineNumber: this.lineNumber
     };
   }
 
@@ -144,11 +214,19 @@ class parserContext {
   }
 
   registerImportReference(enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic) {
-    this.importReferencesToCheck.push([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, this.currentTokens]);
+    this.importReferencesToCheck.push([
+      enclosingTopic,
+      enclosingSubtopic,
+      targetTopic,
+      targetSubtopic,
+      this.currentTokens,
+      this.filePath,
+      this.lineNumber
+    ]);
   }
 
   validateImportReferenceGlobalMatching() {
-    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, tokens]) => {
+    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, tokens, filePath, lineNumber]) => {
       tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
         let globalToken = tokens.find(
           token =>
@@ -162,25 +240,28 @@ class parserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-
-          throw `Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].`;
+          throw `Error: ${filePath}:${this.lineNumber}\n` +
+            `Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].`;
         }
       });
     });
   }
 
   validateImportReferenceTargets() {
-    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic]) => {
+    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, _, filePath, lineNumber]) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
+        throw `Error: ${filePath}:${this.lineNumber}\n` +
+          `Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
       }
     });
   }
 
   validateSubtopicDefinitions() {
-    this.doubleDefinedSubtopics.forEach(([topic, subtopic]) => {
+    this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
       if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessable, it is invalid data
-        throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]`;
+        throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
+          `First definition: ${filePath}:${lineNumber1}\n` +
+          `Second definition: ${filePath}:${lineNumber2}`;
       }
     });
   }
@@ -199,6 +280,7 @@ class parserContext {
       if (!this.connectedTopics[topic.caps]) {
         console.log()
         console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]`);
+        console.log(`File: ${this.topicFilePaths[topic.caps]}`)
       }
     });
   }
@@ -218,6 +300,7 @@ class parserContext {
         if (!this.hasConnection(subtopic, topic)) {
           console.log()
           console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]`)
+          console.log(`File: ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}`);
         }
       });
     });
@@ -228,8 +311,8 @@ class parserContext {
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic)) {
         throw dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
-            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}]
-            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}]
+            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}] - defined in ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
+            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}] - defined in ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
 
             Multiple local references to the same subtopic are not permitted.
             Consider making one of these local references a self-import reference.
@@ -254,4 +337,4 @@ class parserContext {
 
 }
 
-module.exports = parserContext;
+module.exports = ParserContext;

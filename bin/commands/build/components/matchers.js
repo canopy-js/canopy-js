@@ -98,15 +98,18 @@ function importReferenceMatcher(string, parserContext, index) {
   }
 
   if (!targetTopic) {
-    throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
+    throw `Error in ${parserContext.filePath}:${parserContext.lineNumber}\n` +
+      `Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]`;
+    throw `Error in ${parserContext.filePath}:${parserContext.lineNumber}\n` +
+      `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]`;
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]`;
+    throw `Error in ${parserContext.filePath}:${parserContext.lineNumber}\n` +
+      `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]`;
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic)

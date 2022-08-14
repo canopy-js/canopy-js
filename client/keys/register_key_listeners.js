@@ -22,7 +22,7 @@ import Link from 'models/link';
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
     let modifiers =
-      ((e.metaKey || e.keyCode === 91) ? 'meta-' : '') +
+      (e.metaKey ? 'command-' : '') +
       (e.altKey ? 'alt-' : '') +
       (e.ctrlKey ? 'ctrl-' : '') +
       (e.shiftKey ? 'shift-' : '');

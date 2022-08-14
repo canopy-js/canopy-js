@@ -687,8 +687,8 @@ test('it throws error for redundant local references where both could be import 
 
   let message = dedent`Error: Two local references exist in topic [Ohio] to subtopic [London]
 
-    - One reference is in [Ohio, Ohio]
-    - One reference is in [Ohio, Columbus]
+    - One reference is in [Ohio, Ohio] - defined in topics/Ohio/Ohio.expl:1
+    - One reference is in [Ohio, Columbus] - defined in topics/Ohio/Ohio.expl:2
 
     Multiple local references to the same subtopic are not permitted.
     Consider making one of these local references a self-import reference.
@@ -838,7 +838,7 @@ test('it throws error for unrecognized link', () => {
   };
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow('Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.');
+  ).toThrow(`Error in topics/Idaho/Idaho.expl:1\nReference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.`);
 });
 
 test('it throws error for redundant local references', () => {
@@ -854,8 +854,8 @@ test('it throws error for redundant local references', () => {
 
   let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
-    - One reference is in [Idaho, Idaho]
-    - One reference is in [Idaho, Western Half]
+    - One reference is in [Idaho, Idaho] - defined in topics/Idaho/Idaho.expl:1
+    - One reference is in [Idaho, Western Half] - defined in topics/Idaho/Idaho.expl:2
 
     Multiple local references to the same subtopic are not permitted.
     Consider making one of these local references a self-import reference.
@@ -900,7 +900,9 @@ test('it throws error for redundantly defined subtopics', () => {
     `,
   };
 
-  let message = dedent`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]`;
+  let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
+    `First definition: topics/Idaho/Idaho.expl:3\n` +
+    `Second definition: topics/Idaho/Idaho.expl:2`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -936,8 +938,8 @@ test('it throws error for redundant local references', () => {
 
   let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
-    - One reference is in [Idaho, Idaho]
-    - One reference is in [Idaho, Cities]
+    - One reference is in [Idaho, Idaho] - defined in topics/Idaho/Idaho.expl:1
+    - One reference is in [Idaho, Cities] - defined in topics/Idaho/Idaho.expl:2
 
     Multiple local references to the same subtopic are not permitted.
     Consider making one of these local references a self-import reference.
@@ -967,7 +969,8 @@ test('it throws error if import reference lacks matching global reference', () =
     `,
   };
 
-  let message = `Error: Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].`;
+  let message = `Error: topics/Wyoming/Wyoming.expl:4\n`+
+    `Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -985,7 +988,8 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
     `,
   };
 
-  let message = `Error: Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]`;
+  let message = `Error: topics/Wyoming/Wyoming.expl:3\n` +
+    `Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
