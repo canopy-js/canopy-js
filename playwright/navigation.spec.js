@@ -233,7 +233,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`Alt+${systemNewTabKey}+Enter`)
+      page.locator('body').press(`Alt+Control+Enter`)
     ]);
 
     await newPage.waitForLoadState();
