@@ -20,61 +20,62 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Navigation', () => {
-  test('Selecting a global or local link previews child paragraph', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+  // test('Selecting a global or local link previews child paragraph', async ({ page }) => {
+  //   await page.goto('/');
+  //   await expect(page.locator('h1')).toHaveText('United States');
 
-    // For a global link
-    await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page).toHaveURL('/United_States/New_York');
-    await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
+  //   // For a global link
+  //   await page.locator('body').press('ArrowRight');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  //   await expect(page).toHaveURL('/United_States/New_York');
+  //   await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
-    // For a local link
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
-    await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
-  });
+  //   // For a local link
+  //   await page.locator('body').press('ArrowDown');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+  //   await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+  //   await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
+  // });
 
-  test('It renders properly when page is initialized to a multi-segment path', async ({ page }) => {
-    await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
-  });
+  // test('It renders properly when page is initialized to a multi-segment path', async ({ page }) => {
+  //   await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+  //   await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
+  //   await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+  // });
 
-  test('Pressing down on global link advances path', async ({ page }) => {
-    await page.goto('/United_States/New_York');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
-    await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
-  });
+  // test('Pressing down on global link advances path', async ({ page }) => {
+  //   await page.goto('/United_States/New_York');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  //   await page.locator('body').press('ArrowDown');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+  //   await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+  //   await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
+  // });
 
-  test('Pressing enter on global redirects to new page', async ({ page }) => {
-    await page.goto('/United_States/New_York');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+  // test('Pressing enter on global redirects to new page', async ({ page }) => {
+  //   await page.goto('/United_States/New_York');
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('body').press('Enter');
+  //   await page.locator('body').press('Enter');
 
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('New_York#Southern_border'); // Link selected on redirect
-    await expect(page.locator('h1')).toHaveText('New York');
-  });
+  //   await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+  //   await expect(page).toHaveURL('New_York#Southern_border'); // Link selected on redirect
+  //   await expect(page.locator('h1')).toHaveText('New York');
+  // });
 
   test('Meta-enter on global link opens new tab to redirected path', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    page.locator('body').press(`${systemMetaKey}+Enter`)
     await page.screenshot({ path: 'screenshot.png', fullPage: true });
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`${systemMetaKey}+Enter`)
+      page.locator('body').press(`${systemMetaKey}+Enter`),
+      page.screenshot({ path: 'screenshot.png', fullPage: true })
     ]);
+
     await newPage.waitForLoadState();
 
     await expect(newPage.locator('h1')).toHaveText('New York');
