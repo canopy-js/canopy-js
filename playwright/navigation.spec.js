@@ -64,7 +64,8 @@ test.describe('Navigation', () => {
   //   await expect(page.locator('h1')).toHaveText('New York');
   // });
 
-  test('Meta-enter on global link opens new tab to redirected path', async ({ page, context }) => {
+  test('Meta-enter on global link opens new tab to redirected path', async ({ page, context, browserName }) => {
+    console.log('Starting test with ' + browserName)
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -81,6 +82,7 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('h1')).toHaveText('New York');
     await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
     await expect(newPage).toHaveURL('New_York');
+    console.log('Ending Test with ' + browserName)
   });
 
   // test('Clicking on global inlines link', async ({ page }) => {
