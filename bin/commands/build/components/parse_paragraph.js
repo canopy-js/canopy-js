@@ -8,6 +8,7 @@ function parseParagraph(text, parserContext) {
 
   lines.forEach(line => {
     parseLine(line, tokens, parserContext);
+    parserContext.incrementLineNumber();
   });
 
   removeCircularKeys(tokens);

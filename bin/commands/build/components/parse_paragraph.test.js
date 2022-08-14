@@ -7,6 +7,7 @@ test('it parses a text block', () => {
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   }
 
   let result = parseParagraph(text, parserContext);
@@ -32,6 +33,7 @@ test('it parses a code block', () => {
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   }
 
   let result = parseParagraph(text, parserContext);
@@ -50,6 +52,7 @@ test('it parses a quote block', () => {
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   }
 
   let result = parseParagraph(text, parserContext);
@@ -72,6 +75,7 @@ test('it parses a list block', () => {
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   }
 
   let result = parseParagraph(text, parserContext);
@@ -117,7 +121,8 @@ test('it parses a table block', () => {
     '| data \\|| data2 |';
 
   let parserContext = {
-    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'}
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   };
 
   let result = parseParagraph(text, parserContext);
@@ -136,6 +141,7 @@ test('it parses a footnote block', () => {
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
   }
 
   let result = parseParagraph(text, parserContext);

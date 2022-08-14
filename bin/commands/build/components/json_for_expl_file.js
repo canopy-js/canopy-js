@@ -7,17 +7,19 @@ let {
 let Topic = require('../../shared/topic');
 let Paragraph = require('../../shared/paragraph');
 
-function jsonForExplFile(path, explFileData, parserContext) {
-  let paragraphsWithKeys = explFileData[path].trim().split(/\n\n+/);
+function jsonForExplFile(filePath, explFileData, parserContext) {
+  let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
   let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
   let currentTopicString = rootParagraph.key;
   let paragraphsBySubtopic = {};
+  parserContext.filePath = filePath;
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
     let paragraph = new Paragraph(paragraphWithKey);
     if (!paragraph.key) { return; }
 
-    parserContext.setTopicAndSubtopic(rootParagraph.key, paragraph.key);
+    parserContext.setTopicAndSubtopic(new Topic(rootParagraph.key), new Topic(paragraph.key));
+    parserContext.setLineNumberToCurrentSubtopic();
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 

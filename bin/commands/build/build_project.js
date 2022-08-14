@@ -1,8 +1,9 @@
 let jsonForProjectDirectory = require('./components/json_for_project_directory');
 let { updateFilesystem, getExplFileData } = require('./components/helpers');
+let path = require('path');
 
 function buildProject(projectDir, defaultTopicString, options) {
-  let explFileData = getExplFileData(`${projectDir}/topics`);
+  let explFileData = getExplFileData(path.resolve(`${projectDir}/topics`));
 
   let {
     directoriesToEnsure,
