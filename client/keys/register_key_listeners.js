@@ -21,7 +21,6 @@ import Link from 'models/link';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
-    console.error(e.metaKey, e.altKey, e.ctrlKey, e.shiftKey, e.keyCode)
     let modifiers =
       ((e.metaKey || e.keyCode === 91) ? 'meta-' : '') +
       (e.altKey ? 'alt-' : '') +
@@ -30,8 +29,6 @@ const registerKeyListeners = () => {
 
     let keyName = keyNames[e.keyCode];
     let shortcutName = modifiers + keyName;
-
-    console.error(shortcutName)
 
     if (['tab', 'down', 'up'].includes(keyName)) {
       e.preventDefault();
@@ -65,8 +62,10 @@ const shortcutRelationships = {
 
   'enter': moveDownOrRedirect,
   'meta-enter': moveDownOrRedirect.bind(null, true),
+  'control-enter': moveDownOrRedirect.bind(null, true), // firefox on some linux distributions doesn't recognize meta key
   'alt-enter': moveDownOrRedirect.bind(null, false, true),
   'meta-alt-enter': moveDownOrRedirect.bind(null, true, true),
+  'control-alt-enter': moveDownOrRedirect.bind(null, true, true), // firefox on some linux distributions doesn't recognize meta key
 
   'tab': depthFirstSearch,
 }
