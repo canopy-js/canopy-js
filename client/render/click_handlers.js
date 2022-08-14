@@ -4,15 +4,17 @@ import Path from 'models/path';
 
 function onLocalLinkClick(targetTopic, targetSubtopic, link) {
   return (e) => {
+    let newTab = e.metaKey || e.ctrlKey;
+
     e.preventDefault();
     let pathToLink = link.enclosingParagraph.path;
     let newPath, linkToSelect;
 
-    if (e.metaKey && !e.altKey) { // no zoom
+    if (newTab && !e.altKey) { // no zoom
       return window.open(location.origin + link.targetPath.string, '_blank');
     }
 
-    if (e.metaKey && e.altKey) { // zoom
+    if (newTab && e.altKey) { // zoom
       return window.open(location.origin + link.targetPath.lastSegment.string, '_blank');
     }
 
@@ -36,8 +38,9 @@ function onGlobalAndImportLinkClick (link) {
   return (e) => {
     e.preventDefault();
     let path, linkToSelect;
+    let newTab = e.metaKey || e.ctrlKey;
 
-    if (!e.metaKey) {
+    if (!newTab) {
       if (!e.altKey) { // inline
         if (link.isSelected) { // close global child
           path = link.enclosingParagraph.path;
@@ -51,7 +54,7 @@ function onGlobalAndImportLinkClick (link) {
       return updateView(path, linkToSelect)
     }
 
-    if (e.metaKey) {
+    if (newTab) {
       if (!e.altKey) { // inline
         path = link.paragraphPathWhenSelected; // open the link in new tab
       } else { // Redirect to global child
