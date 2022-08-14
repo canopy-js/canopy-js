@@ -73,7 +73,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('body').press(`Enter`)
+      page.keyboard.down(`Enter`)
     ]);
 
     await page.keyboard.up(`Meta`);
