@@ -1,5 +1,4 @@
 import { canopyContainer } from 'helpers/getters';
-
 import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
@@ -13,29 +12,6 @@ function setHeader(topicName) {
   let styleElements = renderStyledText(topicName);
   Array.from(styleElements).forEach((element) => {headerDomElement.appendChild(element)});
   canopyContainer.prepend(headerDomElement);
-};
-
-function determineParagraphToDisplay(linkToSelect, paragraph, displayOptions) {
-  // if (linkToSelect && displaySectionBelowLink(linkToSelect)) {
-    // return childSectionElementOfParentLink(linkToSelect);
-  // } else {
-    return paragraph;
-  // }
-}
-
-function displaySectionBelowLink(linkToSelect) {
-  return
-    linkToSelect?.dataset.type === 'local' ||
-    redundantParentLinkInSameParagraphAsPrimary(linkToSelect)
-}
-
-function redundantParentLinkInSameParagraphAsPrimary(linkToSelect) {
-  return linkToSelect?.dataset.type === 'redundant-local' &&
-    siblingOfLinkLike(linkToSelect, (linkElement) => {
-      return linkElement.dataset &&
-        linkElement.dataset.targetTopic === linkToSelect.dataset.targetTopic &&
-        linkElement.dataset.targetSubtopic === linkToSelect.dataset.targetSubtopic;
-    })
 }
 
 function hideAllSectionElements() {
@@ -55,18 +31,6 @@ function deselectSectionElement() {
   Array.from(document.querySelectorAll('.canopy-selected-section')).forEach((sectionElement) => {
     sectionElement.classList.remove('canopy-selected-section');
   });
-}
-
-function hideSectionElement(sectionElement) {
-  sectionElement.style.display = 'none';
-}
-
-function showSectionElement(sectionElement) {
-  sectionElement.style.display = 'block';
-}
-
-function showsectionElementContainingLink(linkElement) {
-  showSectionElement(sectionElementContainingLink(linkElement));
 }
 
 function tryPathPrefix(path, displayOptions) {
@@ -99,7 +63,6 @@ function scrollPage(displayOptions) {
 
 export {
   setHeader,
-  displaySectionBelowLink,
   resetDom,
   tryPathPrefix,
   scrollPage

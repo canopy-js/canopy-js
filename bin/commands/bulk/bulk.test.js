@@ -26,7 +26,7 @@ describe('generateDataFile', function() {
     let filesByPath = {
       'topics/A/B/C': ['topics/A/B/C/Topic.expl', 'topics/A/B/C/Topic2.expl'],
       'topics/A/B': ['topics/A/B/Topic4.expl']
-    }
+    };
 
     let dataFile = generateDataFile(filesByPath, fileSystemData, {});
 
@@ -50,7 +50,7 @@ describe('generateDataFile', function() {
       Subtopic: Hello.\n\n\n`);
 
   });
-})
+});
 
 describe('parseDataFile', function() {
 

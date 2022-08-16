@@ -1,30 +1,32 @@
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator, paragraphsOfFile } = require('./helpers');
+let { LinkProximityCalculator } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
 
 class ParserContext {
   constructor(explFileData, defaultTopicString) {
-    this.doubleDefinedSubtopics = [];
-    this.subtopicLineNumbers = {};
-    this.topicSubtopics = {};
-    this.subtopicParents = {};
-    this.importReferencesToCheck = [];
-    this.redundantLocalReferences = [];
-    this.provisionalLocalReferences = {};
-    this.defaultTopic = new Topic(defaultTopicString);
-    this.topicConnections = {};
-    this.topicFilePaths = {};
-    this.currentTopic = null;
-    this.currentSubtopic = null;
-    this.lineNumber = 0;
+    this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
+    this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
+    this.subtopicParents = {}; // by topic, by subtopic, the parent subtopic that contains a local reference to that subtopic
+    this.importReferencesToCheck = []; // a list of import references with metadata to validate at the end of the second-pass
+    this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
+    this.provisionalLocalReferences = {}; // a list of local reference tokens for converstion to import if later found to be redundant
+    this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
+    this.defaultTopic = new Topic(defaultTopicString); // the default topic of the project, used to log orphan topics not connected to it
+    this.topicConnections = {}; // by topic, an object of other topics that that topic has outgoing global references to
+    this.topicFilePaths = {}; // by topic, the file path where that topic is defined
+    this.currentTopic = null; // the current topic file being parsed
+    this.currentSubtopic = null; // the current subtopic paragraph being parsed
+    this.lineNumber = 0; // the current line number being parsed
     this.buildNamespaceObject(explFileData);
   }
 
+  // This function does a first-pass over all the expl files of the project and creates several
+  // indexes of that content which will be necessary for the more in-depth second pass.
+
   buildNamespaceObject(explFileData) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
-
     Object.keys(explFileData).forEach(function(path){
       let fileContents = explFileData[path];
       let paragraphsWithKeys = fileContents.trim().split(/\n\n/);
@@ -145,7 +147,7 @@ class ParserContext {
   }
 
   provisionalLocalReference(targetSubtopic) {
-    return this.provisionalLocalReferences[targetSubtopic.caps]
+    return this.provisionalLocalReferences[targetSubtopic.caps];
   }
 
   registerPotentialRedundantLocalReference(targetSubtopic) {
@@ -218,19 +220,19 @@ class ParserContext {
   }
 
   registerImportReference(enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic) {
-    this.importReferencesToCheck.push([
+    this.importReferencesToCheck.push({
       enclosingTopic,
       enclosingSubtopic,
       targetTopic,
       targetSubtopic,
-      this.currentTokens,
-      this.filePath,
-      this.lineNumber
-    ]);
+      tokens: this.currentTokens,
+      filePath: this.filePath,
+      lineNumber: this.lineNumber
+    });
   }
 
   validateImportReferenceGlobalMatching() {
-    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, tokens, filePath, lineNumber]) => {
+    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, tokens, filePath, lineNumber}) => {
       tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
         let globalToken = tokens.find(
           token =>
@@ -252,7 +254,7 @@ class ParserContext {
   }
 
   validateImportReferenceTargets() {
-    this.importReferencesToCheck.forEach(([enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, _, filePath, lineNumber]) => {
+    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
         throw `Error: ${filePath}:${lineNumber}\n` +
           `Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
@@ -282,7 +284,7 @@ class ParserContext {
     Object.keys(this.topicSubtopics).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       if (!this.connectedTopics[topic.caps]) {
-        console.log()
+        console.log();
         console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]\n` +
           `File: ${this.topicFilePaths[topic.caps]}`);
       }
@@ -302,7 +304,7 @@ class ParserContext {
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
         if (!this.hasConnection(subtopic, topic)) {
-          console.log()
+          console.log();
           console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
             `File: ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}`
           );
@@ -337,7 +339,7 @@ class ParserContext {
     if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
     if (!this.subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
     if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
-    return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, this.subtopicParents)
+    return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, this.subtopicParents);
   }
 
 }

@@ -1,11 +1,9 @@
 import updateView from 'display/update_view';
-import { sectionElementContainingLink } from 'helpers/getters';
 import Path from 'models/path';
 
 function onLocalLinkClick(targetTopic, targetSubtopic, link) {
   return (e) => {
     e.preventDefault();
-    let pathToLink = link.enclosingParagraph.path;
     let newPath, linkToSelect;
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
@@ -33,7 +31,7 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       return updateView(newPath, linkToSelect);
     }
   };
-};
+}
 
 function onGlobalAndImportLinkClick (link) {
   return (e) => {

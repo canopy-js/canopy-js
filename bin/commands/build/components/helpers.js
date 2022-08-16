@@ -1,100 +1,7 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 let Paragraph = require('../../shared/paragraph');
-let dedent = require('dedent-js');
-let Topic = require('../../shared/topic');
 let { TextToken } = require('./tokens');
-
-function linesByBlockOf(string) {
-  let lines = string.split(/\n/);
-  let blocks = [];
-  let footnoteLines = [];
-
-  lines.forEach((line) => {
-    let lastBlock = blocks[blocks.length - 1];
-
-    if (line.match(/^\s*#/)) {
-      if (lastBlock?.type === 'code') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'code',
-            lines: [line]
-          }
-        );
-      }
-    } else if (line.match(/^\s*>/)) {
-      if (lastBlock?.type === 'quote') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'quote',
-            lines: [line]
-          }
-        );
-      }
-    } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])\s+\S+/)) {
-      if (lastBlock?.type === 'list') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'list',
-            lines: [line]
-          }
-        );
-      }
-    } else if (line.match(/^\|([^|\n]*\|)+/)) {
-      if (lastBlock?.type === 'table') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'table',
-            lines: [line]
-          }
-        );
-      }
-    } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
-      footnoteLines.push(line);
-    } else if (line.match(/\<.*\>/)) {
-      if (lastBlock?.type === 'html') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'html',
-            lines: [line]
-          }
-        );
-      }
-    } else {
-      if (lastBlock?.type === 'text') {
-        lastBlock.lines.push(line);
-      } else {
-        blocks.push(
-          {
-            type: 'text',
-            lines: [line]
-          }
-        );
-      }
-    }
-  });
-
-  if (footnoteLines.length > 0) {
-    blocks.push(
-      {
-        type: 'footnote',
-        lines: footnoteLines
-      }
-    );
-  }
-
-  return blocks;
-}
 
 function consolidateTextTokens(tokenArray) {
   for (let i = 0; i < tokenArray.length; i++) {
@@ -104,12 +11,6 @@ function consolidateTextTokens(tokenArray) {
     }
   }
   return tokenArray;
-}
-
-function unitsOf(string) {
-  if (!string) return [];
-
-  return string.split(/\b|(?=\W)/);
 }
 
 function listExplFilesRecursive(rootDirectory) {
@@ -139,15 +40,15 @@ class LinkProximityCalculator {
   constructor(text) {
     this.links = Array.from(
       text.matchAll(/\[\[((?:.(?!\]\]))*.)\]\]/g) // [[ followed by any number of not ]], followed by ]]
-      ).map(match => ({
-        start: match.index,
-        end: match.index + match[0].length,
-        value: match[1]
-      }))
+    ).map(match => ({
+      start: match.index,
+      end: match.index + match[0].length,
+      value: match[1]
+    }));
 
     this.linksByIndex = this.links.reduce((linksByIndex, linkData) => {
       linksByIndex[linkData.start] = linkData;
-      return linksByIndex
+      return linksByIndex;
     }, {});
   }
 
@@ -202,7 +103,6 @@ function getExplFileData(topicsPath) {
 }
 
 module.exports = {
-  linesByBlockOf,
   consolidateTextTokens,
   topicKeyOfString,
   listExplFilesRecursive,

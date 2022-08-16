@@ -1,4 +1,3 @@
-let { TextToken } = require('./tokens');
 let parseText = require('./parse_text');
 let { consolidateTextTokens } = require('./helpers');
 
@@ -10,10 +9,10 @@ function parseLine(line, tokens, parserContext) {
   } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])\s+\S+/)) {
     handleOutline(line, tokens, parserContext);
   } else if (line.match(/^\|([^|\n]*\|)+/) || (line.match(/^\s*[=#-]+\s*$/) && tokens[tokens.length - 1]?.type === 'table')) {
-    handleTable(line, tokens, parserContext)
+    handleTable(line, tokens, parserContext);
   } else if (line.match(/^<\w+>.*<\/\w+>/)) {
     handleHtml(line);
-  } else if (line.match(/^\s*\[\^[^\]]+]\:/)) {
+  } else if (line.match(/^\s*\[\^[^\]]+]:/)) {
     handleFootnote(line, tokens, parserContext);
   } else {
     handleText(line, tokens, parserContext);
@@ -23,7 +22,7 @@ function parseLine(line, tokens, parserContext) {
 }
 
 function handleCodeBlock(line, tokens) {
-  if (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.hasOwnProperty('open')) {
+  if (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.['open']) {
     if (line.match(/^```\s*/)) {
       delete tokens[tokens.length - 1].open;
     } else {
@@ -85,7 +84,7 @@ function handleOutline(line, tokens, parserContext) {
     tokensOfLine: tokensOfLine,
     children: [],
     parentNode: null
-  }
+  };
 
   if (!outlineToken.lastNode) {
     topLevelNodes.push(newNode);
@@ -133,7 +132,7 @@ function handleTable(line, tokens, parserContext) {
   );
 
   if (tokens[tokens.length - 1]?.type === 'table') {
-    tokens[tokens.length - 1]?.rows.push(tokensByCell)
+    tokens[tokens.length - 1]?.rows.push(tokensByCell);
   } else {
     tokens.push({
       type: 'table',
@@ -143,18 +142,18 @@ function handleTable(line, tokens, parserContext) {
 }
 
 function handleHtml(line, tokens) {
-  if (tokens[tokens.length - 1]?.type === 'html') {
+  if (tokens[tokens.length - 1]?.type === 'html_block') {
     tokens[tokens.length - 1].text += line + "\n";
   } else {
     tokens.push({
-      type: 'html',
+      type: 'html_block',
       text: line + "\n"
     });
   }
 }
 
 function handleFootnote(line, tokens, parserContext) {
-  let match = line.match(/^\[\^([^\]]+)]\:(.*$)/);
+  let match = line.match(/^\[\^([^\]]+)]:(.*$)/);
   let superscript = match[1];
   let text = match[2];
   let footnoteTokens = parseText(text, parserContext);
@@ -162,7 +161,7 @@ function handleFootnote(line, tokens, parserContext) {
   if (tokens[tokens.length - 1]?.type !== 'footnote_line') {
     tokens.push({
       type: 'footnote_rule'
-    })
+    });
   }
 
   tokens.push({

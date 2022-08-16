@@ -20,6 +20,7 @@ function renderStyledText(text) {
     let closeStyle = closeMatch && styleStack.slice(-1)[0] === closeMatch[1];
 
     if (!escaped && styleStack[0] !== '`' && openMatch) { // we ignore further characters within ` blocks
+
       let [_, pretext, styleCharacter] = openMatch;
       if (buffer || pretext) {
         let textNode = document.createTextNode(buffer + pretext);

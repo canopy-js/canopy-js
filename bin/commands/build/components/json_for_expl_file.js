@@ -1,16 +1,10 @@
-let fs = require('fs');
 let parseParagraph = require('./parse_paragraph');
-let {
-  paragraphsOfFile,
-  validateRedundantLocalReferences,
-} = require('./helpers');
 let Topic = require('../../shared/topic');
 let Paragraph = require('../../shared/paragraph');
 
 function jsonForExplFile(filePath, explFileData, parserContext) {
   let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
   let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
-  let currentTopicString = rootParagraph.key;
   let paragraphsBySubtopic = {};
   parserContext.filePath = filePath;
 
@@ -31,7 +25,7 @@ function jsonForExplFile(filePath, explFileData, parserContext) {
   let jsonObject = {
     displayTopicName: rootParagraph.key,
     paragraphsBySubtopic
-  }
+  };
 
   return JSON.stringify(
     jsonObject,

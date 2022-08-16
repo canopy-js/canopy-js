@@ -1,5 +1,4 @@
 let child_process = require('child_process');
-let	canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
 let fs = require('fs-extra');
 let editor = require('editor');
 let generateDataFile = require('./generate_data_file');
@@ -7,7 +6,6 @@ let { reconstructProjectFiles } = require('./reconstruct_project_files');
 let Fzf = require('@dgoguerra/fzf').Fzf;
 let {
   recursiveDirectoryFind,
-  validatePathsAreDirectories,
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
@@ -17,10 +15,10 @@ let {
 
 const bulk = async function(fileList, options) {
   if (!fs.existsSync('./topics')) throw "Must be in a projects directory with a topics folder";
-	let editorMode = !!!(options.start || options.finish);
+  let editorMode = !(options.start || options.finish);
   options.noBackup && fs.existsSync('.canopy_bulk_backup_log') && fs.unlinkSync('.canopy_bulk_backup_log');
 
-	if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
+  if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
     let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
     const fzf = new Fzf().multi().result(p => `topics/${p}`); // put back on topics prefix
     fileList = fileList.concat((await fzf.run(optionList)).flat());
@@ -34,7 +32,7 @@ const bulk = async function(fileList, options) {
 
   if (options.pick && options.recursive) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**'); // Add the /**
-    postProcess = p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`); // Remove the /**
+    let postProcess = p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`); // Remove the /**
     const fzf = new Fzf().multi().result(postProcess);
     fileList = fileList.concat((await fzf.run(optionList)).flat());
   }
@@ -43,22 +41,22 @@ const bulk = async function(fileList, options) {
     // `git diff` gets us the changed files and `git ls-files` gets us the new untracked files
     fileList = fileList.concat(
       child_process
-      .execSync('{ git diff --name-only head && git ls-files --others --exclude-standard; }')
-      .toString()
-      .trim()
-      .split("\n")
+        .execSync('{ git diff --name-only head && git ls-files --others --exclude-standard; }')
+        .toString()
+        .trim()
+        .split("\n")
     );
   }
 
   if (options.search) {
     fileList = fileList.concat(
       child_process
-      .execSync(`find topics | { grep -i ${options.search} | grep .expl || true; }`) // suppress error on no results
-      .toString()
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-    )
+        .execSync(`find topics | { grep -i ${options.search} | grep .expl || true; }`) // suppress error on no results
+        .toString()
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+    );
   }
 
   if (fileList.length === 0) {
@@ -69,42 +67,42 @@ const bulk = async function(fileList, options) {
     }
   }
 
-  fileSystemData = collectFileSystemData(fileList);
+  let fileSystemData = collectFileSystemData(fileList);
   fileList = deduplicate(fileList).sort(pathComparator);
-  filesByPath = groupByPath(fileList);
-	let initialData = generateDataFile(filesByPath, fileSystemData, options);
+  let filesByPath = groupByPath(fileList);
+  let initialData = generateDataFile(filesByPath, fileSystemData, options);
 
-	if (editorMode) {
-		fs.writeFileSync('.canopy_bulk_file', initialData);
-		editor('.canopy_bulk_file', (code, sig) => {
-			let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
-			try {
+  if (editorMode) {
+    fs.writeFileSync('.canopy_bulk_file', initialData);
+    editor('.canopy_bulk_file', () => {
+      let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
+      try {
         reconstructProjectFiles(finishedData, fileList, options);
       } catch (e) {
         console.error(e);
       }
       fs.unlink('.canopy_bulk_file');
-		});
-	}
+    });
+  }
 
   if (options.continue) {
     let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
     reconstructProjectFiles(finishedData, fileList, options);
   }
 
-	if (options.start) { // non-editor mode
+  if (options.start) { // non-editor mode
     fs.writeFileSync('canopy_bulk_file', initialData);
-		fs.writeFileSync('.canopy_bulk_original_file_list', JSON.stringify(fileList));
-	}
+    fs.writeFileSync('.canopy_bulk_original_file_list', JSON.stringify(fileList));
+  }
 
-	if (options.finish) { // non-editor mode
-		let finishedData = fs.readFileSync('canopy_bulk_file').toString();
+  if (options.finish) { // non-editor mode
+    let finishedData = fs.readFileSync('canopy_bulk_file').toString();
     let fileList = JSON.parse(fs.readFileSync('.canopy_bulk_original_file_list').toString());
-		reconstructProjectFiles(finishedData, fileList, options);
+    reconstructProjectFiles(finishedData, fileList, options);
     fs.unlink('canopy_bulk_file');
     fs.unlink('.canopy_bulk_original_file_list');
-	}
-}
+  }
+};
 
 function collectFileSystemData(fileList) {
   let fileSystemData = {};

@@ -1,7 +1,5 @@
 var express = require('express');
-var fs = require('fs');
 var app = express();
-let port = process.argv[2] || 3000;
 
 let buildPath =  process.cwd();
 if (!process.cwd().match(/build\/?$/)){
@@ -11,9 +9,9 @@ if (!process.cwd().match(/build\/?$/)){
 app.use(function(req, res, next) {
   res.on('finish', function() {
     console.log(`${req.url} - ${res.statusCode}`);
-  })
+  });
   next();
-})
+});
 
 // static file serve
 app.use('*/canopy.js', express.static(buildPath + 'canopy.js'));
@@ -25,7 +23,7 @@ app.use('*/_assets', express.static(buildPath + '_assets'));
 app.use((req, res) => res.sendFile(buildPath + 'index.html'));
 
 function runDynamic(port) {
-	app.listen(port);
+  app.listen(port);
 }
 
 module.exports = runDynamic;

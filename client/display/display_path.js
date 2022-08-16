@@ -1,11 +1,8 @@
 import Path from 'models/path';
-import { canopyContainer } from 'helpers/getters';
 import Link from 'models/link';
-import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import {
   setHeader,
-  addSelectedLinkClass,
   tryPathPrefix,
   resetDom,
   scrollPage

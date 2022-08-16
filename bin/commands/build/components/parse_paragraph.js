@@ -1,5 +1,3 @@
-let { linesByBlockOf } = require('./helpers');
-let { textToken } = require('./tokens');
 let parseLine = require('./parse_line');
 
 function parseParagraph(text, parserContext) {
@@ -19,7 +17,7 @@ function parseParagraph(text, parserContext) {
 function removeCircularKeys(tokens) {
   tokens.filter(token => token.type === 'list').forEach(token => {
     delete token.lastNode;
-    token.topLevelNodes.forEach(node => removeExtraKeys(node))
+    token.topLevelNodes.forEach(node => removeExtraKeys(node));
   });
 }
 

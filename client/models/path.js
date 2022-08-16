@@ -1,7 +1,5 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
-import { selectedLink, metadataForLink } from 'helpers/getters';
 import Paragraph from 'models/paragraph';
-import Link from 'models/link';
 import Topic from '../../bin/commands/shared/topic';
 
 class Path {
@@ -55,19 +53,15 @@ class Path {
     return this.pathString;
   }
 
-  get firstTopic() {
-    return this.pathArray[0][0];
-  }
-
   get rootTopicPath() {
     return new Path([[this.firstTopic, this.firstTopic]]);
   }
 
-  get firstSubtopic() {
-    return this.pathArray[0][1];
+  get firstTopic() {
+    return this.pathArray[0][0];
   }
 
-  get subtopic() {
+  get firstSubtopic() {
     return this.pathArray[0][1];
   }
 
@@ -80,7 +74,7 @@ class Path {
   }
 
   get firstSegment() {
-    return new Path([[this.pathArray[0][0], this.pathArray[0][1]]]);
+    return new Path(this.pathArray.slice(0, 1));
   }
 
   get lastSegment() {
@@ -217,6 +211,7 @@ class Path {
   }
 
   static fixOrphanSubtopics(pathString, slashSeparatedUnits) {
+    // Sometimes browsers insert forward slashes before the first pound sign which we have to remove
     // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
 
     if (typeof pathString !== 'string') throw "pathString must be a string argument";
@@ -247,7 +242,7 @@ class Path {
 
   static connectingLinkValid(parentElement, pathToDisplay) {
     if (!parentElement) throw 'Parent element required';
-    if (!pathToDisplay instanceof Path) throw 'pathToDisplay must be a Path object';
+    if (!(pathToDisplay instanceof Path)) throw 'pathToDisplay must be a Path object';
 
     if (parentElement === canopyContainer) return true;
 
@@ -262,7 +257,7 @@ class Path {
   }
 
   static elementAtRelativePath(suppliedPath, suppliedRootElement) {
-    if (!suppliedPath instanceof Path) throw 'pathToDisplay must be a Path object';
+    if (!(suppliedPath instanceof Path)) throw 'pathToDisplay must be a Path object';
     if (!suppliedRootElement || !suppliedRootElement.tagName) 'Root element must be a DOM node';
 
     let rootElement = suppliedRootElement;
@@ -298,8 +293,8 @@ class Path {
     return currentNode;
   }
 
-  static setPath(newPath, link) {
-    if (!newPath instanceof Path) throw 'newPath must be Path object';
+  static setPath(newPath) {
+    if (!(newPath instanceof Path)) throw 'newPath must be Path object';
 
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic.display;

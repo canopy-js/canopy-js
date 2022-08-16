@@ -1,5 +1,4 @@
 let fs = require('fs-extra');
-let { keyFromString } = require('./helpers');
 let Paragraph = require('../shared/paragraph');
 let Topic = require('../shared/topic');
 
@@ -210,4 +209,4 @@ module.exports = {
   reconstructProjectFiles,
   parseDataFile,
   compareChangesWithFileSystem
-}
+};

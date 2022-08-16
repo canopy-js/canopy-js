@@ -200,7 +200,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
-  test('Pressing Alt+enter on local zooms on selected path', async ({ page, context }) => {
+  test('Pressing Alt-enter on local zooms on selected path', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 

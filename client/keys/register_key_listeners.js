@@ -1,10 +1,4 @@
 import {
-  currentSection,
-  selectedLink,
-  metadataForLink,
-} from 'helpers/getters';
-
-import {
   moveUpward,
   topicParentLink,
   moveDownward,

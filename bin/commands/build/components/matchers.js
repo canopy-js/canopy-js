@@ -3,9 +3,6 @@ let {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  ItalicMarkerToken,
-  BoldMarkerToken,
-  CodeMarkerToken,
   UrlToken,
   ImageToken,
   FootnoteToken,
@@ -22,8 +19,8 @@ const Matchers = [
   hyperlinkMatcher,
   urlMatcher,
   linkedImageMatcher,
-  htmlMatcher,
-]
+  htmlMatcher
+];
 
 let Topic = require('../../shared/topic');
 
@@ -49,12 +46,12 @@ function localReferenceMatcher(string, parserContext, index) {
     }
 
     let localReferenceToken = new LocalReferenceToken(
-        currentTopic.mixedCase,
-        parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
-        currentTopic.mixedCase,
-        currentSubtopic.mixedCase,
-        linkText
-      );
+      currentTopic.mixedCase,
+      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
+      linkText
+    );
 
     parserContext.registerLocalReference(targetSubtopic, index, linkText, localReferenceToken);
 
@@ -112,7 +109,7 @@ function importReferenceMatcher(string, parserContext, index) {
       `Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]`;
   }
 
-  parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic)
+  parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);
 
   return [
     new ImportReferenceToken(
@@ -128,7 +125,7 @@ function importReferenceMatcher(string, parserContext, index) {
 function parseLink(string) {
   // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
   let match = string.
-    replace(/\\\#/g, '__LITERAL_AMPERSAND__').
+    replace(/\\#/g, '__LITERAL_AMPERSAND__').
     match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
 
   match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
@@ -138,7 +135,7 @@ function parseLink(string) {
     linkFragment: match && match[2] || null, // eg "Paris"
     linkText: match && (match[3] || match[2] || match[1] || null), // The specified link text, defaulting to subtopic
     fullText: match && match[0] // the whole reference eg "[[France#Paris]]""
-  }
+  };
 }
 
 function determineTopicAndSubtopic(linkTarget, linkFragment) {
@@ -154,7 +151,7 @@ function determineTopicAndSubtopic(linkTarget, linkFragment) {
   return {
     targetTopic,
     targetSubtopic
-  }
+  };
 }
 
 function escapedCharacterMatcher(string) {
@@ -170,7 +167,7 @@ function footnoteMatcher(string) {
     return [
       new FootnoteToken(match[1]),
       match[0].length
-    ]
+    ];
   }
 }
 
@@ -181,7 +178,7 @@ function hyperlinkMatcher(string) {
     return [
       new UrlToken(match[1], match[2]),
       match[0].length
-    ]
+    ];
   }
 }
 
@@ -191,7 +188,7 @@ function urlMatcher(string) {
     return [
       new UrlToken(match[1]),
       match[1].length
-    ]
+    ];
   }
 }
 
@@ -206,7 +203,7 @@ function imageMatcher(string) {
         match[3],
         null
       ), match[0].length
-    ]
+    ];
   }
 }
 
@@ -222,7 +219,7 @@ function linkedImageMatcher(string) {
         match[4]
       ),
       match[0].length
-    ]
+    ];
   }
 }
 
@@ -235,12 +232,8 @@ function htmlMatcher(string) {
         match[0]
       ),
       match[0].length
-    ]
+    ];
   }
-}
-
-function textMatcher(string) {
-  return new TextToken(string, string.length);
 }
 
 module.exports = Matchers;

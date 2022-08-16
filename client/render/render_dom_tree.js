@@ -1,14 +1,11 @@
-import displayPath from 'display/display_path';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
-import Path from 'models/path'
 import Paragraph from 'models/paragraph';
 import Topic from '../../bin/commands/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
 function renderDomTree(renderContext) {
   let {
-    pathToDisplay,
     subtopic,
     paragraphsBySubtopic
   } = renderContext;
@@ -28,7 +25,7 @@ function renderDomTree(renderContext) {
     paragraph.paragraphElement.appendChild(element);
   });
 
-  return Promise.all(renderContext.displayBlockingPromises).then((_) => sectionElement);
+  return Promise.all(renderContext.displayBlockingPromises).then(() => sectionElement);
 }
 
 function localLinkSubtreeCallback(sectionElement, renderContext) {
@@ -50,7 +47,6 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
 function globalLinkSubtreeCallback(sectionElement, renderContext) {
   let {
     pathToDisplay,
-    pathDepth,
     subtopic,
     displayBlockingPromises
   } = renderContext;
@@ -89,23 +85,6 @@ function createSectionElement(renderContext) {
   }
 
   return sectionElement;
-}
-
-function renderElementsForBlocks(blocksOfParagraph, renderContext) {
-  let elementArray = [];
-
-  blocksOfParagraph.forEach(
-    (blockObject) => {
-      let renderer = BlockRenderers[blockObject.type];
-      let blockElements = renderer(
-        blockObject,
-        renderContext
-      )
-      elementArray = elementArray.concat(blockElements);
-    }
-  );
-
-  return elementArray;
 }
 
 function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopic) {
