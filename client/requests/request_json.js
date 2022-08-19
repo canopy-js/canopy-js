@@ -1,4 +1,3 @@
-import { slugFor } from 'helpers/identifiers';
 import { canopyContainer, defaultTopic, projectPathPrefix } from 'helpers/getters';
 import updateView from 'display/update_view';
 import REQUEST_CACHE from 'requests/request_cache';
@@ -13,8 +12,8 @@ const requestJson = (topic) => {
       return res.json().then((json) => {
         return json;
       });
-    }).catch((e) => {
-      if (canopyContainer.childNodes.length === 0 && topicName !== defaultTopic) {
+    }).catch(() => {
+      if (canopyContainer.childNodes.length === 0 && topic.mixedCase !== defaultTopic) {
         updateView(Path.default);
       }
       return Promise.reject(`Requesting invalid topic: "${topic.mixedCase}"`);

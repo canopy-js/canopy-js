@@ -4,30 +4,30 @@ const build = require('./build');
 const chokidar = require('chokidar');
 
 function watch(options) {
-	let canopyLocation = child_process
-		.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}")
-		.toString().trim();
+  let canopyLocation = child_process
+    .execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}")
+    .toString().trim();
 
-	if (!fs.existsSync('topics')) {
-		console.log('Error: You must be in a project directory with a topics folder');
-		return;
-	}
+  if (!fs.existsSync('topics')) {
+    console.log('Error: You must be in a project directory with a topics folder');
+    return;
+  }
 
-	const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true });
+  const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true });
 
-	watcher.on('change', () => {
-		buildWrapper(options);
-	});
+  watcher.on('change', () => {
+    buildWrapper(options);
+  });
 
-	buildWrapper(options);
+  buildWrapper(options);
 }
 
 function buildWrapper(options) {
-	try {
-		build(options)
-	} catch (e) {
-		console.error(e);
-	}
+  try {
+    build(options);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 module.exports = watch;

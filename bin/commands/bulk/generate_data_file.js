@@ -1,10 +1,8 @@
 let dedent = require('dedent');
-let fsPath = require('path');
-let { keyFromFile, takeDirectoryPath } = require('./helpers');
 
 function generateDataFile(filesByPath, fileSystemData, options) {
-	if (filesByPath.length === 0) return options.blank ? '' : defaultText();
-	return Object.keys(filesByPath).map((directoryPath) => {
+  if (filesByPath.length === 0) return options.blank ? '' : defaultText();
+  return Object.keys(filesByPath).map((directoryPath) => {
     let filePaths = filesByPath[directoryPath];
     if (directoryPath === 'topics') directoryPath = `topics/Pick_Category_Name`;
     let displayPath = directoryPath.match(/topics\/([^.]+)$/)[1].replace(/_/g, ' ');
@@ -18,11 +16,11 @@ function generateDataFile(filesByPath, fileSystemData, options) {
     dataText += filesOfPath;
 
     return dataText;
-	}).join("\n\n\n") + "\n\n";
+  }).join("\n\n\n") + "\n\n";
 }
 
 function defaultText() {
-	return dedent`[Topic A]
+  return dedent`[Topic A]
 
       * Topic A: Here is a paragraph for Topic A.
 

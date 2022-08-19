@@ -1,4 +1,3 @@
-import { slugFor } from 'helpers/identifiers';
 import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import renderStyledText from 'render/render_styled_text';
@@ -18,24 +17,24 @@ function renderTokenElement(token, renderContext) {
     return renderLinkLiteral(token);
   } else if (token.type === 'image') {
     return renderImage(token);
-  } else if (token.type === 'html') {
+  } else if (token.type === 'html_element') {
     return renderHtmlElement(token);
   } else if (token.type === 'footnote') {
     return renderFootnoteSymbol(token);
   } else if (token.type === 'code_block') {
-    return renderCodeBlock(token, renderContext);
+    return renderCodeBlock(token);
   } else if (token.type === 'quote') {
-    return renderBlockQuote(token, renderContext);
+    return renderBlockQuote(token);
   } else if (token.type === 'list') {
-    return renderList(token, renderContext);
+    return renderList(token.topLevelNodes);
   } else if (token.type === 'table') {
-    return renderTable(token, renderContext)
-  } else if (token.type === 'html') {
-    return renderHtmlBlock(token, renderContext);
+    return renderTable(token)
+  } else if (token.type === 'html_block') {
+    return renderHtmlBlock(token);
   } else if (token.type === 'footnote_rule') {
-    return renderFootnoteRule(token, renderContext);
+    return renderFootnoteRule(token);
   } else if (token.type === 'footnote_line') {
-    return renderFootnoteLine(token, renderContext);
+    return renderFootnoteLine(token);
   }
 }
 
@@ -123,8 +122,7 @@ function createGlobalLinkElement(token) {
 
 function renderImportLink(token, renderContext) {
   let {
-    pathArray,
-    globalLinkSubtreeCallback
+    pathArray
   } = renderContext;
 
   let linkElement = createImportLinkElement(token, pathArray);
@@ -185,9 +183,11 @@ function renderImage(token) {
   divElement.appendChild(imageElement);
 
   imageElement.setAttribute('src', token.resourceUrl);
+  imageElement.classList.add('canopy-image');
 
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
+  anchorElement.setAttribute('target', '_blank');
   anchorElement.appendChild(imageElement);
   divElement.appendChild(anchorElement);
 
@@ -231,7 +231,7 @@ function appendElementsToParent(collection, parent) {
   });
 }
 
-function renderCodeBlock(token, renderContext) {
+function renderCodeBlock(token) {
   let preElement = document.createElement('PRE');
   let codeBlockElement = document.createElement('CODE');
   preElement.appendChild(codeBlockElement);
@@ -241,7 +241,7 @@ function renderCodeBlock(token, renderContext) {
   return preElement;
 }
 
-function renderBlockQuote(token, renderContext) {
+function renderBlockQuote(token) {
   let blockQuoteElement = document.createElement('BLOCKQUOTE');
 
   blockQuoteElement.innerText = token.text;
@@ -249,41 +249,39 @@ function renderBlockQuote(token, renderContext) {
   return blockQuoteElement;
 }
 
-function renderList(token, renderContext) {
-  return renderListNodes(token.topLevelNodes);
+function renderList(listNodeObjects) {
+  let listElement = listNodeObjects[0].ordered ?
+    document.createElement('OL') :
+    document.createElement('UL');
 
-  function renderListNodes(listNodeObjects) {
-    let listElement = blockObject.topLevelNodes[0].ordered ?
-      document.createElement('OL') :
-      document.createElement('UL');
-
+  if (listNodeObjects[0].ordered) {
     listElement.setAttribute('type', listNodeObjects[0].ordinal);
-
-    listNodeObjects.forEach((listNodeObject) => {
-      let listItemElement = document.createElement('LI');
-
-      let tokenElementsOfLine = listNodeObject.tokensOfLine.forEach(
-        (token) => {
-          let tokenElement = renderTokenElement(token, renderContext);
-          listItemElement.appendChild(tokenElement);
-        }
-      );
-
-      if (listNodeObject.children.length > 0) {
-        let childList = renderListNodes(listNodeObject.children);
-        listItemElement.appendChild(childList);
-      }
-
-      listElement.appendChild(listItemElement);
-    });
-    return listElement;
   }
+
+  listNodeObjects.forEach((listNodeObject) => {
+    let listItemElement = document.createElement('LI');
+
+    listNodeObject.tokensOfLine.forEach(
+      (token) => {
+        let tokenElement = renderTokenElement(token);
+        listItemElement.appendChild(tokenElement);
+      }
+    );
+
+    if (listNodeObject.children.length > 0) {
+      let childList = renderList(listNodeObject.children);
+      listItemElement.appendChild(childList);
+    }
+
+    listElement.appendChild(listItemElement);
+  });
+  return listElement;
 }
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
   token.rows.forEach(
-    (tokensByCellOfRow, rowIndex) => {
+    (tokensByCellOfRow) => {
       let tableRowElement = document.createElement('TR');
       tokensByCellOfRow.forEach(
         (tokensOfCell) => {
@@ -305,10 +303,10 @@ function renderTable(token, renderContext) {
   return tableElement;
 }
 
-function renderHtmlBlock(token, renderContext) {
+function renderHtmlBlock(token) {
   let htmlContainer = document.createElement('DIV');
   htmlContainer.innerHTML = token.html;
-
+  htmlContainer.classList.add('canopy-raw-html');
   return htmlContainer;
 }
 

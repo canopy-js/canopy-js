@@ -14,7 +14,7 @@ program
 program.command('init')
   .description('Initialize a Canopy project')
   .action(() => {
-  	try {
+    try {
       init();
     } catch (e) {
       console.error(e);
@@ -31,7 +31,7 @@ program.command('build')
   .option('-l, --logging', 'print logs', false)
   .action((options) => {
     try {
-    	build(options);
+      build(options);
     } catch (e) {
       console.error(e);
     }
@@ -46,7 +46,7 @@ program.command('watch')
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', false)
   .action((options) => {
-  	watch(options);
+    watch(options);
   });
 
 program.command('serve')
@@ -78,9 +78,9 @@ program.command('bulk')
   .option('-n, --no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {
-  	bulk(paths, options).catch((e) => {
+    bulk(paths, options).catch((e) => {
       if (e.message !== 'fzf exited with error code 130') {
-        console.error(e)
+        console.error(e);
       }
     });
   });

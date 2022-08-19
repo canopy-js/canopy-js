@@ -1,5 +1,3 @@
-import Link from 'models/link';
-
 const canopyContainer = document.getElementById('_canopy');
 
 const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;

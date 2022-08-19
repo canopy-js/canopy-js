@@ -2,7 +2,7 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
-import { defaultTopic, canopyContainer } from 'helpers/getters';
+import { canopyContainer } from 'helpers/getters';
 
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   validatePathAndLink(pathToDisplay, linkToSelect);

@@ -7,7 +7,7 @@ function fileNameFor(string) {
 
 function takeDirectoryPath(path) {
   return (path.match(/topics\/(.+)\/.+\.expl/)||{})[1];
-};
+}
 
 function recursiveDirectoryFind(path, results) {
   results = results || [];
@@ -33,7 +33,7 @@ function deduplicate(pathList) {
       uniquePaths.push(path);
     }
   });
-  return uniquePaths
+  return uniquePaths;
 }
 
 function getRecursiveSubdirectoryFiles(path) {
@@ -43,7 +43,7 @@ function getRecursiveSubdirectoryFiles(path) {
 function getDirectoryFiles(path) {
   let contents = fs.readdirSync(path, { withFileTypes: true });
   let filteredContents = contents.filter((item) => item.isFile());
-  let filteredPaths = filteredContents.map(item => `${path}/${item.name}`)
+  let filteredPaths = filteredContents.map(item => `${path}/${item.name}`);
   return filteredPaths;
 }
 
@@ -54,7 +54,7 @@ function pathComparator(path1, path2) {
   if (directoryPath1 > directoryPath2) {
     return 1;
   } else if (directoryPath1 < directoryPath2) {
-    return -1
+    return -1;
   }
 }
 
@@ -62,7 +62,7 @@ function groupByPath(fileList) {
   return fileList.reduce((collection, filePath) => {
     let directoryPath = filePath.split('/').slice(0, -1).join('/');
     collection[directoryPath] = collection[directoryPath] || [];
-    collection[directoryPath].push(filePath)
+    collection[directoryPath].push(filePath);
     return collection;
   }, {});
 }
@@ -76,4 +76,4 @@ module.exports = {
   getDirectoryFiles,
   pathComparator,
   groupByPath
-}
+};

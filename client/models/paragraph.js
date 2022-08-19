@@ -205,7 +205,7 @@ class Paragraph {
   }
 
   static containingLink(link) {
-    if (!link instanceof Link) throw "Must provide link instance argument";
+    if (!(link instanceof Link)) throw "Must provide link instance argument";
     let sectionElement = getAncestorElement(link.element, 'canopy-section');
     return new Paragraph(sectionElement);
   }

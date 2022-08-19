@@ -1,10 +1,4 @@
 import {
-  currentSection,
-  selectedLink,
-  metadataForLink,
-} from 'helpers/getters';
-
-import {
   moveUpward,
   topicParentLink,
   moveDownward,
@@ -61,11 +55,11 @@ const shortcutRelationships = {
   'z': zoomOnLocalPath,
 
   'enter': moveDownOrRedirect,
-  'meta-enter': moveDownOrRedirect.bind(null, true),
-  'ctrl-enter': moveDownOrRedirect.bind(null, true), // firefox on some linux distributions doesn't recognize meta key
+  'meta-enter': moveDownOrRedirect.bind(null, true), // mac
+  'ctrl-enter': moveDownOrRedirect.bind(null, true), // windows & linux
   'alt-enter': moveDownOrRedirect.bind(null, false, true),
-  'meta-alt-enter': moveDownOrRedirect.bind(null, true, true),
-  'ctrl-alt-enter': moveDownOrRedirect.bind(null, true, true), // firefox on some linux distributions doesn't recognize meta key
+  'meta-alt-enter': moveDownOrRedirect.bind(null, true, true), // mac
+  'ctrl-alt-enter': moveDownOrRedirect.bind(null, true, true), // windows & linux
 
   'tab': depthFirstSearch,
 }

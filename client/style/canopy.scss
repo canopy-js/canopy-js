@@ -150,9 +150,9 @@
     }
   }
 
-  img {
-    max-width: 200px;
-    max-height: 275px;
+  .canopy-image {
+    width: 220px;
+    max-height: 250px;
   }
 
   div.canopy-image-div {
@@ -163,8 +163,6 @@
     font-size: 94%;
     text-align: center;
     overflow: hidden;
-    min-width: 172px;
-    min-height: 230px;
     margin: 10px;
   }
 

@@ -1,7 +1,4 @@
-import { canopyContainer } from 'helpers/getters';
-
 import updateView from 'display/update_view';
-import { deselectAllLinks } from 'display/helpers';
 import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
@@ -30,31 +27,29 @@ function topicParentLink() {
 }
 
 function moveDownward() {
-  let { path, link } = downwardPathAndLink();
-  return updateView(path, link)
-}
-
-function downwardPathAndLink() {
-  let path = Path.current;
   let oldLink = Link.selection;
-  let newLink;
 
-  if (oldLink.isParent) {
-    if (oldLink.isImport) {
-      return {
-        path: oldLink.paragraphPathWhenSelected,
-        link: oldLink.targetParagraph.parentLink
-      }
-    }
+  if (oldLink.isImport) {
+    updateView(
+      oldLink.paragraphPathWhenSelected,
+      oldLink.targetParagraph.parentLink
+    );
+  }
 
+  if (oldLink.isGlobal || oldLink.isLocal) {
     let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph?.parentLink;
 
-    return {
-      path: newLink.paragraphPathWhenSelected,
-      link: newLink
-    };
-  } else {
-    return oldLink;
+    updateView(
+      newLink.paragraphPathWhenSelected,
+      newLink
+    );
+  }
+
+  if (!oldLink.isParent) {
+    updateView(
+      oldLink.paragraphPathWhenSelected,
+      oldLink
+    );
   }
 }
 
@@ -76,10 +71,10 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect(newTab, altKey) {
-  let path, link;
-
   if (Link.selection.isLocal && !altKey) { // no zoom
-    let { path, link } = downwardPathAndLink();
+    let link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
+    let path = link.paragraphPathWhenSelected;
+
     if (newTab) {
       return window.open(location.origin + Link.selection.targetPath, '_blank');
     } else {
@@ -88,11 +83,16 @@ function moveDownOrRedirect(newTab, altKey) {
   }
 
   if (Link.selection.isLocal && altKey) { // zoom
-    let { path, link } = downwardPathAndLink();
+    let link = Link.selection;
+    let path = link.paragraphPathWhenSelected.lastSegment;
+
     if (newTab) {
       return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank');
     } else {
-      return updateView(Link.selection.targetPath.lastSegment, link.atNewPath(Link.selection.targetPath.lastSegment));
+      return updateView(
+        path,
+        link.atNewPath(path)
+      );
     }
   }
 

@@ -1,5 +1,4 @@
 import { getAncestorElement } from 'helpers/getters';
-import { canopyContainer } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import Topic from '../../bin/commands/shared/topic';
@@ -39,7 +38,7 @@ class Link {
   }
 
   contradicts(path) {
-    if (!path instanceof Path) throw 'Invalid path argument to Link#contradicts';
+    if (!(path instanceof Path)) throw 'Invalid path argument to Link#contradicts';
     return this.paragraphPathWhenSelected.string !== path.string;
   }
 
@@ -178,6 +177,7 @@ class Link {
     return this.storedRelativeLinkNumber;
   }
 
+  /* eslint getter-return: "off" */
   get metadata() {
     if (this.metadataObject) {
       return this.metadataObject;
@@ -242,7 +242,7 @@ class Link {
   }
 
   static containsLinkSelectionMetadata(object) {
-    return object.hasOwnProperty('relativeLinkNumber');
+    return object.relativeLinkNumber !== undefined;
   }
 
   static elementFromMetadata(object) {

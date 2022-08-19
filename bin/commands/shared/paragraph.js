@@ -5,13 +5,13 @@ class Paragraph {
     // of the "key", if the delimeter is a question mark, it is part of the key. White space after the colon or question mark
     // is not considered part of the key, but is matched so that it isn't part of the text either.
 
-    let match = textWithKey.match(/^(?!-)((?:.(?![^\\][:.,;!]\s))+..)(?:\:|(\?))\s+/);
+    let match = textWithKey.match(/^(?!-)((?:.(?![^\\][:.,;!]\s))+..)(?::|(\?))\s+/);
 
     if (!match) {
       return {
         key: null,
         paragraph: textWithKey
-      }
+      };
     }
 
     // Trailing question marks are part of the key, colons are not.

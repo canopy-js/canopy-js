@@ -1,9 +1,6 @@
 import renderDomTree from 'render/render_dom_tree';
 import requestJson from 'requests/request_json';
-import Paragraph from 'models/paragraph';
 import Path from 'models/path';
-import Link from 'models/link';
-import { canopyContainer } from 'helpers/getters';
 
 const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   if (pathToDisplay.length === 0) {

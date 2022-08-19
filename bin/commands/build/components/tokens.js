@@ -4,12 +4,12 @@ function TextToken(text) {
 }
 
 function LocalReferenceToken(
-    targetTopic,
-    targetSubtopic,
-    enclosingTopic,
-    enclosingSubtopic,
-    text
-  ) {
+  targetTopic,
+  targetSubtopic,
+  enclosingTopic,
+  enclosingSubtopic,
+  text
+) {
   this.text = text;
   this.type = 'local';
   this.targetSubtopic = targetSubtopic;
@@ -19,12 +19,12 @@ function LocalReferenceToken(
 }
 
 function GlobalReferenceToken(
-    targetTopic,
-    targetSubtopic,
-    enclosingTopic,
-    enclosingSubtopic,
-    text
-  ) {
+  targetTopic,
+  targetSubtopic,
+  enclosingTopic,
+  enclosingSubtopic,
+  text
+) {
   this.text = text;
   this.type = 'global';
   this.targetSubtopic = targetSubtopic;
@@ -34,12 +34,12 @@ function GlobalReferenceToken(
 }
 
 function ImportReferenceToken(
-    targetTopic,
-    targetSubtopic,
-    enclosingTopic,
-    enclosingSubtopic,
-    text
-  ) {
+  targetTopic,
+  targetSubtopic,
+  enclosingTopic,
+  enclosingSubtopic,
+  text
+) {
   this.text = text;
   this.type = 'import';
   this.targetSubtopic = targetSubtopic;
@@ -51,7 +51,7 @@ function ImportReferenceToken(
 function UrlToken(url, text) {
   this.type = 'url';
   this.text = text || url;
-  this.url = url;
+  this.url = url || text;
 }
 
 function ImageToken(alt, resourceUrl, title, anchorUrl) {
@@ -68,7 +68,7 @@ function FootnoteToken(superscript) {
 }
 
 function HtmlToken(html) {
-  this.type = 'html';
+  this.type = 'html_element';
   this.html = html;
 }
 
@@ -81,4 +81,4 @@ module.exports = {
   ImageToken,
   FootnoteToken,
   HtmlToken
-}
+};
