@@ -1,7 +1,7 @@
 let parseText = require('./parse_text');
 
 test('it creates urls', () => {
-  let text = 'This is a clause with [google.com](a link).';
+  let text = 'This is a clause with [a link](http://google.com).';
 
   let parserContext = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'}
@@ -17,7 +17,7 @@ test('it creates urls', () => {
 
   expect(result[1].type).toEqual('url');
   expect(result[1].text).toEqual('a link');
-  expect(result[1].url).toEqual('google.com');
+  expect(result[1].url).toEqual('http://google.com');
 
   expect(result[2].type).toEqual('text');
   expect(result[2].text).toEqual('.');

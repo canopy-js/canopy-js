@@ -51,7 +51,7 @@ function ImportReferenceToken(
 function UrlToken(url, text) {
   this.type = 'url';
   this.text = text || url;
-  this.url = url;
+  this.url = url || text;
 }
 
 function ImageToken(alt, resourceUrl, title, anchorUrl) {

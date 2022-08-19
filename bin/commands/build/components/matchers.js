@@ -154,10 +154,13 @@ function determineTopicAndSubtopic(linkTarget, linkFragment) {
   };
 }
 
-function escapedCharacterMatcher(string) {
+function escapedCharacterMatcher(string, parserContext) {
   let match = string.match(/^\\(.)/);
   if (match) {
-    return [new TextToken(match[0]), match[0].length];
+    parserContext.buffer += match[0];
+    return [null, match[0].length]
+  } else {
+    return null;
   }
 }
 
@@ -172,18 +175,18 @@ function footnoteMatcher(string) {
 }
 
 function hyperlinkMatcher(string) {
-  let match = string.match(/^\[([^!\s\]]+)\](?:\(([^)]*)\))/);
-
+  let match = string.match(/^\[([^!\]]+)\](?:\(([^)]*)\))/);
   if (match) {
+    let [_, text, url] = match;
     return [
-      new UrlToken(match[1], match[2]),
+      new UrlToken(url, text),
       match[0].length
     ];
   }
 }
 
 function urlMatcher(string) {
-  let match = string.match(/^(\S+:\/\/\S+[^.\s])/);
+  let match = string.match(/^(\S+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
       new UrlToken(match[1]),
@@ -194,7 +197,6 @@ function urlMatcher(string) {
 
 function imageMatcher(string) {
   let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
-
   if (match) {
     return [
       new ImageToken(
@@ -224,7 +226,7 @@ function linkedImageMatcher(string) {
 }
 
 function htmlMatcher(string) {
-  let match = string.match(/^<([^>]+)>[\s\S]*<\/([^>]+)>/);
+  let match = string.match(/^<([^>]+)>([\s\S]*<\/\1>)?/);
 
   if (match) {
     return [

@@ -1036,11 +1036,15 @@ test('it logs global orphan topics', () => {
   };
 
   let message = `Global Orphan: Topic [Wyoming] is not connected to the default topic [Idaho]\n` +
-    `File: topics/Wyoming/Wyoming.expl`;
+    `  File: topics/Wyoming/Wyoming.expl`;
 
   jsonForProjectDirectory(projectDir, explFileData, 'Idaho', { logging: true });
 
-  expect(console.log.mock.calls[4][0]).toEqual(message);
+  let messagePresent = !!console.log.mock.calls.find(call => {
+    return call[0] === message;
+  })
+
+  expect(messagePresent).toEqual(true);
 });
 
 
@@ -1055,10 +1059,14 @@ test('it logs local orphan subtopics', () => {
   };
 
   let message = `Local Orphan: Subtopic [Boise] lacks a connection to its topic [Idaho]\n` +
-    `File: topics/Idaho/Idaho.expl:3`;
+    `  File: topics/Idaho/Idaho.expl:3`;
 
   jsonForProjectDirectory(projectDir, explFileData, 'Idaho', { logging: true });
 
-  expect(console.log.mock.calls[2][0]).toEqual(message);
+  let messagePresent = !!console.log.mock.calls.find(call => {
+    return call[0] === message;
+  })
+
+  expect(messagePresent).toEqual(true);
 });
 

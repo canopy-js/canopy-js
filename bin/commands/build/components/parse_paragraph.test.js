@@ -129,10 +129,10 @@ test('it parses a table block', () => {
 
   expect(tokens[0].type).toEqual('table');
 
-  expect(tokens[0].rows[0][0][0].text).toEqual(' Header ');
-  expect(tokens[0].rows[0][1][0].text).toEqual(' Second column ');
-  expect(tokens[0].rows[1][0][0].text).toEqual(' data |');
-  expect(tokens[0].rows[1][1][0].text).toEqual(' data2 ');
+  expect(tokens[0].rows[0][0][0].text).toEqual('Header');
+  expect(tokens[0].rows[0][1][0].text).toEqual('Second column');
+  expect(tokens[0].rows[1][0][0].text).toEqual('data |');
+  expect(tokens[0].rows[1][1][0].text).toEqual('data2');
 });
 
 test('it parses a footnote block', () => {

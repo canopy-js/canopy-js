@@ -20,7 +20,7 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
     if (options.logging) {
-      console.log("WRITING TO " + destinationPath);
+      console.log("Writing to: " + destinationPath);
     }
 
     filesToWrite[destinationPath] = json;
@@ -33,6 +33,7 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
     }
   });
 
+  if (options.logging) console.log();
   parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
   parserContext.validateImportReferenceGlobalMatching();

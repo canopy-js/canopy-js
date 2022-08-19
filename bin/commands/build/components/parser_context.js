@@ -286,7 +286,8 @@ class ParserContext {
       if (!this.connectedTopics[topic.caps]) {
         console.log();
         console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]\n` +
-          `File: ${this.topicFilePaths[topic.caps]}`);
+          `  File: ${this.topicFilePaths[topic.caps]}`);
+        console.log();
       }
     });
   }
@@ -306,8 +307,9 @@ class ParserContext {
         if (!this.hasConnection(subtopic, topic)) {
           console.log();
           console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
-            `File: ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}`
+            `  File: ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}`
           );
+          console.log();
         }
       });
     });

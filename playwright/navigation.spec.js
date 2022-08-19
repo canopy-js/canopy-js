@@ -715,7 +715,6 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard#Parking_lot/Martha's_Vineyard#Cafeteria");
   });
 
-
   test('Browser back to empty path redirects to default topic', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');

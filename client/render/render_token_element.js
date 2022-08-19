@@ -183,9 +183,11 @@ function renderImage(token) {
   divElement.appendChild(imageElement);
 
   imageElement.setAttribute('src', token.resourceUrl);
+  imageElement.classList.add('canopy-image');
 
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
+  anchorElement.setAttribute('target', '_blank');
   anchorElement.appendChild(imageElement);
   divElement.appendChild(anchorElement);
 
@@ -252,7 +254,9 @@ function renderList(listNodeObjects) {
     document.createElement('OL') :
     document.createElement('UL');
 
-  listElement.setAttribute('type', listNodeObjects[0].ordinal);
+  if (listNodeObjects[0].ordered) {
+    listElement.setAttribute('type', listNodeObjects[0].ordinal);
+  }
 
   listNodeObjects.forEach((listNodeObject) => {
     let listItemElement = document.createElement('LI');
@@ -302,7 +306,7 @@ function renderTable(token, renderContext) {
 function renderHtmlBlock(token) {
   let htmlContainer = document.createElement('DIV');
   htmlContainer.innerHTML = token.html;
-
+  htmlContainer.classList.add('canopy-raw-html');
   return htmlContainer;
 }
 

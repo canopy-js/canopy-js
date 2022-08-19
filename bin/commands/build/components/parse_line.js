@@ -10,8 +10,8 @@ function parseLine(line, tokens, parserContext) {
     handleOutline(line, tokens, parserContext);
   } else if (line.match(/^\|([^|\n]*\|)+/) || (line.match(/^\s*[=#-]+\s*$/) && tokens[tokens.length - 1]?.type === 'table')) {
     handleTable(line, tokens, parserContext);
-  } else if (line.match(/^<\w+>.*<\/\w+>/)) {
-    handleHtml(line);
+  } else if (line.match(/^\s*<\/?\w+>(.*<\/\w+>)?/)) {
+    handleHtml(line, tokens);
   } else if (line.match(/^\s*\[\^[^\]]+]:/)) {
     handleFootnote(line, tokens, parserContext);
   } else {
@@ -40,7 +40,7 @@ function handleCodeBlock(line, tokens) {
 }
 
 function handleBlockQuote(line, tokens) {
-  let text = line.match(/^\s*>\s(.*)/)[1];
+  let text = line.match(/^\s*>\s?(.*)/)[1];
   if (tokens[tokens.length - 1]?.type === 'quote') {
     tokens[tokens.length - 1].text += text + '\n';
   } else {
@@ -86,19 +86,19 @@ function handleOutline(line, tokens, parserContext) {
     parentNode: null
   };
 
-  if (!outlineToken.lastNode) {
+  if (!outlineToken.lastNode) { // This is the first node we're parsing
     topLevelNodes.push(newNode);
-  } else if (newNode.indentation > outlineToken.lastNode.indentation) {
+  } else if (newNode.indentation > outlineToken.lastNode.indentation) { // Child node of the previous line
     newNode.parentNode = outlineToken.lastNode;
     outlineToken.lastNode.children.push(newNode);
-  } else if (newNode.indentation === outlineToken.lastNode.indentation) {
+  } else if (newNode.indentation === outlineToken.lastNode.indentation) { // Sibling node of the previous line
     if (newNode.indentation === 0) {
       topLevelNodes.push(newNode);
     } else {
       newNode.parentNode = outlineToken.lastNode.parentNode;
       outlineToken.lastNode.parentNode.children.push(newNode);
     }
-  } else {
+  } else { // Child node of a previous line, or new top-level node
     let parentNode = outlineToken.lastNode;
     while (parentNode && newNode.indentation <= parentNode.indentation) {
       parentNode = parentNode.parentNode;
@@ -128,7 +128,7 @@ function handleTable(line, tokens, parserContext) {
     slice(1, -1);
 
   let tokensByCell = cellStrings.map(
-    (cellString) => parseText(cellString, parserContext)
+    (cellString) => parseText(cellString.trim(), parserContext) // we trim because the person might be using spaces to line up unevenly sized cells
   );
 
   if (tokens[tokens.length - 1]?.type === 'table') {
@@ -143,11 +143,11 @@ function handleTable(line, tokens, parserContext) {
 
 function handleHtml(line, tokens) {
   if (tokens[tokens.length - 1]?.type === 'html_block') {
-    tokens[tokens.length - 1].text += line + "\n";
+    tokens[tokens.length - 1].html += line;
   } else {
     tokens.push({
       type: 'html_block',
-      text: line + "\n"
+      html: line
     });
   }
 }

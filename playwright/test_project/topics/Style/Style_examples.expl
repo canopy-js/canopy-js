@@ -1,0 +1,80 @@
+Style examples: These are some style examples. There are [[inline text styles]], [[tables]], [[code blocks]], [[block quotes]], [[HTML blocks]], [[lists]].
+
+Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], and [[footnotes]].
+
+Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], [[plaintext that contains style tokens]]
+
+Tables:
+| This | is | a | table |
+-------------------------
+| 2 | 4 | 6 | 8 |
+
+Code blocks:
+```
+// This is a code block
+if (x) { y; }
+```
+
+Block quotes:
+>
+> This is a block quote
+>
+
+HTML blocks:
+<figure>
+  <s> This is an html block </s>
+</figure>
+
+Lists:
+1. This
+2. Is
+  a. a
+  b. list
+    - with
+    - unordered elements also.
+
+Italic text:
+This is text with _italics_.
+
+Bold text:
+This is *bold* text.
+
+Italicized bolded text:
+This is *_italicized bolded text_*.
+
+Style characters in mismatched order:
+This is text with *_style tokens in the wrong order*_.
+
+Inline HTML elements:
+This is text with <s>an inline html element</s>.
+
+Escaped style characters:
+This is text with \_escaped\_ style characters.
+
+Code snippets:
+This is a `code snippet`.
+
+Code snippets that escape backticks:
+This is a `code snippet that contains an escaped backtick \` but also intentional backslashes \\ eg, and also intentional double backticks eg \\\\ etc`.
+
+Code snippets that contain style characters and tokens:
+This is a `code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}`.
+
+Plaintext that contains style tokens:
+This is plaintext that contains style tokens like {{OPEN_}} ABC {{CLOSE_}}.
+
+Images:
+This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly Fish")
+
+Linked images:
+This picture of a Jelly fish is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly fish link")](http://google.com)
+
+URLs:
+This is a URL, http://google.com.
+
+Hyperlinks:
+This is a [link](http://google.com).
+
+Footnotes:
+This is regular text with a footnote[^1].
+[^1]: This is that footnote.
