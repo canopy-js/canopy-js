@@ -4,7 +4,7 @@ import REQUEST_CACHE from 'requests/request_cache';
 import Path from 'models/path';
 
 const requestJson = (topic) => {
-  if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
+  if (REQUEST_CACHE[topic.caps]) return REQUEST_CACHE[topic.caps];
   let dataPath = projectPathPrefix + '/_data/' + topic.requestFileName + '.json';
 
   let promise = fetch(dataPath).
@@ -13,13 +13,13 @@ const requestJson = (topic) => {
         return json;
       });
     }).catch(() => {
-      if (canopyContainer.childNodes.length === 0 && topic.mixedCase !== defaultTopic) {
+      if (canopyContainer.childNodes.length === 0 && topic.caps !== defaultTopic) {
         updateView(Path.default);
       }
-      return Promise.reject(`Requesting invalid topic: "${topic.mixedCase}"`);
+      return Promise.reject(`Requesting invalid topic file: "${topic.requestFileName}"`);
     });
 
-  REQUEST_CACHE[topic.mixedCase] = promise;
+  REQUEST_CACHE[topic.caps] = promise;
 
   return promise;
 }

@@ -15,7 +15,7 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
   Object.keys(explFileData).forEach(function(path) {
     if (!topicKeyOfString(explFileData[path])) return;
 
-    let json = jsonForExplFile(path, explFileData, parserContext);
+    let json = jsonForExplFile(path, explFileData, parserContext, options);
     let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 

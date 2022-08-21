@@ -5,6 +5,8 @@ class Paragraph {
     // of the "key", if the delimeter is a question mark, it is part of the key. White space after the colon or question mark
     // is not considered part of the key, but is matched so that it isn't part of the text either.
 
+    // Match characters that are not followed by an unescaped clause-terminator, then when one is, match it and the character before the terminator
+    // If the terminator is a question mark or colon, accept the match, and if it is a question mark, include it in the match
     let match = textWithKey.match(/^(?!-)((?:.(?![^\\][:.,;!]\s))+..)(?::|(\?))\s+/);
 
     if (!match) {

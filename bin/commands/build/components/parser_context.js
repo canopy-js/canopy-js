@@ -35,13 +35,13 @@ class ParserContext {
       let currentTopic = new Topic(topicParargaph.key);
       let lineNumber = 1;
 
-      if (topicSubtopics.hasOwnProperty(currentTopic.capsFile)) {
+      if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
         throw dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
-        - One file is: ${topicFilePaths[currentTopic.capsFile]}
+        - One file is: ${topicFilePaths[currentTopic.caps]}
         - Another file is: ${path}
         `;
       } else {
-        topicFilePaths[currentTopic.capsFile] = path;
+        topicFilePaths[currentTopic.caps] = path;
       }
 
       topicSubtopics[currentTopic.caps] = {};
