@@ -962,8 +962,8 @@ test('it throws error if import reference lacks matching global reference', () =
     `,
   };
 
-  let message = `Error: topics/Wyoming/Wyoming.expl:1\n`+
-    `Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].`;
+  let message = `Error: Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].\n` +
+    `topics/Wyoming/Wyoming.expl:1\n`+
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -981,8 +981,8 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
     `,
   };
 
-  let message = `Error: topics/Wyoming/Wyoming.expl:1\n` +
-    `Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]`;
+  let message = `Error: Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]\n` +
+    `topics/Wyoming/Wyoming.expl:1\n`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -998,8 +998,8 @@ test('it throws error if import reference is to non-existant topic', () => {
     `,
   };
 
-  let message = `Error: topics/Wyoming/Wyoming.expl:1\n` +
-    `Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]`;
+  let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]\n` +
+    `topics/Wyoming/Wyoming.expl:1\n`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -1015,8 +1015,8 @@ test('it throws error if import reference is to non-existant subtopic', () => {
     `,
   };
 
-  let message = `Error: topics/Wyoming/Wyoming.expl:1\n` +
-    `Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]`;
+  let message = `Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
+    `topics/Wyoming/Wyoming.expl:1\n` +
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})

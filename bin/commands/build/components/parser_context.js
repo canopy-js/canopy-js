@@ -248,8 +248,8 @@ class ParserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-          throw `Error: ${filePath}:${lineNumber}\n` +
-            `Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].`;
+          throw `Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
+            `${filePath}:${lineNumber}\n`;
         }
       });
     });
@@ -258,8 +258,8 @@ class ParserContext {
   validateImportReferenceTargets() {
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw `Error: ${filePath}:${lineNumber}\n` +
-          `Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
+        throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
+          `${filePath}:${lineNumber}\n`;
       }
     });
   }
