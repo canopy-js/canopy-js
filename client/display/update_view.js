@@ -10,7 +10,7 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
 
   let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer);
 
-  return newTreeAppended.then(() => {
+  return newTreeAppended.finally(() => {
     displayPath(
       pathToDisplay,
       linkToSelect,

@@ -13,10 +13,8 @@ const requestJson = (topic) => {
         return json;
       });
     }).catch(() => {
-      if (canopyContainer.childNodes.length === 0 && topic.caps !== defaultTopic) {
-        updateView(Path.default);
-      }
-      return Promise.reject(`Requesting invalid topic file: "${topic.requestFileName}"`);
+      REQUEST_CACHE[topic.caps] = undefined; // in case error is connectivity related & will work again later
+      return Promise.reject(`Unable to request topic file: "${topic.requestFileName}"`);
     });
 
   REQUEST_CACHE[topic.caps] = promise;

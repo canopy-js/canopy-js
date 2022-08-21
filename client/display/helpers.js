@@ -34,12 +34,12 @@ function deselectSectionElement() {
 }
 
 function tryPathPrefix(path, displayOptions) {
-  console.log("No section element found for path: ", path.string);
-  console.log("Trying: ", path.withoutLastSegment.string);
+  console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
+    console.log("Trying: ", path.withoutLastSegment.string);
     return displayPath(path.withoutLastSegment, null, displayOptions);
   } else {
-    console.error("Invalid path: " + path.array);
+    console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
     return updateView(Path.default);
   }
 }
