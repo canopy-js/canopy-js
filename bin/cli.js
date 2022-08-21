@@ -74,7 +74,7 @@ program.command('bulk')
   .addOption(new Option('-r, --recursive', 'used in conjunction with --pick, allows selection of recursive directory contents').conflicts(['finish']).implies({ pick: true }))
   .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
-  .addOption(new Option('-c, --continue', 'resume a session from dotfile on disk').conflicts(['start', 'finish', 'pick', 'git', 'search', 'blank']))
+  .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
   .option('-n, --no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {

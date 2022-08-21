@@ -59,6 +59,13 @@ const bulk = async function(fileList, options) {
     );
   }
 
+  if (options.last) {
+    if (fs.existsSync('.canopy_bulk_last_session_files')) {
+      let lastFiles = JSON.parse(fs.readFileSync('.canopy_bulk_last_session_files').toString());
+      fileList = fileList.concat(lastFiles);
+    }
+  }
+
   if (fileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       fileList = [];
@@ -83,11 +90,6 @@ const bulk = async function(fileList, options) {
       }
       fs.unlink('.canopy_bulk_file');
     });
-  }
-
-  if (options.continue) {
-    let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
-    reconstructProjectFiles(finishedData, fileList, options);
   }
 
   if (options.start) { // non-editor mode

@@ -58,17 +58,19 @@ let Topic = require('../shared/topic');
 */
 
 function reconstructProjectFiles(dataFile, originalFileList, options) {
-  let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
-  let fileSystemData = collectFileSystemData(filesToWrite, originalFileList);
+  let { filesToWrite, directoriesToEnsure, filesEdited } = parseDataFile(dataFile);
+  let fileSystemData = readFilesFromDisk(filesToWrite, originalFileList);
   let { messages, filesToWriteFinal, pathsToDelete } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
   if (!options.noBackup) saveBackup(filesToWriteFinal, fileSystemData);
   updateFileSystem(filesToWriteFinal, directoriesToEnsure, pathsToDelete);
+  fs.writeFileSync('.canopy_bulk_last_session_files', JSON.stringify(filesEdited));
   messages.forEach(message => console.log(message));
 }
 
 function parseDataFile(dataFile) {
   let filesToWrite = {};
   let directoriesToEnsure = [];
+  let filesEdited = [];
   let sections = dataFile.split(/(?=^\[.*\]\n)/gm).map(s => s.trim()).filter(Boolean); // Take the path-initial sections
 
   sections.forEach(section => {
@@ -102,6 +104,7 @@ function parseDataFile(dataFile) {
         } else {
           filesToWrite[fullPath] = fileText + "\n";
         }
+        filesEdited.push(fullPath);
       } else { // there was no key
         categoryNotes.push(fileText);
       }
@@ -117,13 +120,14 @@ function parseDataFile(dataFile) {
       } else {
         filesToWrite[categoryNotePath] = categoryNotes.join("\n\n"); // Otherwise start a new one
       }
+      filesEdited.push(categoryNotePath);
     }
   });
 
-  return { filesToWrite, directoriesToEnsure };
+  return { filesToWrite, directoriesToEnsure, filesEdited };
 }
 
-function collectFileSystemData(filesToWrite, originalFileList) {
+function readFilesFromDisk(filesToWrite, originalFileList) {
   let fileSystemData = {};
 
   Object.keys(filesToWrite).forEach(filePath => {
