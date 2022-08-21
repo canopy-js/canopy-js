@@ -1,22 +1,35 @@
 let removeStyleCharacters = require('./remove_style_characters');
 
 class Topic {
-  // There are several permutations of the topic key:
-  // There is the "display" topic, this is the string precisely as it appears in the expl file
-  // There is a "mixed case" topic, which is the displayTopic sans style characters * _ ~ ` and a trailing question mark.
-  // There is an all caps topic, this is the mixed case topic but all caps, used for case-insensitive matching
-  // Filenames are the mixed case topic name sans characters that cause problems in file paths, like quotation marks.
+  // There are several permutations of the topic key
   // The fromMixedCase argument is when the topic class is instantiated with an already-mixed-case topic to avoid double processing
+
   constructor(string, fromMixedCase) {
-    this.display = fromMixedCase ? null : string;
-    this.mixedCase = fromMixedCase ? string : removeStyleCharacters(string).replace(/\\/g, '');
-    this.escapedMixedCase = this.mixedCase.replace(/"/g, '\\"').replace(/'/g, "\\'");
-    this.slug = this.mixedCase.replace(/_/g, '%255f').replace(/ /g, '_');
-    this.encodedSlug = this.slug.replace(/#/g, '%23');
-    this.caps = this.mixedCase.toUpperCase().replace(/\?$/, '').replace(/"/g, '').replace(/'/g, '');
-    this.fileName = this.slug.replace(/\\/g, '');
-    this.requestFileName = encodeURIComponent(this.slug);
-    this.capsFile = this.fileName.toUpperCase();
+    this.display = fromMixedCase ? null : string; // the string precisely as it appears in the expl file
+
+    this.mixedCase = fromMixedCase ? string : // the displayTopic sans style characters * _ ~ ` and a trailing question mark.
+      removeStyleCharacters(string)
+      .replace(/\\/g, '');
+
+    this.slug = this.mixedCase // This is the string that will be used in the URL for the topic name
+      .replace(/ /g, '_'); // Some underscores are real literal underscores and not spaces converted to underscores, so this is a lossy operation
+
+    this.encodedSlug = this.slug // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks
+      .replace(/%/g, '%25')
+      .replace(/#/g, '%23');
+
+    this.caps = this.mixedCase // This is the string that is used to find matches between links and topic names.
+      .toUpperCase() // We want matches to be case-insensitive
+      .replace(/\?$/, '') // It should match whether or not both have trailing question marks
+      .replace(/"/g, '') // We remove quotation marks so matches ignore them
+      .replace(/'/g, '')
+      .replace(/_/g, ' '); // We de-slugify the URL and turn it to caps to retreive the given topic from the response data, but if there were literal underscores originally
+                           // this information is lost. Therefore, we remove all underscores to make sure we can use the URL topic name to find the given topic.
+
+    this.fileName = this.slug // This is the string that will be used for the file name on disk
+      .replace(/\\/g, '');
+
+    this.requestFileName = encodeURIComponent(this.slug); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
   }
 }
 

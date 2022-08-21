@@ -109,7 +109,7 @@ class Paragraph {
   }
 
   get isTopic() {
-    return this.topic.mixedCase === this.subtopic.mixedCase;
+    return this.topic.caps === this.subtopic.caps;
   }
 
   get hasLinks() {
@@ -128,7 +128,7 @@ class Paragraph {
     targetSubtopic = targetSubtopic || targetTopic;
 
     return this.linkBySelector(
-      (link) => link.targetTopic.mixedCase === targetTopic.mixedCase && link.targetSubtopic.mixedCase === targetSubtopic.mixedCase
+      (link) => link.targetTopic.caps === targetTopic.caps && link.targetSubtopic.caps === targetSubtopic.caps
     );
   }
 
@@ -147,8 +147,8 @@ class Paragraph {
     return this.parentParagraph.linksBySelector(
       link => {
         return (link.isLocal || link.isGlobal) &&
-          this.topic.mixedCase === link.targetTopic.mixedCase &&
-          this.subtopic.mixedCase === link.targetSubtopic.mixedCase;
+          this.topic.caps === link.targetTopic.caps &&
+          this.subtopic.caps === link.targetSubtopic.caps;
       }
     );
   }
@@ -160,8 +160,8 @@ class Paragraph {
     return this.topicParagraph.parentParagraph.linksBySelector(
       link => {
         return link.isImport &&
-          this.topic.mixedCase === link.targetTopic.mixedCase &&
-          this.subtopic.mixedCase === link.targetSubtopic.mixedCase;
+          this.topic.caps === link.targetTopic.caps &&
+          this.subtopic.caps === link.targetSubtopic.caps;
       }
     );
   }

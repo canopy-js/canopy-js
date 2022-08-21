@@ -86,19 +86,19 @@ function handleOutline(line, tokens, parserContext) {
     parentNode: null
   };
 
-  if (!outlineToken.lastNode) {
+  if (!outlineToken.lastNode) { // This is the first node we're parsing
     topLevelNodes.push(newNode);
-  } else if (newNode.indentation > outlineToken.lastNode.indentation) {
+  } else if (newNode.indentation > outlineToken.lastNode.indentation) { // Child node of the previous line
     newNode.parentNode = outlineToken.lastNode;
     outlineToken.lastNode.children.push(newNode);
-  } else if (newNode.indentation === outlineToken.lastNode.indentation) {
+  } else if (newNode.indentation === outlineToken.lastNode.indentation) { // Sibling node of the previous line
     if (newNode.indentation === 0) {
       topLevelNodes.push(newNode);
     } else {
       newNode.parentNode = outlineToken.lastNode.parentNode;
       outlineToken.lastNode.parentNode.children.push(newNode);
     }
-  } else {
+  } else { // Child node of a previous line, or new top-level node
     let parentNode = outlineToken.lastNode;
     while (parentNode && newNode.indentation <= parentNode.indentation) {
       parentNode = parentNode.parentNode;

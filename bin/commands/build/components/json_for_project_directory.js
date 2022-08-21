@@ -15,7 +15,7 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
   Object.keys(explFileData).forEach(function(path) {
     if (!topicKeyOfString(explFileData[path])) return;
 
-    let json = jsonForExplFile(path, explFileData, parserContext);
+    let json = jsonForExplFile(path, explFileData, parserContext, options);
     let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
@@ -37,8 +37,9 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
   parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
   parserContext.validateImportReferenceGlobalMatching();
-  if (options.logging) parserContext.logGlobalOrphans();
-  if (options.logging) parserContext.logLocalOrphans();
+  if (options.orphans) parserContext.logGlobalOrphans();
+  if (options.orphans) parserContext.logLocalOrphans();
+  if (options.reciprocals) parserContext.logNonReciprocals();
 
   return { directoriesToEnsure, filesToWrite };
 }

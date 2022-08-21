@@ -1,5 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
+test.beforeEach(async ({ page }) => {
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      console.error(message.text());
+    }
+  })
+});
+
 test.describe('Text styles', () => {
   test('Underscores create italic text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Italic_text');

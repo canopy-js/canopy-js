@@ -1,6 +1,7 @@
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
+import Link from 'models/link';
 import Topic from '../../bin/commands/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
@@ -17,7 +18,7 @@ function renderDomTree(renderContext) {
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
-  let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
+  let tokensOfParagraph = paragraphsBySubtopic[subtopic.caps];
   if (!tokensOfParagraph) throw `Paragraph with subtopic not found: ${subtopic.mixedCase}`;
 
   tokensOfParagraph.forEach((token) => {
@@ -53,9 +54,10 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 
   return (token, linkElement) => {
     let topic = new Topic(token.targetTopic, true);
+    let link = new Link(linkElement);
     requestJson(topic); // eager-load and cache
 
-    if (globalLinkIsOpen(linkElement, pathToDisplay, subtopic)) {
+    if (globalLinkIsOpen(link, pathToDisplay, subtopic)) {
       let newPath = pathToDisplay.withoutFirstSegment;
       let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement);
       displayBlockingPromises.push(whenTopicTreeAppended)
@@ -75,8 +77,10 @@ function createSectionElement(renderContext) {
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
   sectionElement.dataset.topicName = topic.mixedCase;
+  sectionElement.dataset.topicNameCaps = topic.caps;
   sectionElement.dataset.displayTopicName = displayTopicName;
   sectionElement.dataset.subtopicName = subtopic.mixedCase;
+  sectionElement.dataset.subtopicNameCaps = subtopic.caps;
   sectionElement.dataset.pathDepth = pathDepth;
 
   if (topic.mixedCase === subtopic.mixedCase) {
@@ -87,7 +91,7 @@ function createSectionElement(renderContext) {
   return sectionElement;
 }
 
-function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopic) {
+function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
   let subtopicOfPathContainingOpenGlobalReference = path.firstSubtopic;
   let openGlobalLinkExists = path.secondTopic;
 
@@ -95,11 +99,11 @@ function globalLinkIsOpen(linkElement, path, currentlyRenderingSubtopic) {
   let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
 
   let thisGlobalLinkIsPointingToTheRightThingToBeOpen =
-    linkElement.dataset.targetTopic === openGlobalLinkTargetTopic?.mixedCase &&
-    linkElement.dataset.targetSubtopic === openGlobalLinkTargetSubtopic?.mixedCase;
+    link.targetTopic.caps === openGlobalLinkTargetTopic?.caps &&
+    link.targetSubtopic.caps === openGlobalLinkTargetSubtopic?.caps;
 
-  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.mixedCase ===
-    subtopicOfPathContainingOpenGlobalReference.mixedCase;
+  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.caps ===
+    subtopicOfPathContainingOpenGlobalReference.caps;
 
   return openGlobalLinkExists &&
     thisGlobalLinkIsPointingToTheRightThingToBeOpen &&

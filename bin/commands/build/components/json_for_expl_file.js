@@ -2,7 +2,7 @@ let parseParagraph = require('./parse_paragraph');
 let Topic = require('../../shared/topic');
 let Paragraph = require('../../shared/paragraph');
 
-function jsonForExplFile(filePath, explFileData, parserContext) {
+function jsonForExplFile(filePath, explFileData, parserContext, options) {
   let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
   let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
   let paragraphsBySubtopic = {};
@@ -17,7 +17,7 @@ function jsonForExplFile(filePath, explFileData, parserContext) {
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
-    paragraphsBySubtopic[parserContext.currentSubtopic.mixedCase] = tokensOfParagraph;
+    paragraphsBySubtopic[parserContext.currentSubtopic.caps] = tokensOfParagraph;
   });
 
   parserContext.validateRedundantLocalReferences();
@@ -30,7 +30,7 @@ function jsonForExplFile(filePath, explFileData, parserContext) {
   return JSON.stringify(
     jsonObject,
     null,
-    process.env.CANOPY_DEBUG ? 1 : 0
+    options.logging ? 1 : 0
   );
 }
 

@@ -179,8 +179,8 @@ class Path {
     // is indistinguishable from a space having been converted to underscore, so URL
     // construction is lossy without double encoding
     pathArray = pathArray.map(([topicString, subtopicString]) => [
-      new Topic(decodeURIComponent(decodeURIComponent(topicString)), true),
-      new Topic(decodeURIComponent(decodeURIComponent(subtopicString)), true)
+      new Topic(decodeURIComponent(topicString), true),
+      new Topic(decodeURIComponent(subtopicString), true)
     ]);
 
     return pathArray;
@@ -267,8 +267,8 @@ class Path {
     let currentNode = rootElement;
     if (rootElement === canopyContainer) {
       currentNode = rootElement.querySelector(
-        `[data-topic-name="${path.firstTopic.escapedMixedCase}"]` +
-        `[data-subtopic-name="${path.firstSubtopic.escapedMixedCase}"]` +
+        `[data-topic-name-caps="${path.firstTopic.caps}"]` +
+        `[data-subtopic-name-caps="${path.firstSubtopic.caps}"]` +
         `[data-path-depth="${0}"]`
       );
 
@@ -281,8 +281,8 @@ class Path {
     for (let i = 0; i < path.length; i++) {
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
       currentNode = currentNode.querySelector(
-        `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
-        `[data-subtopic-name="${subpath.firstSubtopic.escapedMixedCase}"]` +
+        `[data-topic-name-caps="${subpath.firstTopic.caps}"]` +
+        `[data-subtopic-name-caps="${subpath.firstSubtopic.caps}"]` +
         `[data-path-depth="${newPathDepth}"]`
       );
 

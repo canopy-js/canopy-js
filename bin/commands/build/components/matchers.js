@@ -68,9 +68,10 @@ function globalReferenceMatcher(string, parserContext) {
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
 
-  parserContext.registerGlobalReference(targetTopic, currentTopic);
 
   if (parserContext.topicExists(targetTopic)) {
+    parserContext.registerGlobalReference(targetTopic, currentTopic, currentSubtopic);
+
     return [
       new GlobalReferenceToken(
         parserContext.getOriginalTopic(targetTopic).mixedCase,
