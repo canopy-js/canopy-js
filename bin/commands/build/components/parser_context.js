@@ -9,6 +9,7 @@ class ParserContext {
     this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
     this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
     this.subtopicParents = {}; // by topic, by subtopic, the parent subtopic that contains a local reference to that subtopic
+    this.subtopicsOfGlobalReferences = {}; // by topic, by target topic, the subtopic of topic that contains the global reference to target topic
     this.importReferencesToCheck = []; // a list of import references with metadata to validate at the end of the second-pass
     this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
     this.provisionalLocalReferences = {}; // a list of local reference tokens for converstion to import if later found to be redundant
@@ -84,6 +85,7 @@ class ParserContext {
     this.currentSubtopic = subtopic;
     this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
     this.topicFilePaths[topic.caps] = this.filePath;
+    this.subtopicsOfGlobalReferences[topic.caps] = this.subtopicsOfGlobalReferences[topic.caps] || {};
   }
 
   get currentTopicAndSubtopic() {
@@ -246,8 +248,8 @@ class ParserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-          throw `Error: ${filePath}:${lineNumber}\n` +
-            `Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].`;
+          throw `Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
+            `${filePath}:${lineNumber}\n`;
         }
       });
     });
@@ -256,8 +258,8 @@ class ParserContext {
   validateImportReferenceTargets() {
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw `Error: ${filePath}:${lineNumber}\n` +
-          `Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]`;
+        throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
+          `${filePath}:${lineNumber}\n`;
       }
     });
   }
@@ -272,10 +274,11 @@ class ParserContext {
     });
   }
 
-  registerGlobalReference(targetTopic, currentTopic) {
+  registerGlobalReference(targetTopic, currentTopic, currentSubtopic) {
     this.topicConnections[currentTopic.caps] = this.topicConnections[currentTopic.caps] || {};
     this.topicConnections[currentTopic.caps][targetTopic.caps] = true;
     this.topicConnections[targetTopic.caps] = this.topicConnections[targetTopic.caps] || {};
+    this.subtopicsOfGlobalReferences[currentTopic.caps][targetTopic.caps] = currentSubtopic;
   }
 
   logGlobalOrphans() {
@@ -284,10 +287,11 @@ class ParserContext {
     Object.keys(this.topicSubtopics).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       if (!this.connectedTopics[topic.caps]) {
-        console.log();
-        console.log(`Global Orphan: Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]\n` +
-          `  File: ${this.topicFilePaths[topic.caps]}`);
-        console.log();
+        console.log(
+          `Warning: Global Orphan\n` +
+          `Topic [${topic.mixedCase}] is not connected to default topic [${this.defaultTopic.mixedCase}]\n` +
+          `${this.topicFilePaths[topic.caps]}\n`
+        );
       }
     });
   }
@@ -305,11 +309,29 @@ class ParserContext {
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
         if (!this.hasConnection(subtopic, topic)) {
-          console.log();
-          console.log(`Local Orphan: Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
-            `  File: ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}`
+          console.log(`Warning: Local Orphan\n` +
+            `Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
+            `${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}\n`
           );
-          console.log();
+        }
+      });
+    });
+  }
+
+  logNonReciprocals() {
+    Object.keys(this.topicConnections).forEach((currentTopicCaps, i) => {
+      Object.keys(this.topicConnections[currentTopicCaps]).forEach((targetTopicCaps, i) => {
+        if (!this.topicConnections[targetTopicCaps] || !this.topicConnections[targetTopicCaps][currentTopicCaps]) {
+          let currentSubtopic = this.subtopicsOfGlobalReferences[currentTopicCaps][targetTopicCaps];
+          let currentTopic = this.topicSubtopics[currentTopicCaps][currentTopicCaps];
+          let targetTopic = this.topicSubtopics[targetTopicCaps][targetTopicCaps];
+          console.log(
+            `Warning: Nonreciprocal Global Reference\n` +
+            `Global reference in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
+            `${this.topicFilePaths[currentTopic.caps]}:${this.subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]}\n` +
+            `Try creating a global reference from [${targetTopic.mixedCase}] to [${currentTopic.mixedCase}]\n` +
+            `${this.topicFilePaths[targetTopic.caps]}\n`
+          );
         }
       });
     });

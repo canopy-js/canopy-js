@@ -37,8 +37,9 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
   parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
   parserContext.validateImportReferenceGlobalMatching();
-  if (options.logging) parserContext.logGlobalOrphans();
-  if (options.logging) parserContext.logLocalOrphans();
+  if (options.orphans) parserContext.logGlobalOrphans();
+  if (options.orphans) parserContext.logLocalOrphans();
+  if (options.reciprocals) parserContext.logNonReciprocals();
 
   return { directoriesToEnsure, filesToWrite };
 }

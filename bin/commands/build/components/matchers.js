@@ -68,9 +68,10 @@ function globalReferenceMatcher(string, parserContext) {
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
 
-  parserContext.registerGlobalReference(targetTopic, currentTopic);
 
   if (parserContext.topicExists(targetTopic)) {
+    parserContext.registerGlobalReference(targetTopic, currentTopic, currentSubtopic);
+
     return [
       new GlobalReferenceToken(
         parserContext.getOriginalTopic(targetTopic).mixedCase,
@@ -100,8 +101,8 @@ function importReferenceMatcher(string, parserContext, index) {
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw `Error: ${parserContext.filePath}:${parserContext.lineNumber}\n` +
-      `Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]`;
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}\n`;
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
