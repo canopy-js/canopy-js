@@ -35,8 +35,8 @@ class Paragraph {
   }
 
   transferDataset() {
-    this._topicName = this.sectionElement.dataset.topicName;
-    this._subtopicName = this.sectionElement.dataset.subtopicName;
+    this._topicName = this.sectionElement.dataset.displayTopicName;
+    this._subtopicName = this.sectionElement.dataset.displaySubtopicName;
     this.pathDepth = this.sectionElement.dataset.pathDepth;
   }
 
@@ -45,7 +45,7 @@ class Paragraph {
   }
 
   get subtopic () {
-    return new Topic(this.sectionElement.dataset.subtopicName, true);
+    return new Topic(this.sectionElement.dataset.displaySubtopicName);
   }
 
   get topicName() {
@@ -76,8 +76,8 @@ class Paragraph {
       currentTopicParagraph = currentParagraph.topicParagraph;
 
       pathArray.unshift([
-        new Topic(currentElement.dataset.topicName),
-        new Topic(currentElement.dataset.subtopicName)
+        new Topic(currentElement.dataset.displayTopicName),
+        new Topic(currentElement.dataset.displaySubtopicName)
       ]);
 
       while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {

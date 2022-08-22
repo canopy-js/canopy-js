@@ -33,7 +33,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
-        subtopic: new Topic(token.targetSubtopic, true)
+        subtopic: new Topic(token.targetSubtopic)
       })
     );
 
@@ -53,7 +53,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   } = renderContext;
 
   return (token, linkElement) => {
-    let topic = new Topic(token.targetTopic, true);
+    let topic = new Topic(token.targetTopic);
     let link = new Link(linkElement);
     requestJson(topic); // eager-load and cache
 
@@ -66,9 +66,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 }
 
 function createSectionElement(renderContext) {
-  let {
-    topic, subtopic, displayTopicName, pathDepth
-  } = renderContext;
+  let { topic, subtopic, pathDepth } = renderContext;
 
   let sectionElement = document.createElement('section');
   sectionElement.classList.add('canopy-section');
@@ -76,14 +74,13 @@ function createSectionElement(renderContext) {
   paragraphElement.classList.add('canopy-paragraph');
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
-  sectionElement.dataset.topicName = topic.mixedCase;
+  sectionElement.dataset.displayTopicName = topic.display;
+  sectionElement.dataset.displaySubtopicName = subtopic.display;
   sectionElement.dataset.topicNameCaps = topic.caps;
-  sectionElement.dataset.displayTopicName = displayTopicName;
-  sectionElement.dataset.subtopicName = subtopic.mixedCase;
   sectionElement.dataset.subtopicNameCaps = subtopic.caps;
   sectionElement.dataset.pathDepth = pathDepth;
 
-  if (topic.mixedCase === subtopic.mixedCase) {
+  if (topic.caps === subtopic.caps) {
     pathDepth > 0 && sectionElement.prepend(document.createElement('hr'));
     sectionElement.classList.add('canopy-topic-section');
   }
