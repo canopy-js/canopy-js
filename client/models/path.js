@@ -173,11 +173,6 @@ class Path {
       ];
     }).filter((segment) => segment[0] !== null);
 
-    // we double decode URI components because we need to encode them in order to
-    // put certain characters in URLs, but characters like _ if encoded once to
-    // %5f will get converted automaticall to _ in the location, which on refresh
-    // is indistinguishable from a space having been converted to underscore, so URL
-    // construction is lossy without double encoding
     pathArray = pathArray.map(([topicString, subtopicString]) => [
       new Topic(decodeURIComponent(topicString), true),
       new Topic(decodeURIComponent(subtopicString), true)

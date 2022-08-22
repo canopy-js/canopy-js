@@ -41,7 +41,7 @@ class Paragraph {
   }
 
   get topic () {
-    return new Topic(this.sectionElement.dataset.topicName, true);
+    return new Topic(this.sectionElement.dataset.displayTopicName);
   }
 
   get subtopic () {

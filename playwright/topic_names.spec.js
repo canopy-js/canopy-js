@@ -150,13 +150,13 @@ test.describe('Topic names', () => {
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator("text=_Hello world_").click({
-        modifiers: [systemNewTabKey]
+        modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
 
-    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/_Hello_world_");
-    await expect(newPage.locator('h1')).toHaveText("United States");
-    await expect(newPage.locator('.canopy-selected-link')).toHaveText("_Hello world_");
+    await expect(newPage).toHaveURL("_Hello_world_");
+    await expect(newPage.locator('h1')).toHaveText("_Hello world_");
+    await expect(await newPage.title()).toEqual('_Hello world_');
     await expect(newPage.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
   });
 
@@ -224,9 +224,78 @@ test.describe('Topic names', () => {
       })
     ]);
 
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%253C_shop");
     await expect(newPage.locator('h1')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("The %3C shop");
-    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%253C_shop");
     await expect(newPage.locator('text=This is a good store. >> visible=true')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with parentheses', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard/The_%253C_shop`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("The %3C shop");
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Good_Books_(bookstore)");
+    await expect(page.locator('text=This is a bookstore. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=Good Books (bookstore)").click({
+        modifiers: [systemNewTabKey]
+      })
+    ]);
+
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Good_Books_(bookstore)");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('text=This is a bookstore. >> visible=true')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with dollar signs', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard/Good_Books_(bookstore)`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_$1_Store");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("The $1 Store");
+    await expect(page.locator('text=This is an inexpensive store. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=The $1 store").click({
+        modifiers: [systemNewTabKey]
+      })
+    ]);
+
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_$1_Store");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("The $1 Store");
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('text=This is an inexpensive store. >> visible=true')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with plus signs', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard/The_$1_Store`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("The $1 Store");
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/1+1");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("1+1");
+    await expect(page.locator('text=This is a children\'s clothing store. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=1+1").click({
+        modifiers: [systemNewTabKey]
+      })
+    ]);
+
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/1+1");
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("1+1");
+    await expect(newPage.locator('text=This is a children\'s clothing store. >> visible=true')).toHaveCount(1);
   });
 });
