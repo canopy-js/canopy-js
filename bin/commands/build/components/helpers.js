@@ -102,11 +102,25 @@ function getExplFileData(topicsPath) {
   }, {});
 }
 
+function removeCircularListKeys(tokens) {
+  tokens.filter(token => token.type === 'list').forEach(token => {
+    delete token.lastNode;
+    token.topLevelNodes.forEach(node => removeExtraKeys(node));
+  });
+}
+
+function removeExtraKeys(node) {
+  delete node.parentNode;
+  delete node.indentation;
+  node.children.forEach(removeExtraKeys);
+}
+
 module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
   listExplFilesRecursive,
   updateFilesystem,
   getExplFileData,
-  LinkProximityCalculator
+  LinkProximityCalculator,
+  removeCircularListKeys
 };

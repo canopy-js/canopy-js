@@ -1,4 +1,5 @@
 let parseLine = require('./parse_line');
+let { removeCircularListKeys } = require('./helpers');
 
 function parseParagraph(text, parserContext) {
   let tokens = [];
@@ -9,22 +10,8 @@ function parseParagraph(text, parserContext) {
     parserContext.incrementLineNumber();
   });
 
-  removeCircularKeys(tokens);
-
+  removeCircularListKeys(tokens);
   return tokens;
-}
-
-function removeCircularKeys(tokens) {
-  tokens.filter(token => token.type === 'list').forEach(token => {
-    delete token.lastNode;
-    token.topLevelNodes.forEach(node => removeExtraKeys(node));
-  });
-}
-
-function removeExtraKeys(node) {
-  delete node.parentNode;
-  delete node.indentation;
-  node.children.forEach(removeExtraKeys);
 }
 
 module.exports = parseParagraph;

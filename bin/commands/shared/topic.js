@@ -2,13 +2,13 @@ let removeStyleCharacters = require('./remove_style_characters');
 
 class Topic {
   // There are several permutations of the topic key
-  // The fromMixedCase argument is when the topic class is instantiated with an already-mixed-case topic to avoid double processing
+  // The fromSlug argument is for when the topic class is instantiated with an already-mixed-case-or-similar string to avoid double processing
+  // ("Similar" includes instantiating a Topic object from the path string which may have converted literal underscores to spaces accidentally.)
 
-  constructor(string, fromMixedCase) {
-    this.display = fromMixedCase ? null : string; // the string precisely as it appears in the expl file
+  constructor(string, fromSlug) {
+    this.display = string; // the string precisely as it appears in the expl file
 
-    this.mixedCase = fromMixedCase ? string : // the displayTopic sans style characters * _ ~ ` and a trailing question mark.
-      removeStyleCharacters(string)
+    this.mixedCase = removeStyleCharacters(string) // the displayTopic sans style characters * _ ~ ` and a trailing question mark.
       .replace(/\\/g, '');
 
     this.slug = this.mixedCase // This is the string that will be used in the URL for the topic name
@@ -30,6 +30,11 @@ class Topic {
       .replace(/\\/g, '');
 
     this.requestFileName = encodeURIComponent(this.slug); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+
+    if (fromSlug) {
+      this.display = null;
+      this.mixedCase = null;
+    }
   }
 }
 

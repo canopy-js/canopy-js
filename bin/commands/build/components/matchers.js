@@ -46,10 +46,10 @@ function localReferenceMatcher(string, parserContext, index) {
     }
 
     let localReferenceToken = new LocalReferenceToken(
-      currentTopic.mixedCase,
-      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
-      currentTopic.mixedCase,
-      currentSubtopic.mixedCase,
+      currentTopic.display,
+      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).display,
+      currentTopic.display,
+      currentSubtopic.display,
       linkText
     );
 
@@ -74,10 +74,10 @@ function globalReferenceMatcher(string, parserContext) {
 
     return [
       new GlobalReferenceToken(
-        parserContext.getOriginalTopic(targetTopic).mixedCase,
-        parserContext.getOriginalTopic(targetTopic).mixedCase,
-        currentTopic.mixedCase,
-        currentSubtopic.mixedCase,
+        parserContext.getOriginalTopic(targetTopic).display,
+        parserContext.getOriginalTopic(targetTopic).display,
+        currentTopic.display,
+        currentSubtopic.display,
         linkText
       ), fullText.length
     ];
@@ -114,10 +114,10 @@ function importReferenceMatcher(string, parserContext, index) {
 
   return [
     new ImportReferenceToken(
-      parserContext.getOriginalTopic(targetTopic).mixedCase,
-      parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
-      currentTopic.mixedCase,
-      currentSubtopic.mixedCase,
+      parserContext.getOriginalTopic(targetTopic).display,
+      parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).display,
+      currentTopic.display,
+      currentSubtopic.display,
       linkText
     ), fullText.length
   ];
