@@ -17,9 +17,8 @@ if (x) { y; }
 
 Block quotes:
 This is regular text.
->
-> This is a block quote
->
+> This is a block quote that has two lines
+> This is the second line
 More text.
 
 HTML blocks:

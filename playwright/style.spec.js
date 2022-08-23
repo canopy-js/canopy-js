@@ -149,9 +149,8 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `\n`+
-      `This is a block quote` +
-      `\n\n`
+      `This is a block quote that has two lines\n` +
+      `This is the second line\n`
     );
   });
 
