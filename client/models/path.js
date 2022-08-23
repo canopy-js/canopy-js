@@ -122,10 +122,10 @@ class Path {
     let pathString = window.location.href.slice(window.location.origin.length)
 
     if (projectPathPrefix && pathString.indexOf(`/${projectPathPrefix}`) === 0) {
-      pathString = pathString.slice(projectPathPrefix.length + 1);
+      pathString = pathString.slice(projectPathPrefix.length + 1); // remove prefix and leading slash
     }
 
-    if (pathString.indexOf('/#/') === 0) pathString = pathString.slice(2);  // example.com[/#]/Topic
+    if (pathString.indexOf('/#') === 0) pathString = pathString.slice(2);  // remove hash sign plus leading slash
 
     return new Path(pathString);
   }
@@ -148,10 +148,6 @@ class Path {
 
   static stringToArray(pathString) {
     if (typeof pathString !== 'string') throw "Function requires string argument";
-
-    if (pathString.indexOf(projectPathPrefix) === 1) {
-      pathString = pathString.slice(projectPathPrefix.length + 1);
-    }
 
     if (pathString === '/') {
       return [];
