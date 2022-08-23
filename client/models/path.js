@@ -15,8 +15,8 @@ class Path {
       }
       this.pathString = Path.arrayToString(this.pathArray);
     } else if (typeof argument === 'string' || argument instanceof String) {
-      this.pathString = argument;
       this.pathArray = Path.stringToArray(argument);
+      this.pathString = Path.arrayToString(this.pathArray); // array formation removes invalid segments so we reform the string
     }
   }
 
@@ -125,7 +125,7 @@ class Path {
       pathString = pathString.slice(projectPathPrefix.length + 1);
     }
 
-    if (pathString.indexOf('#/') === 0) pathString = pathString.slice(1);  // example.com[/#]/Topic
+    if (pathString.indexOf('/#/') === 0) pathString = pathString.slice(2);  // example.com[/#]/Topic
 
     return new Path(pathString);
   }

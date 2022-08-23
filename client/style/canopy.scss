@@ -114,10 +114,14 @@
   }
 
   blockquote {
-    margin: 7px 10px;
-    background-color: #eff0f1;
-    padding: 5px;
-    font-size: 90%;
+    padding: 0 .7em;
+    border-left: 0.25em solid lightgray;
+    color: #565e67;
+
+    margin-block-start: .7em;
+    margin-block-end: .7em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
 
     a.canopy-selectable-link {
       text-decoration: underline #D3D3D3;

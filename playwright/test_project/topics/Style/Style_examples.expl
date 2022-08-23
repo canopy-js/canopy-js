@@ -16,9 +16,11 @@ if (x) { y; }
 ```
 
 Block quotes:
+This is regular text.
 >
 > This is a block quote
 >
+More text.
 
 HTML blocks:
 <figure>

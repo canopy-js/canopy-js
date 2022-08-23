@@ -74,10 +74,26 @@ const config = {
   outputDir: './test-results/',
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'cd playwright/test_project && canopy build && canopy serve -p 3000',
-    url: 'http://localhost:3000'
-  },
+  webServer: [
+    {
+      command: 'cd playwright/test_project && canopy build && canopy serve -p 3000',
+      port: 3000
+    },
+    {
+      command: 'cp -R playwright/test_project ./prefix_test && cd prefix_test && canopy build --project-path-prefix test && canopy serve -p 3001',
+      port: 3001
+    },
+    {
+      command: 'cp -R playwright/test_project ./prefix_test && cd prefix_test && canopy build --hash-urls && canopy serve -p 3002',
+      port: 3002
+    },
+    {
+      command: 'cp -R playwright/test_project ./prefix_test && cd prefix_test && canopy build --hash-urls --project-path-prefix test && canopy serve -p 3003',
+      port: 3003
+    }
+  ],
+
+  globalTeardown: './playwright/global_teardown.js'
 };
 
 module.exports = config;
