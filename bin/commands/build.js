@@ -16,9 +16,12 @@ function build(options) {
   fs.ensureDirSync('build');
 
   if (!manualHtml) {
+    let favicon = fs.existsSync(`assets/favicon.ico`);
+
     let html = dedent`
       <html>
       <head>
+      ${favicon ? '<link rel="icon" type="image/x-icon" href="/_assets/favicon.ico">' : ''}
       <meta charset="utf-8">
       </head>
       <body>
@@ -37,6 +40,10 @@ function build(options) {
 
   buildProject('.', defaultTopicString, options);
 
+  if (fs.existsSync(`assets`)) {
+    fs.copySync('assets', 'build/_assets', { overwrite: true });
+  }
+
   if (symlinks) {
     let topicDirectories = getDirectories('build');
     topicDirectories.forEach((currentTopicDirectory) => {
@@ -47,6 +54,9 @@ function build(options) {
           fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
         }
       });
+      if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
+        fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
+      }
     });
   }
 
@@ -58,10 +68,6 @@ function build(options) {
 
   if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) {
     fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
-  }
-
-  if (fs.existsSync(`assets`)) {
-    fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
 
   console.log(`Built at: ${'' + new Date()}`);
