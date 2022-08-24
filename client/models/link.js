@@ -155,7 +155,7 @@ class Link {
     });
   }
 
-  get localPathWhenSelected() {
+  get localPathSegmentWhenSelected() {
     if (this.isGlobalOrImport) {
       return new Path(this.paragraphPathWhenSelected.pathArray.slice(-2));
     } else {
@@ -223,11 +223,7 @@ class Link {
   }
 
   get urlPathWhenSelected() {
-    if (this.type === 'import') {
-      return this.enclosingParagraph.path;
-    } else {
-      return this.paragraphPathWhenSelected;
-    }
+    return this.paragraphPathWhenSelected;
   }
 
   static collectMetadata(linkElement) {

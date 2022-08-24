@@ -187,7 +187,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowDown');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
@@ -198,7 +198,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
@@ -384,7 +384,7 @@ test.describe('Navigation', () => {
 
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('United_States/New_York#Southern_border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
 
     // The import reference should be selected and open
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',

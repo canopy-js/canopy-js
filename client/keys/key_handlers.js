@@ -180,7 +180,7 @@ function depthFirstSearch() {
 
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
-  let newPath = currentLink.localPathWhenSelected;
+  let newPath = currentLink.localPathSegmentWhenSelected;
 
   let newLink = currentLink.atNewPath(newPath);
 
