@@ -62,11 +62,27 @@ test.describe('Text styles', () => {
     await expect(page.locator('.canopy-selected-section code')).toHaveText("code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}");
   });
 
-  test('Plaintext can contain style tokens', async ({ page }) => {
+  test('Plaintext can contain style token literals', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Plaintext_that_contains_style_tokens');
-    const section = await page.locator('.canopy-selected-section');
+    await page.locator('.canopy-selected-section');
     await expect(page.locator('.canopy-selected-section')).toHaveText("This is plaintext that contains style tokens like {{OPEN_}} ABC {{CLOSE_}}.")
     await expect(page.locator('.canopy-selected-section i')).toHaveCount(0);
+  });
+
+  test('Topic names can contain style characters', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Style_characters/Styled_topic_names');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("styled topic names");
+    await expect(page.locator('.canopy-selected-link i')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-link i')).toHaveText("styled");
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('Styled topic names');
+    await expect(page.locator('h1 i')).toHaveCount(1);
+    await expect(page.locator('h1 i')).toHaveText('Styled');
   });
 });
 
