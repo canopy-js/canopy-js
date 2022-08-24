@@ -838,7 +838,10 @@ test('it throws error for unrecognized link', () => {
   };
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(`Error: topics/Idaho/Idaho.expl:1\nReference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.`);
+  ).toThrow(
+    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1`
+  );
 });
 
 test('it throws error for regular redundant local references', () => {
@@ -1022,7 +1025,7 @@ test('it throws error if import reference is to non-existant topic', () => {
   };
 
   let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]\n` +
-    `topics/Wyoming/Wyoming.expl:1\n`;
+    `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -1038,8 +1041,8 @@ test('it throws error if import reference is to non-existant subtopic', () => {
     `,
   };
 
-  let message = `Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
-    `topics/Wyoming/Wyoming.expl:1\n` +
+  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
+    `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
