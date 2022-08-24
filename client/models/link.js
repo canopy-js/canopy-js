@@ -47,6 +47,7 @@ class Link {
       return this.linkElement
     } else if (this.metadataObject) {
       this.element = Link.elementFromMetadata(this.metadata);
+      if (!this.linkElement) throw 'Metadata refered to non-existant link';
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
@@ -359,6 +360,7 @@ class Link {
     linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
+    Link.persistLastSelectionData(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -368,7 +370,9 @@ class Link {
   static get sessionSelection() {
     let sessionData = sessionStorage.getItem(Path.current.string);
     if (sessionData && sessionData !== 'null') {
-      return new Link(JSON.parse(sessionData));
+      let link = new Link(JSON.parse(sessionData));
+      try { link.element; } catch { link = null; } // in case metadata is invalid
+      return link;
     } else {
       return null;
     }
@@ -376,7 +380,9 @@ class Link {
 
   static get historySelection() {
     if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
-      return new Link(history.state);
+      let link = new Link(history.state);
+      try { link.element; } catch { link = null; } // in case metadata is invalid
+      return link;
     } else {
       return null;
     }
@@ -428,6 +434,29 @@ class Link {
 
   static current() {
     throw "Link#current does not exist, try Link#selection";
+  }
+
+  // If someone eg presses up from the second link in a paragraph, pressing down should return them there.
+  static persistLastSelectionData(link) {
+    if (link) {
+      let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+      lastSelectionsOfParagraph[link.enclosingParagraph.path] = link.metadata;
+      sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
+    }
+  }
+
+  static lastSelectionOfParagraph(paragraph) {
+    let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+    if (lastSelectionsOfParagraph[paragraph.path]) {
+      let link = new Link(lastSelectionsOfParagraph[paragraph.path]);
+      try { // sometimes metadata from previous versions is stored and doesn't correspond to real links anymore
+        if (link.element) {
+          return link;
+        }
+      } catch {
+        return null;
+      }
+    }
   }
 }
 

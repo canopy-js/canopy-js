@@ -12,7 +12,7 @@ function moveUpward() {
 
   return updateView(
     link.parentLink.paragraphPathWhenSelected,
-    link.parentLink
+    new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
   );
 }
 
@@ -41,7 +41,7 @@ function moveDownward() {
 
     updateView(
       newLink.paragraphPathWhenSelected,
-      newLink
+      new Link(() => Link.lastSelectionOfParagraph(newLink.enclosingParagraph) || newLink)
     );
   }
 
