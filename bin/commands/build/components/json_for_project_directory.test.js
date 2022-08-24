@@ -933,6 +933,29 @@ test('it counts blank lines in error line numbers', () => {
   ).toThrow(message);
 });
 
+test('it handles odd-numbers of blank lines', () => {
+  let projectDir = '/example/project';
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. Its capital is [[Boise]]
+
+
+
+
+    Boise: This is the capital.
+
+    Boise: This is a good city.
+    `,
+  };
+
+  let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
+    `First definition: topics/Idaho/Idaho.expl:6\n` +
+    `Second definition: topics/Idaho/Idaho.expl:8`;
+
+  expect(
+    () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
+  ).toThrow(message);
+});
+
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
   let projectDir = '/example/project';
   let explFileData = {

@@ -48,6 +48,11 @@ class ParserContext {
       topicSubtopics[currentTopic.caps] = {};
 
       paragraphsWithKeys.forEach(function(paragraphText) {
+        if (paragraphText[0] === "\n") { // because we split on \n\n, there is only a chance that the first character is a newline
+          lineNumber++;
+          paragraphText = paragraphText.slice(1);
+        }
+
         let paragraph = new Paragraph(paragraphText);
         if (paragraph.key) {
           let currentSubtopic = new Topic(paragraph.key);
