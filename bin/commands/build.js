@@ -43,7 +43,9 @@ function build(options) {
       topicDirectories.forEach((targetTopicDirectory) => {
         if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
         fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
-        child_process.execSync(`ln -s build/${targetTopicDirectory} build/${currentTopicDirectory}/`);
+        if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
+          fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+        }
       });
     });
   }
