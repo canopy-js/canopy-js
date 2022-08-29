@@ -55,7 +55,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
   });
 
-  test('Pressing enter on global redirects to new page', async ({ page }) => {
+  test('Pressing enter on global redirects to new path', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -66,13 +66,29 @@ test.describe('Navigation', () => {
     await expect(page.locator('h1')).toHaveText('New York');
   });
 
-  test('Meta-enter on global link opens new tab to redirected path', async ({ page, context, browserName }) => {
+  test('Meta-enter on global link opens new tab to same path', async ({ page, context, browserName }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.keyboard.press(`${systemNewTabKey}+Enter`)
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toHaveText('United States');
+    await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(1);
+    await expect(newPage).toHaveURL('United_States/New_York');
+  });
+
+  test('Meta-Alt-Enter on global link opens new tab to redirected path', async ({ page, context, browserName }) => {
+    await page.goto('/United_States/New_York');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.keyboard.press(`${systemNewTabKey}+Alt+Enter`)
     ]);
 
     await newPage.waitForLoadState();
