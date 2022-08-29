@@ -9,25 +9,25 @@ jest.mock('../../helpers/getters', () => ({
 test('just topic', () => {
   const pathString = '/Topic';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Topic', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')]]);
 });
 
 test('topic and subtopic', () => {
   const pathString = '/Topic#Subtopic';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('topic and subtopic and topic', () => {
   const pathString = '/Topic#Subtopic/Topic2';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic', true)], [new Topic('Topic2', true), new Topic('Topic2', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Topic2')]]);
 });
 
 test('two topics and subtopics', () => {
   const pathString = '/Topic#Subtopic/Topic2#Subtopic2';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic', true)], [new Topic('Topic2', true), new Topic('Subtopic2', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic2')]]);
 });
 
 test('lone subtopic', () => {
@@ -35,8 +35,8 @@ test('lone subtopic', () => {
   const pathArray = Path.stringToArray(pathString);
   expect(pathArray).toEqual(
     [
-      [new Topic('Topic', true), new Topic('Subtopic', true)],
-      [new Topic('Subtopic2', true), new Topic('Subtopic2', true)]
+      [Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')],
+      [Topic.fromMixedCase('Subtopic2'), Topic.fromMixedCase('Subtopic2')]
     ]
   );
 });
@@ -44,29 +44,29 @@ test('lone subtopic', () => {
 test('empty segment', () => {
   const pathString = '/Topic#Subtopic/#';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('No initial subtopic', () => {
   const pathString = '/Topic/Topic2#Subtopic';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Topic', true)], [new Topic('Topic2', true), new Topic('Subtopic', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('Interpret fragment without topic as accidentally inserted slash', () => {
   const pathString = '/Topic/#Subtopic';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('Interpret fragment without topic after first as accidentally inserted slash', () => {
   const pathString = '/Topic/Subtopic1/#Subtopic2';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Topic', true)], [new Topic('Subtopic1', true), new Topic('Subtopic2', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Subtopic1'), Topic.fromMixedCase('Subtopic2')]]);
 });
 
 test('Real life example', () => {
   const pathString = 'Topic/#Subtopic1/Subtopic2';
   const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[new Topic('Topic', true), new Topic('Subtopic1', true)], [new Topic('Subtopic2', true), new Topic('Subtopic2', true)]]);
+  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic1')], [Topic.fromMixedCase('Subtopic2'), Topic.fromMixedCase('Subtopic2')]]);
 });

@@ -110,7 +110,7 @@ function createGlobalLinkElement(token) {
 
   linkElement.dataset.text = token.text;
 
-  let targetTopic = new Topic(token.targetTopic, true);
+  let targetTopic = Topic.fromMixedCase(token.targetTopic);
   linkElement.href = `/${targetTopic.slug}`;
 
   linkElement.addEventListener(

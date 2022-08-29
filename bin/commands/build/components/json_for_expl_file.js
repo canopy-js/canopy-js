@@ -17,7 +17,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
-    paragraphsBySubtopic[parserContext.currentSubtopic.caps] = tokensOfParagraph;
+    paragraphsBySubtopic[parserContext.currentSubtopic.mixedCase] = tokensOfParagraph;
   });
 
   parserContext.validateRedundantLocalReferences();

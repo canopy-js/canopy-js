@@ -114,7 +114,7 @@ class Path {
   }
 
   static get default() {
-    let topic = new Topic(defaultTopic);
+    let topic = Topic.fromMixedCase(defaultTopic);
     return new Path([[topic, topic]]);
   }
 
@@ -154,7 +154,6 @@ class Path {
     }
 
     let slashSeparatedUnits = pathString.
-      replace(/_/g, ' ').
       split('/').
       filter((string) => string !== '');
 
@@ -170,8 +169,8 @@ class Path {
     }).filter((segment) => segment[0] !== null);
 
     pathArray = pathArray.map(([topicString, subtopicString]) => [
-      new Topic(decodeURIComponent(topicString), true),
-      new Topic(decodeURIComponent(subtopicString), true)
+      Topic.fromEncodedSlug(topicString),
+      Topic.fromEncodedSlug(subtopicString)
     ]);
 
     return pathArray;
@@ -191,9 +190,9 @@ class Path {
     let pathString = '/';
 
     pathString += pathArray.map(([topic, subtopic]) => {
-      let pathSegmentString = topic.encodedSlug;
-      if (subtopic && subtopic.encodedSlug !== topic.encodedSlug) {
-        pathSegmentString += "#" + subtopic.encodedSlug;
+      let pathSegmentString = topic.slug;
+      if (subtopic && subtopic.slug !== topic.slug) {
+        pathSegmentString += "#" + subtopic.slug;
       }
       return pathSegmentString;
     }).join('/');
@@ -258,8 +257,8 @@ class Path {
     let currentNode = rootElement;
     if (rootElement === canopyContainer) {
       currentNode = rootElement.querySelector(
-        `[data-topic-name-caps="${path.firstTopic.caps}"]` +
-        `[data-subtopic-name-caps="${path.firstSubtopic.caps}"]` +
+        `[data-topic-name="${path.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${path.firstSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${0}"]`
       );
 
@@ -272,8 +271,8 @@ class Path {
     for (let i = 0; i < path.length; i++) {
       let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
       currentNode = currentNode.querySelector(
-        `[data-topic-name-caps="${subpath.firstTopic.caps}"]` +
-        `[data-subtopic-name-caps="${subpath.firstSubtopic.caps}"]` +
+        `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${subpath.firstSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${newPathDepth}"]`
       );
 

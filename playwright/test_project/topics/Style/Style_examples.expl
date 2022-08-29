@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], and [[footnotes]].
 
-Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], [[plaintext that contains style tokens]], and [[_styled_ topic names]].
+Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], [[plaintext that contains style tokens]], and [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], and topics called [[_data]].
 
 Tables:
 | This | is | a | table |

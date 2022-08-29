@@ -1,7 +1,6 @@
 import renderDomTree from 'render/render_dom_tree';
 import requestJson from 'requests/request_json';
 import Path from 'models/path';
-import Topic from '../../bin/commands/shared/topic';
 
 const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   if (pathToDisplay.length === 0) {
@@ -19,9 +18,10 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
   let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName }) => {
     return renderDomTree(
       {
-        topic: new Topic(displayTopicName),
-        subtopic: new Topic(displayTopicName),
+        topic: pathToDisplay.firstTopic,
+        subtopic: pathToDisplay.firstTopic,
         pathToDisplay,
+        displayTopicName,
         paragraphsBySubtopic,
         pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0
       },

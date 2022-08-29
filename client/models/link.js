@@ -78,16 +78,16 @@ class Link {
   }
 
   get targetTopic() {
-    return new Topic(this.element.dataset.targetTopic);
+    return Topic.fromMixedCase(this.element.dataset.targetTopic);
   }
   get targetSubtopic() {
-    return new Topic(this.element.dataset.targetSubtopic);
+    return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
   }
   get enclosingTopic() {
-    return new Topic(this.element.dataset.enclosingTopic);
+    return Topic.fromMixedCase(this.element.dataset.enclosingTopic);
   }
   get enclosingSubtopic() {
-    return new Topic(this.element.dataset.enclosingSubtopic);
+    return Topic.fromMixedCase(this.element.dataset.enclosingSubtopic);
   }
 
   get topicName() {
@@ -129,13 +129,13 @@ class Link {
     if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name-caps="${this.targetTopic.caps}"]` +
-        `[data-subtopic-name-caps="${this.targetSubtopic.caps}"]` +
+        `section[data-topic-name="${this.targetTopic.mixedCase}"]` +
+        `[data-subtopic-name="${this.targetSubtopic.mixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
     if (!sectionElement) {
-      throw `Did not find paragraph child element matching link [${this.targetTopic}, ${this.targetSubtopic}]`;
+      throw `Did not find paragraph child element matching link [${this.targetTopic.mixedCase}, ${this.targetSubtopic.mixedCase}]`;
     }
 
     return new Paragraph(sectionElement);

@@ -143,7 +143,7 @@ test.describe('Topic names', () => {
 
     await page.locator('body').press('ArrowRight');
 
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/_Hello_world_");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/%5C_Hello_world%5C_");
     await expect(page.locator('.canopy-selected-link')).toHaveText("_Hello world_");
     await expect(page.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
 
@@ -154,14 +154,14 @@ test.describe('Topic names', () => {
       })
     ]);
 
-    await expect(newPage).toHaveURL("_Hello_world_");
+    await expect(newPage).toHaveURL("%5C_Hello_world%5C_");
     await expect(newPage.locator('h1')).toHaveText("_Hello world_");
     await expect(await newPage.title()).toEqual('_Hello world_');
     await expect(newPage.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
   });
 
   test('it renders everything properly for topics with ampersands', async ({ page, context }) => {
-    await page.goto(`United_States/New_York/Martha's_Vineyard/_Hello_world_`);
+    await page.goto(`United_States/New_York/Martha's_Vineyard/%5C_Hello_world%5C_`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("_Hello world_");
 
     await page.locator('body').press('ArrowRight');
@@ -297,5 +297,28 @@ test.describe('Topic names', () => {
     await expect(newPage.locator('h1')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("1+1");
     await expect(newPage.locator('text=This is a children\'s clothing store. >> visible=true')).toHaveCount(1);
+  });
+
+  test('it renders everything properly for topics with single literal underscores', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard/1+1`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("1+1");
+
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Phone%5C_book");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Phone_book");
+    await expect(page.locator('text=This is a book of buisnesses. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=Phone_book").click({
+        modifiers: [systemNewTabKey]
+      })
+    ]);
+
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Phone%5C_book");
+    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("Phone_book");
+    await expect(newPage.locator('text=This is a book of buisnesses. >> visible=true')).toHaveCount(1);
   });
 });
