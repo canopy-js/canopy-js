@@ -96,12 +96,18 @@ function moveDownOrRedirect(newTab, altKey) {
     }
   }
 
-  if (Link.selection.isGlobal) { // redirect
-    let path = Link.selection.targetPath.lastSegment;
-
-    if (newTab) {
+  if (Link.selection.isGlobal) {
+    if (newTab && !altKey) { // open link at current path in new tab
+      let path = Link.selection.targetPath;
       return window.open(location.origin + path.string, '_blank');
-    } else {
+    }
+
+    if (newTab && altKey) { // open link at new path in new tab
+      let path = Link.selection.targetPath.lastSegment;
+      return window.open(location.origin + path.string, '_blank');
+    }
+
+    if (!newTab) { // because the user has the option to press down, all returns within the current tab are redirects
       return updateView(
         path,
         Link.selectALink(path)
