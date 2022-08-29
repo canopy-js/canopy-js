@@ -125,9 +125,9 @@ function importReferenceMatcher(string, parserContext, index) {
 
 function parseLink(string) {
   // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
-  let match = string.
-    replace(/\\#/g, '__LITERAL_AMPERSAND__').
-    match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
+  let match = string
+    .replace(/\\#/g, '__LITERAL_AMPERSAND__')
+    .match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
 
   match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
 

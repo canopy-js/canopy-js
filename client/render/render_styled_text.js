@@ -14,8 +14,10 @@ function renderStyledText(text) {
   let elements = [];
   let styleParent;
 
-  text = text.replace(/{{(OPEN|CLOSE).}}/g, (match) => match.split('').join('\\')); // Escape actual style tokens in user input
+  text = text.replace(/{{(OPEN|CLOSE).}}/g, (match) => match.split('').join('\\')); // Escape literal style tokens in user input
 
+  // Single backslashes are an escape character in code snippets in order to allow escaping the backtick character.
+  // Thus, we want to escape everything in the code snippet, but not in such a way that user-entered single backslashes get doubled and become literals.
   text = text.replace(/(^|[\s}_*`~]+)([`])(.*?[^\\])(\2)(?=[\s.,{*_`~]|$)/g, (_, characterBeforeCodeBlock, backtick, block, backtick2) => {
     return characterBeforeCodeBlock
       + backtick
@@ -33,13 +35,13 @@ function renderStyledText(text) {
     } else {
       return convertStyleCharacters(newText);
     }
-  })(text); // Do multiple sweeps of the string replacing valid style characters with tokens until none are remaining
+  })(text); // Do multiple sweeps of the string replacing valid style characters with tokens until none remain
 
   for (let i = 0; i < text.length; i++) {
     let openMatch = text.slice(i).match(/^{{OPEN(.)}}/);
     let closeMatch = text.slice(i).match(/^{{CLOSE(.)}}/);
 
-    if (openMatch) {
+    if (openMatch) { // We are at the first style character of a pair
       let styleCharacter = openMatch[1];
       if (buffer) {
         let textNode = document.createTextNode(buffer);
@@ -53,7 +55,7 @@ function renderStyledText(text) {
       styleStack.push(styleCharacter);
       i += (openMatch[0].length - 1);
 
-    } else if (closeMatch && styleStack.slice(-1)[0] === closeMatch[1]) { // this style character closes the most recent open
+    } else if (closeMatch && styleStack.slice(-1)[0] === closeMatch[1]) { // this closing style character closes the most recent open one
       if (buffer) {
         let textNode = document.createTextNode(buffer);
         buffer = '';
@@ -67,7 +69,7 @@ function renderStyledText(text) {
       styleStack.pop();
       i += (closeMatch[0].length - 1);
 
-    } else if (closeMatch && styleStack.slice(-1)[0] !== closeMatch[1]) { // this style character does not match and is rejected
+    } else if (closeMatch && styleStack.slice(-1)[0] !== closeMatch[1]) { // this style character does not match the most recent one and is rejected
       buffer += closeMatch[1];
       i += (closeMatch[0].length - 1);
 
