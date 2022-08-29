@@ -321,4 +321,89 @@ test.describe('Topic names', () => {
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Phone_book");
     await expect(newPage.locator('text=This is a book of buisnesses. >> visible=true')).toHaveCount(1);
   });
+
+
+  test('Topic names can contain italics', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("italic topic names");
+    await expect(page.locator('.canopy-selected-link i')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-link i')).toHaveText("italic");
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('Italic topic names');
+    await expect(page.locator('h1 i')).toHaveCount(1);
+    await expect(page.locator('h1 i')).toHaveText('Italic');
+  });
+
+  test('Topic names can contain code snippets', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Code_snippet_topic_names');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("code snippet topic names");
+    await expect(page.locator('.canopy-selected-link code')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-link code')).toHaveText("code snippet");
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('Code snippet topic names');
+    await expect(page.locator('h1 code')).toHaveCount(1);
+    await expect(page.locator('h1 code')).toHaveText('Code snippet');
+  });
+
+  test('Topic names can contain literal underscores', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/%5C_Topic_names_with_literal_underscores%5C_');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("_topic names with literal underscores_");
+    await expect(page.locator('.canopy-selected-link i')).toHaveCount(0);
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('_Topic names with literal underscores_');
+    await expect(page.locator('h1 i')).toHaveCount(0);
+  });
+
+  test('Topic names can contain literal backticks', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/%60Topic_names_with_literal_backticks%60');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("`topic names with literal backticks`");
+    await expect(page.locator('.canopy-selected-link code')).toHaveCount(0);
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('`Topic names with literal backticks`');
+    await expect(page.locator('h1 code')).toHaveCount(0);
+  });
+
+  test('Topic names can contain literal backslashes', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Special_topic_names/Topic_names_with_%5C%5C_backslashes');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("topic names with \\ backslashes");
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('Topic names with \\ backslashes');
+  });
+
+  test('_data is a valid topic name', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Special_topic_names/%5C_data');
+    await page.locator('.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("_data");
+
+    await page.locator('.canopy-selected-link').click({
+      modifiers: ['Alt']
+    })
+
+    await expect(page.locator('h1')).toHaveText('_data');
+  });
 });
