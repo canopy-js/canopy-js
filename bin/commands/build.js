@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
+const path = require('path');
 const dedent = require('dedent-js');
-const child_process = require('child_process');
+const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 
 function build(options) {
@@ -9,7 +10,7 @@ function build(options) {
   if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
 
   let defaultTopicString = fs.readFileSync('.canopy_default_topic').toString().trim();
-  let canopyLocation = child_process.execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}").toString().trim();
+  let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
   if (!keepBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
   fs.rmSync('build/_data', { recursive: true, force: true });
@@ -61,7 +62,7 @@ function build(options) {
   }
 
   if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) {
-    throw 'No Canopy js build found';
+    throw 'No Canopy.js asset found';
   }
 
   fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');

@@ -1,12 +1,11 @@
 const fs = require('fs-extra');
-const child_process = require('child_process');
+const path = require('path');
 const build = require('./build');
 const chokidar = require('chokidar');
+const shell = require('shelljs');
 
 function watch(options) {
-  let canopyLocation = child_process
-    .execSync("echo ${CANOPY_LOCATION:-$(readlink -f $(which canopy) | xargs dirname | xargs dirname)}")
-    .toString().trim();
+  let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
   if (!fs.existsSync('topics')) {
     console.log('Error: You must be in a project directory with a topics folder');
