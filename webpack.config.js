@@ -38,7 +38,7 @@ module.exports = {
   },
 
   stats: { colors: true },
-  target: 'node',
+  target: 'web',
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
