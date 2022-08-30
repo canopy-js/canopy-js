@@ -1,11 +1,14 @@
 let dedent = require('dedent');
+let { convertUnderscoresToSpaces } = require('../shared/helpers');
 
 function generateDataFile(filesByPath, fileSystemData, options) {
   if (filesByPath.length === 0) return options.blank ? '' : defaultText();
   return Object.keys(filesByPath).map((directoryPath) => {
     let filePaths = filesByPath[directoryPath];
     if (directoryPath === 'topics') directoryPath = `topics/Pick_Category_Name`;
-    let displayPath = directoryPath.match(/topics\/([^.]+)$/)[1].replace(/_/g, ' ');
+
+    let displayPath = convertUnderscoresToSpaces(directoryPath).match(/topics\/(.+)/)[1]; // Turn underscores that are not escaped into spaces
+
     let dataText = `[${displayPath}]\n\n`;
 
     let filesOfPath = filePaths.map(filePath => {
