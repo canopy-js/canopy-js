@@ -12,7 +12,7 @@ function moveUpward() {
 
   return updateView(
     link.parentLink.paragraphPathWhenSelected,
-    link.parentLink
+    new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
   );
 }
 
@@ -41,7 +41,7 @@ function moveDownward() {
 
     updateView(
       newLink.paragraphPathWhenSelected,
-      newLink
+      new Link(() => Link.lastSelectionOfParagraph(newLink.enclosingParagraph) || newLink)
     );
   }
 
@@ -96,12 +96,18 @@ function moveDownOrRedirect(newTab, altKey) {
     }
   }
 
-  if (Link.selection.isGlobal) { // redirect
-    let path = Link.selection.targetPath.lastSegment;
-
-    if (newTab) {
+  if (Link.selection.isGlobal) {
+    if (newTab && !altKey) { // open link at current path in new tab
+      let path = Link.selection.targetPath;
       return window.open(location.origin + path.string, '_blank');
-    } else {
+    }
+
+    if (newTab && altKey) { // open link at new path in new tab
+      let path = Link.selection.targetPath.lastSegment;
+      return window.open(location.origin + path.string, '_blank');
+    }
+
+    if (!newTab) { // because the user has the option to press down, all returns within the current tab are redirects
       return updateView(
         path,
         Link.selectALink(path)
@@ -180,7 +186,7 @@ function depthFirstSearch() {
 
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
-  let newPath = currentLink.localPathWhenSelected;
+  let newPath = currentLink.localPathSegmentWhenSelected;
 
   let newLink = currentLink.atNewPath(newPath);
 

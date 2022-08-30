@@ -9,7 +9,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
   parserContext.filePath = filePath;
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
-    let paragraph = new Paragraph(paragraphWithKey);
+    let paragraph = new Paragraph(paragraphWithKey.trim());
     if (!paragraph.key) { return; }
 
     parserContext.setTopicAndSubtopic(new Topic(rootParagraph.key), new Topic(paragraph.key));
@@ -17,7 +17,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
-    paragraphsBySubtopic[parserContext.currentSubtopic.caps] = tokensOfParagraph;
+    paragraphsBySubtopic[parserContext.currentSubtopic.mixedCase] = tokensOfParagraph;
   });
 
   parserContext.validateRedundantLocalReferences();

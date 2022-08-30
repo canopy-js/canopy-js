@@ -1,7 +1,7 @@
 import { getAncestorElement } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
-import Topic from '../../bin/commands/shared/topic';
+import Topic from '../../cli/commands/shared/topic';
 
 class Link {
   constructor(argument) {
@@ -47,6 +47,7 @@ class Link {
       return this.linkElement
     } else if (this.metadataObject) {
       this.element = Link.elementFromMetadata(this.metadata);
+      if (!this.linkElement) throw 'Metadata refered to non-existant link';
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
@@ -77,16 +78,16 @@ class Link {
   }
 
   get targetTopic() {
-    return new Topic(this.element.dataset.targetTopic);
+    return Topic.fromMixedCase(this.element.dataset.targetTopic);
   }
   get targetSubtopic() {
-    return new Topic(this.element.dataset.targetSubtopic);
+    return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
   }
   get enclosingTopic() {
-    return new Topic(this.element.dataset.enclosingTopic);
+    return Topic.fromMixedCase(this.element.dataset.enclosingTopic);
   }
   get enclosingSubtopic() {
-    return new Topic(this.element.dataset.enclosingSubtopic);
+    return Topic.fromMixedCase(this.element.dataset.enclosingSubtopic);
   }
 
   get topicName() {
@@ -128,13 +129,13 @@ class Link {
     if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name-caps="${this.targetTopic.caps}"]` +
-        `[data-subtopic-name-caps="${this.targetSubtopic.caps}"]` +
+        `section[data-topic-name="${this.targetTopic.mixedCase}"]` +
+        `[data-subtopic-name="${this.targetSubtopic.mixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
     if (!sectionElement) {
-      throw `Did not find paragraph child element matching link [${this.targetTopic}, ${this.targetSubtopic}]`;
+      throw `Did not find paragraph child element matching link [${this.targetTopic.mixedCase}, ${this.targetSubtopic.mixedCase}]`;
     }
 
     return new Paragraph(sectionElement);
@@ -154,7 +155,7 @@ class Link {
     });
   }
 
-  get localPathWhenSelected() {
+  get localPathSegmentWhenSelected() {
     if (this.isGlobalOrImport) {
       return new Path(this.paragraphPathWhenSelected.pathArray.slice(-2));
     } else {
@@ -222,11 +223,7 @@ class Link {
   }
 
   get urlPathWhenSelected() {
-    if (this.type === 'import') {
-      return this.enclosingParagraph.path;
-    } else {
-      return this.paragraphPathWhenSelected;
-    }
+    return this.paragraphPathWhenSelected;
   }
 
   static collectMetadata(linkElement) {
@@ -359,6 +356,7 @@ class Link {
     linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
+    Link.persistLastSelectionData(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -368,7 +366,9 @@ class Link {
   static get sessionSelection() {
     let sessionData = sessionStorage.getItem(Path.current.string);
     if (sessionData && sessionData !== 'null') {
-      return new Link(JSON.parse(sessionData));
+      let link = new Link(JSON.parse(sessionData));
+      try { link.element; } catch { link = null; } // in case metadata is invalid
+      return link;
     } else {
       return null;
     }
@@ -376,7 +376,9 @@ class Link {
 
   static get historySelection() {
     if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
-      return new Link(history.state);
+      let link = new Link(history.state);
+      try { link.element; } catch { link = null; } // in case metadata is invalid
+      return link;
     } else {
       return null;
     }
@@ -428,6 +430,29 @@ class Link {
 
   static current() {
     throw "Link#current does not exist, try Link#selection";
+  }
+
+  // If someone eg presses up from the second link in a paragraph, pressing down should return them there.
+  static persistLastSelectionData(link) {
+    if (link) {
+      let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+      lastSelectionsOfParagraph[link.enclosingParagraph.path] = link.metadata;
+      sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
+    }
+  }
+
+  static lastSelectionOfParagraph(paragraph) {
+    let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+    if (lastSelectionsOfParagraph[paragraph.path]) {
+      let link = new Link(lastSelectionsOfParagraph[paragraph.path]);
+      try { // sometimes metadata from previous versions is stored and doesn't correspond to real links anymore
+        if (link.element) {
+          return link;
+        }
+      } catch {
+        return null;
+      }
+    }
   }
 }
 

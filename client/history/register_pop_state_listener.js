@@ -10,6 +10,8 @@ function registerPopStateListener() {
   window.addEventListener('popstate', (e) => {
     let linkSelection = Link.selectionPresentInEvent(e) ? new Link(e.state) : null;
 
+    try { linkSelection.element; } catch { linkSelection = null; } // in case metadata is invalid
+
     updateView(
       Path.currentOrDefault,
       linkSelection || Link.sessionSelection

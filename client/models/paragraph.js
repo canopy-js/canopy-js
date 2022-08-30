@@ -2,7 +2,7 @@ import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 import { getAncestorElement } from 'helpers/getters';
-import Topic from '../../bin/commands/shared/topic';
+import Topic from '../../cli/commands/shared/topic';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not
@@ -34,27 +34,25 @@ class Paragraph {
     throw "Depreciated in favor of #sectionElement property";
   }
 
-  transferDataset() {
-    this._topicName = this.sectionElement.dataset.displayTopicName;
-    this._subtopicName = this.sectionElement.dataset.displaySubtopicName;
+  transferDataset() { // This is so we can more easily debug in the console
+    this._topicName = this.sectionElement.dataset.topicName;
+    this._subtopicName = this.sectionElement.dataset.subtopicName;
     this.pathDepth = this.sectionElement.dataset.pathDepth;
   }
 
   get topic () {
-    return new Topic(this.sectionElement.dataset.displayTopicName);
+    return Topic.fromMixedCase(this.sectionElement.dataset.topicName);
   }
 
   get subtopic () {
-    return new Topic(this.sectionElement.dataset.displaySubtopicName);
+    return Topic.fromMixedCase(this.sectionElement.dataset.subtopicName);
   }
 
   get topicName() {
-    console.trace();
     throw "Depreciated in favor of #topic";
   }
 
   get subtopicName() {
-    console.trace();
     throw "Depreciated in favor of #subtopic";
   }
 
@@ -76,8 +74,8 @@ class Paragraph {
       currentTopicParagraph = currentParagraph.topicParagraph;
 
       pathArray.unshift([
-        new Topic(currentElement.dataset.displayTopicName),
-        new Topic(currentElement.dataset.displaySubtopicName)
+        Topic.fromMixedCase(currentElement.dataset.topicName),
+        Topic.fromMixedCase(currentElement.dataset.subtopicName)
       ]);
 
       while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {

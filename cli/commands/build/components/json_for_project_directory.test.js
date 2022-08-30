@@ -22,7 +22,7 @@ test('it creates text tokens', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic": {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state.",
             "type":"text"
@@ -48,7 +48,7 @@ test('it matches local references', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state. Idaho has a ",
             "type":"text"
@@ -67,7 +67,7 @@ test('it matches local references', () => {
           },
         ],
 
-        "STATE CAPITAL": [
+        "State Capital": [
           {
             "text" : "The state capital of Idaho is Boise.",
             "type":"text"
@@ -92,7 +92,7 @@ test('it matches global references', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, like ",
             "type":"text"
@@ -118,7 +118,7 @@ test('it matches global references', () => {
     {
       "displayTopicName": "Wyoming",
       "paragraphsBySubtopic" : {
-        "WYOMING": [
+        "Wyoming": [
           {
             "text" : "Wyoming is a midwestern state.",
             "type":"text"
@@ -145,7 +145,7 @@ test('it matches global references using explicit syntax to override local refer
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, which contains ",
             "type":"text"
@@ -176,7 +176,7 @@ test('it matches global references using explicit syntax to override local refer
           }
         ],
 
-        "WYOMING": [
+        "Wyoming": [
           {
             "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
             "type": "text",
@@ -190,7 +190,7 @@ test('it matches global references using explicit syntax to override local refer
     {
       "displayTopicName": "Wyoming",
       "paragraphsBySubtopic" : {
-        "WYOMING": [
+        "Wyoming": [
           {
             "text" : "Wyoming is a midwestern state.",
             "type":"text"
@@ -214,7 +214,7 @@ test('it lets you give arbitrary names to references', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, like ",
             "type":"text"
@@ -240,7 +240,7 @@ test('it lets you give arbitrary names to references', () => {
     {
       "displayTopicName": "Wyoming",
       "paragraphsBySubtopic" : {
-        "WYOMING": [
+        "Wyoming": [
           {
             "text" : "Wyoming is a midwestern state.",
             "type":"text"
@@ -264,7 +264,7 @@ test('it matches implicit import references', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
 
           {
             "text" : "Idaho is a midwestern state, like ",
@@ -304,7 +304,7 @@ test('it matches implicit import references in any order within a sentence', () 
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
 
           {
             "text" : "Idaho is a midwestern state, near ",
@@ -365,7 +365,7 @@ test('it matches an implicit import reference to the closest candidate link', ()
     {
       "displayTopicName": "Vacation",
       "paragraphsBySubtopic" : {
-        "VACATION": [
+        "Vacation": [
 
           {
             "text" : "I'd like to go to ",
@@ -446,7 +446,7 @@ test('it makes local references into import references if that resolves redundan
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, 'England', {});
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["ENGLAND"]).toEqual(
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
     [
       {
         "text" : "England is a European country. England has various ",
@@ -478,7 +478,7 @@ test('it makes local references into import references if that resolves redundan
       },
     ]);
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["CITIES"]).toEqual(
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["Cities"]).toEqual(
     [
       {
         "text" : "England has various cities, but none are so nice as ",
@@ -531,7 +531,7 @@ test('it converts local references to import references if later found redundant
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, 'England', {});
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["ENGLAND"]).toEqual(
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
     [
       {
         "text" : "England is a European country. England has various ",
@@ -598,7 +598,7 @@ test('it converts local references within lists to import references if later fo
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, 'England', {});
 
-  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["ENGLAND"]).toEqual(
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
     [
       {
         "topLevelNodes": [
@@ -720,7 +720,7 @@ test('it matches import references with explicit syntax and lets you rename the 
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, near ",
             "type":"text"
@@ -767,7 +767,7 @@ test('it matches back-to-back global references', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, near ",
             "type":"text"
@@ -810,7 +810,7 @@ test('it matches global references at the end of strings', () => {
     {
       "displayTopicName": "Idaho",
       "paragraphsBySubtopic" : {
-        "IDAHO": [
+        "Idaho": [
           {
             "text" : "Idaho is a midwestern state, near ",
             "type":"text"
@@ -838,7 +838,10 @@ test('it throws error for unrecognized link', () => {
   };
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(`Error: topics/Idaho/Idaho.expl:1\nReference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.`);
+  ).toThrow(
+    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1`
+  );
 });
 
 test('it throws error for regular redundant local references', () => {
@@ -933,6 +936,29 @@ test('it counts blank lines in error line numbers', () => {
   ).toThrow(message);
 });
 
+test('it handles odd-numbers of blank lines', () => {
+  let projectDir = '/example/project';
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. Its capital is [[Boise]]
+
+
+
+
+    Boise: This is the capital.
+
+    Boise: This is a good city.
+    `,
+  };
+
+  let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
+    `First definition: topics/Idaho/Idaho.expl:6\n` +
+    `Second definition: topics/Idaho/Idaho.expl:8`;
+
+  expect(
+    () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
+  ).toThrow(message);
+});
+
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
   let projectDir = '/example/project';
   let explFileData = {
@@ -999,7 +1025,7 @@ test('it throws error if import reference is to non-existant topic', () => {
   };
 
   let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]\n` +
-    `topics/Wyoming/Wyoming.expl:1\n`;
+    `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
@@ -1015,8 +1041,37 @@ test('it throws error if import reference is to non-existant subtopic', () => {
     `,
   };
 
-  let message = `Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
-    `topics/Wyoming/Wyoming.expl:1\n` +
+  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
+    `topics/Wyoming/Wyoming.expl:1`;
+
+  expect(
+    () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
+  ).toThrow(message);
+});
+
+test('it throws error for topic name beginning with whitespace', () => {
+  let projectDir = '/example/project';
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': ` Idaho: Idaho is a midwestern state.\n`
+  };
+
+  let message = `Error: Topic name [ Idaho] begins or ends with whitespace.\n` +
+    `topics/Idaho/Idaho.expl`;
+
+  expect(
+    () => console.log(jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {}))
+  ).toThrow(message);
+});
+
+test('it throws error for topic name ending with whitespace', () => {
+  let projectDir = '/example/project';
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho : Idaho is a midwestern state.
+    `,
+  };
+
+  let message = `Error: Topic name [Idaho ] begins or ends with whitespace.\n` +
+    `topics/Idaho/Idaho.expl`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})

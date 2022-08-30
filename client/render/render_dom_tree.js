@@ -2,7 +2,7 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
-import Topic from '../../bin/commands/shared/topic';
+import Topic from '../../cli/commands/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
 function renderDomTree(renderContext) {
@@ -18,7 +18,7 @@ function renderDomTree(renderContext) {
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
-  let tokensOfParagraph = paragraphsBySubtopic[subtopic.caps];
+  let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
   if (!tokensOfParagraph) throw `Paragraph with subtopic not found: ${subtopic.mixedCase}`;
 
   tokensOfParagraph.forEach((token) => {
@@ -33,7 +33,7 @@ function localLinkSubtreeCallback(sectionElement, renderContext) {
   return (token) => {
     let promisedSubtree = renderDomTree(
       Object.assign({}, renderContext, {
-        subtopic: new Topic(token.targetSubtopic)
+        subtopic: Topic.fromMixedCase(token.targetSubtopic)
       })
     );
 
@@ -53,7 +53,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
   } = renderContext;
 
   return (token, linkElement) => {
-    let topic = new Topic(token.targetTopic);
+    let topic = Topic.fromMixedCase(token.targetTopic);
     let link = new Link(linkElement);
     requestJson(topic); // eager-load and cache
 
@@ -66,7 +66,9 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 }
 
 function createSectionElement(renderContext) {
-  let { topic, subtopic, pathDepth } = renderContext;
+  let {
+    topic, subtopic, displayTopicName, pathDepth
+  } = renderContext;
 
   let sectionElement = document.createElement('section');
   sectionElement.classList.add('canopy-section');
@@ -74,13 +76,12 @@ function createSectionElement(renderContext) {
   paragraphElement.classList.add('canopy-paragraph');
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
-  sectionElement.dataset.displayTopicName = topic.display;
-  sectionElement.dataset.displaySubtopicName = subtopic.display;
-  sectionElement.dataset.topicNameCaps = topic.caps;
-  sectionElement.dataset.subtopicNameCaps = subtopic.caps;
+  sectionElement.dataset.displayTopicName = displayTopicName;
+  sectionElement.dataset.topicName = topic.mixedCase;
+  sectionElement.dataset.subtopicName = subtopic.mixedCase;
   sectionElement.dataset.pathDepth = pathDepth;
 
-  if (topic.caps === subtopic.caps) {
+  if (topic.mixedCase === subtopic.mixedCase) {
     pathDepth > 0 && sectionElement.prepend(document.createElement('hr'));
     sectionElement.classList.add('canopy-topic-section');
   }

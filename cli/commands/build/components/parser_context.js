@@ -24,13 +24,13 @@ class ParserContext {
   }
 
   // This function does a first-pass over all the expl files of the project and creates several
-  // indexes of that content which will be necessary for the more in-depth second pass.
+  // indexes of that content which will be necessary for the more in-depth second pass performed in parseParagraph
 
   buildNamespaceObject(explFileData) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
     Object.keys(explFileData).forEach(function(path){
       let fileContents = explFileData[path];
-      let paragraphsWithKeys = fileContents.trim().split(/\n\n/);
+      let paragraphsWithKeys = fileContents.split(/\n\n/);
       let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
       if (!topicParargaph.key) return;
       let currentTopic = new Topic(topicParargaph.key);
@@ -45,9 +45,18 @@ class ParserContext {
         topicFilePaths[currentTopic.caps] = path;
       }
 
+      if (currentTopic.display.trim() !== currentTopic.display) {
+        throw `Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path;
+      }
+
       topicSubtopics[currentTopic.caps] = {};
 
       paragraphsWithKeys.forEach(function(paragraphText) {
+        if (paragraphText[0] === "\n") { // because we split on \n\n, there is only a chance that the first character is a newline
+          lineNumber++;
+          paragraphText = paragraphText.slice(1);
+        }
+
         let paragraph = new Paragraph(paragraphText);
         if (paragraph.key) {
           let currentSubtopic = new Topic(paragraph.key);

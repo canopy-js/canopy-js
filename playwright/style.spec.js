@@ -62,9 +62,9 @@ test.describe('Text styles', () => {
     await expect(page.locator('.canopy-selected-section code')).toHaveText("code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}");
   });
 
-  test('Plaintext can contain style tokens', async ({ page }) => {
+  test('Plaintext can contain style token literals', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Plaintext_that_contains_style_tokens');
-    const section = await page.locator('.canopy-selected-section');
+    await page.locator('.canopy-selected-section');
     await expect(page.locator('.canopy-selected-section')).toHaveText("This is plaintext that contains style tokens like {{OPEN_}} ABC {{CLOSE_}}.")
     await expect(page.locator('.canopy-selected-section i')).toHaveCount(0);
   });

@@ -233,7 +233,7 @@ describe('parseDataFile', function() {
     expect(filesToWrite).toEqual({
       'topics/A/B/C/Topic1?.expl': "Topic1? Paragraph.\n",
       'topics/A/B/C/Topic:_two.expl': "Topic\\: two: Paragraph.\n",
-      'topics/A/B/C/Topic_#4.expl': "Topic #4: Hello world.\n"
+      'topics/A/B/C/Topic_%234.expl': "Topic #4: Hello world.\n"
     });
   });
 });

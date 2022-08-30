@@ -25,10 +25,10 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
 
     filesToWrite[destinationPath] = json;
 
-    if (options.makeFolders) {
+    if (options.symlinks) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
-      directoriesToEnsure(destinationBuildDirectory + '/' + folderTopic.fileName);
+      directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.fileName);
       if (options.logging) console.log('Created directory: ' + topicFolderPath);
     }
   });

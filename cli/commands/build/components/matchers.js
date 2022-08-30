@@ -46,10 +46,10 @@ function localReferenceMatcher(string, parserContext, index) {
     }
 
     let localReferenceToken = new LocalReferenceToken(
-      currentTopic.display,
-      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).display,
-      currentTopic.display,
-      currentSubtopic.display,
+      currentTopic.mixedCase,
+      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
       linkText
     );
 
@@ -74,10 +74,10 @@ function globalReferenceMatcher(string, parserContext) {
 
     return [
       new GlobalReferenceToken(
-        parserContext.getOriginalTopic(targetTopic).display,
-        parserContext.getOriginalTopic(targetTopic).display,
-        currentTopic.display,
-        currentSubtopic.display,
+        parserContext.getOriginalTopic(targetTopic).mixedCase,
+        parserContext.getOriginalTopic(targetTopic).mixedCase,
+        currentTopic.mixedCase,
+        currentSubtopic.mixedCase,
         linkText
       ), fullText.length
     ];
@@ -96,28 +96,28 @@ function importReferenceMatcher(string, parserContext, index) {
   }
 
   if (!targetTopic) {
-    throw `Error: ${parserContext.filePath}:${parserContext.lineNumber}\n` +
-      `Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.`;
+    throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`;
   }
 
   if (!parserContext.topicExists(targetTopic)) {
     throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}\n`;
+      `${parserContext.filePath}:${parserContext.lineNumber}`;
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw `Error: ${parserContext.filePath}:${parserContext.lineNumber}\n` +
-      `Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]`;
+    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`;
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);
 
   return [
     new ImportReferenceToken(
-      parserContext.getOriginalTopic(targetTopic).display,
-      parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).display,
-      currentTopic.display,
-      currentSubtopic.display,
+      parserContext.getOriginalTopic(targetTopic).mixedCase,
+      parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
       linkText
     ), fullText.length
   ];
@@ -125,9 +125,9 @@ function importReferenceMatcher(string, parserContext, index) {
 
 function parseLink(string) {
   // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
-  let match = string.
-    replace(/\\#/g, '__LITERAL_AMPERSAND__').
-    match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
+  let match = string
+    .replace(/\\#/g, '__LITERAL_AMPERSAND__')
+    .match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
 
   match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
 
