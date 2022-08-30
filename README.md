@@ -80,7 +80,7 @@ Run tests:
 npm run test
 ```
 
-For just jest:
+For just unit tests:
 
 ```
 npm run jest
