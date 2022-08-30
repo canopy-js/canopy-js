@@ -1,5 +1,9 @@
 <div align="center">
 <h1>Canopy.js</h1>
+<figure>
+<img src="https://en.wikipedia.org/wiki/Canopy_(biology)#/media/File:JigsawCanopy.jpg" alt="Forest Canopy" width="200" height="auto" />
+<figcaption> <a href="https://en.wikipedia.org/wiki/Canopy_(biology)#/media/File:JigsawCanopy.jpg"> Mark Fisher - markfisher.photo </a></figcaption>
+</figure>
 <p> Make interactive websites from your prose explanations. </p>
 </div>
 
