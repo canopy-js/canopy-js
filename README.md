@@ -40,7 +40,7 @@ Here's how you use it
 
 ## Getting Started
 
-### installation
+### Installation
 
 Install CLI:
 
@@ -66,7 +66,6 @@ And for help remembering to increment the package.json version number when pushi
 ```
 ln -s script/hooks/pre-push .git/hooks
 ```
-
 ### Running Tests
 
 Run tests:
