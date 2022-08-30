@@ -1,5 +1,4 @@
-let runStatic = require('./static');
-let runDynamic = require('./dynamic');
+let runServer = require('./run_server');
 let fs = require('fs');
 let open = require('open');
 
@@ -13,11 +12,7 @@ function serve(options) {
 
   console.log(`Serving on port ${port}`);
 
-  if(static) {
-    runStatic(port);
-  } else {
-    runDynamic(port);
-  }
+  runServer(port);
 
   if (!options.suppressOpen) {
     open(`http://localhost:${port}`);

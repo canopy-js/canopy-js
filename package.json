@@ -62,7 +62,6 @@
     "open": "^8.4.0",
     "recursive-readdir-sync": "1.0.6",
     "shelljs": "^0.8.5",
-    "st": "^3.0.0",
     "tar": "^6.1.11"
   },
   "repository": {
