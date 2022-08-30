@@ -2,4 +2,4 @@
 
 CANOPY_LOCATION=$(readlink -f $(which canopy) | xargs dirname | xargs dirname)
 
-nodemon --config $CANOPY_LOCATION/nodemon.json --watch $CANOPY_LOCATION $CANOPY_LOCATION/bin/cli.js "$@"
+nodemon --config $CANOPY_LOCATION/nodemon.json --watch $CANOPY_LOCATION $CANOPY_LOCATION/cli/cli.js "$@"

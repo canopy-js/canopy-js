@@ -1,7 +1,7 @@
 import { getAncestorElement } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
-import Topic from '../../bin/commands/shared/topic';
+import Topic from '../../cli/commands/shared/topic';
 
 class Link {
   constructor(argument) {

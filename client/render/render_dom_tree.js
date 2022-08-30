@@ -2,7 +2,7 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
-import Topic from '../../bin/commands/shared/topic';
+import Topic from '../../cli/commands/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
 function renderDomTree(renderContext) {
