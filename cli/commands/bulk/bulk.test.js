@@ -1,6 +1,7 @@
 let generateDataFile = require('./generate_data_file');
 let { parseDataFile, compareChangesWithFileSystem } = require('./reconstruct_project_files');
 let dedent = require('dedent-js');
+let chalk = require('chalk');
 
 describe('generateDataFile', function() {
   test('it generates data file', () => {
@@ -259,7 +260,7 @@ describe('compareChangesWithFileSystem', function() {
       pathsToDelete
     } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
 
-    expect(messages).toEqual(['Appended to file: topics/A/B/C/Topic.expl']);
+    expect(messages).toEqual([chalk.yellow('Appended to file: topics/A/B/C/Topic.expl')]);
 
     expect(filesToWriteFinal).toEqual({
       'topics/A/B/C/Topic.expl': dedent`Topic: Preexisting data.
@@ -289,7 +290,7 @@ describe('compareChangesWithFileSystem', function() {
       pathsToDelete
     } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
 
-    expect(messages).toEqual(['Wrote to file: topics/A/B/C/Topic.expl']);
+    expect(messages).toEqual([chalk.green('Wrote to file: topics/A/B/C/Topic.expl')]);
 
     expect(filesToWriteFinal).toEqual({
       'topics/A/B/C/Topic.expl': `Topic: New data.\n`
@@ -315,7 +316,7 @@ describe('compareChangesWithFileSystem', function() {
       pathsToDelete
     } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
 
-    expect(messages).toEqual(['Deleted file: topics/A/B/C/Topic.expl']);
+    expect(messages).toEqual([chalk.red('Deleted file: topics/A/B/C/Topic.expl')]);
 
     expect(filesToWriteFinal).toEqual({});
 
@@ -339,7 +340,7 @@ describe('compareChangesWithFileSystem', function() {
       pathsToDelete
     } = compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, originalFileList, fileSystemData);
 
-    expect(messages).toEqual(['Deleted file: topics/A/B/C/Topic.expl']);
+    expect(messages).toEqual([chalk.red('Deleted file: topics/A/B/C/Topic.expl')]);
 
     expect(filesToWriteFinal).toEqual({});
 
@@ -369,7 +370,7 @@ describe('compareChangesWithFileSystem', function() {
 
     expect(filesToWriteFinal).toEqual({});
 
-    expect(messages).toEqual(['Deleted file: topics/A/B/C/Topic2.expl']);
+    expect(messages).toEqual([chalk.red('Deleted file: topics/A/B/C/Topic2.expl')]);
 
     expect(pathsToDelete).toEqual(['topics/A/B/C/Topic2.expl']);
   });
