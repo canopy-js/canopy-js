@@ -14,6 +14,8 @@
 - [Getting Started](#getting-started)
   * [Installation](#installation)
   * [Quickstart](#quickstart)
+  * [Data Model](#data-model)
+  * [CLI](#cli)
 - [Development](#development)
   * [Developer Installation](#developer-installation)
   * [Running Tests](#running-tests)
@@ -48,6 +50,14 @@ npm install -g canopy-js
 ### Quickstart
 
 Get your project going
+
+### Data Model
+
+There are categories, topics, and subtopics, and global references, local references, and import references.
+
+### CLI
+
+The Canopy CLI has various commands
 
 ## Development
 
