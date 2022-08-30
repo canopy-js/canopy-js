@@ -1,6 +1,6 @@
-let runStatic = require('./static');
-let runDynamic = require('./dynamic');
+let runServer = require('./run_server');
 let fs = require('fs');
+let open = require('open');
 
 function serve(options) {
   let { port, static } = options;
@@ -12,11 +12,9 @@ function serve(options) {
 
   console.log(`Serving on port ${port}`);
 
-  if(static) {
-    runStatic(port);
-  } else {
-    runDynamic(port);
-  }
+  runServer(port);
+
+  open(`http://localhost:${port}`);
 }
 
 module.exports = serve;
