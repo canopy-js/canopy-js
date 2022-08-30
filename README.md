@@ -1,4 +1,6 @@
+<div align="center">
 <h1>Canopy.js</h1>
+</div>
 
 # Table of Contents
 
