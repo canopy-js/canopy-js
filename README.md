@@ -13,6 +13,8 @@
 - [Getting Started](#getting-started)
   * [Installation](#installation)
   * [Quickstart](#quickstart)
+- [Development](#development)
+  * [Developer Installation](#developer-installation)
   * [Running Tests](#running-tests)
   * [Run Locally](#running-run-locally)
 
