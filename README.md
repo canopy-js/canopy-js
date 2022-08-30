@@ -12,15 +12,14 @@
 - [About Canopy JS](#about-canopy-js)
   * [Screenshots](#screenshots)
   * [Motivations](#motivations)
-  * [Usage](#usage)
 - [Getting Started](#getting-started)
   * [Installation](#installation)
   * [Quickstart](#quickstart)
   * [Running Tests](#running-tests)
   * [Run Locally](#running-run-locally)
 - [Usage](#usage)
-- [License](#license)
-- [Contact](#contact)
+  * [Keyboard shortcuts](keyboard-shortcuts)
+  *
 
 ## About Canopy JS
 
@@ -83,3 +82,7 @@ For just Playwright:
 ```
 npx playwright test
 ```
+
+## Usage
+
+### Keyboard Shortcuts
