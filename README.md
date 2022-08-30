@@ -82,7 +82,3 @@ For just Playwright:
 ```
 npx playwright test
 ```
-
-## Usage
-
-### Keyboard Shortcuts
