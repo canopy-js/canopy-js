@@ -1,6 +1,7 @@
 let fs = require('fs-extra');
 let Paragraph = require('../shared/paragraph');
 let Topic = require('../shared/topic');
+let chalk = require('chalk');
 
 /*
 
@@ -152,18 +153,18 @@ function compareChangesWithFileSystem(filesToWrite, directoriesToEnsure, origina
     let alreadyOnDisk = fileSystemData.hasOwnProperty(filePath);
     let wasLoadedInSession = originalFileList.includes(filePath);
 
-    if (alreadyOnDisk && !wasLoadedInSession) { // append
+    if (alreadyOnDisk && !wasLoadedInSession) { // appended to existing file
       filesToWriteFinal[filePath] = fileSystemData[filePath] + "\n\n" + filesToWrite[filePath];
-      messages.push(`Appended to file: ${filePath}`);
+      messages.push(chalk.yellow(`Appended to file: ${filePath}`));
     } else if (filesToWrite[filePath] !== fileSystemData[filePath]) { // write
       filesToWriteFinal[filePath] = filesToWrite[filePath];
-      messages.push(`Wrote to file: ${filePath}`);
+      messages.push(chalk.green(`Wrote to file: ${filePath}`)); // either created or overwrote entirely
     }
   });
 
   originalFileList.forEach(originalFilePath => {
     if (!filesToWrite.hasOwnProperty(originalFilePath)) {
-      messages.push(`Deleted file: ${originalFilePath}`);
+      messages.push(chalk.red(`Deleted file: ${originalFilePath}`));
       pathsToDelete.push(originalFilePath);
     }
   });
