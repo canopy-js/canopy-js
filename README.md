@@ -61,7 +61,7 @@ The Canopy CLI has various commands
 
 ## Development
 
-### Developer installation
+### Developer Installation
 
 For development, clone the repo and run
 
