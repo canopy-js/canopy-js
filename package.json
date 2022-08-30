@@ -1,6 +1,6 @@
 {
   "name": "canopy-js",
-  "version": "0.2.51",
+  "version": "0.3.00",
   "description": "A library for creating and browsing explanation graphs",
   "scripts": {
     "jest": "jest cli client",
