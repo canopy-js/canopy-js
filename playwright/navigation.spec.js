@@ -88,12 +88,12 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.keyboard.press(`${systemNewTabKey}+Enter`)
+      page.keyboard.press(`${systemNewTabKey}+Alt+Enter`)
     ]);
 
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1')).toHaveText('United States');
+    await expect(newPage.locator('h1')).toHaveText('New York');
     await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
     await expect(newPage).toHaveURL('New_York');
   });

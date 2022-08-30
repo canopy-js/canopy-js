@@ -55,7 +55,7 @@ program.command('serve')
   .description('run a server for a Canopy project')
   .argument('[portArgument]', 'Additional way of specifying port', 8000)
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
-  .option('-s, --static', 'run a static assets server instead of a node.js server', false)
+  .option('-s, --suppress-open', 'do not open link in browser', false)
   .action((portArgument, options) => {
     options.port = options.port || Number(portArgument) || 8000;
     try {

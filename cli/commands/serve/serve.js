@@ -14,7 +14,9 @@ function serve(options) {
 
   runServer(port);
 
-  open(`http://localhost:${port}`);
+  if (!options.suppressOpen) {
+    open(`http://localhost:${port}`);
+  }
 }
 
 module.exports = serve;
