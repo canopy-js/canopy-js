@@ -10,6 +10,7 @@
 - [About Canopy JS](#about-canopy-js)
   * [Screenshots](#screenshots)
   * [Motivations](#motivations)
+  * [Usage](#usage)
 - [Getting Started](#getting-started)
   * [Installation](#installation)
   * [Quickstart](#quickstart)
