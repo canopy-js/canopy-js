@@ -108,6 +108,7 @@ function moveDownOrRedirect(newTab, altKey) {
     }
 
     if (!newTab) { // because the user has the option to press down, all returns within the current tab are redirects
+      let path = Link.selection.targetPath.lastSegment;
       return updateView(
         path,
         Link.selectALink(path)
