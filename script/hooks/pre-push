@@ -28,7 +28,7 @@ CURRENT_TAG=$(git describe --exact-match --tags 2> /dev/null)
 
 if [[ -n "$CURRENT_TAG" && ! -z $(git status -s) ]]
 then
-	echo "!!! ERROR: cannot publish with uncomitted changes"
+	echo "!!! ERROR: cannot publish with uncomitted changes (maybe you forgot to commit the package.json tag increment)"
 	exit 1
 fi
 
