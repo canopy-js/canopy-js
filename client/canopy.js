@@ -11,5 +11,5 @@ registerPopStateListener();
 updateView(
   Path.currentOrDefault,
   Link.priorSelection,
-  { initialPageLoad: true }
+  { scrollStyle: 'auto' }
 );

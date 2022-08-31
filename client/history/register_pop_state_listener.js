@@ -14,7 +14,8 @@ function registerPopStateListener() {
 
     updateView(
       Path.currentOrDefault,
-      linkSelection || Link.sessionSelection
+      linkSelection || Link.sessionSelection,
+      { scrollStyle: 'auto' }
     );
   });
 }

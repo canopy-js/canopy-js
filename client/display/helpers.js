@@ -53,7 +53,7 @@ const resetDom = () => {
 }
 
 function scrollPage(displayOptions) {
-  let behavior = displayOptions.initialPageLoad ? 'auto' : 'smooth';
+  let behavior = displayOptions.scrollStyle || 'smooth';
 
   window.scrollTo(
     {
