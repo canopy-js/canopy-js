@@ -36,6 +36,7 @@
 Canopy takes a set of text files like this:
 <br>
 <br>
+<br>
 
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
@@ -77,7 +78,7 @@ Traverse the same content in different directions:
 
 Canopy JS is motivated by a series of observations.
 
-**1. Explanation is interconnected**
+**1. Explanation is interconnected, but serialization removes adjacency**
 
 Here is what that means.
 
@@ -85,31 +86,31 @@ Here is what that means.
 
 Here is what that means.
 
-**4. Explanations are composed of reusable components**
+**3. Explanations are composed of reusable components**
 
 Here is what that means.
 
-**5. References are intended to import, not redirect**
+**4. References are intended to import, not redirect**
 
 Here is what that means.
 
-**6. Memory is hierarchial, so information should also be**
+**5. Memory is hierarchial, so information should also be**
 
 Here is what that means.
 
-**7. Every idea should have a unique address**
+**6. Every idea should have a unique address**
 
 Here is what that means.
 
-**8. The state of the page should reflect the state of the explanation**
+**7. The state of the page should reflect the state of the explanation**
 
 Here is what that means.
 
-**9. Specificity should be tailored to the reader**
+**8. Specificity should be tailored to the reader**
 
 Here is what that means.
 
-**10. Prerequisites should be clearly defined**
+**9. Prerequisites should be clearly defined**
 
 Eg avoiding ostension.
 
