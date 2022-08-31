@@ -4,7 +4,7 @@ import Path from 'models/path';
 function onLocalLinkClick(targetTopic, targetSubtopic, link) {
   return (e) => {
     e.preventDefault();
-    let newPath, linkToSelect;
+    let path, linkToSelect;
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
     if (newTab && !e.altKey) { // no zoom
@@ -21,14 +21,14 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
     }
 
     if (!newTab && !e.altKey && link.isSelected) {
-      newPath = link.parentLink?.paragraphPathWhenSelected;
-      return updateView(newPath, linkToSelect);
+      path = link.parentLink?.paragraphPathWhenSelected || Path.current.rootTopicPath;
+      return updateView(path, linkToSelect);
     }
 
     if (!newTab && !e.altKey && !link.isSelected) {
-      newPath = link.paragraphPathWhenSelected;
+      path = link.paragraphPathWhenSelected;
       linkToSelect = link;
-      return updateView(newPath, linkToSelect);
+      return updateView(path, linkToSelect);
     }
   };
 }

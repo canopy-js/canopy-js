@@ -131,6 +131,27 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York');
   });
 
+  test('Clicking on a selected global selects parent', async ({ page }) => {
+    await page.goto('United_States/New_York/Martha\'s_Vineyard');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Martha\'s Vineyard');
+
+    await page.locator('section[data-subtopic-name="New York"][data-path-depth="1"] > p > a[data-type="global"]:has-text("Martha\'s Vineyard")').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page).toHaveURL('United_States/New_York');
+  });
+
+  test('Clicking on a selected global in root paragraph deselects all', async ({ page }) => {
+    await page.goto('/United_States/New_York');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+
+    await page.locator('a[data-type="global"]:has-text("New York")').click();
+
+    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(page).toHaveURL('United_States');
+  });
   test('Alt-clicking on global redirects the page', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
@@ -295,6 +316,27 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
 
+  test('Clicking on a selected local selects parent', async ({ page }) => {
+    await page.goto('New_Jersey#Attractions');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('attractions');
+
+    await page.locator('a[data-type="local"]:has-text("attractions")').click();
+
+    await expect(page.locator('h1')).toHaveText('New Jersey');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
+    await expect(page).toHaveURL('New_Jersey#Northern_part');
+  });
+
+  test('Clicking on a selected local in root paragraph deselects all', async ({ page }) => {
+    await page.goto('New_Jersey#Northern_part');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
+
+    await page.locator('a[data-type="local"]:has-text("northern part")').click();
+
+    await expect(page.locator('h1')).toHaveText('New Jersey');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(page).toHaveURL('New_Jersey');
+  });
 
   test('Alt-clicking on local zooms to the lowest path segment', async ({ page }) => {
     await page.goto('/United_States/New_York');
