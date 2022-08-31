@@ -32,8 +32,10 @@
 ## About Canopy JS
 
 ### What Canopy does
-
+<br>
 Canopy takes a set of text files like this:
+<br>
+
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
 
