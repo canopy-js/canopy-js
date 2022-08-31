@@ -32,6 +32,7 @@
 ## About Canopy JS
 
 ### What Canopy does
+<br>
 Canopy takes a set of text files like this:
 <br>
 <br>
