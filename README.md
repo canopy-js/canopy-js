@@ -51,7 +51,6 @@ Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
 
-
 And produces an interactive website like this:
 
 ![Demo 1](./readme/demo1.gif)
