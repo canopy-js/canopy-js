@@ -55,6 +55,10 @@ And produces an interactive website like this:
 
 ![Demo 1](./readme/demo1.gif)
 
+Traverse the same content in different directions:
+
+![Demo 2](./readme/demo2.gif)
+
 ### Motivations
 
 Here's why we made it
