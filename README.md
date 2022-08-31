@@ -19,7 +19,7 @@
 - [Development](#development)
   * [Developer Installation](#developer-installation)
   * [Running Tests](#running-tests)
-  * [Run Locally](#running-run-locally)
+  * [Run Webpack](#run-webpack)
 
 ## About Canopy JS
 
@@ -89,4 +89,11 @@ npm run jest
 For just Playwright:
 ```
 npx playwright test
+```
+
+### Run Webpack
+
+To build assets from the client codebase run:
+```
+npm run develop
 ```
