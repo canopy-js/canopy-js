@@ -77,39 +77,39 @@ Traverse the same content in different directions:
 
 Canopy JS is motivated by a series of observations.
 
-*1. Explanation is interconnected*
+**1. Explanation is interconnected**
 
 Here is what that means.
 
-*2. Explanations can be very large*
+**2. Explanations can be very large**
 
 Here is what that means.
 
-*4. Explanations are composed of reusable components*
+**4. Explanations are composed of reusable components**
 
 Here is what that means.
 
-*5. References are intended to import, not redirect*
+**5. References are intended to import, not redirect**
 
 Here is what that means.
 
-*6. Memory is hierarchial, so information should also be*
+**6. Memory is hierarchial, so information should also be**
 
 Here is what that means.
 
-*7. Every idea should have a unique address*
+**7. Every idea should have a unique address**
 
 Here is what that means.
 
-*8. The state of the page should reflect the state of the explanation*
+**8. The state of the page should reflect the state of the explanation**
 
 Here is what that means.
 
-*9. Specificity should be tailored to the reader*
+**9. Specificity should be tailored to the reader**
 
 Here is what that means.
 
-*10. Prerequisites should be clearly defined*
+**10. Prerequisites should be clearly defined**
 
 Eg avoiding ostension.
 
