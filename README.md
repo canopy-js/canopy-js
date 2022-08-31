@@ -1,5 +1,5 @@
 <div align="right">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/JigsawCanopy.jpg/2560px-JigsawCanopy.jpg" alt="Forest Canopy" width="auto" height="auto" /><br>
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/JigsawCanopy.jpg/2560px-JigsawCanopy.jpg" alt="Forest Canopy" width="auto" height="auto" />
 <sub>
   By
   <a rel="nofollow" class="external text" href="https://markfisher.photo">Mark Fisher - markfisher.photo</a>,
