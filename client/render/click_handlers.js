@@ -41,18 +41,18 @@ function onGlobalAndImportLinkClick (link) {
 
     if (!newTab && !e.altKey && link.isSelected) { // close global child
       path = link.enclosingParagraph.path;
-      return updateView(path, linkToSelect)
+      return updateView(path, linkToSelect);
     }
 
     if (!newTab && !e.altKey && !link.isSelected) { // open global child
       path = link.paragraphPathWhenSelected;
       linkToSelect = link;
-      return updateView(path, linkToSelect)
+      return updateView(path, linkToSelect);
     }
 
     if (!newTab && e.altKey) { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return updateView(path, linkToSelect)
+      return updateView(path, linkToSelect, { scrollStyle: 'auto' });
     }
 
     if (newTab && !e.altKey) { // inline

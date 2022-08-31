@@ -190,7 +190,7 @@ class Paragraph {
   }
 
   static get current() {
-    return new Paragraph(document.querySelector('canopy-selected-section'));
+    return new Paragraph(document.querySelector('.canopy-selected-section'));
   }
 
   select() {

@@ -111,7 +111,8 @@ function moveDownOrRedirect(newTab, altKey) {
       let path = Link.selection.targetPath.lastSegment;
       return updateView(
         path,
-        Link.selectALink(path)
+        Link.selectALink(path),
+        { scrollStyle: 'auto' }
       )
     }
   }
