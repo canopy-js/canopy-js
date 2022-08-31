@@ -33,8 +33,8 @@
 
 ### What Canopy does
 <br>
-<br>
 Canopy takes a set of text files like this:
+<br>
 <br>
 <br>
 
