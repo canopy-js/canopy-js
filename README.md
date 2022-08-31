@@ -1,10 +1,12 @@
+<div align="right">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/JigsawCanopy.jpg/2560px-JigsawCanopy.jpg" alt="Forest Canopy" width="auto" height="auto" /><br>
-<sub align="right">
+<sub>
   By
   <a rel="nofollow" class="external text" href="https://markfisher.photo">Mark Fisher - markfisher.photo</a>,
   <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>,
   <a href="https://commons.wikimedia.org/w/index.php?curid=18189052">Link</a>
 </sub>
+</div>
 <div align="center">
 <h1>Canopy.js</h1>
 <p> Make interactive websites from your prose explanations. <b><a href="#">Demo</a></b></p>
