@@ -78,6 +78,7 @@ Traverse the same content in different directions:
 <br>
 Canopy JS is motivated by a series of observations.
 <br>
+<br>
 
 **1. Explanation is a linear traversal of nonlinear information**
 
