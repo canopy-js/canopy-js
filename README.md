@@ -57,7 +57,9 @@ And produces an interactive website like this:
 <br>
 <br>
 <br>
+<br>
 Traverse the same content in different directions:
+<br>
 <br>
 <br>
 <br>
