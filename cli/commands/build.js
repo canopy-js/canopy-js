@@ -6,8 +6,8 @@ const buildProject = require('./build/build_project');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
-  if (!fs.existsSync('./topics')) throw 'There must be a topics directory present, try running "canopy init"';
-  if (!fs.existsSync('./.canopy_default_topic')) throw 'There must be a default topic dotfile present, try running "canopy init"';
+  if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
+  if (!fs.existsSync('./.canopy_default_topic')) throw new Error('There must be a default topic dotfile present, try running "canopy init"');
 
   let defaultTopicString = fs.readFileSync('.canopy_default_topic').toString().trim();
   let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
@@ -62,7 +62,7 @@ function build(options) {
   }
 
   if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) {
-    throw 'No Canopy.js asset found';
+    throw new Error('No Canopy.js asset found');
   }
 
   fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');

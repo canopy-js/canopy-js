@@ -76,7 +76,7 @@ function parseDataFile(dataFile) {
 
   sections.forEach(section => {
     let path = section.split("\n")[0].match(/\[([^/].*[^/])\]/)?.[1];
-    if (!path) throw `Invalid directory path: "${section.split("\n")[0]}"`;
+    if (!path) throw new Error(`Invalid directory path: "${section.split("\n")[0]}"`);
     let pathWithUnderscores = path.replace(/ /g,'_');
     let pathSegments = path.split('/');
     let directoryPath = `topics/${pathWithUnderscores}`;

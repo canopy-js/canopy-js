@@ -35,7 +35,7 @@ function handleCodeBlock(line, tokens) {
       text: ''
     });
   } else {
-    throw 'Error identifying code block';
+    throw new Error('Error identifying code block');
   }
 }
 

@@ -26,8 +26,8 @@ class Path {
 
   static validatePathArray(array) {
     array.forEach(tuple => {
-      if (tuple.length !== 2) throw `Invalid path segment format: ${tuple}`;
-      if (!(tuple[0] instanceof Topic) || !(tuple[1] instanceof Topic)) throw `Invalid path segment format: ${tuple}`;
+      if (tuple.length !== 2) throw newError(`Invalid path segment format: ${tuple}`);
+      if (!(tuple[0] instanceof Topic) || !(tuple[1] instanceof Topic)) throw newError(`Invalid path segment format: ${tuple}`);
     })
   }
 
@@ -147,7 +147,7 @@ class Path {
   }
 
   static stringToArray(pathString) {
-    if (typeof pathString !== 'string') throw "Function requires string argument";
+    if (typeof pathString !== 'string') throw newError("Function requires string argument");
 
     if (pathString === '/') {
       return [];
@@ -177,14 +177,14 @@ class Path {
   }
 
   static arrayToString(pathArray) {
-    if (!Array.isArray(pathArray)) throw 'Argument must be array';
+    if (!Array.isArray(pathArray)) throw newError('Argument must be array');
 
     if (Array.isArray(pathArray) && pathArray.length === 0) {
       return '/';
     }
 
     if (!Array.isArray(pathArray[0])) {
-      throw 'Path array must be two-dimensional array';
+      throw newError('Path array must be two-dimensional array');
     }
 
     let pathString = '/';
@@ -204,8 +204,8 @@ class Path {
     // Sometimes browsers insert forward slashes before the first pound sign which we have to remove
     // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
 
-    if (typeof pathString !== 'string') throw "pathString must be a string argument";
-    if (!Array.isArray(slashSeparatedUnits)) throw 'slashSeparatedUnits must be an array';
+    if (typeof pathString !== 'string') throw newError("pathString must be a string argument");
+    if (!Array.isArray(slashSeparatedUnits)) throw newError('slashSeparatedUnits must be an array');
 
     if (pathString.match(/\/#\w+/)) {
       for (let i = 1; i < slashSeparatedUnits.length; i++) {
@@ -231,8 +231,8 @@ class Path {
   }
 
   static connectingLinkValid(parentElement, pathToDisplay) {
-    if (!parentElement) throw 'Parent element required';
-    if (!(pathToDisplay instanceof Path)) throw 'pathToDisplay must be a Path object';
+    if (!parentElement) throw newError('Parent element required');
+    if (!(pathToDisplay instanceof Path)) throw newError('pathToDisplay must be a Path object');
 
     if (parentElement === canopyContainer) return true;
 
@@ -247,7 +247,7 @@ class Path {
   }
 
   static elementAtRelativePath(suppliedPath, suppliedRootElement) {
-    if (!(suppliedPath instanceof Path)) throw 'pathToDisplay must be a Path object';
+    if (!(suppliedPath instanceof Path)) throw newError('pathToDisplay must be a Path object');
     if (!suppliedRootElement || !suppliedRootElement.tagName) 'Root element must be a DOM node';
 
     let rootElement = suppliedRootElement;
@@ -284,7 +284,7 @@ class Path {
   }
 
   static setPath(newPath) {
-    if (!(newPath instanceof Path)) throw 'newPath must be Path object';
+    if (!(newPath instanceof Path)) throw newError('newPath must be Path object');
 
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic.display;

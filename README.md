@@ -39,12 +39,19 @@ Canopy takes a set of text files like this:
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
 
-New York: New York is a northeastern American state.
+New York: ![New York](_assets/NY.png) New York is a northeastern American state whose capital is [[Albany]]. New York has 20.2 million people, and contains New York City. New York covers a total area of 54,556 square miles.
 
-New Jersey: New York is a northeastern American state.
+Albany: Albany is a mid-sized American city in upstate New York.
+
+New Jersey: ![New Jersey](_assets/NJ.png) New Jersey is a northeastern American state whose capital is [[Trenton]]. New Jersey has 9.3 million residents. The state was a major site of the American Revolutionary War, and later became a center of manufacturing and immigration.
+
+Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
 
+And produces an interactive website like this:
+
+![Demo 1](./readme/demo1.gif)
 
 ### Motivations
 

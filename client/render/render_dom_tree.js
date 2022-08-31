@@ -19,7 +19,7 @@ function renderDomTree(renderContext) {
   renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
 
   let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
-  if (!tokensOfParagraph) throw `Paragraph with subtopic not found: ${subtopic.mixedCase}`;
+  if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
 
   tokensOfParagraph.forEach((token) => {
     let element = renderTokenElement(token, renderContext);
