@@ -13,6 +13,26 @@
 <p> Make interactive websites from your prose explanations. <b><a href="#">Demo</a></b></p>
 </div>
 
+# Table of Contents
+
+- [About Canopy JS](#about-canopy-js)
+  * [What it does](#what-it-does)
+  * [Motivations](#motivations)
+  * [Usage](#usage)
+- [Getting Started](#getting-started)
+  * [Installation](#installation)
+  * [Quickstart](#quickstart)
+  * [Data Model](#data-model)
+  * [CLI](#cli)
+- [Development](#development)
+  * [Developer Installation](#developer-installation)
+  * [Running Tests](#running-tests)
+  * [Run Webpack](#run-webpack)
+
+## About Canopy JS
+
+### What Canopy does
+
 Canopy takes a set of text files like this:
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
@@ -30,25 +50,6 @@ Trenton: Trenton is a mid-sized American city in southern New Jersey.
 And produces an interactive website like this:
 
 ![Demo 1](./readme/demo1.gif)
-
-# Table of Contents
-
-- [About Canopy JS](#about-canopy-js)
-  * [Motivations](#motivations)
-  * [Usage](#usage)
-- [Getting Started](#getting-started)
-  * [Installation](#installation)
-  * [Quickstart](#quickstart)
-  * [Data Model](#data-model)
-  * [CLI](#cli)
-- [Development](#development)
-  * [Developer Installation](#developer-installation)
-  * [Running Tests](#running-tests)
-  * [Run Webpack](#run-webpack)
-
-## About Canopy JS
-
-Canopy JS is a library that takes natural language explanation and generates an interactive explanatory interface.
 
 ### Motivations
 
