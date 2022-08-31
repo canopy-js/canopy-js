@@ -54,7 +54,11 @@ class Path {
   }
 
   get rootTopicPath() {
-    return new Path([[this.firstTopic, this.firstTopic]]);
+    if (this.length > 0) {
+      return new Path([[this.firstTopic, this.firstTopic]]);
+    } else {
+      return this;
+    }
   }
 
   get firstTopic() {

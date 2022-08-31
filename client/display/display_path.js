@@ -23,7 +23,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
 
   pathToDisplay.paragraph.select();
   displayPathTo(pathToDisplay.paragraph);
-  if (linkToSelect) scrollPage(displayOptions);
+  scrollPage(displayOptions);
 };
 
 const displayPathTo = (paragraph) => {

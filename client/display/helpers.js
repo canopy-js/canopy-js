@@ -53,12 +53,13 @@ const resetDom = () => {
 }
 
 function scrollPage(displayOptions) {
-  let behavior = displayOptions.initialPageLoad ? 'auto' : 'smooth';
+  let behavior = displayOptions.scrollStyle || 'smooth';
+  let top = Link.selection ? Link.selection.element.offsetTop - (window.screen.height * .22) : 0;
 
   window.scrollTo(
     {
-      top: Link.selection.enclosingParagraph.paragraphElement.offsetTop - (window.screen.height * .3),
-      behavior: behavior
+      top,
+      behavior
     }
   );
 }
