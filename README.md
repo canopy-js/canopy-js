@@ -1,6 +1,7 @@
 <div align="right">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/JigsawCanopy.jpg/2560px-JigsawCanopy.jpg" alt="Forest Canopy" width="auto" height="auto" />
 <sub>
+  The canopy in Sepilok Orangutan Rehabilitation Centre in the Malaysian Sabah District of North Borneo, 25 July 2010.
   By
   <a rel="nofollow" class="external text" href="https://markfisher.photo">Mark Fisher - markfisher.photo</a>,
   <a href="https://creativecommons.org/licenses/by-sa/3.0" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>,
@@ -15,7 +16,7 @@
 # Table of Contents
 
 - [About Canopy JS](#about-canopy-js)
-  * [Screenshots](#screenshots)
+  * [What it does](#what-it-does)
   * [Motivations](#motivations)
   * [Usage](#usage)
 - [Getting Started](#getting-started)
@@ -32,9 +33,18 @@
 
 Canopy JS is a library that takes natural language explanation and generates an interactive explanatory interface.
 
-### Screenshots
+### What it does
 
-Here is a gif
+Canopy takes a set of text files like this:
+```
+United States: The United States is a country that contains [[New York]] and [[New Jersey]].
+
+New York: New York is a northeastern American state.
+
+New Jersey: New York is a northeastern American state.
+
+```
+
 
 ### Motivations
 
