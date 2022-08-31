@@ -75,9 +75,7 @@ Traverse the same content in different directions:
 ![Demo 2](./readme/demo2.gif)
 
 ### Motivations
-<br>
 Canopy JS is motivated by a series of observations.
-<br>
 <br>
 
 **1. Explanation is a linear traversal of nonlinear information**
