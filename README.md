@@ -55,7 +55,9 @@ Trenton: Trenton is a mid-sized American city in southern New Jersey.
 And produces an interactive website like this:
 <br>
 <br>
+
 ![Demo 1](./readme/demo1.gif)
+
 <br>
 <br>
 <br>
@@ -65,6 +67,7 @@ Traverse the same content in different directions:
 <br>
 <br>
 <br>
+
 ![Demo 2](./readme/demo2.gif)
 
 ### Motivations
