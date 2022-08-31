@@ -15,13 +15,13 @@ class Link {
     if (argument.tagName === 'A') {
       this.element = argument;
     } else if (argument instanceof Link) {
-      throw "Cannot instantiate link from link";
+      throw new Error("Cannot instantiate link from link");
     } else if (typeof argument === 'object') {
       this.metadataObject = argument;
     } else if (typeof argument === 'function') {
       this.selectorCallback = argument;
     } else {
-      throw 'Invalid argument to Link constructor';
+      throw new Error('Invalid argument to Link constructor');
     }
   }
 
@@ -30,7 +30,7 @@ class Link {
   }
 
   matches(otherLink) {
-    if (!otherLink) throw 'Invalid link argument to Link#matches';
+    if (!otherLink) throw new Error('Invalid link argument to Link#matches');
 
     return this.targetTopic === otherLink.targetTopic &&
       this.targetSubtopic === otherLink.targetSubtopic &&
@@ -38,7 +38,7 @@ class Link {
   }
 
   contradicts(path) {
-    if (!(path instanceof Path)) throw 'Invalid path argument to Link#contradicts';
+    if (!(path instanceof Path)) throw new Error('Invalid path argument to Link#contradicts');
     return this.paragraphPathWhenSelected.string !== path.string;
   }
 
@@ -47,11 +47,11 @@ class Link {
       return this.linkElement
     } else if (this.metadataObject) {
       this.element = Link.elementFromMetadata(this.metadata);
-      if (!this.linkElement) throw 'Metadata refered to non-existant link';
+      if (!this.linkElement) throw new Error('Metadata refered to non-existant link');
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
-      if (!link) throw 'Link selector callback provided no link';
+      if (!link) throw new Error('Link selector callback provided no link');
       this.element = link.element;
       return this.linkElement;
     }
@@ -91,11 +91,11 @@ class Link {
   }
 
   get topicName() {
-    throw 'Links have no topicName, only targetTopic or enclosingTopic';
+    throw new Error('Links have no topicName, only targetTopic or enclosingTopic');
   }
 
   get subtopicName() {
-    throw 'Links have no subtopicName, only targetSubtopic or enclosingSubtopic';
+    throw new Error('Links have no subtopicName, only targetSubtopic or enclosingSubtopic');
   }
 
   get type() {
@@ -107,7 +107,7 @@ class Link {
   }
 
   get sectionElement() {
-    throw "Depreciated in favor of #enclosingSectionElement";
+    throw new Error("Depreciated in favor of #enclosingSectionElement");
   }
 
   get enclosingParagraphElement() {
@@ -115,7 +115,7 @@ class Link {
   }
 
   get parentParagraphElement() {
-    throw "Depreciated in favor of #enclosingParagraphElement";
+    throw new Error("Depreciated in favor of #enclosingParagraphElement");
   }
 
   get enclosingParagraph() {
@@ -135,7 +135,7 @@ class Link {
       );
 
     if (!sectionElement) {
-      throw `Did not find paragraph child element matching link [${this.targetTopic.mixedCase}, ${this.targetSubtopic.mixedCase}]`;
+      throw new Error(`Did not find paragraph child element matching link [${this.targetTopic.mixedCase}, ${this.targetSubtopic.mixedCase}]`);
     }
 
     return new Paragraph(sectionElement);
@@ -190,7 +190,7 @@ class Link {
       this.element = this.selectorCallback();
       return this.metadata; // now that there is a this.linkElement
     } else {
-      throw "Link has neither supplied metadata, dom element, nor selector function";
+      throw new Error("Link has neither supplied metadata, dom element, nor selector function");
     }
   }
 
@@ -205,11 +205,11 @@ class Link {
   }
 
   get path() {
-    throw "Depreciated in favor of #paragraphPathWhenSelected";
+    throw new Error("Depreciated in favor of #paragraphPathWhenSelected");
   }
 
   get pathToDisplay() {
-    throw "Depreciated in favor of #paragraphPathWhenSelected";
+    throw new Error("Depreciated in favor of #paragraphPathWhenSelected");
   }
 
   get paragraphPathWhenSelected() {
@@ -245,7 +245,7 @@ class Link {
   static elementFromMetadata(object) {
     let path = new Path(object.pathString);
     let paragraph = path.paragraph;
-    if (!paragraph) throw "Link selection data refers to non-existant link";
+    if (!paragraph) throw new Error("Link selection data refers to non-existant link");
     let link = paragraph.linkBySelector(
       (link, i) => link.element.dataset.text === object.text &&
         i === object.relativeLinkNumber
@@ -429,7 +429,7 @@ class Link {
   }
 
   static current() {
-    throw "Link#current does not exist, try Link#selection";
+    throw new Error("Link#current does not exist, try Link#selection");
   }
 
   // If someone eg presses up from the second link in a paragraph, pressing down should return them there.

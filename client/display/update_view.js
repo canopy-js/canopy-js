@@ -8,25 +8,25 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   validatePathAndLink(pathToDisplay, linkToSelect);
   if (pathToDisplay.empty) pathToDisplay = Path.default;
 
-  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer);
+  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer).catch(e => console.error(e));
 
-  return newTreeAppended.finally(() => {
+  return newTreeAppended.then(() => {
     displayPath(
       pathToDisplay,
       linkToSelect,
       displayOptions
     );
-  }).catch(handleError(pathToDisplay, displayOptions));
+  }).catch(handleDisplayError(pathToDisplay, displayOptions));
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {
-  if (!(pathToDisplay instanceof Path)) throw 'Invalid path argument';
-  if (linkToSelect && !(linkToSelect instanceof Link)) throw 'Invalid link selection argument';
+  if (!(pathToDisplay instanceof Path)) throw new Error('Invalid path argument');
+  if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
 }
 
-function handleError(pathToDisplay, displayOptions) {
+function handleDisplayError(pathToDisplay, displayOptions) {
   return (e) => {
-    if (e === 'Link selector callback provided no link') {
+    if (e.message === 'Link selector callback provided no link') {
       displayPath(pathToDisplay, null, displayOptions);
     } else {
       console.error(e);

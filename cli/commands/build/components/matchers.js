@@ -96,18 +96,18 @@ function importReferenceMatcher(string, parserContext, index) {
   }
 
   if (!targetTopic) {
-    throw `Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`;
+    throw new Error(`Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`);
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`;
+    throw new Error(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`);
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw `Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`;
+    throw new Error(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`);
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);

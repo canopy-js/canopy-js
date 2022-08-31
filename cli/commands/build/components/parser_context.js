@@ -37,16 +37,16 @@ class ParserContext {
       let lineNumber = 1;
 
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
-        throw dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
+        throw new Error(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
         - One file is: ${topicFilePaths[currentTopic.caps]}
         - Another file is: ${path}
-        `;
+        `);
       } else {
         topicFilePaths[currentTopic.caps] = path;
       }
 
       if (currentTopic.display.trim() !== currentTopic.display) {
-        throw `Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path;
+        throw new Error(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path);
       }
 
       topicSubtopics[currentTopic.caps] = {};
@@ -137,7 +137,7 @@ class ParserContext {
   }
 
   getOriginalSubTopic(currentTopic, givenSubtopic) {
-    if (!givenSubtopic) throw 'two arguments required';
+    if (!givenSubtopic) throw new Error('two arguments required');
     return this.topicSubtopics[currentTopic.caps][givenSubtopic.caps];
   }
 
@@ -257,8 +257,8 @@ class ParserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-          throw `Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
-            `${filePath}:${lineNumber}\n`;
+          throw new Error(`Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
+            `${filePath}:${lineNumber}\n`);
         }
       });
     });
@@ -267,8 +267,8 @@ class ParserContext {
   validateImportReferenceTargets() {
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw `Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
-          `${filePath}:${lineNumber}\n`;
+        throw new Error(`Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
+          `${filePath}:${lineNumber}\n`);
       }
     });
   }
@@ -276,9 +276,9 @@ class ParserContext {
   validateSubtopicDefinitions() {
     this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
       if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessable, it is invalid data
-        throw `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
+        throw new Error(`Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
-          `Second definition: ${filePath}:${lineNumber2}`;
+          `Second definition: ${filePath}:${lineNumber2}`);
       }
     });
   }
@@ -349,7 +349,7 @@ class ParserContext {
   validateRedundantLocalReferences() { // can only be done after we've seen every local reference
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic)) {
-        throw dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
+        throw new Error(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
             - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
@@ -362,7 +362,7 @@ class ParserContext {
             (It is also possible you meant one of these as an import reference, however,
             if both links could be either local or import references, you must clarify
             which is the import reference using explicit import syntax ie [[Other Topic#${referencedSubtopic.mixedCase}]])
-            `;
+            `);
       }
     });
   }

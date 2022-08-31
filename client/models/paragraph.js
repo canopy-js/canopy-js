@@ -15,8 +15,8 @@ class Paragraph {
   // paragraph.paragraphElement returns the paragraph element.
 
   constructor(sectionElement) {
-    if (!sectionElement || sectionElement.tagName !== 'SECTION' ) throw "Paragraph instantiation requires section element";
-    if (!sectionElement.classList.contains('canopy-section')) throw "Paragraph class requires Canopy section element";
+    if (!sectionElement || sectionElement.tagName !== 'SECTION' ) throw new Error("Paragraph instantiation requires section element");
+    if (!sectionElement.classList.contains('canopy-section')) throw new Error("Paragraph class requires Canopy section element");
     this.sectionElement = sectionElement;
     this.transferDataset();
   }
@@ -31,7 +31,7 @@ class Paragraph {
   }
 
   get element() {
-    throw "Depreciated in favor of #sectionElement property";
+    throw new Error("Depreciated in favor of #sectionElement property");
   }
 
   transferDataset() { // This is so we can more easily debug in the console
@@ -49,18 +49,18 @@ class Paragraph {
   }
 
   get topicName() {
-    throw "Depreciated in favor of #topic";
+    throw new Error("Depreciated in favor of #topic");
   }
 
   get subtopicName() {
-    throw "Depreciated in favor of #subtopic";
+    throw new Error("Depreciated in favor of #subtopic");
   }
 
   get paragraphElement() {
     let paragraphElement = Array.from(this.sectionElement.childNodes).
       find((element) => element.tagName === 'P');
 
-    if (!paragraphElement) throw "Paragraph has no paragraph element";
+    if (!paragraphElement) throw new Error("Paragraph has no paragraph element");
     return paragraphElement;
   }
 
@@ -203,7 +203,7 @@ class Paragraph {
   }
 
   static containingLink(link) {
-    if (!(link instanceof Link)) throw "Must provide link instance argument";
+    if (!(link instanceof Link)) throw new Error("Must provide link instance argument");
     let sectionElement = getAncestorElement(link.element, 'canopy-section');
     return new Paragraph(sectionElement);
   }

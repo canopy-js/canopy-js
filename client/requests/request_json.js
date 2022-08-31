@@ -14,7 +14,7 @@ const requestJson = (topic) => {
       });
     }).catch(() => {
       REQUEST_CACHE[topic.mixedCase] = undefined; // in case error is connectivity related & will work again later
-      return Promise.reject(`Unable to request topic file: "${topic.requestFileName}"`);
+      return Promise.reject(new Error(`Unable to find topic file: "${topic.requestFileName}"`));
     });
 
   REQUEST_CACHE[topic.mixedCase] = promise;

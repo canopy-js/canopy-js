@@ -37,10 +37,12 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, displayOptions);
-  } else {
+    return displayPath(path.withoutLastSegment);
+  } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default);
+    return updateView(Path.default, null, { defaultRedirect: true });
+  } else {
+    throw new Error('Redirect to default topic failed terminally.')
   }
 }
 
