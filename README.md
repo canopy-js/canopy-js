@@ -55,16 +55,12 @@ Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
 <br>
-<details>
-  <summary>And produces an interactive website like this:</summary>
-
-  ![Demo 1](./readme/demo1.gif)
-
-</details>
+And produces an interactive website like this:
 <br>
 <br>
 <br>
 
+![Demo 1](./readme/demo1.gif)
 
 <br>
 <br>
@@ -85,7 +81,7 @@ Canopy JS is motivated by a series of observations.
 <br>
 <br>
 
-**1. A person can produce multiple explanations of the same thing**
+**1. Explanation is a linear traversal of nonlinear information**
 
 Here is what that means.
 
@@ -124,10 +120,6 @@ Here is what that means.
 **10. Prerequisites should be clearly defined and directly reviewable**
 
 Because every idea should have a unique address, every URL should represent an idea, and everything necessary to understand that idea.
-
--Explanations are mergable
-
--The content of one explanation is the address of another
 
 ### Usage
 
@@ -169,14 +161,6 @@ And for help remembering to increment the package.json version number when pushi
 ```
 ln -s script/hooks/pre-push .git/hooks
 ```
-
-### Developer Watch
-
-To run a supervised canopy watch process that restarts on code changes, add `bin/canopyd` to your $PATH and run:
-```
-canopyd watch
-```
-
 ### Running Tests
 
 Run tests:
