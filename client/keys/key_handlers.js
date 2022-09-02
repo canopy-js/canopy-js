@@ -70,44 +70,25 @@ function moveRightward() {
   );
 }
 
-function moveDownOrRedirect(newTab, altKey) {
-  if (Link.selection.isLocal && !altKey) { // no zoom
+function moveDownOrRedirect({ newTab, altKey }) {
+  if (Link.selection.isLocal && !altKey) {
     let link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
     let path = link.paragraphPathWhenSelected;
 
     if (newTab) {
-      return window.open(location.origin + Link.selection.targetPath, '_blank');
+      return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank'); // zoom
     } else {
-      return updateView(path, link);
-    }
-  }
-
-  if (Link.selection.isLocal && altKey) { // zoom
-    let link = Link.selection;
-    let path = link.paragraphPathWhenSelected.lastSegment;
-
-    if (newTab) {
-      return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank');
-    } else {
-      return updateView(
-        path,
-        link.atNewPath(path)
-      );
+      return updateView(path, link); // no zoom
     }
   }
 
   if (Link.selection.isGlobal) {
-    if (newTab && !altKey) { // open link at current path in new tab
-      let path = Link.selection.targetPath;
-      return window.open(location.origin + path.string, '_blank');
-    }
-
-    if (newTab && altKey) { // open link at new path in new tab
+    if (newTab) { // open link at new path in new tab
       let path = Link.selection.targetPath.lastSegment;
       return window.open(location.origin + path.string, '_blank');
     }
 
-    if (!newTab) { // because the user has the option to press down, all returns within the current tab are redirects
+    if (!newTab) {
       let path = Link.selection.targetPath.lastSegment;
       return updateView(
         path,
@@ -125,7 +106,8 @@ function moveDownOrRedirect(newTab, altKey) {
     } else {
       return updateView(
         path,
-        Link.selection.parentLink.atNewPath(path)
+        Link.selection.parentLink.atNewPath(path),
+        { scrollStyle: 'auto' }
       )
     }
   }
@@ -195,11 +177,16 @@ function zoomOnLocalPath() {
   return updateView(
     newPath,
     newLink,
+    { scrollStyle: 'auto' }
   );
 }
 
 function removeSelection() {
   return updateView(Path.current.rootTopicPath);
+}
+
+function duplicate() {
+  return window.open(window.location.href, '_blank');
 }
 
 export {
@@ -211,5 +198,6 @@ export {
   moveDownOrRedirect,
   depthFirstSearch,
   zoomOnLocalPath,
-  removeSelection
+  removeSelection,
+  duplicate
 };

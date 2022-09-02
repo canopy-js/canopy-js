@@ -7,7 +7,8 @@ import {
   moveDownOrRedirect,
   depthFirstSearch,
   zoomOnLocalPath,
-  removeSelection
+  removeSelection,
+  duplicate
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
 import Path from 'models/path';
@@ -44,7 +45,6 @@ const shortcutRelationships = {
   'up': moveUpward,
   'down': moveDownward,
   'right': moveRightward,
-  'shift-up': topicParentLink,
 
   'h': moveLeftward,
   'j': moveDownward,
@@ -53,15 +53,17 @@ const shortcutRelationships = {
 
   'escape': removeSelection,
   'z': zoomOnLocalPath,
+  'd': duplicate,
+  'alt-up': topicParentLink,
 
-  'enter': moveDownOrRedirect,
-  'meta-enter': moveDownOrRedirect.bind(null, true), // mac
-  'ctrl-enter': moveDownOrRedirect.bind(null, true), // windows & linux
-  'alt-enter': moveDownOrRedirect.bind(null, false, true),
-  'meta-alt-enter': moveDownOrRedirect.bind(null, true, true), // mac
-  'ctrl-alt-enter': moveDownOrRedirect.bind(null, true, true), // windows & linux
+  'enter': () => moveDownOrRedirect({}),
+  'meta-enter': () => moveDownOrRedirect({ newTab: true }), // mac
+  'ctrl-enter': () => moveDownOrRedirect({ newTab: true }), // windows & linux
+  'alt-enter': () => moveDownOrRedirect({ newTab: false, altKey: true }),
+  'meta-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // mac
+  'ctrl-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // windows & linux
 
-  'tab': depthFirstSearch,
+  'tab': depthFirstSearch
 }
 
 const keyNames = {
@@ -77,6 +79,7 @@ const keyNames = {
   76: 'l',
   186: ';',
   90: 'z',
+  68: 'd',
 
   13: 'enter',
   9: 'tab',

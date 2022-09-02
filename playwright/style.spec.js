@@ -73,7 +73,7 @@ test.describe('Text styles', () => {
 test.describe('Inline entities', () => {
   test('It creates images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Images');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a picture of jelly fish. Jelly Fish");
+    await expect(page.locator('.canopy-selected-section span')).toHaveText("This is a picture of jelly fish.");
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
@@ -86,7 +86,7 @@ test.describe('Inline entities', () => {
 
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This picture of a Jelly fish is also a link. Jelly fish link");
+    await expect(page.locator('.canopy-selected-section span')).toHaveText("This picture of a Jelly fish is also a link.");
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
