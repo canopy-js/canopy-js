@@ -28,7 +28,9 @@ CURRENT_TAG=$(git describe --exact-match --tags 2> /dev/null)
 
 if [[ -n "$CURRENT_TAG" && ! -z $(git status -s) ]]
 then
+	echo
 	echo "!!! ERROR: cannot publish with uncomitted changes (maybe you forgot to commit the package.json tag increment)"
+	echo
 	exit 1
 fi
 
@@ -37,7 +39,9 @@ then
 	if [ "$PACKAGE_JSON_VERSION" = "$CURRENT_TAG" ]; then
 	    exit 0
 	else
+			echo
 	    echo "!!! ERROR: Git tag and package.json version number do not match"
+	    echo
 	    exit 1
 	fi
 fi
