@@ -1079,6 +1079,8 @@ test('it throws error for topic name ending with whitespace', () => {
 });
 
 test('it logs global orphan topics', () => {
+  let log = console.log;
+
   console.log = jest.fn();
   let projectDir = '/example/project';
   let explFileData = {
@@ -1101,10 +1103,12 @@ test('it logs global orphan topics', () => {
   })
 
   expect(messagePresent).toEqual(true);
+  console.log = log;
 });
 
 
 test('it logs local orphan subtopics', () => {
+  let log = console.log;
   console.log = jest.fn();
   let projectDir = '/example/project';
   let explFileData = {
@@ -1125,9 +1129,11 @@ test('it logs local orphan subtopics', () => {
   })
 
   expect(messagePresent).toEqual(true);
+  console.log = log;
 });
 
 test('it logs non-reciprocal global references', () => {
+  let log = console.log;
   console.log = jest.fn();
   let projectDir = '/example/project';
   let explFileData = {
@@ -1148,6 +1154,39 @@ test('it logs non-reciprocal global references', () => {
   })
 
   expect(messagePresent).toEqual(true);
+  console.log = log;
 });
 
 
+////////////////////////////////////////////////
+
+
+test('it front-loads image tokens per paragraph', () => {
+  let projectDir = '/example/project';
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, and this is the flag. ![Flag](./flag.gif)\n`
+  };
+
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['/example/project/build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "type" : "image",
+            "resourceUrl": "./flag.gif",
+            "title": null,
+            "altText": "Flag",
+            "anchorUrl": null
+          },
+          {
+            "text": "Idaho is a midwestern state, and this is the flag. ",
+            "type": "text"
+          }
+        ]
+      }
+    }
+  );
+});

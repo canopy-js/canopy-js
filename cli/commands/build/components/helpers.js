@@ -115,6 +115,18 @@ function removeExtraKeys(node) {
   node.children.forEach(removeExtraKeys);
 }
 
+function frontLoadImages(tokens) {
+  tokens.sort((a,b) => {
+    if (a.type === 'image' & b.type !== 'image') {
+      return -1;
+    } else if (a.type !== 'image' & b.type === 'image') {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+}
+
 module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
@@ -122,5 +134,6 @@ module.exports = {
   updateFilesystem,
   getExplFileData,
   LinkProximityCalculator,
-  removeCircularListKeys
+  removeCircularListKeys,
+  frontLoadImages
 };

@@ -1,5 +1,5 @@
 let parseLine = require('./parse_line');
-let { removeCircularListKeys } = require('./helpers');
+let { removeCircularListKeys, frontLoadImages } = require('./helpers');
 
 function parseParagraph(text, parserContext) {
   let tokens = [];
@@ -10,6 +10,7 @@ function parseParagraph(text, parserContext) {
     parserContext.incrementLineNumber();
   });
 
+  frontLoadImages(tokens);
   removeCircularListKeys(tokens);
   return tokens;
 }
