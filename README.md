@@ -15,7 +15,7 @@
 
 # Table of Contents
 
-- [About Canopy JS](#about-canopy-js)
+- [About](#about-canopy-js)
   * [What it does](#what-it-does)
   * [Motivations](#motivations)
   * [Usage](#usage)
@@ -32,10 +32,9 @@
 ## About Canopy JS
 
 ### What Canopy does
-<br>
+
 Canopy takes a set of text files like this:
-<br>
-<br>
+
 <br>
 
 ```
