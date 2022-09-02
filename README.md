@@ -52,6 +52,7 @@ and later became a center of manufacturing and immigration.
 Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
+
 And produces an interactive website like this:
 <br>
 <br>
@@ -74,8 +75,6 @@ Traverse the same content in different directions:
 ### Motivations
 <br>
 Canopy JS is motivated by a series of observations.
-<br>
-<br>
 <br>
 
 **1. Explanation is a linear traversal of nonlinear information**
