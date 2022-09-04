@@ -18,7 +18,8 @@ function moveUpward() {
 
 function topicParentLink() {
   let link = Link.selection;
-  let newLink = link.enclosingParagraph.topicParagraph.parentLink
+  let newLink = Link.lastSelectionOfParagraph(link.enclosingParagraph.topicParagraph.parentParagraph) ||
+    link.enclosingParagraph.topicParagraph.parentLink;
 
   return updateView(
     newLink?.paragraphPathWhenSelected || Path.current,
