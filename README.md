@@ -84,7 +84,7 @@ We must straighten, but the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
-Then we can serialize for the client as-needed.
+Then make explanations as-needed.
 
 #### 2. Human explainers customize explanations
 
