@@ -138,7 +138,7 @@ A point in two places made one.
 Track sources, yet put like together.
 This is what we do when we read.
 We produce a merged understanding.
-An index from multiple sources.
+An index from multiple texts.
 So why only transmit the writing?
 Transmit the index itself.
 
