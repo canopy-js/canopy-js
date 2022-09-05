@@ -146,16 +146,17 @@ Transmit the index itself.
 #### 6. In explanation, data is metadata
 
 In a library, there are books and bookshelves.
-The bookshelf represents a category.
-Inside the category are books.
+The bookshelf for us forms a class.
+Inside the class we put books.
 Yet it is not so in the mind.
 Here is a claim and beside it rebuttal.
-There is a point and besides it is proof.
-In the mind, there is no taxonomy.
-The data itself is the category.
-Information is put at a place, and then becomes a place for information.
+There is a point and besides it its proof.
+In the mind, there are no labels.
 The book is also a bookshelf.
-We use speech to do navigation.
+The data itself is the class.
+Information is put in a place.
+Then becomes a place for more information.
+We use speech to navigate speech.
 So organize explanation with itself.
 
 #### 6. References are intended to import, not redirect
