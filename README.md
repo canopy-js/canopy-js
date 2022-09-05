@@ -112,7 +112,7 @@ Every work has to leave something out.
 Yet people produce large explanations.
 A professor can explain a whole course.
 An researcher can explain a whole field.
-But large explanations become unweildy.
+But large explanations are unweildy.
 Unweildy to wirite, and unweildy to read.
 We lack the tools that we need to produce them.
 And we lack the tools we need to consume them.
@@ -122,11 +122,12 @@ And we lack the tools we need to consume them.
 Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
 Yet every idea is an thing.
-Every idea has connections.
-Every idea can be requested.
+Every idea has its own connections.
+Every idea can itself be requested.
 So give an idea an address.
-Put at the address a page.
-And put on the page that which imparts the idea.
+And put at that address a page.
+And put on the page explanation.
+Explanation that imparts the idea.
 
 #### 5. Explanations are mergable
 
@@ -135,13 +136,13 @@ The same point is in multiple places.
 Multiple points regard the same thing.
 Thus can explanations be merged.
 Points about the same thing are collected.
-A point in two places is merged.
-We keep track of sources, yet put like ones together.
+A point in two places combined.
+Keep track of sources, yet put like together.
 This is what we do when we read.
 We create a merged understanding.
-One that indexes multiple sources.
+An index from multiple sources.
 So why only transmit the documents?
-We can transmit the index itself.
+Transmit the index itself.
 
 #### 6. In explanation, data is metadata
 
