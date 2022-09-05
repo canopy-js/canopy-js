@@ -225,7 +225,7 @@ We could give explanations more breadth.
 An explanation could span a large space.
 Here's one point adjacent another.
 From this point here, we go down.
-That would much more stick into memory.
+That would much more stick in memory.
 Even if it's all the same facts.
 
 ## Getting Started
