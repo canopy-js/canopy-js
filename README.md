@@ -129,7 +129,7 @@ And put on the page explanation, explanation that imparts the idea.
 
 #### 5. Explanations are mergable
 
-An explanation is made up of points.
+Explanations are made up of points.
 A point is made in many places.
 Several points can regard the same thing.
 Thus can explanations be merged.
