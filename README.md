@@ -211,14 +211,14 @@ But many readers don't know how.
 So they learn chunkings that were merely pragmatic.
 Then can only recall things by grouping.
 And connections become disconnected.
-And the density of the expert is lost.
+And the mind of the expert is lost.
 
 #### 9. Put pervasive concepts throughout
 
 You might have a question on grammar.
 But few people sit down and learn grammar.
 A fact might be explained by equation.
-But you don't want to learn all the equations.
+But you don't want to learn all equations.
 Many domains are auxiliary.
 We want them to understand something else.
 We're interested in them when they help.
@@ -226,7 +226,7 @@ But we're not going to learn them front-to-back.
 So put the background on the content.
 Put language on words as they're used.
 Put history on events as they happen.
-Let the reader burrow right from their reading.
+Let the reader burrow from their reading.
 And go down into just what is key.
 This requires the same thing in many places.
 Which requires reusable pieces.
@@ -239,12 +239,12 @@ But it is easier to remember spaces.
 Here is a room, and inside it a box.
 Here is a box, and inside it a key.
 But prose is just one long sequence.
-There's a beginning, a middle, and an end.
+There's a beginning, a middle, and end.
 That's not so easy to remember.
-We could give explanations breadth.
+We could give explanations more breadth.
 An explanation could span a large surface.
-Here one point and there another.
-From this point here we go down.
+Here one point adjacent another.
+From this point here, we go down.
 This will much more stick into memory.
 Even if it's all the same facts.
 
