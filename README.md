@@ -169,7 +169,7 @@ It's hard to reconstruct what you read.
 What's easy to remember are trees.
 Collections that have a few things.
 Things that have a few parts.
-Thus experts have hierarchy.
+Thus experts have a scheme.
 They have categories, nicknames, and groups.
 But most of the time, they withhold them.
 They reveal just a listing of facts.
