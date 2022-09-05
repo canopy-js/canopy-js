@@ -84,7 +84,7 @@ We must straighten, the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
-Then send the graph to the the reader.
+Then we can send the whole graph to the the reader.
 And make explanations as-needed.
 
 #### 2. Human explainers customize
@@ -93,7 +93,7 @@ Why might you prefer to send graph?
 Explainers tailor things for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
-From the explainer, many explanations are possible.
+From one author come many traversals.
 But we lose them by making a book.
 A book assumes prior knowledge.
 A book picks one level of detail.
