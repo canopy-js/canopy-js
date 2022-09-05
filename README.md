@@ -168,10 +168,10 @@ But this is all hard to remember.
 It's hard to reconstruct what you read.
 What is easy to remember are trees.
 Things that have a few parts.
-Each part might have a few more.
+And each part might have a few more.
 Thus are experts hierarchical.
 They have categories, nicknames, and groups.
-But most of the time, they withhold it.
+But most of the time, they withhold them.
 They reveal just a listing of facts.
 But the listener also needs hierarchy.
 Without hierarchy, they wont recall.
