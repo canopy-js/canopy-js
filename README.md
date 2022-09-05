@@ -156,7 +156,7 @@ The data itself is the class.
 A point is put in a place.
 And it becomes a place for more points.
 Thus does the surface expand.
-The more had the more room for having.
+The more had the more room to be had.
 We use speech to navigate speech.
 So organize speech with itself.
 
