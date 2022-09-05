@@ -134,7 +134,7 @@ An explanation is made up of points.
 The same point is in multiple places.
 Multiple points can regard the same thing.
 Thus can explanations be merged.
-Points about the same thing be collected.
+Points about the same thing are collected.
 A point in two places combined.
 Keep track of sources, yet put like together.
 This is what we do when we read.
