@@ -175,23 +175,23 @@ And most often they should keep us here.
 
 #### 8. Memory requires hierarchy, so data should be hierarchical
 
-Most articles are lists.
+Most writing goes like a list.
 One idea after another.
 But this is all hard to remember.
 It's hard to reconstruct what you read.
 What is easy to remember are trees.
-Things that have multiple parts.
-Each thing brings to mind several others.
-Thus do we use hierarchy.
-Experts are hierarchical.
-They have categories, nicknames, and groupings.
+Things that have a few parts.
+Each part might have a few fellows.
+Thus each thing brings to mind several others.
+Thus are Experts hierarchical.
+They have categories, nicknames, and groups.
 But most of the time, they withhold it.
 They reveal just a listing of facts.
-But the listener hierarchy also.
-Without the hierarchy, they wont recall.
+But the listener also needs hierarchy.
+Without hierarchy, they wont recall.
 So require that everything have structure.
-Limit the size of long chunks.
-Have each bit mention some others.
+Limit the size of the chunks.
+Have each bit mention some few others.
 Don't let the author make lists.
 Include index along with the data.
 
