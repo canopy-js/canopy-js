@@ -94,9 +94,9 @@ Explainers tailor things for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
 From one author come many traversals.
-But we lose them by making a book.
-A book assumes prior knowledge.
-A book picks one level of detail.
+But we lose them by making a text.
+A text assumes prior knowledge.
+A text picks one level of detail.
 There are many things known to the writer.
 And things that are key for some reader.
 But writing it gets in the way.
