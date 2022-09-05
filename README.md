@@ -110,9 +110,9 @@ Big collections are composed of small works.
 Discussion of one thing crowds out another.
 Yet people produce large explanations.
 A professor can explain a whole course.
-An researcher can explain a whole field.
-But large explanations are unweildy.
-Unweildy to wirite, and unweildy to read.
+A researcher can explain a whole field.
+But large explanations are unwieldy.
+Unwieldy to write, and unwieldy to read.
 We lack the tools that we need to produce them.
 And we lack the tools we need to consume them.
 
@@ -120,21 +120,21 @@ And we lack the tools we need to consume them.
 
 Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
-Yet every idea is an thing.
+Yet every idea is a thing.
 Every idea has connections.
 Every idea can itself be requested.
 So give an idea an address.
 And put at that address a page.
 And put on the page explanation.
-Explanation that imparts the idea.
+And have the explanation impart the idea.
 
 #### 5. Explanations are mergable
 
-An explanation is composed of points.
+An explanation is made up of points.
 The same point is in multiple places.
-Multiple points regard the same thing.
+Multiple points can regard the same thing.
 Thus can explanations be merged.
-Points about the same thing are collected.
+Points about the same thing be collected.
 A point in two places combined.
 Keep track of sources, yet put like together.
 This is what we do when we read.
@@ -146,54 +146,58 @@ Transmit the index itself.
 #### 6. In explanation, data is metadata
 
 In a library, there are books and bookshelves.
-The bookshelf is the category, and the books go inside.
+The shelf is category and books go inside.
 Yet it is not so in the mind.
-Here is a point, and here is its rebuttal.
-Here is a claim, and here is its evidence.
+Here is a claim and beside it is rebuttal.
+There is a point and besides it is proof.
 In the mind, there is no taxonomy.
-Rather, data is categry.
-A book is a bookshelf.
+Rather, the data is category.
 Information is put at a place, and then becomes a place for more information.
-To find one's way in an explanation, one uses explanation.
-So organize explanation with explanation.
+The book is also a bookshelf.
+We use speech to do navigation.
+So organize explanation with itself.
 
 #### 6. References are intended to import, not redirect
 
-On the web, many references are hyperlinks.
-A hyperlink redirects to a new place.
+On the web, we find many links.
+A link redirects to a new place.
 Mention ten things, and I've sent you ten places.
-But this is not so in an explanation.
-I need you to understand that idea, so that you can understand this one.
-The reference is an import.
+But this is not so when we speak.
+I mention that idea so you'll understand this one.
+The reference is not redirection.
+The reference is importation.
 I am not referencing it to send you there.
 I'm referencing it to bring it here.
-So most hyperlinks should import, not redirect.
+So all of the time we see links.
+And most often they should keep us here.
 
-#### 7. Memory requires hierarchy, so data should be hierarchial
+#### 7. Memory requires hierarchy, so data should be hierarchical
 
 Most articles are lists.
-One idea, and another idea.
-But it is hard to remember lists.
-When you read, it's hard to reconstruct what you read.
-What is easy to remember? Hierarchy.
-Here is a thing. It has a few parts. Here is a part. It has a few parts.
-Each entity brings to mind another, which becomes the next query.
-This is heirarchy.
-Experts have vast hierarchy.
-They have categories and nicknames and groupings.
-But most of the time, they withhold it, and just give facts.
-But the listener needs that hierarchy also.
-Without the hierarchy, they can't organize the information.
-So require hierarchy.
-Limit the size of chunks.
-One chunk can introduces several others.
+One idea after another.
+But this is all hard to remember.
+It's hard to reconstruct what you read.
+What is easy to remember are trees.
+Things that have multiple parts.
+Each thing brings to mind another.
+The other becomes the next query.
+Thus does understanding have hierarchy.
+Experts are hierarchical.
+They have categories, nicknames, and groupings.
+But most of the time, they withhold it.
+They reveal just a listing of facts.
+But the listener hierarchy also.
+Without the hierarchy, they wont recall.
+So require that everything have structure.
+Limit the size of long chunks.
+Have each bit mention some others.
 Don't let the author make lists.
-Include with information the means to recall the information.
+Include index along with the data.
 
 #### 8. Mastery requires dense graphs, but serialization removes them.
 
 An expert doesn't just know many things.
-They knows many things with many connections.
+Experts know many things with connections.
 The mind of the expert is dense.
 It is very hard to make straight.
 Every point raises ten others.
@@ -205,25 +209,26 @@ We give chunks, and let readers digest them.
 But many readers don't.
 So they learn chunkings that were merely pragmatic.
 Then can only recall things by grouping.
-And connected thoughts are disconnected.
+And connections become disconnected.
 And the density of the expert is lost.
 
 #### 9. Put pervasive concepts throughout
 
-You might be reading and have a question on grammar.
-But few people sit down and learn grammer.
+You might have a question on grammar.
+But few people sit down and learn grammar.
 A fact might be explained by equation.
-But you don't want to learn all equations.
+But you don't want to learn all the equations.
 Many domains are auxiliary.
 We want them to understand something else.
 We're interested in them when they help.
-But we're not going to learn front-to-back.
+But we're not going to learn them front-to-back.
 So put the background on the content.
-Put etymology on words as they're used.
+Put language on words as they're used.
 Put history on events as they happen.
-Let the reader burrow from reading.
-And go to just what is relevant.
-This requires reusable pieces.
+Let the reader burrow right from their reading.
+And go down into just what is key.
+This requires the same thing in many places.
+Which requires reusable pieces.
 And pieces that are very specific.
 
 #### 10. Visual memory is stronger than verbal
@@ -233,14 +238,14 @@ But it is easier to remember spaces.
 Here is a room, and inside it a box.
 Here is a box, and inside it a key.
 But prose is just one long sequence.
-There's a beggining, a middle, and an end.
-But that's not easy to remember.
+There's a beginning, a middle, and an end.
+That's not so easy to remember.
 We could give explanations breadth.
 An explanation could span a large surface.
-This point is to the left of that one.
+Here one point and there another.
 From this point here we go down.
-This will much more stick in memory.
-Even if its all the same facts.
+This will much more stick into memory.
+Even if it's all the same facts.
 
 ### Usage
 
