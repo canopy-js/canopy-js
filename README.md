@@ -93,7 +93,7 @@ Explainers tailor for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
 From one author come many traversals.
-But we lose them by making a text.
+But we lose them when making a text.
 A text must assume prior knowledge.
 A text picks one level of detail.
 Only the common is shared.
