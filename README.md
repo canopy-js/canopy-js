@@ -215,7 +215,7 @@ And most often they should keep us here.
 
 #### 10. Visual memory is stronger than verbal
 
-A person can remember many facts.
+A person can remember some facts.
 But it is easier to remember a space.
 Here is a room, and inside it a box.
 Here is a box, and inside it a key.
