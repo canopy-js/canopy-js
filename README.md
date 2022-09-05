@@ -80,8 +80,9 @@ Canopy JS is motivated by a series of observations.
 
 Information in the mind of the explainer is a graph, with many separate points and interconnections.
 But for information to travel from one person to another, it must be put in a straight line.
-We impose a single ordering, and leave out a lot of information.
-Serialization is inevitable, but we have a choice when we do it.
+We impose order, and leave information.
+We must serialize but the question is when.
+Really there are two options.
 You can have an explainer write a long list.
 Or, you can have the explainer reproduce their graph, and then serialize it as-needed for the client.
 
