@@ -136,7 +136,7 @@ Several points can regard the same thing.
 Thus can explanations be merged.
 Points on a thing can be marshaled.
 A point in two places combined.
-Keep track of sources, yet put like together.
+Track sources, yet put like together.
 This is what we do when we read.
 We produce a merged understanding.
 An index from multiple sources.
