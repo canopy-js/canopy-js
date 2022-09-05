@@ -245,7 +245,7 @@ We could give explanations more breadth.
 An explanation could span a large surface.
 Here one point adjacent another.
 From this point here, we go down.
-This will much more stick into memory.
+That would much more stick into memory.
 Even if it's all the same facts.
 
 ### Usage
