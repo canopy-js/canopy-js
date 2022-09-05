@@ -220,7 +220,7 @@ But few people sit down and learn grammar.
 A fact might be explained by equation.
 But you don't want to learn all equations.
 Many domains are auxiliary.
-We want them to understand something else.
+We want them to understand others.
 We're interested in them when they help.
 But we're not going to learn them front-to-back.
 So put the background on the content.
