@@ -148,8 +148,8 @@ In a library, we have books and bookshelves.
 The bookshelf for us forms a class.
 Inside the class we put books.
 Yet it is not so in the mind.
-Here is a claim and beside it rebuttal.
-Here is a point and beside it is proof.
+Here's a claim and beside it rebuttal.
+Here's a point and beside it is proof.
 In the mind, there are no mere labels.
 The book is also a shelf.
 The data itself is the class.
