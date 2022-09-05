@@ -154,7 +154,7 @@ In the mind, there are no labels.
 The book is also bookshelf.
 The data itself is the class.
 Information is put in a place.
-And becomes a place for more information.
+And it becomes a place for more information.
 We use speech to navigate speech.
 So organize speech with itself.
 
