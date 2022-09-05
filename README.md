@@ -80,22 +80,24 @@ Canopy JS is motivated by a series of observations.
 
 Information in the mind is a graph.
 But to send it we need a straight line.
-We must serialize, but the question is when.
+We must straighten, but the question is when.
 Really the options are two.
 The explainer can write a long list.
-Or the explainer can capture their graph, then serialize for the client as-needed.
+Or the explainer can capture their graph.
+Then we can serialize for the client as-needed.
 
 #### 2. Human explainers customize explanations
 
 Why might you prefer to send graph?
 Explainers can customize for the reader.
-They add clarification for a beginner.
-They add detail for someone more focused.
-From one explainer, many explanations are possible.
+They explain a bit more for beginners.
+They add detail for someone advanced.
+From the explainer, many explanations are possible.
 But we lose them by making a document.
 A document assumes prior knowledge.
 A document picks one level of detail.
-There is much the explainer has, that the reader wants.
+There is much that the explainer has.
+And things that the reader wants.
 But serialization gets in the way.
 So capture the graph of the author, and then let each listener explore.
 
@@ -228,11 +230,11 @@ And pieces that are very specific.
 
 A person can remember many facts.
 But it is easier to remember spaces.
-Here is a room, there's a box.
-Here is a box, there's a key.
+Here is a room, and inside it a box.
+Here is a box, and inside it a key.
 But prose is just one long sequence.
 There's a beggining, a middle, and an end.
-But that's not much to remember.
+But that's not easy to remember.
 We could give explanations breadth.
 An explanation could span a large surface.
 This point is to the left of that one.
