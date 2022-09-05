@@ -155,6 +155,8 @@ The book is also bookshelf.
 The data itself is the class.
 Information is put in a place.
 And it becomes a place for more information.
+Thus does the surface expand.
+The more had the more room for having.
 We use speech to navigate speech.
 So organize speech with itself.
 
