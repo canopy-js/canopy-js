@@ -51,7 +51,6 @@ and later became a center of manufacturing and immigration.
 Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
-<br>
 And produces an interactive website like this:
 <br>
 <br>
@@ -218,7 +217,7 @@ And they should keep us where we are.
 A person can remember some facts.
 But it is easier to remember a space.
 Here is a room, and inside it a box.
-Here is a box, and inside it a key.
+Here is a box, and inside it a thing.
 But prose is just one long sequence.
 A beginning, a middle, and end.
 That's not so easy to remember.
