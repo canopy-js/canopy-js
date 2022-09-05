@@ -142,7 +142,7 @@ An index from multiple sources.
 So why only transmit the writing?
 Transmit the index itself.
 
-#### 6. In explanation, data is metadata
+#### 6. Data is metadata
 
 In a library, we have books and bookshelves.
 The bookshelf for us forms a class.
@@ -158,21 +158,7 @@ And becomes a place for more information.
 We use speech to navigate speech.
 So organize speech with itself.
 
-#### 7. References are intended to import, not redirect
-
-On the web, we find many links.
-A link sends me to a new place.
-Mention ten things, and I've sent you ten places.
-But this is not so when we speak.
-I mention that thing to help explain this thing.
-The reference is not redirection.
-The reference is importation.
-I am not referencing to send you there.
-I'm referencing to bring it here.
-So all of the time we see links.
-And most often they should keep us here.
-
-#### 8. Memory requires hierarchy, so data should be hierarchical
+#### 7. Memory requires hierarchy, so data should be hierarchical
 
 Most writing goes like a list.
 One idea after another.
@@ -194,7 +180,7 @@ Have each bit mention some few others.
 Don't let the author make lists.
 Include index along with the data.
 
-#### 9. Mastery requires dense graphs, but serialization removes them.
+#### 8. Mastery requires dense graphs, but serialization removes them.
 
 An expert knows many things.
 But also many things with many connections.
@@ -211,6 +197,20 @@ So they learn chunkings that were merely pragmatic.
 Then can only recall things by grouping.
 And connections become disconnected.
 And the mind of the expert is lost.
+
+#### 9. References are intended to import, not redirect
+
+On the web, we find many links.
+A link sends me to a new place.
+Mention ten things, and I've sent you ten places.
+But this is not so when we speak.
+I mention that thing to help explain this thing.
+The reference is not redirection.
+The reference is importation.
+I am not referencing to send you there.
+I'm referencing to bring it here.
+So all of the time we see links.
+And most often they should keep us here.
 
 #### 10. Visual memory is stronger than verbal
 
