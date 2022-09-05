@@ -209,7 +209,7 @@ I make reference to explain this thing here.
 The reference is not redirection.
 The reference is importation.
 I am not referencing to send you elsewhere.
-I'm referencing to bring it here.
+I'm referencing to bring something here.
 So all of the time we see links.
 And most often they should keep us here.
 
