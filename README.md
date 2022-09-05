@@ -84,7 +84,7 @@ Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
 Then send the whole graph to the the reader.
-And make explanations as-needed.
+And make explanations as is needed.
 
 #### 2. Human explainers customize
 
@@ -99,21 +99,21 @@ A text picks one level of detail.
 Only the common is shared.
 What interests the few is left out.
 So capture the graph of the author.
-And then let each reader explore.
+And let every reader explore.
 
 #### 3. Explanations can be very large
 
 Explanations can't get very big.
 Books can't really get very long.
 Big collections are composed of small works.
-One discussion crowds out another.
+One discussion crowds out every other.
 Yet people produce large explanations.
 A professor can explain a whole course.
 A researcher can explain a whole field.
 But large explanations are unwieldy.
 Unwieldy to write, and unwieldy to read.
 We lack the tools that we need to produce them.
-And we lack the tools we need to consume them.
+And the tools that we need to consume.
 
 #### 4. Every idea is a unique address
 
@@ -121,8 +121,9 @@ Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
 Yet every idea is a thing.
 Every idea has connections.
-Every idea can be requested.
-So give every idea an address.
+A single idea can be requested.
+So give every idea a name.
+And make every name an address.
 And put at that address a page.
 And put on the page explanation.
 And the explanation will impart the idea.
