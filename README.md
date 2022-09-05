@@ -110,7 +110,7 @@ One discussion crowds out every other.
 Yet people produce large explanations.
 A professor can explain a whole course.
 A researcher can explain a whole field.
-But large explanations are unwieldy.
+But large explanations are hard.
 Unwieldy to write, and unwieldy to read.
 We lack the tools that we need to produce them.
 And the tools that we need to consume.
