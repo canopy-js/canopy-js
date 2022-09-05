@@ -121,7 +121,7 @@ Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
 Yet every idea is a thing.
 Every idea has connections.
-A single idea can be requested.
+A specific idea I might want.
 So give every idea a name.
 And make every name an address.
 And put at that address a page.
