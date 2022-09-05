@@ -133,7 +133,7 @@ Explanations are made up of points.
 A point is made in many places.
 Several points can regard the same thing.
 Thus can explanations be merged.
-Points on a thing can be gathered.
+Points on a thing can be allied.
 A point in two places combined.
 Track sources, yet put like together.
 This is what we do when we read.
