@@ -83,37 +83,33 @@ But to send it we need a straight line.
 We must serialize, but the question is when.
 Really the options are two.
 The explainer can write a long list.
-Or have the explainer capture their graph.
-Then serialize for the client as-needed.
+Or the explainer can capture their graph, then serialize for the client as-needed.
 
 #### 2. Human explainers customize explanations
 
 Why might you prefer to send graph?
-Explainers can customize explanations.
-They can add more clarification for a beginner.
-They can add detail for someone more taken.
-From an explainer, many explanations are possible.
+Explainers can customize for the reader.
+They add clarification for a beginner.
+They add detail for someone more focused.
+From one explainer, many explanations are possible.
 But we lose them by making a document.
-A document assumes one level of prior knowledge for all readers.
-A document picks one level of detail for all readers.
-A document can only mention things known to everyone.
+A document assumes prior knowledge.
+A document picks one level of detail.
 There is much the explainer has, that the reader wants.
 But serialization gets in the way.
-So have the explainer make a graph, and let each listener explore.
+So capture the graph of the author, and then let each listener explore.
 
 #### 3. Explanations can be very large
 
-At the moment, explanations can't get big.
-Books can only be a certain length.
-Multiple volumes or issues become standalone.
-Yet a human explainer can produce single explanations that are very very large.
+At the moment, explanations can't get very big.
+Books can't really get very long.
+Big collections are composed of small works.
+Yet a person can produce large explanations.
 A professor can explain the material of a semester.
-A domain expert can explain an entire discipline.
-Large explanations have room for points that don't make the cut for publication.
-Large explanations speak with one voice, so it's easy to combine all the pieces.
-However, dealing with large explanations is difficult.
+An expert can explain a whole discipline.
+But dealing with large explanations is difficult.
 Large explanations are unweildy to wirite, and unweildy to read.
-We lack the tools to produce large explanations, and we lack the tools we need to consume them.
+We lack the tools to produce large explanations, and we lack the tools that we need to consume them.
 
 #### 4. Every idea has a unique address
 
@@ -138,7 +134,7 @@ Sometimes multiple points regard the same entity.
 Thus explanations are mergable.
 Points about the same thing can be collected.
 A point in two explanations can be merged.
-We can keep track of who said what, yet put similar statements together.
+We can keep track of sources, yet put like ones together.
 Discussion of one aspect doesn't block discussion of another.
 This is what we do when we read.
 We create a merged understanding that indexes multiple sources.
