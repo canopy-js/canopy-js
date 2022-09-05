@@ -154,7 +154,7 @@ In the mind, there are no mere labels.
 The book is also a shelf.
 The data itself is the class.
 A point is put in a place.
-And it becomes a place for more points.
+And then becomes a place for more points.
 Thus does the surface expand.
 The more had, the more room for having.
 We use speech to navigate speech.
@@ -167,8 +167,8 @@ One idea after another.
 But all this is hard to remember.
 It's hard to reconstruct what you read.
 What's easy to remember are trees.
+Collections that have a few things.
 Things that have a few parts.
-And each part might have a few more.
 Thus experts have hierarchy.
 They have categories, nicknames, and groups.
 But most of the time, they withhold them.
