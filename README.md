@@ -153,8 +153,8 @@ Here is a point and besides it is proof.
 In the mind, there are no mere labels.
 The book is also a shelf.
 The data itself is the class.
-Information is put in a place.
-And it becomes a place for more information.
+A point is put in a place.
+And it becomes a place for more points.
 Thus does the surface expand.
 The more had the more room for having.
 We use speech to navigate speech.
