@@ -84,47 +84,46 @@ We must straighten, but the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
-Then make explanations as-needed.
+Then we could make explanations as-needed.
 
 #### 2. Human explainers customize explanations
 
 Why might you prefer to send graph?
-Explainers can customize for the reader.
+Explainers tailor for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
 From the explainer, many explanations are possible.
 But we lose them by making a book.
 A book assumes prior knowledge.
 A book picks one level of detail.
-There is much that the explainer has.
+There is much that the explainer knows.
 And things that the reader wants.
-But straightening gets in the way.
+But writing it gets in the way.
 So capture the graph of the author.
-Then let each listener explore.
+And then let each reader explore.
 
 #### 3. Explanations can be very large
 
-At the moment, explanations can't get very big.
+Explanations can't get very big.
 Books can't really get very long.
 Big collections are composed of small works.
-Yet a person can produce large explanations.
-A professor can explain the material of a semester.
-An expert can explain a whole discipline.
-But dealing with large explanations is difficult.
-Large explanations are unweildy to wirite, and unweildy to read.
-We lack the tools to produce large explanations, and we lack the tools that we need to consume them.
+Discussion of one thing crowds out another.
+Every work has to leave something out.
+Yet people produce large explanations.
+A professor can explain a whole course.
+An researcher can explain a whole discipline.
+But large explanations are unweildy.
+Unweildy to wirite, and unweildy to read.
+We lack the tools that we need to produce them.
+And we lack the tools we need to consume them.
 
 #### 4. Every idea has a unique address
 
-Every idea is a unique entity.
-Currently, we speak about chunks of prose.
+Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
-Yet every idea is an entity.
-Every idea has associations.
-Every idea can be requested individually.
-An idea has prerequisites.
-The prerequisites have prerequisites.
-The sum total imparts the idea.
+Yet every idea is an thing.
+Every idea has connections.
+Every idea can be requested.
 So give an idea an address.
 Put at the address a page.
 And put on the page that which imparts the idea.
@@ -132,17 +131,17 @@ And put on the page that which imparts the idea.
 #### 5. Explanations are mergable
 
 An explanation is composed of points.
-Sometimes the same point is in multiple explanations.
-Sometimes multiple points regard the same entity.
-Thus explanations are mergable.
-Points about the same thing can be collected.
-A point in two explanations can be merged.
-We can keep track of sources, yet put like ones together.
-Discussion of one aspect doesn't block discussion of another.
+The same point is in multiple places.
+Multiple points regard the same thing.
+Thus can explanations be merged.
+Points about the same thing are collected.
+A point in two places is merged.
+We keep track of sources, yet put like ones together.
 This is what we do when we read.
-We create a merged understanding that indexes multiple sources.
+We create a merged understanding.
+One that indexes multiple sources.
 So why only transmit the documents?
-We can transmit the index.
+We can transmit the index itself.
 
 #### 6. In explanation, data is metadata
 
