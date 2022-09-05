@@ -177,6 +177,7 @@ But the listener also needs structure.
 Without structure, they won't recall.
 So require the data have form.
 Limit the size of the chunks.
+Each one introduces some others.
 Don't let the author make lists.
 Include index along with the data.
 
