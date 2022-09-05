@@ -90,7 +90,7 @@ And make explanations as-needed.
 #### 2. Human explainers customize
 
 Why might you prefer to send graph?
-Explainers tailor things for the reader.
+Explainers tailor for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
 From one author come many traversals.
