@@ -93,13 +93,14 @@ Explainers can customize for the reader.
 They explain a bit more for beginners.
 They add detail for someone advanced.
 From the explainer, many explanations are possible.
-But we lose them by making a document.
-A document assumes prior knowledge.
-A document picks one level of detail.
+But we lose them by making a book.
+A book assumes prior knowledge.
+A book picks one level of detail.
 There is much that the explainer has.
 And things that the reader wants.
-But serialization gets in the way.
-So capture the graph of the author, and then let each listener explore.
+But straightening gets in the way.
+So capture the graph of the author.
+Then let each listener explore.
 
 #### 3. Explanations can be very large
 
