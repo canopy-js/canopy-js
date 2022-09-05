@@ -134,11 +134,11 @@ An explanation is made up of points.
 A point is in multiple places.
 Several points can regard the same thing.
 Thus can explanations be merged.
-Points on a thing can be collected.
+Points on a thing can be marshaled.
 A point in two places combined.
 Keep track of sources, yet put like together.
 This is what we do when we read.
-We create a merged understanding.
+We produce a merged understanding.
 An index from multiple sources.
 So why only transmit the documents?
 Transmit the index itself.
