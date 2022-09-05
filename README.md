@@ -227,7 +227,7 @@ An explanation could span a large space.
 Here's one point adjacent another.
 From this point here, we go down.
 That would much more stick into memory.
-Even if it's all the same facts.
+Even if it's just the same facts.
 
 ## Getting Started
 
