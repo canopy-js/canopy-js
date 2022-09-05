@@ -164,12 +164,12 @@ So organize prose with itself.
 
 Most writing goes like a list.
 One idea after another.
-But this is all hard to remember.
+But all this is hard to remember.
 It's hard to reconstruct what you read.
 What is easy to remember are trees.
 Things that have a few parts.
 And each part might have a few more.
-Thus are experts hierarchical.
+Thus experts have hierarchy.
 They have categories, nicknames, and groups.
 But most of the time, they withhold them.
 They reveal just a listing of facts.
