@@ -126,7 +126,7 @@ Every idea can be requested.
 So give every idea an address.
 And put at that address a page.
 And put on the page explanation.
-And the explanation imparts the idea.
+And the explanation will impart the idea.
 
 #### 5. Explanations are mergable
 
