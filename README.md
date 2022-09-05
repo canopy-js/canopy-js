@@ -194,8 +194,8 @@ Generally speaking, we cheat.
 We list ideas, and let readers connect them.
 We give chunks, and let readers digest them.
 But many readers don't know how.
-So they learn chunkings that were merely pragmatic.
-Then can only recall things by grouping.
+So they learn chunks that were merely pragmatic.
+And then recall things only by group.
 And connections become disconnected.
 And the mind of the expert is lost.
 
