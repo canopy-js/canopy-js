@@ -116,12 +116,12 @@ Unweildy to wirite, and unweildy to read.
 We lack the tools that we need to produce them.
 And we lack the tools we need to consume them.
 
-#### 4. Every idea has a unique address
+#### 4. Every idea is a unique address
 
 Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
 Yet every idea is an thing.
-Every idea has its own connections.
+Every idea has connections.
 Every idea can itself be requested.
 So give an idea an address.
 And put at that address a page.
