@@ -126,7 +126,7 @@ So give every idea a name.
 And make every name an address.
 And put at that address a page.
 And put on the page explanation.
-And have explanation impart the idea.
+And put explanation that imparts the idea.
 
 #### 5. Explanations are mergable
 
