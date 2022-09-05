@@ -4,7 +4,7 @@ Inline text styles: There are [[style characters]], [[images]], [[linked images]
 
 Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], [[plaintext that contains style tokens]].
 
-Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], and topics called [[_data]].
+Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], topics called [[_data]], and a [[topic with no child links]].
 
 Tables:
 | This | is | a | table |

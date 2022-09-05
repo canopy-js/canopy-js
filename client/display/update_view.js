@@ -3,6 +3,7 @@ import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
 import { canopyContainer } from 'helpers/getters';
+import { validatePathAndLink } from 'display/helpers';
 
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   validatePathAndLink(pathToDisplay, linkToSelect);
@@ -16,22 +17,7 @@ const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
       linkToSelect,
       displayOptions
     );
-  }).catch(handleDisplayError(pathToDisplay, displayOptions));
-}
-
-function validatePathAndLink(pathToDisplay, linkToSelect) {
-  if (!(pathToDisplay instanceof Path)) throw new Error('Invalid path argument');
-  if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
-}
-
-function handleDisplayError(pathToDisplay, displayOptions) {
-  return (e) => {
-    if (e.message === 'Link selector callback provided no link') {
-      displayPath(pathToDisplay, null, displayOptions);
-    } else {
-      console.error(e);
-    }
-  }
+  }).catch(e => console.error(e));
 }
 
 export default updateView;

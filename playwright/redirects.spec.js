@@ -73,4 +73,12 @@ test.describe('Redirects', () => {
     await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /Mars');
     await expect(consoleLogs).toContainEqual('[error] No path prefixes remain to try. Redirecting to default topic: /United_States');
   });
+
+  test('Null link selector callback renders page without link selection ', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Topic_with_no_child_links');
+    await expect(page.locator('h1')).toHaveText('United States');
+    await page.locator('body').press('Enter');
+    await expect(page).toHaveURL('Topic_with_no_child_links');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+  });
 });
