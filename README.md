@@ -78,8 +78,8 @@ Canopy JS is motivated by a series of observations.
 
 #### 1. Explanation is a linearization of nonlinear information
 
-Information in the mind of the explainer is a graph, with many separate points and interconnections.
-But for information to travel from one person to another, it must be put in a straight line.
+Information in the mind is a graph.
+But to send it we need a straight line.
 We impose order, and leave information.
 We must serialize but the question is when.
 Really there are two options.
