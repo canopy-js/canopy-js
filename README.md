@@ -140,24 +140,24 @@ Track sources, yet put like together.
 This is what we do when we read.
 We produce a merged understanding.
 An index from multiple sources.
-So why only transmit the documents?
+So why only transmit the writing?
 Transmit the index itself.
 
 #### 6. In explanation, data is metadata
 
-In a library, there are books and bookshelves.
+In a library, we have books and bookshelves.
 The bookshelf for us forms a class.
 Inside the class we put books.
 Yet it is not so in the mind.
 Here is a claim and beside it rebuttal.
 There is a point and besides it is proof.
 In the mind, there are no labels.
-The book is also a bookshelf.
-The data itself is a class.
+The book is also bookshelf.
+The data itself is the class.
 Information is put in a place.
-Then becomes a place for more information.
+And becomes a place for more information.
 We use speech to navigate speech.
-So organize prose with itself.
+So organize speech with itself.
 
 #### 6. References are intended to import, not redirect
 
