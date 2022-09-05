@@ -84,7 +84,8 @@ We must straighten, but the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
-Then we could make explanations as-needed.
+Then we could send the reader the graph.
+And make explanations as-needed.
 
 #### 2. Human explainers customize explanations
 
