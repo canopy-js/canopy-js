@@ -142,7 +142,7 @@ An index from multiple texts.
 So why only transmit the writing?
 Transmit the index itself.
 
-#### 6. Data is metadata
+#### 6. Explanatory data is metadata
 
 In a library, we have books and bookshelves.
 The bookshelf for us forms a class.
