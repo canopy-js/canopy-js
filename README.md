@@ -207,7 +207,7 @@ Mention ten things, and you've sent me ten places.
 But this is not so when we speak.
 I make reference to explain this thing here.
 The reference is not redirection.
-The reference is importation.
+The reference is supposed to import.
 I don't reference to send you over there.
 I reference to bring something here.
 So all of the time we see links.
