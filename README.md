@@ -174,8 +174,8 @@ They have categories, nicknames, and groups.
 But most of the time, they withhold them.
 They reveal just a listing of facts.
 But the listener also needs structure.
-Without structure, they wont recall.
-So require that everything have structure.
+Without structure, they won't recall.
+So require the data have structure.
 Limit the size of the chunks.
 Have each bit mention some few others.
 Don't let the author make lists.
