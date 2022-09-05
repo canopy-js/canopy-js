@@ -178,8 +178,8 @@ Without structure, they won't recall.
 So require the data have form.
 Limit the size of the chunks.
 Each one introduces some others.
-Don't let the author make lists.
 Include index along with the data.
+And don't let the author make lists.
 
 #### 8. Mastery requires dense graphs, but serialization removes them.
 
