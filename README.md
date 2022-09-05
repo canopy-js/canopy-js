@@ -208,8 +208,8 @@ But this is not so when we speak.
 I make reference to explain this thing here.
 The reference is not redirection.
 The reference is importation.
-I am not referencing to send you somewhere else.
-I'm referencing to bring something here.
+I don't reference to send you somewhere else.
+I reference to bring something here.
 So all of the time we see links.
 And most often they should keep us here.
 
