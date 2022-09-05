@@ -76,29 +76,29 @@ Traverse the same content in different directions:
 
 Canopy JS is motivated by a series of observations.
 
-#### 1. Explanation is a linearization of nonlinear information
+#### 1. Explanation is of a graph
 
 Information in the mind is a graph.
 But to send it we need a straight line.
-We impose order, and leave information.
-We must serialize but the question is when.
-Really there are two options.
-You can have an explainer write a long list.
-Or, you can have the explainer reproduce their graph, and then serialize it as-needed for the client.
+We must serialize, but the question is when.
+Really the options are two.
+The explainer can write a long list.
+Or have the explainer capture their graph.
+Then serialize for the client as-needed.
 
-#### 2. Human explainers have a greater capacity for customization
+#### 2. Human explainers customize explanations
 
 Why might you prefer to send graph?
-Human explainers can customize explanations.
+Explainers can customize explanations.
 They can add more clarification for a beginner.
-They can add more detail for someone more interested.
-They can focus on connections between this and the listener's knowledge.
-From the single understanding of the explainer, many explanations are possible.
+They can add detail for someone more taken.
+From an explainer, many explanations are possible.
 But we lose them by making a document.
 A document assumes one level of prior knowledge for all readers.
 A document picks one level of detail for all readers.
 A document can only mention things known to everyone.
-There is much the explainer has, that the reader wants, but serialization gets in the way.
+There is much the explainer has, that the reader wants.
+But serialization gets in the way.
 So have the explainer make a graph, and let each listener explore.
 
 #### 3. Explanations can be very large
@@ -110,12 +110,12 @@ Yet a human explainer can produce single explanations that are very very large.
 A professor can explain the material of a semester.
 A domain expert can explain an entire discipline.
 Large explanations have room for points that don't make the cut for publication.
-Large explanations have a single voice, which makes it easier to assimilate the different pieces.
+Large explanations speak with one voice, so it's easy to combine all the pieces.
 However, dealing with large explanations is difficult.
 Large explanations are unweildy to wirite, and unweildy to read.
-We lack the tools to produce large explanations, and we lack the tools to consume them.
+We lack the tools to produce large explanations, and we lack the tools we need to consume them.
 
-#### 4. Every idea has a unique address, and the page imparts the idea
+#### 4. Every idea has a unique address
 
 Every idea is a unique entity.
 Currently, we speak about chunks of prose.
@@ -171,12 +171,12 @@ I am not referencing it to send you there.
 I'm referencing it to bring it here.
 So most hyperlinks should import, not redirect.
 
-#### 7. Memory requires hierarchy, so content should be hierarchial
+#### 7. Memory requires hierarchy, so data should be hierarchial
 
 Most articles are lists.
 One idea, and another idea.
 But it is hard to remember lists.
-When you read an article, it is very hard to reconstruct what you read.
+When you read, it's hard to reconstruct what you read.
 What is easy to remember? Hierarchy.
 Here is a thing. It has a few parts. Here is a part. It has a few parts.
 Each entity brings to mind another, which becomes the next query.
