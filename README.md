@@ -197,8 +197,8 @@ Include index along with the data.
 
 #### 8. Mastery requires dense graphs, but serialization removes them.
 
-An expert doesn't just know many things.
-Experts know many things with connections.
+An expert knows many things.
+But also many things with many connections.
 The mind of the expert is dense.
 It is very hard to make straight.
 Every point raises ten others.
