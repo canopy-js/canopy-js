@@ -84,7 +84,7 @@ Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
 Then send the whole graph to the the reader.
-And make explanations as is needed.
+And produce explanations as-needed.
 
 #### 2. Human explainers customize
 
@@ -104,7 +104,7 @@ And let every reader explore.
 #### 3. Explanations can be very large
 
 Explanations can't get very big.
-Books can't really get very long.
+Books cannot become very long.
 Big collections are composed of small works.
 One discussion crowds out every other.
 Yet people produce large explanations.
