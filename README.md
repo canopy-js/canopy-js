@@ -80,7 +80,7 @@ Canopy JS is motivated by a series of observations.
 
 Information in the mind is a graph.
 But to send it we need a straight line.
-We must straighten, but the question is when.
+We must straighten, the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
