@@ -131,8 +131,8 @@ And the explanation will impart the idea.
 #### 5. Explanations are mergable
 
 An explanation is made up of points.
-The same point is in multiple places.
-Multiple points can regard the same thing.
+A point is in multiple places.
+Several points can regard the same thing.
 Thus can explanations be merged.
 Points on a thing can be collected.
 A point in two places combined.
