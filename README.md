@@ -133,8 +133,8 @@ Explanations are made up of points.
 A point is made in many places.
 Several points can regard the same thing.
 Thus can explanations be merged.
-Points on a thing made as one.
-A point in two places combined.
+Points on a thing put together.
+A point in two places made one.
 Track sources, yet put like together.
 This is what we do when we read.
 We produce a merged understanding.
