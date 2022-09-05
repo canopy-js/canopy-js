@@ -243,7 +243,7 @@ A beginning, a middle, and end.
 That's not so easy to remember.
 We could give explanations more breadth.
 An explanation could span a large surface.
-Here one point adjacent another.
+Here's one point adjacent another.
 From this point here, we go down.
 That would much more stick into memory.
 Even if it's all the same facts.
