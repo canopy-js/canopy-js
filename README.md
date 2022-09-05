@@ -205,10 +205,10 @@ On the web, we find many links.
 A link sends me to a new place.
 Mention ten things, and I've sent you ten places.
 But this is not so when we speak.
-I mention that thing to help explain this thing.
+I make reference to explain this thing here.
 The reference is not redirection.
 The reference is importation.
-I am not referencing to send you there.
+I am not referencing to send you elsewhere.
 I'm referencing to bring it here.
 So all of the time we see links.
 And most often they should keep us here.
