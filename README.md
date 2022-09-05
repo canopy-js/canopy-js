@@ -112,8 +112,8 @@ Discussion of one thing crowds out another.
 Every work has to leave something out.
 Yet people produce large explanations.
 A professor can explain a whole course.
-An researcher can explain a whole discipline.
-But large explanations are unweildy.
+An researcher can explain a whole field.
+But large explanations become unweildy.
 Unweildy to wirite, and unweildy to read.
 We lack the tools that we need to produce them.
 And we lack the tools we need to consume them.
