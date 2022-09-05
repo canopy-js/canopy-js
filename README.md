@@ -150,8 +150,8 @@ Inside the class we put books.
 Yet it is not so in the mind.
 Here is a claim and beside it rebuttal.
 Here is a point and besides it is proof.
-In the mind, there are no labels.
-The book is also bookshelf.
+In the mind, there are no mere labels.
+The book is also a shelf.
 The data itself is the class.
 Information is put in a place.
 And it becomes a place for more information.
