@@ -108,7 +108,6 @@ Explanations can't get very big.
 Books can't really get very long.
 Big collections are composed of small works.
 Discussion of one thing crowds out another.
-Every work has to leave something out.
 Yet people produce large explanations.
 A professor can explain a whole course.
 An researcher can explain a whole field.
