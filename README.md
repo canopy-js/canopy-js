@@ -150,14 +150,14 @@ The bookshelf for us forms a class.
 Inside the class we put books.
 Yet it is not so in the mind.
 Here is a claim and beside it rebuttal.
-There is a point and besides it its proof.
+There is a point and besides it is proof.
 In the mind, there are no labels.
 The book is also a bookshelf.
-The data itself is the class.
+The data itself is a class.
 Information is put in a place.
 Then becomes a place for more information.
 We use speech to navigate speech.
-So organize explanation with itself.
+So organize prose with itself.
 
 #### 6. References are intended to import, not redirect
 
@@ -165,11 +165,11 @@ On the web, we find many links.
 A link sends me to a new place.
 Mention ten things, and I've sent you ten places.
 But this is not so when we speak.
-I mention that idea so you'll understand this one.
+I mention that thing to help explain this thing.
 The reference is not redirection.
 The reference is importation.
-I am not referencing it to send you there.
-I'm referencing it to bring it here.
+I am not referencing to send you there.
+I'm referencing to bring it here.
 So all of the time we see links.
 And most often they should keep us here.
 
