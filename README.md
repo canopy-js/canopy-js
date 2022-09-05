@@ -156,7 +156,7 @@ The data itself is the class.
 A point is put in a place.
 And it becomes a place for more points.
 Thus does the surface expand.
-The more had the more room for having.
+The more had, the more room for having.
 We use speech to navigate speech.
 So organize prose with itself.
 
@@ -166,15 +166,15 @@ Most writing goes like a list.
 One idea after another.
 But all this is hard to remember.
 It's hard to reconstruct what you read.
-What is easy to remember are trees.
+What's easy to remember are trees.
 Things that have a few parts.
 And each part might have a few more.
 Thus experts have hierarchy.
 They have categories, nicknames, and groups.
 But most of the time, they withhold them.
 They reveal just a listing of facts.
-But the listener also needs hierarchy.
-Without hierarchy, they wont recall.
+But the listener also needs structure.
+Without structure, they wont recall.
 So require that everything have structure.
 Limit the size of the chunks.
 Have each bit mention some few others.
