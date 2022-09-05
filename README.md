@@ -18,7 +18,6 @@
 - [About](#about-canopy-js)
   * [What it does](#what-it-does)
   * [Motivations](#motivations)
-  * [Usage](#usage)
 - [Getting Started](#getting-started)
   * [Installation](#installation)
   * [Quickstart](#quickstart)
@@ -247,10 +246,6 @@ Here's one point adjacent another.
 From this point here, we go down.
 That would much more stick into memory.
 Even if it's all the same facts.
-
-### Usage
-
-Here's how you use it
 
 ## Getting Started
 
