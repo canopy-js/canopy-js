@@ -73,7 +73,7 @@ Traverse the same content in different directions:
 
 ### Motivations
 
-Canopy JS is motivated by a series of observations.
+Canopy JS is motivated by a series of observations and design-goals.
 
 #### 1. Explanation is of a graph
 
