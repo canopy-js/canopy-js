@@ -177,7 +177,6 @@ But the listener also needs structure.
 Without structure, they won't recall.
 So require the data have structure.
 Limit the size of the chunks.
-Have each bit mention some few others.
 Don't let the author make lists.
 Include index along with the data.
 
