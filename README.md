@@ -51,7 +51,7 @@ and later became a center of manufacturing and immigration.
 Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
-
+<br>
 And produces an interactive website like this:
 <br>
 <br>
