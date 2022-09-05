@@ -162,7 +162,7 @@ So organize explanation with itself.
 #### 6. References are intended to import, not redirect
 
 On the web, we find many links.
-A link redirects to a new place.
+A link sends me to a new place.
 Mention ten things, and I've sent you ten places.
 But this is not so when we speak.
 I mention that idea so you'll understand this one.
