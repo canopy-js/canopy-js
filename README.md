@@ -159,7 +159,7 @@ And becomes a place for more information.
 We use speech to navigate speech.
 So organize speech with itself.
 
-#### 6. References are intended to import, not redirect
+#### 7. References are intended to import, not redirect
 
 On the web, we find many links.
 A link sends me to a new place.
@@ -173,7 +173,7 @@ I'm referencing to bring it here.
 So all of the time we see links.
 And most often they should keep us here.
 
-#### 7. Memory requires hierarchy, so data should be hierarchical
+#### 8. Memory requires hierarchy, so data should be hierarchical
 
 Most articles are lists.
 One idea after another.
@@ -195,7 +195,7 @@ Have each bit mention some others.
 Don't let the author make lists.
 Include index along with the data.
 
-#### 8. Mastery requires dense graphs, but serialization removes them.
+#### 9. Mastery requires dense graphs, but serialization removes them.
 
 An expert knows many things.
 But also many things with many connections.
@@ -212,25 +212,6 @@ So they learn chunkings that were merely pragmatic.
 Then can only recall things by grouping.
 And connections become disconnected.
 And the mind of the expert is lost.
-
-#### 9. Put pervasive concepts throughout
-
-You might have a question on grammar.
-But few people sit down and learn grammar.
-A fact might be explained by equation.
-But you don't want to learn all equations.
-Many domains are auxiliary.
-We want them to understand others.
-We're interested in them when they help.
-But we're not going to learn them front-to-back.
-So put the background on the content.
-Put language on words as they're used.
-Put history on events as they happen.
-Let the reader burrow from their reading.
-And go down into just what is key.
-This requires the same thing in many places.
-Which requires reusable pieces.
-And pieces that are very specific.
 
 #### 10. Visual memory is stronger than verbal
 
