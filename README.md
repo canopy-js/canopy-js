@@ -83,7 +83,7 @@ We must straighten, the question is when.
 Really the options are two.
 The explainer can write a long list.
 Or the explainer can capture their graph.
-Then send the reader the graph.
+Then send the whole graph to the reader.
 And produce explanations as-needed.
 
 #### 2. Human explainers customize
