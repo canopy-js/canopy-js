@@ -179,9 +179,8 @@ But this is all hard to remember.
 It's hard to reconstruct what you read.
 What is easy to remember are trees.
 Things that have multiple parts.
-Each thing brings to mind another.
-The other becomes the next query.
-Thus does understanding have hierarchy.
+Each thing brings to mind several others.
+Thus do we use hierarchy.
 Experts are hierarchical.
 They have categories, nicknames, and groupings.
 But most of the time, they withhold it.
