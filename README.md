@@ -95,7 +95,7 @@ They add detail for someone advanced.
 From one author come many traversals.
 But we lose them when making a text.
 A text must assume prior knowledge.
-A text picks one level of detail.
+A text picks one level of depth.
 Only the common is shared.
 What interests the few is left out.
 So capture the graph of the author.
