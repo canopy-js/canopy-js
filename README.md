@@ -235,11 +235,11 @@ And pieces that are very specific.
 #### 10. Visual memory is stronger than verbal
 
 A person can remember many facts.
-But it is easier to remember spaces.
+But it is easier to remember a space.
 Here is a room, and inside it a box.
 Here is a box, and inside it a key.
 But prose is just one long sequence.
-There's a beginning, a middle, and end.
+A beginning, a middle, and end.
 That's not so easy to remember.
 We could give explanations more breadth.
 An explanation could span a large surface.
