@@ -87,7 +87,7 @@ Or the explainer can capture their graph.
 Then we could send the reader the graph.
 And make explanations as-needed.
 
-#### 2. Human explainers customize explanations
+#### 2. Human explainers customize
 
 Why might you prefer to send graph?
 Explainers tailor for the reader.
