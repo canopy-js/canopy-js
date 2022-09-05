@@ -203,7 +203,7 @@ And the mind of the expert is lost.
 
 On the web, we find many links.
 A link sends me to a new place.
-Mention ten things, and I've sent you ten places.
+Mention ten things, and you've sent me ten places.
 But this is not so when we speak.
 I make reference to explain this thing here.
 The reference is not redirection.
