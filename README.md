@@ -158,7 +158,7 @@ And it becomes a place for more points.
 Thus does the surface expand.
 The more had the more room to be had.
 We use speech to navigate speech.
-So organize speech with itself.
+So organize prose with itself.
 
 #### 7. Memory requires hierarchy, so data should be hierarchical
 
