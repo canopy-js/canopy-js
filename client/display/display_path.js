@@ -11,6 +11,7 @@ import {
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
+  try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, displayOptions); }
   if (linkToSelect?.contradicts(pathToDisplay)) {
     return updateView(linkToSelect.paragraphPathWhenSelected, linkToSelect, displayOptions);
   }

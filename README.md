@@ -73,47 +73,46 @@ Traverse the same content in different directions:
 ![Demo 2](./readme/demo2.gif)
 
 ### Motivations
-<br>
+
 Canopy JS is motivated by a series of observations.
-<br>
 
-**1. Explanation is a linear traversal of nonlinear information**
-
-Here is what that means.
-
-**2. Explanations can be very large**
+#### 1. Explanation is a linear traversal of nonlinear information
 
 Here is what that means.
 
-**3. Different explanations are composed of the same reusable components**
+#### 2. Explanations can be very large
 
 Here is what that means.
 
-**4. Most references are intended to import, not redirect**
+#### 3. Different explanations are composed of the same reusable components
 
 Here is what that means.
 
-**5. Memory is hierarchial, and so memorable information is also**
+#### 4. Most references are intended to import, not redirect
 
 Here is what that means.
 
-**6. Memory retains exact adjacencies, but serialization removes them**
+#### 5. Memory is hierarchial, and so memorable information is also
 
 Here is what that means.
 
-**7. Every idea should have a unique address**
+#### 6. Memory retains exact adjacencies, but serialization removes them
 
 Here is what that means.
 
-**8. The state of the page should reflect the state of the explanation**
+#### 7. Every idea should have a unique address
 
 Here is what that means.
 
-**9. Specificity should be tailored to the reader**
+#### 8. The state of the page should reflect the state of the explanation
 
 Here is what that means.
 
-**10. Prerequisites should be clearly defined and directly reviewable**
+#### 9. Specificity should be tailored to the reader
+
+Here is what that means.
+
+#### 10. Prerequisites should be clearly defined and directly reviewable
 
 Because every idea should have a unique address, every URL should represent an idea, and everything necessary to understand that idea.
 

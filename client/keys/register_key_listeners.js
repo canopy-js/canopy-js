@@ -54,7 +54,8 @@ const shortcutRelationships = {
   'escape': removeSelection,
   'z': zoomOnLocalPath,
   'd': duplicate,
-  'alt-up': topicParentLink,
+  'shift-up': topicParentLink,
+  'shift-k': topicParentLink,
 
   'enter': () => moveDownOrRedirect({}),
   'meta-enter': () => moveDownOrRedirect({ newTab: true }), // mac

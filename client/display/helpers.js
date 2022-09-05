@@ -64,9 +64,15 @@ function scrollPage(displayOptions) {
   );
 }
 
+function validatePathAndLink(pathToDisplay, linkToSelect) {
+  if (!(pathToDisplay instanceof Path)) throw new Error('Invalid path argument');
+  if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
+}
+
 export {
   setHeader,
   resetDom,
   tryPathPrefix,
-  scrollPage
+  scrollPage,
+  validatePathAndLink
 };
