@@ -210,7 +210,7 @@ The reference is importation.
 I don't reference to send you over there.
 I reference to bring something here.
 So all of the time we see links.
-And most often they should keep us here.
+And they should keep us where we are.
 
 #### 10. Visual memory is stronger than verbal
 
