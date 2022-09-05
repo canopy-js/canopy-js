@@ -122,7 +122,7 @@ Currently, we speak about prose.
 We speak about books, articles, chapters, and lectures.
 Yet every idea is a thing.
 Every idea has connections.
-Every idea can itself be requested.
+Every idea can be requested.
 So give an idea an address.
 And put at that address a page.
 And put on the page explanation.
