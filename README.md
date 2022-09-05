@@ -168,9 +168,8 @@ But this is all hard to remember.
 It's hard to reconstruct what you read.
 What is easy to remember are trees.
 Things that have a few parts.
-Each part might have a few fellows.
-Thus each thing brings to mind several others.
-Thus are Experts hierarchical.
+Each part might have a few more.
+Thus are experts hierarchical.
 They have categories, nicknames, and groups.
 But most of the time, they withhold it.
 They reveal just a listing of facts.
