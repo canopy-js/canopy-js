@@ -222,7 +222,7 @@ But prose is just one long sequence.
 A beginning, a middle, and end.
 That's not so easy to remember.
 We could give explanations more breadth.
-An explanation could span a large surface.
+An explanation could span a large space.
 Here's one point adjacent another.
 From this point here, we go down.
 That would much more stick into memory.
