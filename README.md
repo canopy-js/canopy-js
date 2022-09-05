@@ -204,7 +204,7 @@ It is very hard to make straight.
 Every point raises ten others.
 Every point is used in ten places.
 So how can you make a straight line?
-So generally speaking, we cheat.
+Generally speaking, we cheat.
 We list ideas, and let readers connect them.
 We give chunks, and let readers digest them.
 But many readers don't.
