@@ -76,11 +76,8 @@ Canopy JS is motivated by a series of observations and design-goals.
 
 #### 1. Explanation is a traversal of a graph
 
-When a person gives many explanations of similar material, we find that the same ideas repeat but in different orderings and juxtapositions. This may be because knowledge is a graph, and each explanation is a traversal of a slightly different path. When an expert produces an explanation, they are taking their interconnected knowledge and producing a partial linearization of it for some specific audience and purpose.
-
-This linearization is necessary, because we can only listen to one word at a time. However, there are two options for when it can occur. The expert can produce a book or lecture, doing all the linearization at once, producing one long sequence. Or, the expert can answer questions, producing small linearizations in response to specific individuals.
-
-The latter has many benefits. but requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the expert might record their graph itself, and then the user could produce their own linearizations on the fly as desired.
+When an expert produces an explanation, they are taking their interconnected knowledge and producing a partial linearization of it for some specific audience and purpose.
+This linearization can occur up-front, when writing a book for example. Or, the expert can answer questions, producing small linearizations in response to specific individuals. A custom explanation can include more clarification for a beginner, more detail for someone advanced, and connections of the material to the interests and background of the listener. However, unlike a book, customization requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the expert might record their graph itself, and then the user could produce their own linearizations on the fly as desired.
 
 #### 2. Explainers customize explanations
 
