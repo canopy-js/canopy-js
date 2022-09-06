@@ -74,159 +74,33 @@ Traverse the same content in different directions:
 
 Canopy JS is motivated by a series of observations and design-goals.
 
-#### 1. Explanation is of a graph
+#### 1. Explanation is a traversal of a graph
 
-Information in the mind is a graph.
-But to send it we need a straight line.
-We must straighten, the question is when.
-Really the options are two.
-The explainer can write a long list.
-Or the explainer can capture their graph.
-Then send the whole graph to the reader.
-And produce explanations as-needed.
-
-#### 2. Human explainers customize
-
-Why might you prefer to send graph?
-Explainers tailor for the reader.
-They explain a bit more for beginners.
-They add detail for someone advanced.
-From one author come many traversals.
-But we lose them when making a text.
-A text must assume prior knowledge.
-A text picks one level of depth.
-Only the common is shared.
-What interests the few is left out.
-So capture the graph of the author.
-And let every reader explore.
+When a person gives many explanations of similar material, we find that the same ideas repeat but in different orderings and juxtapositions. One explanation is that knowledge is a graph, and each explanation is a traversal of it in a slightly different path. When an expert produces an explanation, they are taking their interconnected knowledge and producing a partial linearization of it for some specific audience and purpose. This linearization is necessary, because we can only listen to one word at a time. However, there are two options for when it can occur. The expert can produce a book or lecture, doing all the linearization at once, producing one long sequence. Or, the expert can answer questions, producing small linearizations in response to specific individuals. There are benefits to both methods. Long sequences can have narrative structure and local context that allow many points to be made in bulk more efficiently. Yet personalized responses from an expert obviously have a big advantage as well, which is that the expert can customize the explanation for the listener. More information can be added for a beginner, detail can be added for someone more advanced, and connections between the subject and the listener's own interests can be mentioned. However, the custom approach has the obvious downside of requiring continuing access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a sequence, the expert might record their graph itself, and then the user could produce their own linearizations on the fly as desired.
 
 #### 3. Explanations can be very large
 
-Explanations can't get very big.
-Books cannot become very long.
-Big collections are composed of small works.
-Each discussion crowds out some other.
-Yet people produce large explanations.
-A professor can explain a whole course.
-A researcher can explain a whole field.
-But large explanations are hard.
-Unwieldy to write, and unwieldy to read.
-We lack the tools that we need to produce them.
-And the tools that we need to consume.
 
 #### 4. Every idea is a unique address
 
-Currently, we speak about prose.
-We speak about books, articles, chapters, and lectures.
-Yet every idea is a thing.
-Every idea has connections.
-A specific idea I might want.
-So give every idea a name.
-And make every name an address.
-And put at that address a page.
-And have the page impart the idea.
 
 #### 5. Explanations are mergable
 
-Explanations are made up of points.
-A point is made in many places.
-Several points can regard the same thing.
-Thus can explanations be merged.
-Points on a thing put together.
-A point in two places made one.
-Track sources, yet put like together.
-This is what we do when we read.
-We produce a merged understanding.
-An index from multiple texts.
-So why only transmit the writing?
-Transmit the index itself.
 
 #### 6. Explanatory data is metadata
 
-In a library, we have books and bookshelves.
-The bookshelf for us forms a class.
-Inside the class we put books.
-Yet it is not so in the mind.
-Here's a claim and beside it rebuttal.
-Here's a point and beside it is proof.
-In the mind, there are no mere labels.
-The book is also a shelf.
-The data itself is the class.
-A point is put in a place.
-And then becomes a place for more points.
-Thus does the surface expand.
-The more had, the more room for having.
-We use speech to navigate speech.
-So organize prose with itself.
 
 #### 7. Memory requires hierarchy, so data should be hierarchical
 
-Most writing goes like a list.
-One idea after another.
-But all this is hard to remember.
-It's hard to reconstruct what you read.
-What's easy to remember are trees.
-Collections that have a few things.
-Things that have a few parts.
-Thus experts have a scheme.
-They have categories, nicknames, and groups.
-But most of the time, they withhold them.
-They reveal just a listing of facts.
-But the listener also needs structure.
-Without structure, they won't recall.
-So require the data have form.
-Limit the size of the chunks.
-Each one introduces some others.
-Include index along with the data.
-And don't let the author make lists.
 
 #### 8. Mastery requires dense graphs, but serialization removes them.
 
-An expert knows many things.
-But also things with many connections.
-The mind of the expert is dense.
-It is very hard to make straight.
-Every point raises ten others.
-Every point is used in ten places.
-So how can you make a straight line?
-Generally speaking, we cheat.
-We list ideas, and let readers connect them.
-We give chunks, and let readers digest them.
-But many readers don't know how.
-So they learn chunks that were merely pragmatic.
-And then recall things only by group.
-And connections become disconnected.
-And the mind of the expert is lost.
 
 #### 9. References are intended to import, not redirect
 
-On the web, we find many links.
-A link sends me to a new place.
-Mention ten things, and you've sent me ten places.
-But this is not so when we speak.
-I make reference to explain this thing here.
-The reference is not redirection.
-The reference is supposed to import.
-I don't reference to send you over there.
-I reference to bring something here.
-So all of the time we see links.
-And they should keep us where we are.
 
 #### 10. Visual memory is stronger than verbal
 
-A person can remember some facts.
-But it is easier to remember a space.
-Here is a room, and inside it a box.
-Here is a box, and inside it a thing.
-But prose is just one long sequence.
-A beginning, a middle, and end.
-That's not so easy to remember.
-We could give explanations more breadth.
-An explanation could span a large space.
-Here's one point adjacent another.
-From this point here, we go down.
-That would much more stick into memory.
-Even if it's just the same facts.
 
 ## Getting Started
 
