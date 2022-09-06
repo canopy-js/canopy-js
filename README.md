@@ -74,10 +74,10 @@ Traverse the same content in different directions:
 
 Canopy JS is motivated by several observations and design goals.
 
-#### 1. Explanation is a traversal of a graph
+#### 1. Explanation is the traversal of a graph
 
 When an expert produces an explanation, they are taking their interconnected knowledge and producing a partial linearization of it for some specific audience and purpose.
-This linearization can occur up-front, for example when writing a book. Or, the expert can answer questions, producing small linearizations in response to specific prompts. A customized explanation can include more clarification for a beginner, more detail for someone advanced, and connections from the material to the interests and prior knowledge of the listener. However, customization requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the author might record the graph itself, and then the user could produce their own linearizations as desired.
+This linearization can occur up-front, when the author produces a book or lecture. Or, the expert can answer questions, producing small linearizations in response to specific prompts. A customized explanation can include more clarification for a beginner, more detail for someone advanced, and connections from the material to the interests and prior knowledge of the listener. However, customization requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the author might record the graph itself, and then the user could produce their own linearizations as desired.
 
 #### 2. Explanations can be very large
 
