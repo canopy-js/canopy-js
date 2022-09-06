@@ -77,13 +77,11 @@ Canopy JS is motivated by a series of observations and design-goals.
 #### 1. Explanation is a traversal of a graph
 
 When an expert produces an explanation, they are taking their interconnected knowledge and producing a partial linearization of it for some specific audience and purpose.
-This linearization can occur up-front, when writing a book for example. Or, the expert can answer questions, producing small linearizations in response to specific individuals. A custom explanation can include more clarification for a beginner, more detail for someone advanced, and connections of the material to the interests and background of the listener. However, unlike a book, customization requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the expert might record their graph itself, and then the user could produce their own linearizations on the fly as desired.
+This linearization can occur up-front, for example when writing a book. Or, the expert can answer questions, producing small linearizations in response to specific prompts. A customized explanation can include more clarification for a beginner, more detail for someone advanced, and connections from the material to the interests and prior knowledge of the listener. However, customization requires continued access to the explainer. The idea of many hypertext systems, and Canopy in particular, is that rather than producing a single text, the author might record the graph itself, and then the user could produce their own linearizations as desired.
 
-#### 2. Explainers customize explanations
+#### 2. Explanations can be very large
 
-
-#### 3. Explanations can be very large
-
+There are practical limits to the length of a book, or the size of a lecture. But people can produce explanations much larger than this. A professor can explain the material of an entire course. A domain expert might be able to explain an entire field or discipline. Large explanations might have certain benefits. A single-author work would have a common vocabulary and approach, which might make it easier to assilimate. Yet dealing with large explanations presents a logistical difficulty. At the moment, they are hard to produce, and they are hard to consume. Beyond a certain scale, even indexes and tables of contents become too large to navigate. For this, however, we can borrow from computer science the concept of binary search. If we compose paragraphs that link a few other paragraphs, and follow the path like a tree, we could navigate a million paragraphs while only ever seeing ten paragraphs at once. This approach would enable new kinds of writing-in-the-large that haven't been previously possible.
 
 #### 4. Every idea is a unique address
 
