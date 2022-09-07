@@ -98,7 +98,7 @@ When we read several books on the same subject, most of us would be hard pressed
 
 #### 4. Every idea is an entity
 
-When we make speak about texts, we refer to books and articles, or specific chapters and sections. Yet every idea is an entity, fitting to be referenced individually, and to have its own connections and prerequisites individually. So, we can make the unit of explanation the single idea, giving each idea a name and address, and at that address, putting an explanation that will impart the idea and its prerequisites, and listing other related points that are available. Thus would we increase the precision with which we can store explanations, and the precision with which people can request them.
+When we make speak about texts, we refer to books and articles, or specific chapters and sections. Yet every idea is an entity, fitting to be referenced individually, and to have its own connections and prerequisites individually. So, we can make the unit of explanation the single idea, giving each idea a name and address, and at that address, put an explanation that will impart the idea and its prerequisites, and listing other related points that are available. Thus would we increase the precision with which we can store explanations, and the precision with which people can request them.
 
 #### 5. Explanatory data is metadata
 
