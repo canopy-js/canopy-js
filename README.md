@@ -20,18 +20,18 @@
     + [Motivations](#motivations)
       - [1. Explanation is the traversal of a graph](#1-explanation-is-the-traversal-of-a-graph)
       - [2. Explanations can be very large](#2-explanations-can-be-very-large)
-      - [3. Explanations are mergable](#3-explanations-are-mergable)
-      - [4. Every idea is a unique address](#4-every-idea-is-a-unique-address)
-      - [5. Explanatory data is metadata](#5-explanatory-data-is-metadata)
+      - [3. Mastery requires dense graphs, which are hard to serialize](#3-mastery-requires-dense-graphs--which-are-hard-to-serialize)
+      - [4. Every idea is an entity](#4-every-idea-is-an-entity)
+      - [5. Explanations are mergable](#5-explanations-are-mergable)
       - [6. Memory requires hierarchy, so data should be hierarchical](#6-memory-requires-hierarchy--so-data-should-be-hierarchical)
-      - [7. Mastery requires dense graphs, which are hard to serialize](#7-mastery-requires-dense-graphs--which-are-hard-to-serialize)
-      - [8. References are intended to import, not redirect](#8-references-are-intended-to-import--not-redirect)
-      - [9. The page represents the state of the explanation](#9-the-page-represents-the-state-of-the-explanation)
+      - [7. Explanatory data is metadata](#7-explanatory-data-is-metadata)
+      - [8. The page represents the state of the explanation](#8-the-page-represents-the-state-of-the-explanation)
+      - [9. References are intended to import, not redirect](#9-references-are-intended-to-import--not-redirect)
       - [10. Visual memory is stronger than verbal](#10-visual-memory-is-stronger-than-verbal)
   * [Getting Started](#getting-started)
     + [Installation](#installation)
-    + [Quickstart](#quickstart)
-    + [Data Model](#data-model)
+    + [Quick Start](#quick-start)
+    + [Creating Content](#creating-content)
     + [CLI](#cli)
   * [Development](#development)
     + [Developer Installation](#developer-installation)
@@ -134,11 +134,11 @@ Install CLI:
 npm install -g canopy-js
 ```
 
-### Quickstart
+### Quick Start
 
 Get your project going
 
-### Data Model
+### Creating Content
 
 There are categories, topics, and subtopics, and global references, local references, and import references.
 
