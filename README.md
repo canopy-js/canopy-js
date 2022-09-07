@@ -9,7 +9,7 @@
 </div>
 <div align="center">
 <h1>Canopy.js</h1>
-<p> Make interactive websites from your prose explanations. <b><a href="#">Demo</a></b></p>
+<p> Make interactive websites from your prose explanations. </p>
 </div>
 
 # Table of Contents
