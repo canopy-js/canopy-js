@@ -187,7 +187,7 @@ function removeSelection() {
 }
 
 function duplicate() {
-  return window.open(location.origin + Path.current, '_blank');
+  return window.open(window.location.href, '_blank');
 }
 
 export {
