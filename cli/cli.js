@@ -4,6 +4,7 @@ const build = require('./commands/build');
 const watch = require('./commands/watch');
 const serve = require('./commands/serve/serve');
 const bulk = require('./commands/bulk/bulk');
+const sketch = require('./commands/sketch/sketch');
 
 const program = new Command();
 
@@ -85,6 +86,16 @@ program.command('bulk')
         console.error(e);
       }
     });
+  });
+
+program.command('sketch')
+  .description('interactive CLI for creating content')
+  .action(() => {
+    try {
+      sketch();
+    } catch (e) {
+      console.error(e);
+    }
   });
 
 program.parse();
