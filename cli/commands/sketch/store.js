@@ -1,4 +1,4 @@
-const { Maps, Initializers, Hooks } = require('./maps');
+const { Modes, Initializers } = require('./modes');
 
 class Store {
   constructor(state, undoHistory, redoHistory) {
@@ -9,16 +9,14 @@ class Store {
 
   setState(newState) {
     let oldState = this.state?.clone;
-    this.state = newState.clone;
 
-    if (Initializers[newState.mode]?.[newState.submode]) {
-      let oldState = this.state;
-      this.state = Initializers[newState.mode][newState.submode](this.state);
-      if (!this.state) throw new Error(`Mode initalizer function didn't return state: ${oldState.mode}`);
+    if (Initializers[newState.mode]) {
+      newState = Initializers[newState.mode](newState);
     }
 
-    console.log(oldState)
-    if (oldState && !oldState.suppressUndoRecord) {
+    this.state = newState.clone;
+
+    if (oldState && !oldState.getFlag('suppressUndo')) {
       this.undoHistory.push(oldState);
     }
 
@@ -26,7 +24,7 @@ class Store {
   }
 
   handleInput(input) {
-    if (input === 'u') {
+    if (input === 'Control-u') {
       if (this.undoHistory.length > 0) {
         this.redoHistory.push(this.state);
         this.state = this.undoHistory.pop();
@@ -34,7 +32,7 @@ class Store {
       return;
     }
 
-    if (input === 'U') {
+    if (input === 'Control-r') {
       if (this.redoHistory.length > 0) {
         this.undoHistory.push(this.state);
         this.state = this.redoHistory.pop();
@@ -44,40 +42,27 @@ class Store {
 
     let newState = this.state;
 
-    if (Hooks.beforeEach) {
-      newState = Hooks.beforeEach(newState);
-      if (!newState) throw new Error(`BeforeAll hook didn't return state`);
+    newState = newState.clearFlags();
+
+    let handlerObject = Modes[this.state.mode];
+    let handlerFunction;
+
+    if (handlerObject[input]) {
+      handlerFunction = handlerObject[input];
+    } else if (handlerObject['letter'] && input.match(/^[A-Za-z]$/)) {
+      handlerFunction = handlerObject['letter'];
+    } else if (handlerObject['number'] && input.match(/^[0-9]$/)) {
+      handlerFunction = handlerObject['number'];
+    } else if (handlerObject['alphanumeric'] && input.match(/^[A-Za-z0-9]$/)) {
+      handlerFunction = handlerObject['alphanumeric'];
+    } else if (handlerObject['character'] && input.match(/^.$/g)) {
+      handlerFunction = handlerObject['character'];
+    } else if (handlerObject['any']) {
+      handlerFunction = handlerObject['any'];
     }
 
-    let handlerObject = Maps[this.state.mode][this.state.submode];
-    let existingCommand = this.state.command;
-    newState = newState.clearCommand();
+    newState = handlerFunction && handlerFunction(newState, input) || newState;
 
-    existingCommand.concat([input]).forEach((commandChar) => {
-      if (handlerObject?.[commandChar]) {
-        handlerObject = handlerObject[commandChar];
-      } else if (commandChar.match(/^[A-Za-z]$/) && handlerObject?.['letter']) {
-        handlerObject = handlerObject?.['letter'];
-      } else if (commandChar.match(/^[0-9]$/) && handlerObject?.['number']) {
-        handlerObject = handlerObject?.['number'];
-      } else if (commandChar.match(/^[A-Za-z0-9]$/) && handlerObject?.['alphanumeric']) {
-        handlerObject = handlerObject?.['alphanumeric'];
-      } else if (handlerObject?.['any']) {
-        handlerObject = handlerObject?.['any'];
-      } else {
-        handlerObject = null; // ignore rest of command
-      }
-
-      if (typeof handlerObject === 'function') {
-        newState = handlerObject(newState.clearCommand().withUndoRecord(), newState.command.concat([input]));
-      } else if (handlerObject && typeof handlerObject === 'object') {
-        newState = newState.pushCommand(commandChar).withoutUndoRecord();
-      } else if (!handlerObject) {
-        newState = newState.clearCommand();
-      }
-    });
-
-    if (!newState) throw new Error(`Map function didn't return state: ${this.state.mode}, ${input}`);
     this.setState(newState);
   }
 }

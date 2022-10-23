@@ -1,11 +1,8 @@
 class State {
-  constructor(mode, submode) {
+  constructor(mode) {
     this.state = {};
     this.state.mode = mode;
-    this.state.submode = submode;
-    this.state.modeStates = {};
-    this.state.modeStates[this.mode] = {};
-    this.state.commandArray = [];
+    this.state.local = {};
   }
 
   get clone() {
@@ -14,20 +11,10 @@ class State {
     return clone;
   }
 
-  setMode(mode, submode) {
+  setMode(mode) {
     let clone = this.clone;
     if (typeof mode !== 'string') throw Error('Mode must be of type string')
-    if (typeof submode !== 'string') throw Error('Submode must be of type string')
     clone.state.mode = mode;
-    clone.state.submode = submode || 'normal';
-    clone.state.modeStates[clone.mode] = clone.state.modeStates[clone.mode] || {};
-    return clone;
-  }
-
-  setSubmode(submode) {
-    if (typeof submode !== 'string') throw Error('Submode must be of type string')
-    let clone = this.clone;
-    clone.state.submode = submode;
     return clone;
   }
 
@@ -35,89 +22,92 @@ class State {
     return this.state.mode;
   }
 
-  get submode() {
-    return this.state.submode;
-  }
+  // Local
 
-  setAttribute(key, value) {
+  setAttribute(namespace, key, value) {
     let clone = this.clone;
-    clone.state.modeStates[this.mode][key] = value;
+    clone.state.local[namespace] = clone.state.local[namespace] || {};
+    clone.state.local[namespace][key] = value;
     return clone;
   }
 
-  clearAttribute(key) {
+  removeAttribute(namespace, key) {
     let clone = this.clone;
-    delete clone.state.modeStates[this.mode][key];
+    delete clone.state.local[namespace][key];
     return clone;
   }
 
-  setDefault(key, value) {
+  clearNamespace(namespace) {
     let clone = this.clone;
-    if (!clone.state.modeStates[clone.mode][key]) {
-      clone.state.modeStates[clone.mode][key] = value;
+    delete clone.state.local[namespace];
+    return clone;
+  }
+
+  setDefault(namespace, key, value) {
+    let clone = this.clone;
+    clone.state.local[namespace] = clone.state.local[namespace] || {};
+    if (!clone.state.local[namespace][key]) {
+      clone.state.local[namespace][key] = value;
     }
     return clone;
   }
 
-  getAttribute(key, value) {
-    return this.modeState[key];
+  getAttribute(namespace, key, value) {
+    return this.state.local[namespace][key];
   }
 
-  changeAttribute(key, callback) {
+  changeAttribute(namespace, key, callback) {
     let clone = this.clone;
-    clone.state.modeStates[clone.state.mode][key] = callback(clone.state.modeStates[clone.state.mode][key]);
+    clone.state.local[namespace][key] = callback(clone.state.local[namespace][key]);
     return clone;
   }
 
-  get modeState() {
-    return this.state.modeStates[this.mode];
-  }
+  // Global //
 
-  get command() {
-    return this.state.commandArray;
-  }
-
-  pushCommand(input) {
+  setGlobalAttribute(key, value) {
     let clone = this.clone;
-    clone.state.commandArray.push(input);
+    clone.state[key] = value;
     return clone;
   }
 
-  clearCommand() {
+  removeGlobalAttribute(key) {
     let clone = this.clone;
-    clone.state.commandArray = [];
+    delete clone.state[key];
     return clone;
   }
 
-  setAlert(message) {
+  setGlobalDefault(key, value) {
     let clone = this.clone;
-    clone.state.alertMessage = message;
+    clone.state[key] = clone.state[key] || value;
     return clone;
   }
 
-  get alertMessage() {
-    return this.state.alertMessage;
+  getGlobalAttribute(key) {
+    return this.state[key];
   }
 
-  clearAlert() {
+  changeGlobalAttribute(key, callback) {
     let clone = this.clone;
-    clone.state.alertMessage = null;
+    clone.state[key] = callback(clone.state[key]);
     return clone;
   }
 
-  withoutUndoRecord() {
+  // Flags //
+
+  setFlag(key, value) {
     let clone = this.clone;
-    clone.state.suppressUndoRecord = true;
+    clone.state.flags = clone.state.flags || {};
+    clone.state.flags[key] = value;
     return clone;
   }
 
-  get suppressUndoRecord() {
-    return this.state.suppressUndoRecord;
+  getFlag(key) {
+    return this.state?.flags?.[key];
   }
 
-  withUndoRecord() {
+  clearFlags(key, value) {
     let clone = this.clone;
-    delete clone.state.suppressUndoRecord;
+    delete clone.state.flags;
     return clone;
   }
 }
