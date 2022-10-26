@@ -65,6 +65,14 @@ class Path {
     return this.pathArray[0][0];
   }
 
+  get lastTopic() {
+    return this.lastSegment.topic;
+  }
+
+  get topic() {
+    return this.lastSegment.pathArray[0]?.[0];
+  }
+
   get firstSubtopic() {
     return this.pathArray[0][1];
   }

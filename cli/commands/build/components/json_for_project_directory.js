@@ -19,21 +19,15 @@ function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, o
     let topic = new Topic(topicKeyOfString(explFileData[path]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
-    if (options.logging) {
-      console.log("Writing to: " + destinationPath);
-    }
-
     filesToWrite[destinationPath] = json;
 
     if (options.symlinks) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
       directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.fileName);
-      if (options.logging) console.log('Created directory: ' + topicFolderPath);
     }
   });
 
-  if (options.logging) console.log();
   parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
   parserContext.validateImportReferenceGlobalMatching();
