@@ -29,7 +29,7 @@ program.command('build')
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-  .option('-l, --logging', 'print logs', false)
+  .option('-l, --logging', 'print logs', true)
   .option('-o, --orphans', 'print logs', false)
   .option('-r, --reciprocals', 'print logs', false)
   .action((options) => {
@@ -47,21 +47,23 @@ program.command('watch')
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-  .option('-l, --logging', 'print logs', false)
+  .option('-l, --logging', 'print logs', true)
   .action((options) => {
     watch(options);
   });
 
 program.command('serve')
   .description('run a server for a Canopy project')
-  .argument('[portArgument]', 'Additional way of specifying port', 8000)
+  .argument('[portArgument]', 'Additional way of specifying port', null)
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
   .option('-s, --suppress-open', 'do not open link in browser', false)
+  .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .action((portArgument, options) => {
-    options.port = options.port || Number(portArgument) || 8000;
+    options.port = options.port || Number(portArgument) || null;
     try {
       serve(options);
     } catch (e) {
+      throw e;
       console.error(e.message);
     }
   });
@@ -70,7 +72,7 @@ program.command('bulk')
   .description('watch a Canopy project and rebuild JSON assets on text change')
   .addOption(new Option('--start', 'choose file paths with fuzzy selector').conflicts('finish'))
   .addOption(new Option('--finish', 'import finished session from canopy_bulk_file').conflicts('start'))
-  .addOption(new Option('-b, --blank', 'choose file paths with fuzzy selector').conflicts(['finish', 'pick', 'search', 'continue', 'git']))
+  .addOption(new Option('-b, --blank', 'start with a blank file').conflicts(['finish', 'pick', 'search', 'continue', 'git']))
   .addOption(new Option('-p, --pick', 'choose file paths with fuzzy selector').conflicts('finish'))
   .addOption(new Option('-f, --files', 'used in conjunction with --pick, allows user to select individual files').conflicts(['finish']).implies({ pick: true }))
   .addOption(new Option('-d, --directories', 'used in conjunction with --pick, allows the user to select directories of files').conflicts(['finish']).implies({ pick: true }))
@@ -78,12 +80,15 @@ program.command('bulk')
   .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
   .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
-  .option('-n, --no-backup', 'clear the backup file and do not write to it')
+  .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
+  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
+  .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
+  .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
       if (e.message !== 'fzf exited with error code 130') {
-        console.error(e);
+        console.error(e.message);
       }
     });
   });
@@ -94,8 +99,7 @@ program.command('sketch')
     try {
       sketch();
     } catch (e) {
-      throw e;
-      // console.error(e.message);
+      console.error(e.message);
     }
   });
 

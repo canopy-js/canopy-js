@@ -2,6 +2,7 @@ let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 let Paragraph = require('../../shared/paragraph');
 let { TextToken } = require('./tokens');
+let chalk = require('chalk');
 
 function consolidateTextTokens(tokenArray) {
   for (let i = 0; i < tokenArray.length; i++) {
@@ -82,15 +83,17 @@ class LinkProximityCalculator {
   }
 }
 
-function updateFilesystem(directoriesToEnsure, filesToWrite, destinationDataDirectory) {
+function updateFilesystem(directoriesToEnsure, filesToWrite, destinationDataDirectory, options) {
   fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
 
   directoriesToEnsure.forEach(directoryPath => {
     fs.ensureDirSync(directoryPath);
+    if (options.logging) console.log(chalk.yellow('Created directory: ' + directoryPath));
   });
 
   Object.keys(filesToWrite).forEach(filePath => {
     fs.writeFileSync(filePath, filesToWrite[filePath]);
+    if (options.logging) console.log(chalk.yellow("Writing to: " + filePath));
   });
 }
 

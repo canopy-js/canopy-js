@@ -10,7 +10,7 @@ function buildProject(projectDir, defaultTopicString, options) {
     filesToWrite
   } = jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, options);
 
-  updateFilesystem(directoriesToEnsure, filesToWrite, projectDir);
+  updateFilesystem(directoriesToEnsure, filesToWrite, projectDir, options);
 }
 
 module.exports = buildProject;

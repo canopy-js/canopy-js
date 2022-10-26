@@ -3,6 +3,7 @@ const path = require('path');
 const dedent = require('dedent-js');
 const shell = require('shelljs');
 const buildProject = require('./build/build_project');
+let chalk = require('chalk');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
@@ -29,10 +30,10 @@ function build(options) {
       <div
         id="_canopy"
         data-default-topic="${defaultTopicString}"
-        data-project-path-prefix="${projectPathPrefix}"
+        data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      <script src="${projectPathPrefix}/canopy.js"></script>
+      <script src="${projectPathPrefix||''}/canopy.js"></script>
       </body>
       </html>`;
 
@@ -71,7 +72,7 @@ function build(options) {
     fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
   }
 
-  console.log(`Canopy watch: Rebuilt JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})` + (` – file edited: ${options.filesEdited}` || ''));
+  if (options.logging) console.log(chalk.cyan(`Canopy watch: Rebuilt JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})` + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')));
 }
 
 function getDirectories(path) {
