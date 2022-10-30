@@ -94,7 +94,8 @@ program.command('sketch')
     try {
       sketch();
     } catch (e) {
-      console.error(e.message);
+      throw e;
+      // console.error(e.message);
     }
   });
 

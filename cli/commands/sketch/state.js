@@ -13,7 +13,7 @@ class State {
 
   setMode(mode) {
     let clone = this.clone;
-    if (typeof mode !== 'string') throw Error('Mode must be of type string')
+    if (typeof mode !== 'string') throw Error(`Mode must be of type string, received: ${mode}`)
     clone.state.mode = mode;
     return clone;
   }
@@ -22,17 +22,24 @@ class State {
     return this.state.mode;
   }
 
+  get modePrefix() {
+    return this.state.mode.match(/^([^.:]+)/)[1];
+  }
+
   // Local
 
-  setAttribute(namespace, key, value) {
+  setAttribute(key, value, namespace) {
+    namespace = namespace || this.modePrefix;
     let clone = this.clone;
     clone.state.local[namespace] = clone.state.local[namespace] || {};
     clone.state.local[namespace][key] = value;
     return clone;
   }
 
-  removeAttribute(namespace, key) {
+  removeAttribute(key, namespace) {
+    namespace = namespace || this.modePrefix;
     let clone = this.clone;
+    console.log(clone.state.local, namespace, key)
     delete clone.state.local[namespace][key];
     return clone;
   }
@@ -43,7 +50,8 @@ class State {
     return clone;
   }
 
-  setDefault(namespace, key, value) {
+  setDefault(key, value, namespace) {
+    namespace = namespace || this.modePrefix;
     let clone = this.clone;
     clone.state.local[namespace] = clone.state.local[namespace] || {};
     if (!clone.state.local[namespace][key]) {
@@ -52,11 +60,13 @@ class State {
     return clone;
   }
 
-  getAttribute(namespace, key, value) {
+  getAttribute(key, namespace) {
+    namespace = namespace || this.modePrefix;
     return this.state.local[namespace][key];
   }
 
-  changeAttribute(namespace, key, callback) {
+  changeAttribute(key, callback, namespace) {
+    namespace = namespace || this.modePrefix;
     let clone = this.clone;
     clone.state.local[namespace][key] = callback(clone.state.local[namespace][key]);
     return clone;
@@ -90,6 +100,19 @@ class State {
     let clone = this.clone;
     clone.state[key] = callback(clone.state[key]);
     return clone;
+  }
+
+  setReturn(key, value) {
+    let clone = this.clone;
+    clone.state[key] = clone.state[key] || value;
+    return clone;
+  }
+
+  getReturn(key) {
+    let value = this.state[key];
+    if (!value) throw new Error(`Return value ${key} not found`);
+    delete this.state[key];
+    return value;
   }
 
   // Flags //

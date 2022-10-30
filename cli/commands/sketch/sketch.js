@@ -1,23 +1,20 @@
-const { loadData } = require('./helpers');
-const render = require('./render');
-const { Modes } = require('./modes');
-const Store = require('./store');
-const State = require('./state');
-
 function sketch() {
+  const { loadData } = require('./helpers');
+  const Store = require('./store');
+  const State = require('./state');
+  let undoHistory = [];
+  let redoHistory = [];
+  let state = new State('construction');
+  state = loadData(state);
+  let store = new Store(state, undoHistory, redoHistory);
   const readline = require('readline');
   readline.emitKeypressEvents(process.stdin);
   process.stdin.setRawMode(true);
 
-  let undoHistory = [];
-  let redoHistory = [];
-  let state = new State('a', 'normal');
-  let store = new Store(state, undoHistory, redoHistory);
-
   console.log("\u001B[?25l") // hide the cursor
   console.log("\u001B[?1049h") // save state
 
-  renderAndOutput(store.state);
+  renderAndOutput(store.state, store);
 
   process.stdout.on('resize', function() {
     renderAndOutput(store.state);
@@ -31,7 +28,7 @@ function sketch() {
       input = key.sequence;
     }
 
-    if (key.name === 'c' && key.ctrl === true) {
+    if (key.name === 'd' && key.ctrl === true) {
       console.log("\u001B[?25h"); // reenable cursor
       console.log("\u001B[?1049l") // restore state
       process.exit()
@@ -41,19 +38,20 @@ function sketch() {
 
     store.handleInput(inputString);
 
-    renderAndOutput(store.state);
-    // console.log(JSON.stringify(store.state));
+    renderAndOutput(store.state, store);
+    // console.log(key);
+    // console.dir(store.state.state, { depth: 4 });
 
-    // update disk with data
+    // update disk with data – Non blocking
   });
 
-  // console.log(JSON.stringify(store.state));
+  // console.dir(store.state.state, { depth: 4 });
 }
 
-function renderAndOutput(state) {
+function renderAndOutput(state, store) {
   let terminalWidth = process.stdout.columns;
   let terminalHeight = process.stdout.rows;
-  let output = render(state, terminalWidth, terminalHeight);
+  let output =  store.render(terminalWidth, terminalHeight, state);
   console.clear();
   process.stdout.write(output);
 }
@@ -69,7 +67,8 @@ let sequenceMap = {
   '\u001B[B': 'down',
   '\u001B[A': 'up',
   '\u001B[C': 'right',
-  '\u001B[D': 'left'
+  '\u001B[D': 'left',
+  '\u0003': 'c'
 }
 
 module.exports = sketch;

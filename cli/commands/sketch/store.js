@@ -1,4 +1,7 @@
-const { Modes, Initializers } = require('./modes');
+const ModeManager = require('./modes/mode_manager');
+require('./modes/a');
+require('./modes/b');
+// ModeManager.log();
 
 class Store {
   constructor(state, undoHistory, redoHistory) {
@@ -10,8 +13,8 @@ class Store {
   setState(newState) {
     let oldState = this.state?.clone;
 
-    if (Initializers[newState.mode]) {
-      newState = Initializers[newState.mode](newState);
+    if (ModeManager.getInitializer(newState.mode)) {
+      newState = (ModeManager.getInitializer(newState.mode)||(s => s))(newState);
     }
 
     this.state = newState.clone;
@@ -21,6 +24,10 @@ class Store {
     }
 
     this.redoHistory = [];
+  }
+
+  render(w,h) {
+    return ModeManager.getRenderer(this.state.mode)(w, h, this.state);
   }
 
   handleInput(input) {
@@ -44,24 +51,23 @@ class Store {
 
     newState = newState.clearFlags();
 
-    let handlerObject = Modes[this.state.mode];
     let handlerFunction;
-
-    if (handlerObject[input]) {
-      handlerFunction = handlerObject[input];
-    } else if (handlerObject['letter'] && input.match(/^[A-Za-z]$/)) {
-      handlerFunction = handlerObject['letter'];
-    } else if (handlerObject['number'] && input.match(/^[0-9]$/)) {
-      handlerFunction = handlerObject['number'];
-    } else if (handlerObject['alphanumeric'] && input.match(/^[A-Za-z0-9]$/)) {
-      handlerFunction = handlerObject['alphanumeric'];
-    } else if (handlerObject['character'] && input.match(/^.$/g)) {
-      handlerFunction = handlerObject['character'];
-    } else if (handlerObject['any']) {
-      handlerFunction = handlerObject['any'];
+    if (ModeManager.getHandler(this.state.mode, input)) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, input);
+    } else if (ModeManager.getHandler(this.state.mode, 'letter') && input.match(/^[A-Za-z]$/)) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, 'letter');
+    } else if (ModeManager.getHandler(this.state.mode, 'number') && input.match(/^[0-9]$/)) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, 'number');
+    } else if (ModeManager.getHandler(this.state.mode, 'alphanumeric') && input.match(/^[A-Za-z0-9]$/)) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, 'alphanumeric');
+    } else if (ModeManager.getHandler(this.state.mode, 'character') && input.match(/^.$/g)) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, 'character');
+    } else if (ModeManager.getHandler(this.state.mode, 'any')) {
+      handlerFunction = ModeManager.getHandler(this.state.mode, 'any');;
     }
 
-    newState = handlerFunction && handlerFunction(newState, input) || newState;
+
+    newState = handlerFunction && handlerFunction(newState, [input]) || newState;
 
     this.setState(newState);
   }
