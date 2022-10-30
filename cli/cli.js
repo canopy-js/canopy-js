@@ -18,7 +18,7 @@ program.command('init')
     try {
       init();
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 
@@ -36,7 +36,7 @@ program.command('build')
     try {
       build(options);
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 
@@ -62,7 +62,7 @@ program.command('serve')
     try {
       serve(options);
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 
@@ -94,7 +94,7 @@ program.command('sketch')
     try {
       sketch();
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 

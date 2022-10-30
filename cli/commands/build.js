@@ -71,7 +71,7 @@ function build(options) {
     fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/canopy.js.map');
   }
 
-  console.log(`Built at: ${'' + new Date()}`);
+  console.log(`Canopy watch: Rebuilt JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})` + (` – file edited: ${options.filesEdited}` || ''));
 }
 
 function getDirectories(path) {

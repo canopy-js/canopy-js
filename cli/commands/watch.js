@@ -12,20 +12,28 @@ function watch(options) {
     return;
   }
 
-  const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true });
-
-  watcher.on('change', () => {
-    buildWrapper(options);
-  });
-
   buildWrapper(options);
+
+  const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true, ignoreInitial: true });
+  watcher.on('add', (e) => {
+    buildWrapper({...options, ...{ filesEdited: e }});
+  }).on('addDir', (e) => {
+    buildWrapper({...options, ...{ filesEdited: e }});
+  }).on('change', (e) => {
+    buildWrapper({...options, ...{ filesEdited: e }});
+  }).on('unlink', (e) => {
+    buildWrapper({...options, ...{ filesEdited: e }});
+  }).on('unlinkDir', (e) => {
+    buildWrapper({...options, ...{ filesEdited: e }});
+  })
 }
 
 function buildWrapper(options) {
   try {
     build(options);
   } catch (e) {
-    console.error(e);
+    console.error(`Canopy watch process pid ${process.pid} failed to build topic files`);
+    console.error(e.message);
   }
 }
 
