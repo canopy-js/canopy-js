@@ -117,9 +117,9 @@ function parseDataFile(dataFile) {
 
     if (categoryNotes.length > 0) {
       if (filesToWrite[categoryNotePath]) { // If there is a real file already existing at A/B/C/C.expl, add to it
-        filesToWrite[categoryNotePath] = filesToWrite[categoryNotePath] + "\n\n" + categoryNotes.join("\n\n");
+        filesToWrite[categoryNotePath] = filesToWrite[categoryNotePath].trim() + "\n\n" + categoryNotes.join("\n\n") + '\n';
       } else {
-        filesToWrite[categoryNotePath] = categoryNotes.join("\n\n"); // Otherwise start a new one
+        filesToWrite[categoryNotePath] = categoryNotes.join("\n\n") + '\n'; // Otherwise start a new one
       }
       filesEdited.push(categoryNotePath);
     }

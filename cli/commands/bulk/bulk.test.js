@@ -152,7 +152,7 @@ describe('parseDataFile', function() {
     expect(filesToWrite).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/C.expl': 'This one has no key.'
+      'topics/A/B/C/C.expl': 'This one has no key.\n'
     });
 
     expect(directoriesToEnsure).toEqual(['topics/A/B/C']);
@@ -173,7 +173,7 @@ describe('parseDataFile', function() {
     expect(filesToWrite).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/C.expl': "This one has no key.\n\nThis one also has no key."
+      'topics/A/B/C/C.expl': "This one has no key.\n\nThis one also has no key.\n"
     });
 
     expect(directoriesToEnsure).toEqual(['topics/A/B/C']);
@@ -305,7 +305,7 @@ describe('compareChangesWithFileSystem', function() {
     let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
 
     let fileSystemData = {
-      'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.'
+      'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     };
 
     let originalFileList = ['topics/A/B/C/Topic.expl']; // we loaded A/B/C/Topic.expl, so it should get deleted
@@ -329,7 +329,7 @@ describe('compareChangesWithFileSystem', function() {
     let { filesToWrite, directoriesToEnsure } = parseDataFile(dataFile);
 
     let fileSystemData = {
-      'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.'
+      'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     };
 
     let originalFileList = ['topics/A/B/C/Topic.expl']; // we loaded A/B/C/Topic.expl, so it should get deleted
