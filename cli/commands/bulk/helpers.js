@@ -47,6 +47,23 @@ function getDirectoryFiles(path) {
   return filteredPaths;
 }
 
+function getAllFileAndDirectoryPathsRecursive(path) {
+  return recursiveDirectoryFind(path).concat(getRecursiveSubdirectoryFiles(path)).filter(path => path !== 'topics');
+}
+
+function allFilesAndDirectoriesOf(pathArray) {
+  let result = [];
+  pathArray.forEach(path => {
+    result.push(path);
+    let directoryPathSegments = path.split('/').slice(0, -1); // skip the file name
+    for (let i = directoryPathSegments.length; i > 1; i--) { // skip the path 'topics'
+      let directoryPath = directoryPathSegments.slice(0, i).join('/');
+      if (!result.includes(directoryPath)) result.push(directoryPath);
+    }
+  });
+  return result;
+}
+
 function pathComparator(path1, path2) {
   let directoryPath1 = takeDirectoryPath(path1); // topics/ [A/B/C] /C.expl
   let directoryPath2 = takeDirectoryPath(path2);
@@ -67,6 +84,18 @@ function groupByPath(fileList) {
   }, {});
 }
 
+function messageComparator(messageA, messageB) {
+  let pathA = messageA.match(/(topics[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // the directory path
+  let pathB = messageB.match(/(topics[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // (?!\w*\.) = exclude the file name
+  if (messageA.includes('Deleted') && messageB.includes('Deleted')) {
+    if (pathA < pathB) return 1;
+    if (pathA > pathB) return -1;
+  } else {
+    if (pathA < pathB) return -1;
+    if (pathA > pathB) return 1;
+  }
+}
+
 module.exports = {
   fileNameFor,
   takeDirectoryPath,
@@ -75,5 +104,8 @@ module.exports = {
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
   pathComparator,
-  groupByPath
+  groupByPath,
+  getAllFileAndDirectoryPathsRecursive,
+  allFilesAndDirectoriesOf,
+  messageComparator
 };
