@@ -1,10 +1,11 @@
-let child_process = require('child_process');
-let fs = require('fs-extra');
-let editor = require('editor');
-let generateDataFile = require('./generate_data_file');
-let { reconstructProjectFiles } = require('./reconstruct_project_files');
-let Fzf = require('@dgoguerra/fzf').Fzf;
-let {
+const child_process = require('child_process');
+const fs = require('fs-extra');
+const editor = require('editor');
+const generateDataFile = require('./generate_data_file');
+const { reconstructProjectFiles } = require('./reconstruct_project_files');
+const Fzf = require('@dgoguerra/fzf').Fzf;
+const chokidar = require('chokidar');
+const {
   recursiveDirectoryFind,
   deduplicate,
   getRecursiveSubdirectoryFiles,
@@ -12,10 +13,12 @@ let {
   pathComparator,
   groupByPath
 } = require('./helpers');
+const watch = require('../watch');
+const serve = require('../serve/serve');
+let chalk = require('chalk');
 
 const bulk = async function(fileList, options) {
   if (!fs.existsSync('./topics')) throw new Error('Must be in a projects directory with a topics folder');
-  let editorMode = !(options.start || options.finish);
   options.noBackup && fs.existsSync('.canopy_bulk_backup_log') && fs.unlinkSync('.canopy_bulk_backup_log');
 
   if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
@@ -66,6 +69,11 @@ const bulk = async function(fileList, options) {
     }
   }
 
+  if (options.sync) {
+    fileList = getRecursiveSubdirectoryFiles('topics');
+
+  }
+
   if (fileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       fileList = [];
@@ -79,7 +87,8 @@ const bulk = async function(fileList, options) {
   let filesByPath = groupByPath(fileList);
   let initialData = generateDataFile(filesByPath, fileSystemData, options);
 
-  if (editorMode) {
+  let normalMode = !options.start && !options.finish && !options.sync;
+  if (normalMode) {
     fs.writeFileSync('.canopy_bulk_file', initialData);
     editor('.canopy_bulk_file', () => {
       let finishedData = fs.readFileSync('.canopy_bulk_file').toString();
@@ -93,16 +102,54 @@ const bulk = async function(fileList, options) {
   }
 
   if (options.start) { // non-editor mode
-    fs.writeFileSync('canopy_bulk_file', initialData);
-    fs.writeFileSync('.canopy_bulk_original_file_list', JSON.stringify(fileList));
+    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    fs.writeFileSync(options.bulkFileName, initialData);
+    fs.writeFileSync('.canopy_bulk_originally_selected_files_list', JSON.stringify(fileList));
+    editor(options.bulkFileName);
   }
 
   if (options.finish) { // non-editor mode
-    let finishedData = fs.readFileSync('canopy_bulk_file').toString();
-    let fileList = JSON.parse(fs.readFileSync('.canopy_bulk_original_file_list').toString());
+    handleFinish({...options, ...{ deleteBulkFile: true }});
+  }
+
+  if (options.sync) {
+    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    fs.writeFileSync(options.bulkFileName, initialData);
+    fs.writeFileSync('.canopy_bulk_originally_selected_files_list', JSON.stringify(fileList));
+    editor(options.bulkFileName, () => {
+      handleFinish({...options, ...{ deleteBulkFile: true }});
+      process.exit();
+    });
+
+    process.on('SIGINT', () => handleFinish({...options, ...{ deleteBulkFile: true }}) || process.exit());
+
+    if (['emacs', 'vim', undefined].includes(process.env.EDITOR)) options.logging = false;
+    watch(Object.assign(options, { suppressInitialBuild: true, buildIfUnbuilt: true }));
+    serve(options);
+
+    const watcher = chokidar.watch([options.bulkFileName], { persistent: true });
+    watcher.on('change', (e) => {
+      if (fs.readFileSync(options.bulkFileName).toString().split('\n').some(line => line.startsWith('//'))) {
+        return;
+      }
+      try {
+        if (options.logging) console.log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+        handleFinish({...options, ...{ deleteBulkFile: false }});
+        fs.writeFileSync('.canopy_bulk_originally_selected_files_list', JSON.stringify(getRecursiveSubdirectoryFiles('topics')));
+      } catch(e) {
+        fs.writeFileSync(options.bulkFileName, fs.readFileSync(options.bulkFileName).toString() + `\n// ${[e.stack]}`);
+      }
+    });
+  }
+
+  function handleFinish(options) {
+    let finishedData = fs.readFileSync(options.bulkFileName).toString();
+    let fileList = JSON.parse(fs.readFileSync('.canopy_bulk_originally_selected_files_list').toString());
     reconstructProjectFiles(finishedData, fileList, options);
-    fs.unlink('canopy_bulk_file');
-    fs.unlink('.canopy_bulk_original_file_list');
+    if (options.deleteBulkFile) {
+      fs.unlink(options.bulkFileName);
+      fs.unlink('.canopy_bulk_originally_selected_files_list');
+    }
   }
 };
 

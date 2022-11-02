@@ -4,6 +4,7 @@ const build = require('./commands/build');
 const watch = require('./commands/watch');
 const serve = require('./commands/serve/serve');
 const bulk = require('./commands/bulk/bulk');
+const sketch = require('./commands/sketch/sketch');
 
 const program = new Command();
 
@@ -17,7 +18,7 @@ program.command('init')
     try {
       init();
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 
@@ -28,14 +29,14 @@ program.command('build')
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-  .option('-l, --logging', 'print logs', false)
+  .option('-l, --logging', 'print logs', true)
   .option('-o, --orphans', 'print logs', false)
   .option('-r, --reciprocals', 'print logs', false)
   .action((options) => {
     try {
       build(options);
     } catch (e) {
-      console.error(e);
+      console.error(e.message);
     }
   });
 
@@ -46,22 +47,24 @@ program.command('watch')
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-  .option('-l, --logging', 'print logs', false)
+  .option('-l, --logging', 'print logs', true)
   .action((options) => {
     watch(options);
   });
 
 program.command('serve')
   .description('run a server for a Canopy project')
-  .argument('[portArgument]', 'Additional way of specifying port', 8000)
+  .argument('[portArgument]', 'Additional way of specifying port', null)
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
   .option('-s, --suppress-open', 'do not open link in browser', false)
+  .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .action((portArgument, options) => {
-    options.port = options.port || Number(portArgument) || 8000;
+    options.port = options.port || Number(portArgument) || null;
     try {
       serve(options);
     } catch (e) {
-      console.error(e);
+      throw e;
+      console.error(e.message);
     }
   });
 
@@ -77,14 +80,27 @@ program.command('bulk')
   .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
   .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
-  .option('-n, --no-backup', 'clear the backup file and do not write to it')
+  .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
+  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
+  .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
+  .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
       if (e.message !== 'fzf exited with error code 130') {
-        console.error(e);
+        console.error(e.message);
       }
     });
+  });
+
+program.command('sketch')
+  .description('interactive CLI for creating content')
+  .action(() => {
+    try {
+      sketch();
+    } catch (e) {
+      console.error(e.message);
+    }
   });
 
 program.parse();

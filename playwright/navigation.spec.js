@@ -15,10 +15,8 @@ let platform = os.platform();
 let systemNewTabKey;
 if (platform === 'darwin') {
   systemNewTabKey = 'Meta';
-} else if (platform === 'linux') {
-  systemNewTabKey = 'Control';
 } else {
-  systemNewTabKey = 'Meta';
+  systemNewTabKey = 'Control';
 }
 
 test.describe('Navigation', () => {
