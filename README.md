@@ -8,8 +8,11 @@
 </sub>
 </div>
 <div align="center">
-<h1>Canopy.js</h1>
-<p> Make interactive websites from your prose explanations. </p>
+<br>
+
+![Logo](./readme/logo-bump.png)
+
+<br>
 </div>
 
 # Table of Contents
@@ -69,7 +72,10 @@ Traverse the same content in different directions:
 <br>
 
 ![Demo 2](./readme/demo2.gif)
-
+<br>
+<br>
+<br>
+<br>
 ## Getting Started
 
 ### Installation
