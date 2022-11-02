@@ -9,7 +9,7 @@
 </div>
 <div align="center">
 
-![Logo](./readme/logo.png)
+![Logo](./readme/logo.png?)
 
 </div>
 
