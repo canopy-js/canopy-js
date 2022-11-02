@@ -9,9 +9,8 @@
 </div>
 <div align="center">
 
-![Demo 1](./readme/logo.png)
+![Logo](./readme/logo.png)
 
-<p> Make interactive websites from your prose explanations. </p>
 </div>
 
 # Table of Contents
