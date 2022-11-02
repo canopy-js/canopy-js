@@ -1,3 +1,5 @@
-Canopy builds on ideas from the [Moss](https://github.com/grnhse/moss#deploying-with-github-pages-and-travis) project of Greenhouse Software. Greenhouse is [hiring](http://greenhouse.io/careers).
+Canopy builds on ideas from the Moss project of Greenhouse Software, which is [hiring](http://greenhouse.io/careers)!
 
-Phil Melnick for discussing link styling and navigation.
+Moss was improved help and lessons learned from Adam Barcan, Josh Bazemore, Tharsan Bhuvanendran, Valentyn Boginskey, Michael Boufford, Adam Creegar, Orion Delwaterman, Tim Frey, Aaron Gibralter, Bradley Griffith, David Han, Chris Hazen, Kate Hooker, Salman Hossain, Tim Johnson, Rachel Leffel, Erin Lewis, Andrew Lister, Alexa Little, Diana Liu, Scott Luptowski, Luan Luu, Runbai Ma, Hugo Marcotte, Mike McClurg, Mark McDonald, Juan Müller, Mike O'Neil, Alex Powell, Tom Phillips, Dana Pieluszczak, Rob Rosenbaum, Leah Scott, Amanda Segal, Matt Schmaus, Jeff Simon, Igor Stefanco, Jon Stross, Justin Sung, Lauren Vicknair, Elena Washington, Willa Wang, Max Zimmermann, Andrew Zirm, and the participation of the Greenhouse team, and builds on ideas discussed with Robert Dondero, Erika Milam, Taylor Francis, David Hammer, and Raymond Zhong.
+
+Canopy was improved by Phil Melnick and Isaac Gamus.
