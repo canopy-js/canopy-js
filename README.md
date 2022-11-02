@@ -70,7 +70,10 @@ Traverse the same content in different directions:
 <br>
 
 ![Demo 2](./readme/demo2.gif)
-
+<br>
+<br>
+<br>
+<br>
 ## Getting Started
 
 ### Installation
