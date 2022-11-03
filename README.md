@@ -10,7 +10,7 @@
 <div align="center">
 <br>
 
-![Logo](./readme/logo.png?)
+![Logo](./readme/logo.png)
 
 <br>
 </div>
