@@ -125,21 +125,36 @@ const bulk = async function(fileList, options) {
 
     if (['emacs', 'vim', undefined].includes(process.env.EDITOR)) options.logging = false;
     watch(Object.assign(options, { suppressInitialBuild: true, buildIfUnbuilt: true }));
-    serve(options);
+
+    let startedServer = false;
+    try {
+      serve(options);
+      startedServer = true;
+    } catch(e) {
+      console.error(e);
+    }
 
     const watcher = chokidar.watch([options.bulkFileName], { persistent: true });
     watcher.on('change', (e) => {
       if (fs.readFileSync(options.bulkFileName).toString().split('\n').some(line => line.startsWith('//'))) {
         return;
       }
+
       try {
         if (options.logging) console.log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         handleFinish({...options, ...{ deleteBulkFile: false }});
         fs.writeFileSync('.canopy_bulk_originally_selected_files_list', JSON.stringify(getRecursiveSubdirectoryFiles('topics')));
+        if (!startedServer) {
+          serve(options);
+          startedServer = true;
+        }
       } catch(e) {
-        fs.writeFileSync(options.bulkFileName, fs.readFileSync(options.bulkFileName).toString() + `\n// ${[e.stack]}`);
+        console.error(e, e.stack);
+        fs.writeFileSync(options.bulkFileName, fs.readFileSync(options.bulkFileName).toString() + `\n// ${[e]}`);
       }
     });
+
+    // on delete?
   }
 
   function handleFinish(options) {

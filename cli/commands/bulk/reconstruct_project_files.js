@@ -257,7 +257,7 @@ function updateFileSystem({ filesToWriteFinal, directoriesToEnsure, pathsToDelet
     fs.unlinkSync(path);
   });
 
-  directoriesToDelete.forEach(path => {
+  directoriesToDelete.sort().reverse().forEach(path => { // we sort and reverse so that A/B/C gets deleted before A/B
     fs.rmdir(path);
   })
 }

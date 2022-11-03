@@ -13,7 +13,7 @@ function watch(options) {
     return;
   }
 
-  if (!options.suppressInitialBuild || (options.buildIfUnbuilt && !fs.existsSync('topics/build/data'))) {
+  if (!options.suppressInitialBuild || (options.buildIfUnbuilt && !fs.existsSync('topics/build/_data'))) {
     buildWrapper(options);
   }
 
@@ -42,12 +42,9 @@ function buildWrapper(options) {
   try {
     build(options);
   } catch (e) {
-    console.error(chalk.red(`Canopy watch process pid ${process.pid} failed to build topic files`));
-    if (options.sync) {
-      fs.writeFileSync('canopy_bulk_file', fs.readFileSync('canopy_bulk_file').toString() + `\n// ${e.message}`);
-    } else {
-      console.error(e.message);
-    }
+    console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
+    if (options.sync) fs.writeFileSync(options.bulkFileName, fs.readFileSync(options.bulkFileName).toString() + `\n// ${e.message}`);
+    console.error(e);
   }
 }
 
