@@ -69,11 +69,6 @@ const bulk = async function(fileList, options) {
     }
   }
 
-  if (options.sync) {
-    fileList = getRecursiveSubdirectoryFiles('topics');
-
-  }
-
   if (fileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       fileList = [];

@@ -4,7 +4,7 @@ function convertUnderscoresToSpaces(string) {
     .map(string => string
       .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
       .map(string => string.replace(/_/g, ' '))
-      .join('%5C_') //convert underscores not preceeded by single %5C to spaces
+      .join('%5C_') //convert underscores not preceded by single %5C to spaces
     ).join('%5C%5C');
 }
 
