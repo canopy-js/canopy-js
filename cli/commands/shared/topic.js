@@ -1,5 +1,4 @@
 let removeStyleCharacters = require('./remove_style_characters');
-let { convertUnderscoresToSpaces } = require('./helpers');
 require('css.escape');
 
 class Topic {
@@ -54,6 +53,30 @@ class Topic {
     topic.display = null; // The encoded slug was formed from the mixed case, so that is the best we can reconstruct from it
     return topic;
   }
+}
+
+Topic.convertUnderscoresToSpaces = function convertUnderscoresToSpaces(string) {
+  // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
+  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
+    .map(string => string
+      .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
+      .map(string => string.replace(/_/g, ' '))
+      .join('%5C_') //convert underscores not preceded by single %5C to spaces
+    ).join('%5C%5C');
+}
+
+Topic.convertSpacesToUnderscores = function convertSpacesToUnderscores(string) {
+  return string.split('/').map(string => (new Topic(string)).fileName).join('/');
+}
+
+function convertUnderscoresToSpaces(string) {
+  // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
+  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
+    .map(string => string
+      .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
+      .map(string => string.replace(/_/g, ' '))
+      .join('%5C_') //convert underscores not preceded by single %5C to spaces
+    ).join('%5C%5C');
 }
 
 module.exports = Topic;
