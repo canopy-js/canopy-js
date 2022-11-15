@@ -63,7 +63,6 @@ program.command('serve')
     try {
       serve(options);
     } catch (e) {
-      throw e;
       console.error(e.message);
     }
   });
@@ -82,6 +81,7 @@ program.command('bulk')
   .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
   .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
   .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
+  .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
