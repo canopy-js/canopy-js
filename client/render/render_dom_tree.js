@@ -82,12 +82,15 @@ function createSectionElement(renderContext) {
   sectionElement.dataset.pathDepth = pathDepth;
 
   if (topic.mixedCase === subtopic.mixedCase) {
-    pathDepth > 0 && sectionElement.prepend(document.createElement('hr'));
+    if (pathDepth > 0) sectionElement.prepend(document.createElement('hr'));
     sectionElement.classList.add('canopy-topic-section');
   }
 
   return sectionElement;
 }
+
+// When rendering the links of a paragraph, is a given link the parent link of
+// the next paragraph in the visible path?
 
 function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
   let subtopicOfPathContainingOpenGlobalReference = path.firstSubtopic;
@@ -96,12 +99,14 @@ function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
   let openGlobalLinkTargetTopic = path.secondTopic;
   let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
 
+  // Is the given global link's target the same as the next path segment's topic?
   let thisGlobalLinkIsPointingToTheRightThingToBeOpen =
-    link.targetTopic.caps === openGlobalLinkTargetTopic?.caps &&
-    link.targetSubtopic.caps === openGlobalLinkTargetSubtopic?.caps;
+    link.targetTopic.mixedCase === openGlobalLinkTargetTopic?.mixedCase &&
+    link.targetSubtopic.mixedCase === openGlobalLinkTargetSubtopic?.mixedCase;
 
-  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.caps ===
-    subtopicOfPathContainingOpenGlobalReference.caps;
+  // Is this global link in the currently visible lowest subtopic of the given
+  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.mixedCase ===
+    subtopicOfPathContainingOpenGlobalReference.mixedCase;
 
   return openGlobalLinkExists &&
     thisGlobalLinkIsPointingToTheRightThingToBeOpen &&
