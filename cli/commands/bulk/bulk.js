@@ -22,7 +22,6 @@ const bulk = async function(selectedFileList, options) {
   function log(message) { if (options.logging) console.log(message) }
 
   if (!fs.existsSync('./topics')) throw new Error('Must be in a projects directory with a topics folder');
-  options.noBackup && fs.existsSync('.canopy_bulk_backup_log') && fs.unlinkSync('.canopy_bulk_backup_log');
 
   if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
     let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
@@ -89,6 +88,7 @@ const bulk = async function(selectedFileList, options) {
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
+    if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
   }
 
@@ -119,6 +119,7 @@ const bulk = async function(selectedFileList, options) {
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
     if (options.sync && !deleteBulkFile) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
+    if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
     fileSystemManager.execute(fileSystemChange, options.logging);
   }
 
