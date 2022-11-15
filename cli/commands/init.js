@@ -12,12 +12,10 @@ function init() {
 
   let gitignore = dedent`
     build/
-    .canopy_bulk_file
-    .canopy_bulk_backup_log
     canopy_bulk_file
     **/.DS_Store
     .canopy_bulk_last_session_files
-    `;
+    .canopy_bulk_backups/**` + '\n';
 
   fs.writeFileSync( '.gitignore', gitignore );
 
