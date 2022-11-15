@@ -14,7 +14,7 @@ function serve(options) {
     throw new Error(`Error: Cannot start server because build directory is invalid, try running \`canopy build\` and check for errors`);
   }
 
-  console.log(`Serving on port ${port}`);
+  if (options.logging) console.log(`Serving on port ${port}`);
 
   runServer(port, options.logging);
 
