@@ -45,6 +45,19 @@ class FileSystemManager {
     fs.writeFileSync(fileName, fileContents);
   }
 
+  backupBulkFile(fileName, fileContents) {
+    if (!fs.existsSync('.canopy_bulk_backups')) { fs.ensureDirSync('.canopy_bulk_backups'); }
+    let date = new Date();
+    let year = date.getFullYear();
+    let month = ('0' + (date.getMonth()+1)).slice(-2)
+    let day = ('0' + date.getDate()).slice(-2)
+    let hours = ('0' + date.getHours()).slice(-2)
+    let minutes = ('0' + date.getMinutes()).slice(-2)
+    let seconds = ('0' + date.getSeconds()).slice(-2)
+    let timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
+    fs.writeFileSync(`.canopy_bulk_backups/${fileName}-${timestamp}`, fileContents);
+  }
+
   storeOriginalSelectionFileSet(fileSet) {
     fs.writeFileSync('.canopy_bulk_originally_selected_files_list', fileSet.json);
   }
