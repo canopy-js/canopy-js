@@ -3,6 +3,7 @@ let { LinkProximityCalculator } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
+let chalk = require('chalk');
 
 class ParserContext {
   constructor(explFileData, defaultTopicString) {
@@ -37,16 +38,16 @@ class ParserContext {
       let lineNumber = 1;
 
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
-        throw new Error(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
+        throw new Error(chalk.red(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
         - One file is: ${topicFilePaths[currentTopic.caps]}
         - Another file is: ${path}
-        `);
+        `));
       } else {
         topicFilePaths[currentTopic.caps] = path;
       }
 
       if (currentTopic.display.trim() !== currentTopic.display) {
-        throw new Error(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path);
+        throw new Error(chalk.red(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path));
       }
 
       topicSubtopics[currentTopic.caps] = {};
@@ -257,8 +258,8 @@ class ParserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-          throw new Error(`Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
-            `${filePath}:${lineNumber}\n`);
+          throw new Error(chalk.red(`Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
+            `${filePath}:${lineNumber}\n`));
         }
       });
     });
@@ -267,8 +268,8 @@ class ParserContext {
   validateImportReferenceTargets() {
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw new Error(`Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
-          `${filePath}:${lineNumber}\n`);
+        throw new Error(chalk.red(`Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
+          `${filePath}:${lineNumber}\n`));
       }
     });
   }
@@ -276,9 +277,9 @@ class ParserContext {
   validateSubtopicDefinitions() {
     this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
       if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessable, it is invalid data
-        throw new Error(`Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
+        throw new Error(chalk.red(`Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
-          `Second definition: ${filePath}:${lineNumber2}`);
+          `Second definition: ${filePath}:${lineNumber2}`));
       }
     });
   }
@@ -296,11 +297,11 @@ class ParserContext {
     Object.keys(this.topicSubtopics).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       if (!this.connectedTopics[topic.caps]) {
-        console.log(
+        console.log(chalk.yellow(
           `Warning: Global Orphan\n` +
           `Topic [${topic.mixedCase}] is not connected to default topic [${this.defaultTopic.mixedCase}]\n` +
           `${this.topicFilePaths[topic.caps]}\n`
-        );
+        ));
       }
     });
   }
@@ -318,10 +319,10 @@ class ParserContext {
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
         if (!this.hasConnection(subtopic, topic)) {
-          console.log(`Warning: Local Orphan\n` +
+          console.log(chalk.yellow(`Warning: Local Orphan\n` +
             `Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
             `${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}\n`
-          );
+          ));
         }
       });
     });
@@ -334,13 +335,13 @@ class ParserContext {
           let currentSubtopic = this.subtopicsOfGlobalReferences[currentTopicCaps][targetTopicCaps];
           let currentTopic = this.topicSubtopics[currentTopicCaps][currentTopicCaps];
           let targetTopic = this.topicSubtopics[targetTopicCaps][targetTopicCaps];
-          console.log(
+          console.log(chalk.yellow(
             `Warning: Nonreciprocal Global Reference\n` +
             `Global reference in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
             `${this.topicFilePaths[currentTopic.caps]}:${this.subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]}\n` +
             `Try creating a global reference from [${targetTopic.mixedCase}] to [${currentTopic.mixedCase}]\n` +
             `${this.topicFilePaths[targetTopic.caps]}\n`
-          );
+          ));
         }
       });
     });
@@ -349,7 +350,7 @@ class ParserContext {
   validateRedundantLocalReferences() { // can only be done after we've seen every local reference
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in real subsumed paragraphs?
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic)) {
-        throw new Error(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
+        throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
             - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
@@ -362,7 +363,7 @@ class ParserContext {
             (It is also possible you meant one of these as an import reference, however,
             if both links could be either local or import references, you must clarify
             which is the import reference using explicit import syntax ie [[Other Topic#${referencedSubtopic.mixedCase}]])
-            `);
+            `));
       }
     });
   }
