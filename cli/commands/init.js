@@ -29,7 +29,7 @@ function init() {
       fs.writeFileSync(defaultTopicFilePath, `${defaultTopic}: Text here.\n`);
       fs.ensureDirSync(`topics/Inbox`);
       fs.writeFileSync(`topics/Inbox/Inbox.expl`, `This is a place for new notes.\n`);
-      fs.writeFileSync('.canopy_default_topic', defaultTopicFilePath + "\n");
+      fs.writeFileSync('canopy_default_topic', defaultTopicFilePath + "\n");
     });
 
     rl.close();
