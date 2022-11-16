@@ -16,12 +16,11 @@ let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { getDefaultTopicAndPath } = require('../shared/helpers');
-let { defaultTopicDisplayCategoryPath, defaultTopicFilePath } = getDefaultTopicAndPath();
 
 const bulk = async function(selectedFileList, options) {
   function log(message) { if (options.logging) console.log(message) }
 
-  if (!fs.existsSync('./topics')) throw new Error('Must be in a projects directory with a topics folder');
+  if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
   if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
     let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
@@ -84,6 +83,8 @@ const bulk = async function(selectedFileList, options) {
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
+    let defaultTopicDisplayCategoryPath, defaultTopicFilePath;
+    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath } = getDefaultTopicAndPath());} catch(e) {}
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
@@ -95,7 +96,11 @@ const bulk = async function(selectedFileList, options) {
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
-    editor('canopy_bulk_file', () => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options))
+    editor('canopy_bulk_file', () => {
+      try {
+        handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
+      } catch(e) { console.error(e.message); }
+    })
   }
 
   if (options.start) { // non-editor mode
@@ -121,6 +126,7 @@ const bulk = async function(selectedFileList, options) {
     if (options.sync && !deleteBulkFile) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
     fileSystemManager.execute(fileSystemChange, options.logging);
+    getDefaultTopicAndPath() // Error in case the person changed the default topic file name
   }
 
   if (options.sync) {
