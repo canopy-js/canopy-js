@@ -1,11 +1,18 @@
-function convertUnderscoresToSpaces(string) {
-  // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
-  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
-    .map(string => string
-      .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
-      .map(string => string.replace(/_/g, ' '))
-      .join('%5C_') //convert underscores not preceded by single %5C to spaces
-    ).join('%5C%5C');
+let fs = require('fs');
+let Topic = require('./topic');
+let Paragraph = require('./paragraph');
+let { getRecursiveSubdirectoryFiles } = require('../bulk/helpers');
+let chalk = require('chalk');
+
+function getDefaultTopicAndPath() {
+  let defaultTopicFilePath = fs.readFileSync('.canopy_default_topic').toString().trim();
+  if (!fs.existsSync(defaultTopicFilePath)) throw new Error(chalk.bgRed(`Default topic file does not exist: ${defaultTopicFilePath}`));
+  let defaultTopicName = (new Paragraph(fs.readFileSync(defaultTopicFilePath).toString().trim())).key
+  let categoryPath = defaultTopicFilePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
+  let defaultTopicDisplayCategoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
+  return {
+    defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicName
+  }
 }
 
-module.exports = { convertUnderscoresToSpaces };
+module.exports = { getDefaultTopicAndPath };

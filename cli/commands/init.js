@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const readline = require('readline');
+let chalk = require('chalk');
 
 function init() {
   const rl = readline.createInterface({
@@ -12,22 +13,23 @@ function init() {
 
   let gitignore = dedent`
     build/
-    .canopy_bulk_file
-    .canopy_bulk_backup_log
     canopy_bulk_file
     **/.DS_Store
     .canopy_bulk_last_session_files
-    `;
+    .canopy_bulk_backups/**` + '\n';
 
   fs.writeFileSync( '.gitignore', gitignore );
 
   const main = async () => {
     await requestDefaultTopic((defaultTopic) => {
-      if (!defaultTopic) throw new Error('No default topic name given.');
+      if (!defaultTopic) throw new Error(chalk.red('No default topic name given.'));
       let defaultTopicSlug = defaultTopic.replace(/ /g, '_');
-      fs.writeFileSync('.canopy_default_topic', defaultTopic + "\n");
       fs.ensureDirSync(`topics/${defaultTopicSlug}`);
-      fs.writeFileSync(`topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`, `${defaultTopic}: Text here.\n`);
+      let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
+      fs.writeFileSync(defaultTopicFilePath, `${defaultTopic}: Text here.\n`);
+      fs.ensureDirSync(`topics/Inbox`);
+      fs.writeFileSync(`topics/Inbox/Inbox.expl`, `This is a place for new notes.\n`);
+      fs.writeFileSync('.canopy_default_topic', defaultTopicFilePath + "\n");
     });
 
     rl.close();

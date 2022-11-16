@@ -64,17 +64,6 @@ function allFilesAndDirectoriesOf(pathArray) {
   return result;
 }
 
-function pathComparator(path1, path2) {
-  let directoryPath1 = takeDirectoryPath(path1); // topics/ [A/B/C] /C.expl
-  let directoryPath2 = takeDirectoryPath(path2);
-
-  if (directoryPath1 > directoryPath2) {
-    return 1;
-  } else if (directoryPath1 < directoryPath2) {
-    return -1;
-  }
-}
-
 function groupByPath(fileList) {
   return fileList.reduce((collection, filePath) => {
     let directoryPath = filePath.split('/').slice(0, -1).join('/');
@@ -84,18 +73,6 @@ function groupByPath(fileList) {
   }, {});
 }
 
-function messageComparator(messageA, messageB) {
-  let pathA = messageA.match(/(topics[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // the directory path
-  let pathB = messageB.match(/(topics[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // (?!\w*\.) = exclude the file name
-  if (messageA.includes('Deleted') && messageB.includes('Deleted')) {
-    if (pathA < pathB) return 1;
-    if (pathA > pathB) return -1;
-  } else {
-    if (pathA < pathB) return -1;
-    if (pathA > pathB) return 1;
-  }
-}
-
 module.exports = {
   fileNameFor,
   takeDirectoryPath,
@@ -103,9 +80,7 @@ module.exports = {
   deduplicate,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
-  pathComparator,
   groupByPath,
   getAllFileAndDirectoryPathsRecursive,
-  allFilesAndDirectoriesOf,
-  messageComparator
+  allFilesAndDirectoriesOf
 };
