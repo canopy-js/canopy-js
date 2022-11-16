@@ -1,5 +1,6 @@
 let jsonForProjectDirectory = require('./json_for_project_directory');
 let dedent = require('dedent-js');
+let chalk = require('chalk');
 
 test('it creates a data directory', () => {
   let projectDir = '/example/project';
@@ -701,7 +702,7 @@ test('it throws error for redundant local references where both could be import 
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'England', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it matches import references with explicit syntax and lets you rename the link', () => {
@@ -838,10 +839,10 @@ test('it throws error for unrecognized link', () => {
   };
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(
+  ).toThrow(chalk.red(
     `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
     `topics/Idaho/Idaho.expl:1`
-  );
+  ));
 });
 
 test('it throws error for regular redundant local references', () => {
@@ -872,7 +873,7 @@ test('it throws error for regular redundant local references', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error for redundantly defined topics', () => {
@@ -889,7 +890,7 @@ test('it throws error for redundantly defined topics', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error for redundantly defined subtopics', () => {
@@ -909,7 +910,7 @@ test('it throws error for redundantly defined subtopics', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it counts blank lines in error line numbers', () => {
@@ -933,7 +934,7 @@ test('it counts blank lines in error line numbers', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it handles odd-numbers of blank lines', () => {
@@ -956,7 +957,7 @@ test('it handles odd-numbers of blank lines', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
@@ -972,7 +973,7 @@ test('it does not throw error for redundantly defined subtopics that are not sub
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).not.toThrow();
+  ).not.toThrow(chalk.red());
 });
 
 test('it throws error if import reference lacks matching global reference', () => {
@@ -989,11 +990,11 @@ test('it throws error if import reference lacks matching global reference', () =
   };
 
   let message = `Error: Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].\n` +
-    `topics/Wyoming/Wyoming.expl:1\n`+
+    `topics/Wyoming/Wyoming.expl:1\n`;
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error if import reference is to unsubsumed subtopic of target topic', () => {
@@ -1012,7 +1013,7 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error if import reference is to non-existant topic', () => {
@@ -1029,7 +1030,7 @@ test('it throws error if import reference is to non-existant topic', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error if import reference is to non-existant subtopic', () => {
@@ -1046,7 +1047,7 @@ test('it throws error if import reference is to non-existant subtopic', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error for topic name beginning with whitespace', () => {
@@ -1060,7 +1061,7 @@ test('it throws error for topic name beginning with whitespace', () => {
 
   expect(
     () => console.log(jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {}))
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it throws error for topic name ending with whitespace', () => {
@@ -1075,7 +1076,7 @@ test('it throws error for topic name ending with whitespace', () => {
 
   expect(
     () => jsonForProjectDirectory(projectDir, explFileData, 'Idaho', {})
-  ).toThrow(message);
+  ).toThrow(chalk.red(message));
 });
 
 test('it logs global orphan topics', () => {
@@ -1092,9 +1093,9 @@ test('it logs global orphan topics', () => {
     `,
   };
 
-  let message = `Warning: Global Orphan\n` +
+  let message = chalk.yellow(`Warning: Global Orphan\n` +
     `Topic [Wyoming] is not connected to default topic [Idaho]\n` +
-    `topics/Wyoming/Wyoming.expl\n`;
+    `topics/Wyoming/Wyoming.expl\n`);
 
   jsonForProjectDirectory(projectDir, explFileData, 'Idaho', { orphans: true });
 
@@ -1118,9 +1119,9 @@ test('it logs local orphan subtopics', () => {
     `,
   };
 
-  let message = `Warning: Local Orphan\n` +
+  let message = chalk.yellow(`Warning: Local Orphan\n` +
     `Subtopic [Boise] lacks a connection to its topic [Idaho]\n` +
-    `topics/Idaho/Idaho.expl:3\n`;
+    `topics/Idaho/Idaho.expl:3\n`);
 
   jsonForProjectDirectory(projectDir, explFileData, 'Idaho', { orphans: true });
 
@@ -1141,11 +1142,11 @@ test('it logs non-reciprocal global references', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
   };
 
-  let message = 'Warning: Nonreciprocal Global Reference\n' +
+  let message = chalk.yellow('Warning: Nonreciprocal Global Reference\n' +
     'Global reference in [Idaho, Idaho] exists to topic [Wyoming] with no reciprocal reference.\n' +
     'topics/Idaho/Idaho.expl:1\n' +
     'Try creating a global reference from [Wyoming] to [Idaho]\n' +
-    'topics/Wyoming/Wyoming.expl\n';
+    'topics/Wyoming/Wyoming.expl\n');
 
   jsonForProjectDirectory(projectDir, explFileData, 'Idaho', { reciprocals: true });
 

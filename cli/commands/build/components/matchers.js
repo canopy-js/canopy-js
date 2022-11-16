@@ -23,6 +23,7 @@ const Matchers = [
 ];
 
 let Topic = require('../../shared/topic');
+let chalk = require('chalk');
 
 function localReferenceMatcher(string, parserContext, index) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
@@ -96,18 +97,18 @@ function importReferenceMatcher(string, parserContext, index) {
   }
 
   if (!targetTopic) {
-    throw new Error(`Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`);
+    throw new Error(chalk.red(`Error: Reference ${fullText} in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] matches no global, local, or import reference.\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw new Error(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`);
+    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant topic [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw new Error(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`);
+    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existant subtopic of [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);

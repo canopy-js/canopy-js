@@ -73,7 +73,7 @@ function build(options) {
   }
 
   if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) {
-    throw new Error('No Canopy.js asset found');
+    throw new Error(chalk.red('No Canopy.js asset found'));
   }
 
   fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/canopy.js');
