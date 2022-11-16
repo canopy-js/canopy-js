@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const readline = require('readline');
+let chalk = require('chalk');
 
 function init() {
   const rl = readline.createInterface({
@@ -21,7 +22,7 @@ function init() {
 
   const main = async () => {
     await requestDefaultTopic((defaultTopic) => {
-      if (!defaultTopic) throw new Error('No default topic name given.');
+      if (!defaultTopic) throw new Error(chalk.red('No default topic name given.'));
       let defaultTopicSlug = defaultTopic.replace(/ /g, '_');
       fs.ensureDirSync(`topics/${defaultTopicSlug}`);
       let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
