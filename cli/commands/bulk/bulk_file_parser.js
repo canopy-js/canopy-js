@@ -1,6 +1,7 @@
 let FileSet = require('./file_set');
 let Paragraph = require('../shared/paragraph.js');
 let Topic = require('../shared/topic.js');
+let chalk = require('chalk');
 
 class BulkFileParser {
   constructor(bulkFileString) {
@@ -37,7 +38,7 @@ class BulkFileParser {
     // console.dir(this.parseSections(), { depth: 6});
 
     this.parseSections().forEach(section => {
-      if (section.diskDirectoryPath === 'topics/') throw new Error(`Invalid directory path: "[${section.displayCategoryPath}]"`)
+      if (section.diskDirectoryPath === 'topics/') throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
       let categoryNotesFilePath = `${section.diskDirectoryPath}/${section.terminalCategory}.expl`;
       let categoryNotesBuffer = '';
       section.files.forEach(file => {

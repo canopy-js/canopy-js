@@ -2,7 +2,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const build = require('./build');
 const chokidar = require('chokidar');
-const shell = require('shelljs');
 let chalk = require('chalk');
 let shell = require('shelljs');
 
@@ -10,7 +9,7 @@ function watch(options) {
   let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
   if (!fs.existsSync('topics')) {
-    console.log('Error: You must be in a project directory with a topics folder');
+    console.log(chalk.red('Error: You must be in a project directory with a topics folder'));
     return;
   }
 
