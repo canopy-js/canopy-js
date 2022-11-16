@@ -23,9 +23,12 @@ function init() {
     await requestDefaultTopic((defaultTopic) => {
       if (!defaultTopic) throw new Error('No default topic name given.');
       let defaultTopicSlug = defaultTopic.replace(/ /g, '_');
-      fs.writeFileSync('.canopy_default_topic', defaultTopic + "\n");
       fs.ensureDirSync(`topics/${defaultTopicSlug}`);
-      fs.writeFileSync(`topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`, `${defaultTopic}: Text here.\n`);
+      let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
+      fs.writeFileSync(defaultTopicFilePath, `${defaultTopic}: Text here.\n`);
+      fs.ensureDirSync(`topics/Inbox`);
+      fs.writeFileSync(`topics/Inbox/Inbox.expl`, `This is a place for new notes.\n`);
+      fs.writeFileSync('canopy_default_topic', defaultTopicFilePath + "\n");
     });
 
     rl.close();
