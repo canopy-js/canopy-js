@@ -87,6 +87,7 @@ program.command('bulk')
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
+      throw e;
       if (e.message !== 'fzf exited with error code 130') {
         console.error(e.message);
       }
