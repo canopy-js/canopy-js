@@ -9,7 +9,7 @@ class BulkFileParser {
   }
 
   parseSections() {
-    return this.bulkFileString.split(/(?=\[.*\])/).filter(Boolean).map((sectionString) => {
+    return this.bulkFileString.split(/(?=\[[^\[\]]*\])/).filter(Boolean).map((sectionString) => {
       let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
       return {
         displayCategoryPath,
