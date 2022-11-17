@@ -108,13 +108,14 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.finish) { // non-editor mode
-    handleFinish({deleteBulkFile: true}, options);
+    handleFinish({ deleteBulkFile: true }, options);
   }
 
   function handleFinish(args, options) {
-    let { deleteBulkFile } = args;
-    let originalSelectionFileSet = args.originalSelectedFilesList ?
-      fileSystemManager.getFileSet(args.originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
+    let { deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList } = args;
+    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    let originalSelectionFileSet = originalSelectedFilesList ?
+      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
     let bulkFileParser = new BulkFileParser(newBulkFileString);
@@ -129,7 +130,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.sync) {
-    setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
+    setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
 
     if (!options.noEditor) {
       editor(options.bulkFileName, () => {
