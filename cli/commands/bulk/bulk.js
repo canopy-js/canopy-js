@@ -105,7 +105,6 @@ const bulk = async function(selectedFileList, options) {
 
   if (options.start) { // non-editor mode
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
-    editor(options.bulkFileName);
   }
 
   if (options.finish) { // non-editor mode
