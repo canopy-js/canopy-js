@@ -1,5 +1,6 @@
 let fs = require('fs-extra');
 let FileSet = require('./file_set');
+let chalk = require('chalk');
 
 class FileSystemManager {
   execute(fileSystemChange, logging) {
@@ -67,6 +68,9 @@ class FileSystemManager {
   }
 
   loadOriginalSelectionFileSet() {
+    if (!fs.existsSync('.canopy_bulk_originally_selected_files_list')) {
+      throw chalk.red('Expected .canopy_bulk_originally_selected_files_list file but did not find one');
+    }
     let json = fs.readFileSync('.canopy_bulk_originally_selected_files_list').toString();
     fs.unlinkSync('.canopy_bulk_originally_selected_files_list');
     let selectedFilesList = JSON.parse(json);
@@ -80,6 +84,9 @@ class FileSystemManager {
   }
 
   getBulkFile(fileName) {
+    if (!fs.existsSync(fileName)) {
+      throw chalk.red(`Expected bulk file at ./${fileName} but did not find one`);
+    }
     return fs.readFileSync(fileName).toString();
   }
 
