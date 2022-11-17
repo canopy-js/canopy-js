@@ -133,7 +133,7 @@ describe('BulkFileGenerator', function() {
 });
 
 describe('BulkFileParser', function() {
-  test('it parses data file with double newline after path', () => {
+  test('it parses normal data file', () => {
     let bulkFileString = dedent`[A/B/C]
 
     * Topic: Paragraph.` + '\n';
@@ -161,6 +161,29 @@ describe('BulkFileParser', function() {
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+  test('it parses data file with references', () => {
+    // We're worried the parser will see [[link]] as being a kind of category path like [A/B/C] and end the section there.
+
+    let bulkFileString = dedent`[A/B/C]
+
+    * Topic: Paragraph. Here is a [[link]]
+
+    Link: Hello world!` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph. Here is a [[link]]\n\nLink: Hello world!\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
