@@ -9,25 +9,26 @@ class BulkFileParser {
   }
 
   parseSections() {
-    return this.bulkFileString.split(/(?=\[[^\[\]]*\])/).filter(Boolean).map((sectionString) => {
-      let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
-      return {
-        displayCategoryPath,
-        diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
-        terminalCategory: new Topic(displayCategoryPath.split('/').slice(-1)[0]).fileName,
-        files: sectionString
-          .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
-          .split(/(?=^\* )/mg)
-          .filter(Boolean)
-          .map(string => {
-            let blockString = string.startsWith('* ') ? string.slice(2) : string;
-            let paragraph = new Paragraph(blockString);
-            return {
-              asterisk: string.startsWith('* ') ? true : false,
-              key: paragraph.key,
-              text: blockString
-            }
-          })
+    return this.bulkFileString.split(/(?<![\[\]])(?=\[[^\[\]]+\])/) // split on [X] but not [[X]] and not [X]]
+      .filter(Boolean).map((sectionString) => {
+        let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
+        return {
+          displayCategoryPath,
+          diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
+          terminalCategory: new Topic(displayCategoryPath.split('/').slice(-1)[0]).fileName,
+          files: sectionString
+            .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
+            .split(/(?=^\* )/mg)
+            .filter(Boolean)
+            .map(string => {
+              let blockString = string.startsWith('* ') ? string.slice(2) : string;
+              let paragraph = new Paragraph(blockString);
+              return {
+                asterisk: string.startsWith('* ') ? true : false,
+                key: paragraph.key,
+                text: blockString
+              }
+            })
       }
     });
   }
