@@ -10,10 +10,6 @@ function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
   let { defaultTopicFilePath, defaultTopicName } = getDefaultTopicAndPath();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
-  if (!fs.existsSync('./canopy_default_topic')) throw new Error('There must be a default topic dotfile present, try running "canopy init"');
-  if (!defaultTopicFilePath || !fs.existsSync(defaultTopicFilePath)) {
-    throw new Error(chalk.red(`Error: No topic file corresponds to name given in canopy_default_topic: "${defaultTopicName.trim()}"`));
-  }
 
   let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 

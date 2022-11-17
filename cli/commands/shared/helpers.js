@@ -5,7 +5,11 @@ let { getRecursiveSubdirectoryFiles } = require('../bulk/helpers');
 let chalk = require('chalk');
 
 function getDefaultTopicAndPath() {
+  if (!fs.existsSync('canopy_default_topic')) throw new Error('There must be a default topic file present, try running "canopy init"');
   let defaultTopicFilePath = fs.readFileSync('canopy_default_topic').toString().trim();
+  if (!defaultTopicFilePath || !fs.existsSync(defaultTopicFilePath)) {
+    throw new Error(chalk.red(`Error: No topic file corresponds to name given in canopy_default_topic: "${defaultTopicName.trim()}"`));
+  }
   if (!fs.existsSync(defaultTopicFilePath)) throw new Error(chalk.bgRed(`Default topic file does not exist: ${defaultTopicFilePath}`));
   let defaultTopicName = (new Paragraph(fs.readFileSync(defaultTopicFilePath).toString().trim())).key
   let categoryPath = defaultTopicFilePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
