@@ -84,7 +84,7 @@ const bulk = async function(selectedFileList, options) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopicDisplayCategoryPath, defaultTopicFilePath;
-    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath } = getDefaultTopicAndPath());} catch(e) {}
+    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath } = getDefaultTopicAndPath());} catch(e) {} // validate default topic
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
@@ -130,7 +130,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.sync) {
-    setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
+    setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
     if (!options.noEditor) {
       editor(options.bulkFileName, () => {
