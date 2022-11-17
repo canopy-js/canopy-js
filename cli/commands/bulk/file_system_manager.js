@@ -60,25 +60,25 @@ class FileSystemManager {
   }
 
   storeOriginalSelectionFileSet(fileSet) {
-    fs.writeFileSync('.canopy_bulk_originally_selected_files_list', fileSet.json);
+    fs.writeFileSync('.canopy_bulk_original_selection', fileSet.json);
   }
 
   storeOriginalSelectionFileList(fileList) {
-    fs.writeFileSync('.canopy_bulk_originally_selected_files_list', JSON.stringify(fileList));
+    fs.writeFileSync('.canopy_bulk_original_selection', JSON.stringify(fileList));
   }
 
   loadOriginalSelectionFileSet() {
-    if (!fs.existsSync('.canopy_bulk_originally_selected_files_list')) {
-      throw chalk.red('Expected .canopy_bulk_originally_selected_files_list file but did not find one');
+    if (!fs.existsSync('.canopy_bulk_original_selection')) {
+      throw chalk.red('Expected .canopy_bulk_original_selection file but did not find one');
     }
-    let json = fs.readFileSync('.canopy_bulk_originally_selected_files_list').toString();
-    fs.unlinkSync('.canopy_bulk_originally_selected_files_list');
+    let json = fs.readFileSync('.canopy_bulk_original_selection').toString();
+    fs.unlinkSync('.canopy_bulk_original_selection');
     let selectedFilesList = JSON.parse(json);
     return this.getFileSet(selectedFilesList);
   }
 
   getOriginalSelectionFileList() {
-    let json = fs.readFileSync('.canopy_bulk_originally_selected_files_list').toString();
+    let json = fs.readFileSync('.canopy_bulk_original_selection').toString();
     let fileList = JSON.parse(json);
     return fileList;
   }
