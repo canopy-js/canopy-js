@@ -68,7 +68,7 @@ Traverse the same content in different directions:
 
 ### Installation
 
-Install CLI:
+Install the CLI:
 
 ```
 npm install -g canopy-js
@@ -85,7 +85,7 @@ Then, run the `canopy init` command:
 ```
 canopy init
 ```
-You will be asked for a default topic name, this tells the web application what paragraph to show the user first. It will be stored in the `.canopy_default_topic` file in case you need to edit it later.
+You will be asked for a default topic name, this tells the web application what paragraph to show the user first. It will be stored in the `canopy_default_topic` file in case you need to edit it later.
 
 The init command should create a directory called `topics`, and a file like `myProject/topics/My_Default_Topic.expl`.
 
