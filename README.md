@@ -136,7 +136,7 @@ There are three types of link, local, global, and import references.
 
 #### Local References
 
-A local link connects a topic to a subtopic, or a subtopic to a subtopic. When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a page. One makes an local reference by referencing a named paragraph in the same file as the reference:
+A local reference connects a topic to a subtopic, or a subtopic to a subtopic. When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a page. One makes an local reference by referencing a named paragraph in the same file as the reference:
 
 ```
 Topic1: This is the topic, and this is a link to [[Subtopic1]].
@@ -151,7 +151,7 @@ Within a given topic, a subtopic can only be referenced once because the subtopi
 
 #### Global References
 
-A global link connects a topic or subtopic to a different topic. When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the topic of the global link. To make a global link, we reference a topic defined in a different file:
+A global reference connects a topic or subtopic to a different topic. When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the topic of the global link. To make a global link, we reference a topic defined in a different file:
 
 ```
 Topic1: This is a paragraph defined in a file called Topic1.expl. We are going to reference [[Topic2]], which is defined in a different file.
