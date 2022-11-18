@@ -97,21 +97,21 @@ You can run `canopy serve` to see your project live, and can run `canopy watch` 
 
 A spoken explanation begins with a brief description of a selected topic, followed by "follow-up" questions or added detail regarding previously mentioned things.
 
-Canopy mimics this "UI", by starting each page with a topic-paragraph that mentions several other ideas, each of which are represented by a link, and selecting that link adds a further paragraph to the page which in turn has further links to further ideas.
+Canopy mimics this "UI," by starting each page with a topic-paragraph that mentions several other ideas, each of which are represented by a link, and selecting that link adds a further paragraph to the page which in turn has further links to further ideas.
 
 The user can begin browsing from multiple original topics, but the links they select may end up taking them to paragraphs that are reused throughout the project.
 
 ### Creating Topic Files
 
-A Canopy website is composed of named paragraphs, some of which are "topics", and some of which are "subtopics".
+A Canopy website is composed of named paragraphs, some of which are "topics," and some of which are "subtopics."
 
-Topics are standalone "conversation-starters" that can be displayed as the root paragraph of a page, whereas subtopics are points that are part of a larger topic and should only be displayed below a path of paragraphs starting from the subtopic's topic. In this documentation, a subtopic might be referred to connected to the name of its topic, eg "Topic#Subtopic".
+Topics are standalone "conversation-starters" that can be displayed as the root paragraph of a page, whereas subtopics are points that are part of a larger topic and should only be displayed below a path of paragraphs starting from the subtopic's topic. In this documentation, a subtopic might be referred to connected to the name of its topic, eg "Topic#Subtopic."
 
 Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior.
 
 A topic file is composed of a series of paragraph nodes and notes. The first paragraph node represents the topic, and all subsequent paragraph nodes are subtopics of that topic.
 
-A paragraph node begins with a "key", a colon or question-mark terminated text before the paragraph, indicating the "name" of the paragraph. A note is any other text, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
+A paragraph node begins with a "key," a colon or question-mark terminated text before the paragraph, indicating the "name" of the paragraph. A note is any other text, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
 
 ```
 Topic1: This is the paragraph for Topic1.
@@ -141,7 +141,7 @@ Subtopic1: this is a subtopic defined in the same file as the reference.
 
 ```
 
-Subtopics can only be referenced from within the file that they are defined (with the exception of "import references", which will be explained below.)
+Subtopics can only be referenced from within the file that they are defined (with the exception of "import references," which will be explained below.)
 
 Within a given topic, a subtopic can only be referenced once because the subtopics of the topics must form a tree, with each paragraph having only one parent reference. If you want to have two references to a subtopic, you can either make that subtopic a topic proper, or use a "self-import reference" which will be discussed below.
 
@@ -163,7 +163,7 @@ Unlike a subtopic, a topic can be referenced from any paragraph in any file in t
 
 An import reference is when you want to reference a subtopic of a given topic, but not from within the given topic. An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming, and so you want an explanation about Fremont to reference Teton, however, let say you thought Teton was only notable enough to be discussed in the context of Wyoming generally and had made it a subtopic rather than a topic proper. It wouldn't be appropriate to have the paragraph for Teton follow the paragraph for Fremont, because it would lack the context of an explanation of what Wyoming is, and how it relates to Teton.
 
-So, the solution is an "import reference" - the paragraph for "Fremont" would first reference the topic "Wyoming", and then the subtopic of "Teton", and the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within the current file. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context. See picture below:
+So, the solution is an "import reference" - the paragraph for "Fremont" would first reference the topic "Wyoming," and then the subtopic of "Teton," and the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within the current file. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context. See picture below:
 
 ![Logo](./readme/import-reference.png)
 
