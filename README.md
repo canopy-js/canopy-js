@@ -101,6 +101,8 @@ Canopy mimics this "UI," by starting each page with a topic-paragraph that menti
 
 The user can begin browsing from multiple original topics, but the links they select may end up taking them to paragraphs that are reused throughout the project.
 
+The URL will reflect the path of paragraphs being displayed, eg `example.com/Topic1#Subtopic1/Topic2#Subtopic2`
+
 ### Creating Topic Files
 
 A Canopy website is composed of named paragraphs, some of which are "topics," and some of which are "subtopics."
@@ -123,6 +125,8 @@ This key is a question? And it is also a subtopic of Topic1.
 This is a note.
 
 ```
+
+Subtopic paragraphs should have unique names within their enclosing topic file.
 
 ### Creating Links
 
