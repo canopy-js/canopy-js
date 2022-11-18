@@ -26,9 +26,12 @@ function init() {
       let defaultTopicSlug = defaultTopic.replace(/ /g, '_');
       fs.ensureDirSync(`topics/${defaultTopicSlug}`);
       let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
-      fs.writeFileSync(defaultTopicFilePath, `${defaultTopic}: Text here.\n`);
+      fs.writeFileSync(defaultTopicFilePath,
+        `${defaultTopic}: Text here. This is an example reference to a [[subtopic]].\n\n` +
+        `Subtopic: This is a subtopic paragraph.`
+      );
       fs.ensureDirSync(`topics/Inbox`);
-      fs.writeFileSync(`topics/Inbox/Inbox.expl`, `This is a place for new notes.\n`);
+      fs.writeFileSync(`topics/Inbox/Inbox.expl`, `This is for notes that don't yet have a category.\n`);
       fs.writeFileSync('canopy_default_topic', defaultTopicFilePath + "\n");
     });
 
