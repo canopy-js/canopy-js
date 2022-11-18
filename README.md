@@ -167,13 +167,34 @@ When you click on the link above, this paragraph will be displayed.
 
 Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
 
-#### Import reference
+#### Import references
 
-An import reference is when you want to reference a subtopic of a given topic, but not from within the given topic. An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming, and so you want an explanation about Fremont to reference Teton, however, let say you thought Teton was only notable enough to be discussed in the context of Wyoming generally and had made it a subtopic rather than a topic proper. It wouldn't be appropriate to have the paragraph for Teton follow the paragraph for Fremont, because it would lack the context of an explanation of what Wyoming is, and how it relates to Teton.
+An import reference is for when you want to reference a subtopic of a given topic, but not from within that topic.
 
-So, the solution is an "import reference" - the paragraph for "Fremont" would first reference the topic "Wyoming," and then the subtopic of "Teton," and the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within the current file. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context. See picture below:
+An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would the paragraph for Fremont to reference Teton, however, lets say Teton is a subtopic of Idaho and not a topic-proper. It wouldn't be appropriate to have the paragraph for Teton follow the paragraph for Fremont, because it would lack the context of an explanation of what Wyoming is, and how it relates to Teton.
 
-![Logo](./readme/import-reference.png)
+So, the solution is an "import reference" - the paragraph for "Fremont" would first reference the topic "Wyoming," and then the subtopic of "Teton," and the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within the current file. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context.
+
+For example, the following files produce this image:
+
+```
+Wyoming: Wyoming is a mid-sized state in the Western United States. It has many [[counties]].
+
+Counties: Wyoming contains [[Teton]].
+
+Teton: Teton is a county on the western side of Idaho. Teton borders [[Fremont]] county of [[Idaho]].
+
+```
+
+```
+Idaho: Idaho is a mid-sized state in the Western United States. It has many [[counties]].
+
+Counties: Idaho contains [[Fremont]].
+
+Fremont: Fremont is a county on the eastern side of Idaho.
+```
+
+![Import references](./readme/import-reference.png)
 
 ### Using Markup
 
