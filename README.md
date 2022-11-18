@@ -194,7 +194,7 @@ Counties: Idaho contains [[Fremont]].
 Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
-![Import references](./readme/import-reference.png)
+![Import references](./readme/import.gif)
 
 ### Using Markup
 
