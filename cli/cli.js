@@ -27,11 +27,11 @@ program.command('build')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
-  .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
-  .option('-o, --orphans', 'print logs', false)
-  .option('-r, --reciprocals', 'print logs', false)
+  .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
+  .option('-r, --reciprocals', 'Note which topics reference topics that do not reference them back.', false)
   .action((options) => {
     try {
       build(options);
