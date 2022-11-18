@@ -15,21 +15,6 @@
 <br>
 </div>
 
-# Table of Contents
-
-- [Table of Contents](#table-of-contents)
-  * [About Canopy JS](#about-canopy-js)
-    + [What Canopy does](#what-canopy-does)
-  * [Getting Started](#getting-started)
-    + [Installation](#installation)
-    + [Quick Start](#quick-start)
-    + [Creating Content](#creating-content)
-    + [CLI](#cli)
-  * [Development](#development)
-    + [Developer Installation](#developer-installation)
-    + [Running Tests](#running-tests)
-    + [Run Webpack](#run-webpack)
-
 ## About Canopy JS
 
 ### What Canopy does
@@ -224,7 +209,23 @@ For development, clone the repo and run
 npm install -g [PATH TO REPO]
 ```
 
-Run tests:
+Run webpack to rebuild assets on code changes:
+
+```
+npm run develop
+```
+
+To build prod assets:
+```
+npm run build-prod
+
+```
+
+To run tests:
 ```
 npm run test
 ```
+
+## Contact
+
+At the moment you can submit questions or comments to canopyjs at gmail dot com. For bugs or other issues, open an issue on the project.
