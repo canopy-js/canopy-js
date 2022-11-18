@@ -175,7 +175,7 @@ describe('BulkFileParser', function() {
 
     let bulkFileString = dedent`[A/B/C]
 
-    * Topic: Paragraph. Here is a [[link]]
+    * Topic: Paragraph. Here is a [[link]], and here is a [square bracket].
 
     Link: Hello world!` + '\n';
 
@@ -183,7 +183,7 @@ describe('BulkFileParser', function() {
     let newFileSet = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/Topic.expl': "Topic: Paragraph. Here is a [[link]]\n\nLink: Hello world!\n"
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph. Here is a [[link]], and here is a [square bracket].\n\nLink: Hello world!\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([

@@ -27,11 +27,11 @@ program.command('build')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
-  .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
-  .option('-o, --orphans', 'print logs', false)
-  .option('-r, --reciprocals', 'print logs', false)
+  .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
+  .option('-r, --reciprocals', 'Note which topics reference topics that do not reference them back.', false)
   .action((options) => {
     try {
       build(options);
@@ -83,11 +83,11 @@ program.command('bulk')
   .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
   .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
+  .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies('sync'))
   .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
-      throw e;
       if (e.message !== 'fzf exited with error code 130') {
         console.error(e.message);
       }
