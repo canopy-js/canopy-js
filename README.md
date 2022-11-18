@@ -105,7 +105,7 @@ The user can begin browsing from multiple original topics, but the links they se
 
 A Canopy website is composed of named paragraphs, some of which are "topics," and some of which are "subtopics."
 
-Topics are standalone "conversation-starters" that can be displayed as the root paragraph of a page, whereas subtopics are points that are part of a larger topic and should only be displayed below a path of paragraphs starting from the subtopic's topic. In this documentation, a subtopic might be referred to connected to the name of its topic, eg "Topic#Subtopic."
+Topics are standalone "conversation-starters" which can be displayed as the root paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed at a certain path of paragraphs.
 
 Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior.
 
