@@ -15,21 +15,6 @@
 <br>
 </div>
 
-# Table of Contents
-
-- [Table of Contents](#table-of-contents)
-  * [About Canopy JS](#about-canopy-js)
-    + [What Canopy does](#what-canopy-does)
-  * [Getting Started](#getting-started)
-    + [Installation](#installation)
-    + [Quick Start](#quick-start)
-    + [Creating Content](#creating-content)
-    + [CLI](#cli)
-  * [Development](#development)
-    + [Developer Installation](#developer-installation)
-    + [Running Tests](#running-tests)
-    + [Run Webpack](#run-webpack)
-
 ## About Canopy JS
 
 ### What Canopy does
@@ -65,6 +50,9 @@ And produces an interactive website like this:
 <br>
 <br>
 <br>
+<br>
+<br>
+<br>
 Traverse the same content in different directions:
 <br>
 <br>
@@ -76,11 +64,28 @@ Traverse the same content in different directions:
 <br>
 <br>
 <br>
+<br>
+<br>
+
+## Why?
+
+A human expert can adapt to the listener, catering to their interests, adding more background for a beginner, or more detail for someone advanced. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never hear exactly the same explanation twice.
+
+Canopy allows an author to express their ideas once in small modular pieces, and then the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, capturing the dense set of connections that can exist between topics of a subject area.
+
 ## Getting Started
+
+These are instructions for people wishing to start their own Canopy project.
+
+### Example flow
+
+Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:
+
+![Bulk mode](./readme/bulk.gif)
 
 ### Installation
 
-Install CLI:
+Install the CLI:
 
 ```
 npm install -g canopy-js
@@ -97,35 +102,261 @@ Then, run the `canopy init` command:
 ```
 canopy init
 ```
-You will be asked for a default topic name, this tells the web application what paragraph to show the user first. It will be stored in the `.canopy_default_topic` file in case you need to edit it later.
+You will be asked for a default topic name, this tells the web application what paragraph to show the user first. It will be stored in the `canopy_default_topic` file in case you need to edit it later.
 
-The init command should create a file like `myProject/topics/My_Default_topic.expl`.
+The init command should create a directory called `topics`, and a file like `myProject/topics/Category/My_Default_Topic.expl`.
 
-A Canopy project is edited by creating new `expl` files in the project's `topics` directory.
-
-### Quickstart
-
-
+A Canopy project is edited by creating new `.expl` files in the project's `topics` directory.
 
 ### Creating Topic Files
 
+A Canopy website is composed of named paragraphs, some of which are called "topics," and some of which are called "subtopics."
 
+Topics are standalone "conversation-starters" which can be displayed as the root paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed after a certain path of prior paragraphs that are necessary for context.
+
+Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is helpful to put all topic files into one or more levels of "category" subdirectories within the `topics` directory.
+
+A topic file is composed of a series of "paragraph nodes" and notes.
+
+A paragraph node is a paragraph that begins with a "key," a colon or question-mark terminated text before the paragraph, indicating the "name" of the paragraph. A note is any other text, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
+
+```
+Topic 1: This is the paragraph for Topic 1.
+
+Subtopic 1: This is a subtopic of Topic 1.
+
+This key is a question? And it is also a subtopic of Topic 1.
+
+This is a note.
+
+```
+
+The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
+
+Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note. For example:
+
+```
+Topic 1: This is the paragraph for Topic 1.
+This is a second line of the paragraph for Topic 1.
+
+Subtopic 1: This is a new paragraph node for Subtopic 1.
+
+```
+
+Subtopic paragraphs should have unique names within their enclosing topic file, and topics should have a unique name within the project at large.
 
 ### Creating Links
 
+Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs in the project.
+
+If paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
+
+Links are made using the `[[Link]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
+
+There are three types of references: local, global, and import.
+
+#### Local References
+
+A local reference connects a topic to one of its subtopics, or connects a subtopic to a subtopic of the same topic. Local references cannot reference subtopics of other topics.
+
+One makes a local reference by referencing a named paragraph that exists in the same file as the reference:
+
+```
+Topic 1: This is the root topic, and this is a link to [[Subtopic 1]].
+
+Subtopic 1: this is a subtopic defined in the same file as the reference.
+
+```
+
+When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a new page, because a subtopic is something that requires the context of the given topic to be understood.
+
+For example, the following `expl` file:
+
+```
+New Jersey: New Jersey is a mid-sized state in the Northeastern US. The capital of New Jersey is [[Trenton]].
+
+Trenton: Trenton is the capital of New Jersey, and its legislature is housed in the [[New Jersey State House]].
+
+New Jersey State House: The New Jersey State House was built in 1792.
+```
+
+Produces the following website:
+
+![Local references](./readme/local.gif)
+
+A root topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
+
+If you want to have two references to a given subtopic from different subtopics of that topic, you should make the target subtopic a topic proper, or use the "import reference" functionality described below.
+
+#### Global References
+
+A global reference connects a topic or subtopic to an entirely different topic. A global reference can only refer to the "root" paragraph of a topic, and not one of the internal subtopics it contains.
+
+To make a global link, we reference a topic defined in a different file:
+
+```
+Topic 1: This is a paragraph defined in a file called Topic_1.expl.
+We are going to reference [[Topic 2]], which is defined in a file called Topic_2.expl.
+```
+
+```
+Topic 2: This is a paragraph defined in a file called Topic_2.expl.
+When you click on the link above, this paragraph will be displayed.
+```
+
+
+For example, the following `expl` files in the topics directory:
+
+```
+New Jersey: New Jersey is a state in the Northeastern United States. New Jersey has several [[bordering states]].
+
+Bordering states: New Jersey shares its northern border with [[New York]].
+```
+
+```
+New York: New York is a large state in the Northeastern United States. New Jersey has several [[bordering states]].
+
+Bordering states: New York shares some of its southern border with [[New Jersey]].
+```
+
+Produce the following website:
+<br>
+
+![Global references](./readme/global.gif)
+<br>
+<br>
+
+As pictured above, when a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic as the root paragraph of a new page.
+
+Unlike a subtopic which can only be referenced from within its topic, a topic can be referenced from any paragraph of any file in the project.
+
+#### Import references
+
+An import reference is for when you want to reference a subtopic of a given topic from a paragraph belonging to a different topic.
+
+An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming, so ideally the paragraph for Fremont would reference Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can define Teton itself.
+
+So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming.
+
+For example, the following `expl` files:
+
+```
+Wyoming: Wyoming is a mid-sized state in the Western United States. It has many [[counties]].
+
+Counties: Wyoming contains [[Teton]].
+
+Teton: Teton is a county on the western side of Idaho. Teton borders [[Fremont]] county of [[Idaho]].
+
+```
+
+```
+Idaho: Idaho is a mid-sized state in the Western United States. It has many [[counties]].
+
+Counties: Idaho contains [[Fremont]].
+
+Fremont: Fremont is a county on the eastern side of Idaho.
+```
+
+Would produce the following website:
+<br>
+![Import references](./readme/import.gif)
+<br>
+
+In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the referencing paragraph.
+
+When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+
+In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, in a case where there are multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
+
+```
+This is a [[Global Link]], and this is an import reference to a subtopic called "Subtopic": [[Global Link#Subtopic]].
+
+```
+
 ### Using Markup
+
+Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported. Asterisks indicate bold and underscores indicate italics.
 
 ### Using Bulk Mode
 
-The Canopy CLI has various commands
+It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
 
-## Reference
+```
+[Category A]
 
-### CLI
+* Topic 1: This is a file with the topic key "Topic 1".
+
+Subtopic: This is a subtopic of Topic 1, in the same file.
+
+* Topic 2: This is a file with the topic key "Topic 2".
+
+Subtopic: This is a subtopic of Topic 2, in the same file.
+
+[Category A/Category B]
+
+These are notes.
+
+```
+
+Text in square brackets defines a directory path, and text after a `*` character represents a new file, which will be named after the given topic key.
+
+This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, it will create a "category notes" file named after the enclosing folder.)
+
+For example:
+
+![Bulk mode](./readme/bulk.gif)
+
+You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
+
+If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
+
+If you want to open an editor and make changes in an ongoing fashion, periodically saving changes and watching the result load in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this so that you can see the session logs in the terminal.
+
+For example:
+
+![Bulk sync mode](./readme/sync.gif)
+
+To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, `canopy bulk --last` to start a session with the same files you did last time, or `canopy bulk --blank` to start with an empty file.
+
+### Building your project
+
+In order to produce our website, we need to convert our `expl` files in the `topics` directory into `html` and `JSON` for the browser. Run `canopy build` to build JSON files from your `expl` files in the project-level `build` directory.
+
+Build has a few options: If you are going to host your site at a subpath like `example.com/subpath/Project`, then you can build with `canopy build --project-path-prefix subdirectory`. If you want to host your site on a static assets server, you can build with hash URLs (eg `example.com/#/Topic`) using `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
+
+If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your assets directory will cause your project's automatically generated `index.html` file to include it.
+
+If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
+
+### Watching your topic files
+
+You can watch your `topics` directory for changes and rebuild the JSON files automatically on change using the `canopy watch` command. Canopy watch should take the same options as build, so that you can specify how you want it to build your project. You can run the command in the background using `canopy watch &`.
+
+### Serving the web interface
+
+You can run a Node.js Express server for your project using `canopy serve` followed by an optional port parameter. Alternatively, you can build with the `--hash-urls` argument option, which allows the site to be hosted with any static assets server.
+
+### Keyboard shortcuts
+
+You can use a Canopy website using only the keyboard.
+
+| Key | Action |
+------|---------
+| Up, k  | Move to parent link |
+| Down, j | Select link |
+| Left, l | Move to previous link |
+| Right, h | Move to next link |
+| Return | Redirect to selected link |
+| Ctrl / Command + Return | Open in new tab |
+| z | Zoom on current link |
+| Tab | Iterate through subtopics of a topic |
+| Escape | Deselect link |
+| d | Duplicate tab |
+| Shift + up | Select parent link of current topic |
+
+Option/Alt clicking also redirects to the selected link.
 
 ## Development
-
-### Developer Installation
 
 For development, clone the repo and run
 
@@ -133,7 +364,23 @@ For development, clone the repo and run
 npm install -g [PATH TO REPO]
 ```
 
-Run tests:
+Run webpack to rebuild assets on code changes:
+
+```
+npm run develop
+```
+
+To build prod assets:
+```
+npm run build-prod
+
+```
+
+To run tests:
 ```
 npm run test
 ```
+
+## Contact
+
+At the moment you can submit questions or comments to canopyjs at gmail dot com. For bugs or other issues, open an issue on the project.
