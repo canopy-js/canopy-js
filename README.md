@@ -126,6 +126,8 @@ This is a note.
 
 ```
 
+Paragraphs or note can span multiple lines and be considered one unit, so long as you do not use a double newline, indicating a new paragraph.
+
 Subtopic paragraphs should have unique names within their enclosing topic file.
 
 ### Creating Links
@@ -154,11 +156,13 @@ Within a given topic, a subtopic can only be referenced once because the subtopi
 A global reference connects a topic or subtopic to a different topic. When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the topic of the global link. To make a global link, we reference a topic defined in a different file:
 
 ```
-Topic1: This is a paragraph defined in a file called Topic1.expl. We are going to reference [[Topic2]], which is defined in a different file.
+Topic1: This is a paragraph defined in a file called Topic1.expl.
+We are going to reference [[Topic2]], which is defined in a different file.
 ```
 
 ```
-Topic2: This is a paragraph defined in a file called Topic2.expl. When you click on the link above, this paragraph will be displayed.
+Topic2: This is a paragraph defined in a file called Topic2.expl.
+When you click on the link above, this paragraph will be displayed.
 ```
 
 Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
