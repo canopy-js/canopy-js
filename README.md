@@ -228,9 +228,9 @@ It can get tedious to create `expl` files manually, so the CLI has a mode called
 
 This bulk file would represent the existence of a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic1.expl` and `topics/Category_A/Topic2.expl`.
 
-You can run start `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` and temporarily change your default editor.
+You can run start `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` and temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
-If you want to create a bulk file, edit it at your leisure, and process it at a later point, run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
+If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
 If you want to open an editor and make changes in an ongoing fashion, while watching the result in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this.
 
