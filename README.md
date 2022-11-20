@@ -69,7 +69,7 @@ Traverse the same content in different directions:
 
 ## Why?
 
-A human explainer gives a brief statement that touches on several points and allows the listener to express follow-up questions, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you never get exactly the same explanation twice.
+A human explainer gives a brief statement that touches on several points and allows the listener to express follow-up questions, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
 
 Canopy allows an author to express their ideas once in small modular pieces, and the web interface combines them produce an infinite number of customized, user-driven explanations.
 
@@ -161,6 +161,20 @@ Subtopic1: this is a subtopic defined in the same file as the reference.
 Subtopics can only be referenced from within the file that they are defined (with the exception of "import references," which will be explained below.)
 
 Within a given topic, a subtopic can only be referenced once because the subtopics of the topics must form a tree, with each paragraph having only one parent reference. If you want to have two references to a given subtopic from multiple other subtopics of that topic, you should probably make the target subtopic a topic proper, or use the "import reference" functionality described below.
+
+The following file:
+
+```
+New Jersey: New Jersey is a mid-sized state in the Northeastern United States. The capital of New Jersey is [[Trenton]].
+
+Trenton: Trenton is the capital of New Jersey, and its legislature is housed in the [[New Jersey State House]].
+
+New Jersey State House: The New Jersey State House was built in 1792.
+```
+
+Produces the following website:
+
+![Local references](./readme/local.gif)
 
 #### Global References
 
