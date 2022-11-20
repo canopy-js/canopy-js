@@ -113,11 +113,11 @@ A topic file is composed of a series of "paragraph nodes" and notes.
 A paragraph node is a paragraph that begins with a "key," a colon or question-mark terminated text before the paragraph, indicating the "name" of the paragraph. A note is any other text, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
 
 ```
-Topic1: This is the paragraph for Topic1.
+Topic 1: This is the paragraph for Topic 1.
 
-Subtopic1: This is a subtopic of Topic1.
+Subtopic 1: This is a subtopic of Topic 1.
 
-This key is a question? And it is also a subtopic of Topic1.
+This key is a question? And it is also a subtopic of Topic 1.
 
 This is a note.
 
@@ -144,9 +144,9 @@ Links are made using the `[[Link]]` syntax, and one can change the link text lik
 A local reference connects a topic to a subtopic, or a subtopic to a further subtopic. When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a page, because it requires the context of the given topic. One makes a local reference by referencing a named paragraph in the same file as the reference:
 
 ```
-Topic1: This is the topic, and this is a link to [[Subtopic1]].
+Topic 1: This is the topic, and this is a link to [[Subtopic 1]].
 
-Subtopic1: this is a subtopic defined in the same file as the reference.
+Subtopic 1: this is a subtopic defined in the same file as the reference.
 
 ```
 
@@ -177,12 +177,12 @@ A global reference connects a topic or subtopic to an entirely different topic. 
 To make a global link, we reference a topic defined in a different file:
 
 ```
-Topic1: This is a paragraph defined in a file called Topic1.expl.
-We are going to reference [[Topic2]], which is defined in a different file.
+Topic 1: This is a paragraph defined in a file called Topic_1.expl.
+We are going to reference [[Topic 2]], which is defined in a different file.
 ```
 
 ```
-Topic2: This is a paragraph defined in a file called Topic2.expl.
+Topic 2: This is a paragraph defined in a file called Topic_2.expl.
 When you click on the link above, this paragraph will be displayed.
 ```
 
@@ -235,7 +235,6 @@ Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
 It will produce the following website:
-
 
 ![Import references](./readme/import.gif)
 
