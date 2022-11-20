@@ -187,7 +187,7 @@ When you click on the link above, this paragraph will be displayed.
 ```
 
 
-The following `expl` files in the topics directory:
+For example, the following `expl` files in the topics directory:
 
 ```
 New Jersey: New Jersey is a state in the Northeastern United States. New Jersey has several [[bordering states]].
