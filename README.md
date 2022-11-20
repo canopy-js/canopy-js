@@ -167,6 +167,10 @@ When you click on the link above, this paragraph will be displayed.
 
 Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
 
+Here is an example of how the user can either "inline" global links below the current paragraph, or redirect to the target as a new page:
+
+![Global references](./readme/global.gif)
+
 #### Import references
 
 An import reference is for when you want to reference a subtopic of a given topic, but not from within that topic.
