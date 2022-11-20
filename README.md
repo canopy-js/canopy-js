@@ -176,7 +176,24 @@ When you click on the link above, this paragraph will be displayed.
 
 Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
 
-Here is an example of how the user can either "inline" global links below the current paragraph, or redirect to the target as a new page:
+Here is an example of how the user can either "inline" global links below the current paragraph, or redirect to the target as a new page.
+
+The following `expl` files in the topics directory:
+
+```
+New Jersey: New Jersey is a state in the Northeastern United States. New Jersey has several [[bordering states]].
+
+Bordering states: New Jersey shares its northern border with [[New York]].
+```
+
+```
+New York: New York is a large state in the Northeastern United States. New Jersey has several [[bordering states]].
+
+Bordering states: New York shares some of its southern border with [[New Jersey]].
+```
+
+Produce the following website:
+<br>
 
 ![Global references](./readme/global.gif)
 
@@ -224,9 +241,13 @@ It can get tedious to create `expl` files manually, so the CLI has a mode called
 
 * Topic2: Hello world.
 
+[Category A/Category B]
+
+These are notes.
+
 ```
 
-This bulk file would represent the existence of a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic1.expl` and `topics/Category_A/Topic2.expl`.
+This bulk file would represent the existence of a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic1.expl` and `topics/Category_A/Topic2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (Notes that do not have colon or question-mark terminated "key" get put into a "category notes" file named after the enclosing category name, and do not affect the project.)
 
 You can run start `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` and temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
