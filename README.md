@@ -69,7 +69,7 @@ Traverse the same content in different directions:
 
 ## Why?
 
-A human explainer gives brief statements that touch on several topics and allows the listener to express follow-up questions, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you never get exactly the same explanation twice.
+A human explainer gives a brief statement that touches on several points and allows the listener to express follow-up questions, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you never get exactly the same explanation twice.
 
 Canopy allows an author to express their ideas once in small modular pieces, which web interface combines to produce an infinite number of custom user-driven explanations.
 
@@ -144,6 +144,8 @@ Subtopic paragraphs should have unique names within their enclosing topic file.
 Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs on the page.
 
 There are three types of link, local, global, and import references.
+
+Links are made using the \[\[Link\]\] syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
 
 #### Local References
 
@@ -225,6 +227,13 @@ Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
 ![Import references](./readme/import.gif)
+
+In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to. In these cases, one can use an explicit syntax like this:
+
+```
+This is a [[Global Link]], and this is an import reference to a subtopic called "Subtopic": [[Global Link#Subtopic]].
+
+```
 
 ### Using Markup
 
