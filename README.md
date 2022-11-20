@@ -244,7 +244,7 @@ Would produce the following website:
 ![Import references](./readme/import.gif)
 <br>
 
-In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, enabling the later subtopic reference to work. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, enabling the later subtopic reference to work, despite being a subtopic of a different topic. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
 
 In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to. In these cases, one can use an explicit syntax like this:
 
