@@ -35,7 +35,6 @@ class BulkFileParser {
 
   getFileSet() {
     let fileContentsByPath = {};
-    // console.dir(this.parseSections(), { depth: 6});
 
     this.parseSections().forEach(section => {
       if (section.diskDirectoryPath === 'topics/') throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
@@ -52,7 +51,8 @@ class BulkFileParser {
         }
 
         if (categoryNotesBuffer) {
-          fileContentsByPath[categoryNotesFilePath] = categoryNotesBuffer;
+          let existingNotes = fileContentsByPath[categoryNotesFilePath];
+          fileContentsByPath[categoryNotesFilePath] = (existingNotes ? existingNotes + '\n' : '') + categoryNotesBuffer;
         }
       });
     });
