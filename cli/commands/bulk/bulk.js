@@ -108,7 +108,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.finish) { // non-editor mode
-    handleFinish({ deleteBulkFile: true }, options);
+    try { handleFinish({ deleteBulkFile: true }, options); } catch(e) { console.error(e); }
   }
 
   function handleFinish(args, options) {
