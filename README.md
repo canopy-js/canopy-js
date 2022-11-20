@@ -64,6 +64,13 @@ Traverse the same content in different directions:
 <br>
 <br>
 <br>
+
+## Why?
+
+A human explainer gives brief statements that touch on several topics, and allows the listener to express follow-up questions, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and order. Even though the same building blocks are being used, you never get exactly the same explanation twice.
+
+Canopy allows an author to express their ideas once in small modular pieces, which the user interface combines to produce an infinite number of custom user-driven explanations.
+
 ## Getting Started
 
 ### Installation
