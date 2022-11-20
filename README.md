@@ -200,6 +200,8 @@ Fremont: Fremont is a county on the eastern side of Idaho.
 
 ![Import references](./readme/import.gif)
 
+If you want to reference a subtopic from two other subtopics within a given topic, only one of these can be the real parent local reference, but the other can be a "self-import" reference where one references the current topic and then the given subtopic as an import reference, and the link is displayed as a new
+
 ### Using Markup
 
 Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported.
@@ -230,6 +232,8 @@ To load only certain files or directories, use `canopy bulk -pd` for a directory
 ### Building
 
 Run `canopy build` to build JSON files from your `expl` files. Build has a few options. If you are going to host your site at a subdirectory like example.com/subdirectory/Project, then you can build with `canopy build --project-path-prefix "subdirectory"`. If you want to host your site on a static assets server, you can build with hash URLs (eg example.com/#/MyTopic) with `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
+
+You can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` if you want to host your project at a path prefix (eg www.example.com/subdirectory/Topic), or if you want to use hash URLs (eg www.example.com/#/Topic).
 
 ### Watching
 
