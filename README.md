@@ -156,7 +156,7 @@ Subtopic1: this is a subtopic defined in the same file as the reference.
 
 Subtopics can only be referenced from within the file that they are defined (with the exception of "import references," which will be explained below.)
 
-Within a given topic, a subtopic can only be referenced once because the subtopics of the topics must form a tree, with each paragraph having only one parent reference. If you want to have two references to a subtopic, you can either make that subtopic a topic proper, or use a "self-import reference" which will be discussed below.
+Within a given topic, a subtopic can only be referenced once because the subtopics of the topics must form a tree, with each paragraph having only one parent reference. If you want to have two references to a given subtopic from multiple other subtopics of that topic, you should probably make the target subtopic a topic proper, or use the "import reference" functionality described below.
 
 #### Global References
 
@@ -206,8 +206,6 @@ Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
 ![Import references](./readme/import.gif)
-
-If you want to reference a subtopic from two other subtopics within a given topic, only one of these can be the real parent local reference, but the other can be a "self-import" reference where one references the current topic and then the given subtopic as an import reference, and the link is displayed as a new
 
 ### Using Markup
 
