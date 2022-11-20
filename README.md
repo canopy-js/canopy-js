@@ -275,7 +275,7 @@ These are notes.
 
 ```
 
-This bulk file would represent the existence of a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`, which is a sort of "bucket" for notes within `Category B` that do not yet have any specified topic key.
+This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`, which is a sort of "bucket" for notes within `Category B` that do not yet have any specified topic key.
 
 You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
