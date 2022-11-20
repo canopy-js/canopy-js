@@ -106,7 +106,7 @@ A Canopy website is composed of named paragraphs, some of which are called "topi
 
 Topics are standalone "conversation-starters" which can be displayed as the root paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed after a certain path of prior paragraphs that are necessary for context.
 
-Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is conventional to put all topic files in "category" subdirectories of the `topics` directory.
+Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is conventional to put all topic files into one or more levels of "category" subdirectories within the `topics` directory.
 
 A topic file is composed of a series of "paragraph nodes" and notes.
 
@@ -123,7 +123,7 @@ This is a note.
 
 ```
 
-The first paragraph node represents the topic of the file, and all subsequent paragraph nodes are subtopics of that topic.
+The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
 Paragraphs or notes can span multiple lines with single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note.
 
@@ -131,13 +131,13 @@ Subtopic paragraphs should have unique names within their enclosing topic file, 
 
 ### Creating Links
 
-Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs on the page.
+Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs in the project.
 
-If paragraph A has a reference to paragraph B, that means the user can select that reference in order to add paragraph B to the page below A.
-
-There are three types of references: local, global, and import.
+For example, if paragraph A has a link to paragraph B, that means the user can select that link in order to add paragraph B to the page below A.
 
 Links are made using the `[[Link]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
+
+There are three types of references: local, global, and import.
 
 #### Local References
 
@@ -149,10 +149,6 @@ Topic 1: This is the topic, and this is a link to [[Subtopic 1]].
 Subtopic 1: this is a subtopic defined in the same file as the reference.
 
 ```
-
-Subtopics can only be referenced from within the file that they are defined (with the exception of "import references," which will be explained below.)
-
-The topic paragraph references several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
 
 For example, the following file:
 
@@ -168,11 +164,15 @@ Produces the following website:
 
 ![Local references](./readme/local.gif)
 
+Subtopics can only be referenced from within the topic file in which they are defined (with the exception of "import references," which will be explained below.)
+
+A topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
+
 If you want to have two references to a given subtopic from multiple subtopics of that topic, you should make the target subtopic a topic proper, or use the "import reference" functionality described below.
 
 #### Global References
 
-A global reference connects a topic or subtopic to an entirely different topic. When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic of the global link.
+A global reference connects a topic or subtopic to an entirely different topic.
 
 To make a global link, we reference a topic defined in a different file:
 
@@ -186,7 +186,6 @@ Topic 2: This is a paragraph defined in a file called Topic_2.expl.
 When you click on the link above, this paragraph will be displayed.
 ```
 
-Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
 
 The following `expl` files in the topics directory:
 
@@ -206,6 +205,12 @@ Produce the following website, where we can either inline or redirect to the new
 <br>
 
 ![Global references](./readme/global.gif)
+<br>
+<br>
+
+When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic of the global link.
+
+Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
 
 #### Import references
 
@@ -235,9 +240,9 @@ Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
 It will produce the following website:
-
+<br>
 ![Import references](./readme/import.gif)
-
+<br>
 In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to. In these cases, one can use an explicit syntax like this:
 
 ```
