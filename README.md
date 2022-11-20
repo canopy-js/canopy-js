@@ -150,7 +150,7 @@ Subtopic 1: this is a subtopic defined in the same file as the reference.
 
 ```
 
-For example, the following file:
+For example, the following `expl` file:
 
 ```
 New Jersey: New Jersey is a mid-sized state in the Northeastern United States. The capital of New Jersey is [[Trenton]].
@@ -220,7 +220,7 @@ An example might be if you want to express that Fremont county of Idaho is adjac
 
 So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming. We would first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context.
 
-For example, if we make the following files:
+For example, the following `expl` files:
 
 ```
 Wyoming: Wyoming is a mid-sized state in the Western United States. It has many [[counties]].
