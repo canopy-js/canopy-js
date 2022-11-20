@@ -356,6 +356,35 @@ describe('BulkFileParser', function() {
     ]);
   });
 
+  test.only('it concatinates files for the same category listed twice', () => {
+    let bulkFileString = dedent`[A/B/C]
+    * Topic1: Paragraph.
+
+    * Note 1.
+
+    [A/B/C]
+
+    * Topic2: Paragraph.
+
+    * Note 2.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
+      'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
+      'topics/A/B/C/C.expl': "Note 1.\n\nNote 2.\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+
   test('it parses data file with multiple files in multiple directories', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic1: Paragraph.
