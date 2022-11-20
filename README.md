@@ -214,7 +214,7 @@ Unlike a subtopic, a topic can be referenced from any paragraph in any file in t
 
 #### Import references
 
-An import reference is for when you want to reference a subtopic of a given topic, but not from a paragraph within that topic.
+An import reference is for when you want to reference a subtopic of a given topic from a paragraph of a different topic.
 
 An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would the paragraph for Fremont to reference Teton, however, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because it would lack the context of an explanation of what Wyoming is, and how it relates to Teton.
 
