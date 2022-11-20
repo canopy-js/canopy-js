@@ -152,7 +152,7 @@ Subtopics can only be referenced from within the file that they are defined (wit
 
 Within a given topic, a subtopic can only be referenced once because the subtopics of the topics must form a tree, with each paragraph having only one parent reference. If you want to have two references to a given subtopic from multiple other subtopics of that topic, you should probably make the target subtopic a topic proper, or use the "import reference" functionality described below.
 
-The following file:
+For example, the following file:
 
 ```
 New Jersey: New Jersey is a mid-sized state in the Northeastern United States. The capital of New Jersey is [[Trenton]].
