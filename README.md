@@ -211,7 +211,7 @@ If you want to reference a subtopic from two other subtopics within a given topi
 
 ### Using Markup
 
-Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported.
+Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported. Asterisks indicate bold and underscores indicate italics.
 
 ### Using Bulk Mode
 
@@ -232,21 +232,21 @@ You can run start `canopy bulk` to start a bulk session in your default editor. 
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
-If you want to open an editor and make changes in an ongoing fashion, while watching the result in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this.
+If you want to open an editor and make changes in an ongoing fashion, while watching the result in the browser, you can run `canopy bulk --sync`. Saving changes to the file will update your website. It is recommended to use a visual editor for this so that you can see the logs in the terminal.
 
-To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively.
+To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, `canopy bulk --last` to start a session with the same files you did last time, or `canopy bulk --blank` to start with an empty file.
 
-### Building
+### Building your project
 
 Run `canopy build` to build JSON files from your `expl` files. Build has a few options. If you are going to host your site at a subdirectory like example.com/subdirectory/Project, then you can build with `canopy build --project-path-prefix "subdirectory"`. If you want to host your site on a static assets server, you can build with hash URLs (eg example.com/#/MyTopic) with `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
 
 You can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` if you want to host your project at a path prefix (eg www.example.com/subdirectory/Topic), or if you want to use hash URLs (eg www.example.com/#/Topic).
 
-### Watching
+### Watching your topic files
 
 You can watch your `topics` directory for changes and rebuild the JSON files on change using the `canopy watch` command. Canopy watch should take the same options as build, so that you can specify how you want it to build your project.
 
-### Serving
+### Serving the web interface
 
 You can run a server for your project using `canopy serve` followed by an optional port parameter. Alternatively, you can build with the hash-urls argument option, which allow the site to be hosted with a static assets server.
 
