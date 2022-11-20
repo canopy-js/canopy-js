@@ -218,7 +218,7 @@ An import reference is for when you want to reference a subtopic of a given topi
 
 An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would want the paragraph for Fremont to reference Teton, however, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because maybe the user needs an explanation of what Wyoming is in the first place, and how it relates to Teton.
 
-So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming. We would first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, enabling the later subtopic reference to work. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming.
 
 For example, the following `expl` files:
 
@@ -243,6 +243,9 @@ Would produce the following website:
 <br>
 ![Import references](./readme/import.gif)
 <br>
+
+In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, enabling the later subtopic reference to work. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+
 In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to. In these cases, one can use an explicit syntax like this:
 
 ```
