@@ -226,7 +226,7 @@ It can get tedious to create `expl` files manually, so the CLI has a mode called
 
 ```
 
-This bulk file would represent a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic1.expl` and `topics/Category_A/Topic2.expl`.
+This bulk file would represent the existence of a directory `topics/Category_A` that contained within it two files, `topics/Category_A/Topic1.expl` and `topics/Category_A/Topic2.expl`.
 
 You can run start `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` and temporarily change your default editor.
 
