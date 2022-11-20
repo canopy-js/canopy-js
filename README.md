@@ -256,7 +256,7 @@ Usual markdown-style styling is generally available, such as lists, code blocks,
 
 ### Using Bulk Mode
 
-It can get tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
+It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
 
 ```
 [Category A]
