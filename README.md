@@ -18,12 +18,9 @@
 ## About Canopy JS
 
 ### What Canopy does
-<br>
 
 Canopy takes a set of text files like this:
-<br>
-<br>
-<br>
+
 
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
@@ -41,7 +38,6 @@ and later became a center of manufacturing and immigration.
 Trenton: Trenton is a mid-sized American city in southern New Jersey.
 
 ```
-<br>
 <br>
 And produces an interactive website like this:
 <br>
