@@ -102,16 +102,6 @@ A Canopy project is edited by creating new `.expl` files in the project's `topic
 
 You can run `canopy serve` to see your project live, and can run `canopy watch` to rebuild the content on changes to the `topics` directory.
 
-### Using a Canopy Project
-
-A spoken explanation begins with a brief description of a selected topic, followed by "follow-up" questions or added detail regarding previously mentioned things.
-
-Canopy mimics this "UI," by starting each page with a topic-paragraph that mentions several other ideas, each of which are represented by a link, and selecting that link adds a further paragraph to the page which in turn has further links to further ideas.
-
-The user can begin browsing from multiple original topics, but the links they select may end up taking them to paragraphs that are reused throughout the project.
-
-The URL will reflect the path of paragraphs being displayed, eg `example.com/Topic1#Subtopic1/Topic2#Subtopic2`
-
 ### Creating Topic Files
 
 A Canopy website is composed of named paragraphs, some of which are "topics," and some of which are "subtopics."
