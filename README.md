@@ -216,9 +216,9 @@ Unlike a subtopic, a topic can be referenced from any paragraph in any file in t
 
 An import reference is for when you want to reference a subtopic of a given topic from a paragraph of a different topic.
 
-An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would the paragraph for Fremont to reference Teton, however, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because it would lack the context of an explanation of what Wyoming is, and how it relates to Teton.
+An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would want the paragraph for Fremont to reference Teton, however, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because maybe the user needs an explanation of what Wyoming is in the first place, and how it relates to Teton.
 
-So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming. We would first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the reference is shown but given the necessary context.
+So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming. We would first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, enabling the later subtopic reference to work. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
 
 For example, the following `expl` files:
 
@@ -239,7 +239,7 @@ Counties: Idaho contains [[Fremont]].
 Fremont: Fremont is a county on the eastern side of Idaho.
 ```
 
-It will produce the following website:
+Would produce the following website:
 <br>
 ![Import references](./readme/import.gif)
 <br>
@@ -261,13 +261,13 @@ It can become tedious to create `expl` files manually, so the CLI has a feature 
 ```
 [Category A]
 
-* Topic 1: Hello world.
+* Topic 1: This is a file with the topic key "Topic 1".
 
-Subtopic: This is a subtopic of Topic 1.
+Subtopic: This is a subtopic of Topic 1, in the same file.
 
-* Topic 2: Hello world.
+* Topic 2: This is a file with the topic key "Topic 2".
 
-Subtopic: This is a subtopic of Topic 2.
+Subtopic: This is a subtopic of Topic 2, in the same file.
 
 [Category A/Category B]
 
@@ -275,7 +275,7 @@ These are notes.
 
 ```
 
-This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`, which is a sort of "bucket" for notes within `Category B` that do not yet have any specified topic key.
+This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, it will create a "category notes" file named after the enclosing folder.)
 
 You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
