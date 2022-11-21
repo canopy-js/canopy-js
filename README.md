@@ -314,7 +314,7 @@ In order to produce our website, we need to convert our `expl` files in the `top
 
 Build has a few options: If you are going to host your site at a subpath like `example.com/subpath/Project`, then you can build with `canopy build --project-path-prefix subdirectory`. If you want to host your site on a static assets server, you can build with hash URLs (eg `example.com/#/Topic`) using `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
 
-If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above.
+If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
 
 ### Watching your topic files
 
