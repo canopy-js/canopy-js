@@ -84,8 +84,6 @@ class LinkProximityCalculator {
 }
 
 function updateFilesystem(directoriesToEnsure, filesToWrite, options) {
-  fs.rmSync('build', { force: true, recursive: true });
-
   directoriesToEnsure.forEach(directoryPath => {
     fs.ensureDirSync(directoryPath);
     if (options.logging) console.log(chalk.yellow('Created directory: ' + directoryPath));

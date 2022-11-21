@@ -71,7 +71,7 @@ Traverse the same content in different directions:
 
 A human explainer can give a brief introduction that touches on several points and allows the listener to express follow-up questions, adding more detail for someone more advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
 
-Canopy allows an author to express their ideas once, in small modular pieces, with a web interface that combines them to produce an infinite number of customized, user-driven explanations. Projects can grow to enormous size, and the user still only interacts with a few paragraphs at any time.
+Canopy allows an author to express their ideas once, in small modular pieces, and the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks.
 
 ## Getting Started
 
@@ -81,7 +81,7 @@ These are instructions for people wishing to start their own Canopy project.
 
 Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:
 
-![Bulk mode](./readme/bulk.gif)
+![Bulk mode](./readme/bulk2.gif)
 
 ### Installation
 
@@ -294,7 +294,7 @@ This bulk file would represent the existence of a directory `topics/Category_A` 
 
 For example:
 
-![Bulk mode](./readme/bulk.gif)
+![Bulk mode](./readme/bulk2.gif)
 
 You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
