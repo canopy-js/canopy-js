@@ -69,7 +69,7 @@ Traverse the same content in different directions:
 
 ## Why?
 
-A human explainer gives a brief introduction that touches on several points and allows the listener to express follow-up questions, adding more detail for someone more advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
+A human explainer can give a brief introduction that touches on several points and allow the listener to express follow-up questions, adding more detail for someone more advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
 
 Canopy allows an author to express their ideas once, in small modular pieces, and the web interface combines them produce an infinite number of customized, user-driven explanations.
 
@@ -279,6 +279,10 @@ These are notes.
 ```
 
 This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, it will create a "category notes" file named after the enclosing folder.)
+
+For example:
+
+![Bulk mode](./readme/bulk.gif)
 
 You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 

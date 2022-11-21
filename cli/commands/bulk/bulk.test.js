@@ -130,6 +130,23 @@ describe('BulkFileGenerator', function() {
       Inbox notes.` + '\n\n\n');
 
   });
+
+  test('it ignores files with other paths', () => {
+    let originalSelectedFilesByContents = {
+      'topics/X/Topic.expl': 'Topic: Hello world.\n',
+      'topics/X/Readme.md': 'Hello world.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[X]
+
+      * Topic: Hello world.` + '\n\n\n');
+
+  });
 });
 
 describe('BulkFileParser', function() {
@@ -780,6 +797,38 @@ describe('FileSystemChangeCalculator', function() {
       chalk.red('Deleted file: topics/A/B/D/Topic2.expl'),
       chalk.red('Deleted file: topics/A/B/D/Topic3.expl'),
       chalk.red('Deleted directory: topics/A/B/D')
+    ]);
+  });
+
+  test('it does not delete directories that still contain non-expl files', () => {
+    // This is a more complicated case because we want to make sure we aren't looking at
+    // each file and not deleting the directory because the other file still exists, when both are getting deleted
+
+    let originalSelectionFileSet = new FileSet({
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
+      'topics/A/B/C/README.md': "Hello world.\n",
+    });
+    let newBulkFileString = '\n';
+    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+    let allDiskFileSet = new FileSet({
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
+      'topics/A/B/C/README.md': "Hello world.\n"
+    });
+
+    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+    expect(fileSystemChange.fileDeletions).toEqual([
+      'topics/A/B/C/Topic.expl',
+    ]);
+    expect(fileSystemChange.directoryDeletions).toEqual([]);
+    expect(fileSystemChange.fileCreations).toEqual([]);
+    expect(fileSystemChange.directoryCreations).toEqual([]);
+    expect(fileSystemChange.fileAppendings).toEqual([]);
+
+    expect(fileSystemChange.messages).toEqual([
+      chalk.red('Deleted file: topics/A/B/C/Topic.expl'),
     ]);
   });
 
