@@ -75,6 +75,8 @@ Canopy allows an author to express their ideas once, in small modular pieces, wi
 
 ## Getting Started
 
+These are instructions for people wishing to start their own Canopy project.
+
 ### Example flow
 
 Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:

@@ -83,8 +83,8 @@ class LinkProximityCalculator {
   }
 }
 
-function updateFilesystem(directoriesToEnsure, filesToWrite, destinationDataDirectory, options) {
-  fs.rmSync(destinationDataDirectory, { force: true, recursive: true });
+function updateFilesystem(directoriesToEnsure, filesToWrite, options) {
+  fs.rmSync('build', { force: true, recursive: true });
 
   directoriesToEnsure.forEach(directoryPath => {
     fs.ensureDirSync(directoryPath);

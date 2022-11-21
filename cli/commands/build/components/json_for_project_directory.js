@@ -3,8 +3,8 @@ let { topicKeyOfString } = require('./helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
-function jsonForProjectDirectory(projectDir, explFileData, defaultTopicString, options) {
-  let destinationBuildDirectory = `${projectDir}/build`;
+function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
+  let destinationBuildDirectory = 'build';
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
   let parserContext = new ParserContext(explFileData, defaultTopicString);
   let directoriesToEnsure = [];
