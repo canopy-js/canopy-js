@@ -3,6 +3,7 @@ const path = require('path');
 const build = require('./build');
 const chokidar = require('chokidar');
 let chalk = require('chalk');
+let shell = require('shelljs');
 
 function watch(options) {
   let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));

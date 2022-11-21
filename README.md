@@ -131,7 +131,7 @@ This is a note.
 
 The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
-Paragraphs or notes can span multiple lines with single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note.
+Paragraphs or notes can span multiple lines with a single newline and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note.
 
 Subtopic paragraphs should have unique names within their enclosing topic file, and topics should have a unique name within the project at large.
 
@@ -139,7 +139,7 @@ Subtopic paragraphs should have unique names within their enclosing topic file, 
 
 Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs in the project.
 
-For example, if paragraph A has a link to paragraph B, that means the user can select that link in order to add paragraph B to the page below A.
+For example, if paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
 
 Links are made using the `[[Link]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
 
@@ -147,7 +147,9 @@ There are three types of references: local, global, and import.
 
 #### Local References
 
-A local reference connects a topic to a subtopic, or a subtopic to a further subtopic. When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a page, because it requires the context of the given topic. One makes a local reference by referencing a named paragraph in the same file as the reference:
+A local reference connects a topic to one of its subtopics, or connects a subtopic to a further subtopic within the same topic file.
+
+One makes a local reference by referencing a named paragraph that exists in the same file as the reference:
 
 ```
 Topic 1: This is the topic, and this is a link to [[Subtopic 1]].
@@ -156,10 +158,12 @@ Subtopic 1: this is a subtopic defined in the same file as the reference.
 
 ```
 
+When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of the page, because a subtopic is something that requires the context of the given topic to be understood.
+
 For example, the following `expl` file:
 
 ```
-New Jersey: New Jersey is a mid-sized state in the Northeastern United States. The capital of New Jersey is [[Trenton]].
+New Jersey: New Jersey is a mid-sized state in the Northeastern US. The capital of New Jersey is [[Trenton]].
 
 Trenton: Trenton is the capital of New Jersey, and its legislature is housed in the [[New Jersey State House]].
 
@@ -295,6 +299,10 @@ You can run `canopy bulk` to start a bulk session in your default editor. If you
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
 If you want to open an editor and make changes in an ongoing fashion, periodically saving changes and watching the result load in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this so that you can see the session logs in the terminal.
+
+For example:
+
+![Bulk sync mode](./readme/sync.gif)
 
 To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, `canopy bulk --last` to start a session with the same files you did last time, or `canopy bulk --blank` to start with an empty file.
 
