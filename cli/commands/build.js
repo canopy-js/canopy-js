@@ -46,7 +46,7 @@ function build(options) {
     + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
   ));
 
-  buildProject('.', defaultTopicName, options);
+  buildProject(defaultTopicName, options);
 
   if (fs.existsSync(`assets`)) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });
