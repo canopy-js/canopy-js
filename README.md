@@ -290,6 +290,8 @@ These are notes.
 
 ```
 
+Text in square brackets defines a directory path, and text after a `*` character represents a new file, which will be named after the given topic key.
+
 This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, it will create a "category notes" file named after the enclosing folder.)
 
 For example:
