@@ -69,9 +69,9 @@ Traverse the same content in different directions:
 
 ## Why?
 
-A human explainer can give a brief introduction that touches on several points and allows the listener to express follow-up questions, adding more detail for someone more advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
+A human explainer can give a brief introduction that touches on several points and allows the listener to express follow-up questions, burrowing into their specific interests, adding more detail for someone advanced, or more background information for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never get exactly the same explanation twice.
 
-Canopy allows an author to express their ideas once, in small modular pieces, and the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Every point can reference many more, allowing the author to capture the dense combinatorial relationships between the topics of their project, to a degree that would be impossible in linear text, producing a better approximation of the experience of speaking with an expert.
+Canopy allows an author to express their ideas once, in small modular pieces, and the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Every point can reference many more, allowing the author to better capture the dense combinatorial relationships between the topics of their project, to a degree that would be impossible in linear text, producing a better approximation of the experience of speaking with an expert.
 
 ## Getting Started
 
