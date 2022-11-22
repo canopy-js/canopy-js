@@ -1,6 +1,7 @@
 // A set of files and their contents, grouped optionally by directory path
 let pathLibrary = require('path');
 let Topic = require('../shared/topic');
+let Paragraph = require('../shared/paragraph');
 let { getDefaultTopicAndPath } = require('./helpers');
 
 class FileSet {
@@ -15,8 +16,10 @@ class FileSet {
       let file = {
         path: filePath,
         contents: fileContentsByPath[filePath],
+        key: (new Paragraph(fileContentsByPath[filePath])).key,
         directoryPath,
-        categoryNotes: filePath.match(/([^\/])\/[^\/]+$/)?.[1] === filePath.match(/[^\/]\/([^\/]+)\.expl$/)?.[1] // other extensions return null
+        terminalCategory: terminalCategoryofFilePath(filePath),
+        categoryNotes: !!filePath.match(/([^\/]+)\/\1\.expl$/) // other extensions return null
       };
 
       this.filesObject[filePath] = file;
@@ -81,6 +84,11 @@ class FileSet {
   get json() {
     return JSON.stringify(Object.keys(this.fileContentsByPath));
   }
+}
+
+function terminalCategoryofFilePath(filePath) {
+  let items = filePath.split('/');
+  return Topic.convertUnderscoresToSpaces(items[items.length - 2]);
 }
 
 function generateDisplayPath(directoryPath) {

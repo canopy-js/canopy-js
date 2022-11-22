@@ -147,6 +147,22 @@ describe('BulkFileGenerator', function() {
       * Topic: Hello world.` + '\n\n\n');
 
   });
+
+  test("it does not put an asterisk for category notes with keys that don't match the category name", () => {
+    let originalSelectedFilesByContents = {
+      'topics/A/B/C/C.expl': `This key doesn't match the category name of "C": Hello world.\n`,
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/C.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[A/B/C]
+
+      Topic: Hello world.` + '\n\n\n'); // no asterisk
+
+  });
 });
 
 describe('BulkFileParser', function() {

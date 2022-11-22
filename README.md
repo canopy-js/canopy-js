@@ -81,7 +81,7 @@ These are instructions for people wishing to start their own Canopy project.
 
 Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:
 
-![Bulk mode](./readme/bulk.gif)
+![Bulk mode](./readme/bulk-faster.gif)
 
 ### Installation
 
@@ -296,7 +296,7 @@ This bulk file would represent the existence of a directory `topics/Category_A` 
 
 For example:
 
-![Bulk mode](./readme/bulk.gif)
+![Bulk mode](./readme/bulk-faster.gif)
 
 You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
@@ -306,7 +306,7 @@ If you want to open an editor and make changes in an ongoing fashion, periodical
 
 For example:
 
-![Bulk sync mode](./readme/sync-alt.gif)
+![Bulk sync mode](./readme/sync-alt-faster.gif)
 
 To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, `canopy bulk --last` to start a session with the same files you did last time, or `canopy bulk --blank` to start with an empty file.
 
