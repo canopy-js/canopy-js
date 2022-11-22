@@ -93,6 +93,24 @@ const bulk = async function(selectedFileList, options) {
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
   }
 
+  function handleFinish({deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList}, options) {
+    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    let originalSelectionFileSet = originalSelectedFilesList ?
+      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
+    let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
+    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
+    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
+    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+    let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
+    if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
+    if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
+    fileSystemManager.execute(fileSystemChange, options.logging);
+    getDefaultTopicAndPath() // Error in case the person changed the default topic file name
+  }
+
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
@@ -111,24 +129,6 @@ const bulk = async function(selectedFileList, options) {
     try { handleFinish({ deleteBulkFile: true }, options); } catch(e) { console.error(e); }
   }
 
-  function handleFinish(args, options) {
-    let { deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList } = args;
-    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
-    let originalSelectionFileSet = originalSelectedFilesList ?
-      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
-    let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
-    let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
-    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
-    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
-    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
-    if (options.sync && !deleteBulkFile) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
-    if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
-    fileSystemManager.execute(fileSystemChange, options.logging);
-    getDefaultTopicAndPath() // Error in case the person changed the default topic file name
-  }
-
   if (options.sync) {
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
@@ -144,6 +144,7 @@ const bulk = async function(selectedFileList, options) {
       options.logging = false;
     }
 
+    // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server
     watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
 
     let startedServer = false; // server may fail to start because of an invalid build, but a later fix may enable starting
