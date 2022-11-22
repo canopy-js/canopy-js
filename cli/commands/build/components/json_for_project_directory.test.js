@@ -4,7 +4,7 @@ let chalk = require('chalk');
 
 test('it creates a data directory', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.'
+    'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -13,7 +13,7 @@ test('it creates a data directory', () => {
 
 test('it creates text tokens', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.'
+    'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -37,7 +37,7 @@ test('it matches local references', () => {
     'topics/Idaho/Idaho.expl':
       dedent`Idaho: Idaho is a midwestern state. Idaho has a [[state capital]].
 
-      State Capital: The state capital of Idaho is Boise.`
+      State Capital: The state capital of Idaho is Boise.` + '\n'
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -79,8 +79,8 @@ test('it matches local references', () => {
 
 test('it matches global references', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming]].`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -132,7 +132,7 @@ test('it matches global references using explicit syntax to override local refer
 
     Wyoming: There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.`,
 
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -199,8 +199,8 @@ test('it matches global references using explicit syntax to override local refer
 
 test('it lets you give arbitrary names to references', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming]].`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -248,8 +248,8 @@ test('it lets you give arbitrary names to references', () => {
 
 test('it matches implicit import references', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming|my favorite state]].`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming|my favorite state]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -284,12 +284,11 @@ test('it matches implicit import references', () => {
 
 test('it matches implicit import references in any order within a sentence', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Yellowstone National Park]] of [[Wyoming]].`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Yellowstone National Park]] of [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl':
       dedent`Wyoming: Wyoming is a midwestern state. It contains [[Yellowstone National Park]]
 
-      Yellowstone National Park: This is a large park.
-      `
+      Yellowstone National Park: This is a large park.` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -338,18 +337,16 @@ test('it matches an implicit import reference to the closest candidate link', ()
     'topics/England/England.expl':
       dedent`England: England is a European country. The largest city in England is [[London]].
 
-      London: London is a large city in England.`,
+      London: London is a large city in England.` + '\n',
 
     'topics/Ohio/Ohio.expl':
       dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
 
       Columbus: Columbus is a large city in Ohio.
 
-      London: London is a small city in Ohio.
-      `,
+      London: London is a small city in Ohio.` + '\n',
     'topics/Vacation/Vacation.expl':
-      dedent`Vacation: I'd like to go to [[Columbus]], [[Ohio]], and [[London]], [[England]].
-      `
+      dedent`Vacation: I'd like to go to [[Columbus]], [[Ohio]], and [[London]], [[England]].` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
 
@@ -425,15 +422,14 @@ test('it makes local references into import references if that resolves redundan
 
       Cities: England has various cities, but none are so nice as [[London]], [[Ohio]].
 
-      London: London is a large city in England.`,
+      London: London is a large city in England.` + '\n',
 
     'topics/Ohio/Ohio.expl':
       dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
 
       Columbus: Columbus is a large city in Ohio.
 
-      London: London is a small city in Ohio.
-      `
+      London: London is a small city in Ohio.` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
 
@@ -509,15 +505,14 @@ test('it converts local references to import references if later found redundant
 
       Cities: England has various cities, including its capital [[London]].
 
-      London: London is a large city in England.`,
+      London: London is a large city in England.` + '\n',
 
     'topics/Ohio/Ohio.expl':
       dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
 
       Columbus: Columbus is a large city in Ohio.
 
-      London: London is a small city in Ohio.
-      `
+      London: London is a small city in Ohio.` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
 
@@ -575,15 +570,14 @@ test.only('it converts local references within lists to import references if lat
 
       Cities: England has various cities, including its capital [[London]].
 
-      London: London is a large city in England.`,
+      London: London is a large city in England.` + '\n',
 
     'topics/Ohio/Ohio.expl':
       dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
 
       Columbus: Columbus is a large city in Ohio.
 
-      London: London is a small city in Ohio.
-      `
+      London: London is a small city in Ohio.` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
 
@@ -662,15 +656,14 @@ test('it throws error for redundant local references where both could be import 
     'topics/England/England.expl':
       dedent`England: England is a European country. The largest city in England is [[London]].
 
-      London: London is a large city in England.`,
+      London: London is a large city in England.` + '\n',
 
     'topics/Ohio/Ohio.expl':
       dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]], which is also the name of a city in [[England]]
 
       Columbus: Columbus is a large city in Ohio, which is similar in character to [[London]] [[England]].
 
-      London: London is a small city in Ohio.
-      `,
+      London: London is a small city in Ohio.` + '\n',
   };
 
   let message = dedent`Error: Two local references exist in topic [Ohio] to subtopic [London]
@@ -694,12 +687,11 @@ test('it throws error for redundant local references where both could be import 
 
 test('it matches import references with explicit syntax and lets you rename the link', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming#Yellowstone National Park|my favorite park]] in [[Wyoming]].`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming#Yellowstone National Park|my favorite park]] in [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl':
       dedent`Wyoming: Wyoming is a midwestern state. It contains [[Yellowstone National Park]]
 
-      Yellowstone National Park: This is a large park.
-      `
+      Yellowstone National Park: This is a large park.` + '\n'
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -744,8 +736,8 @@ test('it matches import references with explicit syntax and lets you rename the 
 
 test('it matches back-to-back global references', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]][[Wyoming]].`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]][[Wyoming]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -786,8 +778,8 @@ test('it matches back-to-back global references', () => {
 
 test('it matches global references at the end of strings', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
@@ -814,11 +806,54 @@ test('it matches global references at the end of strings', () => {
   );
 });
 
+test(`it skips category note files with keys that don't match the file name`, () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `This key doesn't match "Idaho": Idaho is a midwestern state.\n`,
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(Object.keys(filesToWrite))).toEqual([]);
+});
+
+test(`it doesn't skip files with keys that don't match filenames for non-category note files`, () => {
+  let explFileData = {
+    'topics/Idaho/Topic.expl': `Idaho: Idaho is a midwestern state.\n`, // this is a valid topic
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state.",
+            "type":"text"
+          }
+        ]
+      }
+    }
+  );
+});
+
 ////////////  Errors ///////////////
 
 test('it throws error for unrecognized link', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
+  };
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1`
+  ));
+});
+
+test('it throws error for unrecognized link defined in category notes file', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
+    'topics/Midwest/Midwest.expl': `Wyoming: Idaho is a midwestern state.\n`,
   };
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
@@ -835,7 +870,7 @@ test('it throws error for regular redundant local references', () => {
 
       Western Half: Idaho's western half contains its capital [[Boise]].
 
-      Boise: Boise is the capital of Idaho.`,
+      Boise: Boise is the capital of Idaho.` + '\n',
   };
 
   let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
@@ -860,8 +895,8 @@ test('it throws error for regular redundant local references', () => {
 
 test('it throws error for redundantly defined topics', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.`,
-    'topics/United_States/Idaho.expl': `Idaho: Idaho is a midwetern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
+    'topics/United_States/Idaho.expl': `Idaho: Idaho is a midwetern state.\n`
   };
 
   let message = dedent`Error: Topic or similar appears twice in project: [Idaho]
@@ -880,8 +915,7 @@ test('it throws error for redundantly defined subtopics', () => {
 
     Boise: This is the capital.
 
-    Boise: This is a good city.
-    `,
+    Boise: This is a good city.` + '\n',
   };
 
   let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
@@ -903,8 +937,7 @@ test('it counts blank lines in error line numbers', () => {
 
     Boise: This is the capital.
 
-    Boise: This is a good city.
-    `,
+    Boise: This is a good city.` + '\n',
   };
 
   let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
@@ -925,8 +958,7 @@ test('it handles odd-numbers of blank lines', () => {
 
     Boise: This is the capital.
 
-    Boise: This is a good city.
-    `,
+    Boise: This is a good city.` + '\n',
   };
 
   let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
@@ -944,8 +976,7 @@ test('it does not throw error for redundantly defined subtopics that are not sub
 
     Boise: This is the capital.
 
-    Boise: This is a good city.
-    `,
+    Boise: This is a good city.` + '\n',
   };
 
   expect(
@@ -957,12 +988,10 @@ test('it throws error if import reference lacks matching global reference', () =
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. Its capital is [[Boise]]
 
-    Boise: This is the capital.
-    `,
+    Boise: This is the capital.` + '\n',
     'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].
 
-    Idaho: This subtopic makes Idaho above a local reference and so the link to Boise shouldn't be a valid import reference.
-    `,
+    Idaho: This subtopic makes Idaho above a local reference and so the link to Boise shouldn't be a valid import reference.` + '\n',
   };
 
   let message = `Error: Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].\n` +
@@ -977,10 +1006,8 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
 
-    Boise: This is the capital.
-    `,
-    'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].
-    `,
+    Boise: This is the capital.` + '\n',
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].\n`,
   };
 
   let message = `Error: Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]\n` +
@@ -993,10 +1020,8 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
 
 test('it throws error if import reference is to non-existant topic', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
-    `,
-    'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[England#London]] [[England]].
-    `,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[England#London]] [[England]].\n`,
   };
 
   let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]\n` +
@@ -1009,10 +1034,8 @@ test('it throws error if import reference is to non-existant topic', () => {
 
 test('it throws error if import reference is to non-existant subtopic', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
-    `,
-    'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].
-    `,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].\n`,
   };
 
   let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
@@ -1038,8 +1061,7 @@ test('it throws error for topic name beginning with whitespace', () => {
 
 test('it throws error for topic name ending with whitespace', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho : Idaho is a midwestern state.
-    `,
+    'topics/Idaho/Idaho.expl': `Idaho : Idaho is a midwestern state.\n`,
   };
 
   let message = `Error: Topic name [Idaho ] begins or ends with whitespace.\n` +
@@ -1055,12 +1077,9 @@ test('it logs global orphan topics', () => {
 
   console.log = jest.fn();
   let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. It is near [[Montana]].
-    `,
-    'topics/Montana/Montana.expl': dedent`Montana: Montana is a midwestern state.
-    `,
-    'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state.
-    `,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state. It is near [[Montana]].\n`,
+    'topics/Montana/Montana.expl': `Montana: Montana is a midwestern state.\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`,
   };
 
   let message = chalk.yellow(`Warning: Global Orphan\n` +
@@ -1084,8 +1103,7 @@ test('it logs local orphan subtopics', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
 
-    Boise: Boise is the capital of Idaho.
-    `,
+    Boise: Boise is the capital of Idaho.` + '\n',
   };
 
   let message = chalk.yellow(`Warning: Local Orphan\n` +
@@ -1106,8 +1124,8 @@ test('it logs non-reciprocal global references', () => {
   let log = console.log;
   console.log = jest.fn();
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state near [[Wyoming]].`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state near [[Wyoming]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
 
   let message = chalk.yellow('Warning: Nonreciprocal Global Reference\n' +

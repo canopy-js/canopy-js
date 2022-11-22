@@ -15,12 +15,17 @@ class BulkFileGenerator {
             .sort(this.fileComparator)
             .filter(f => f.path.endsWith('.expl'))
             .map(file =>
-              (!file.categoryNotes && (new Paragraph(file.contents)).key ? '* ' : '')
+              (displayAsterisk(file) ? '* ' : '')
               + file.contents.trim() // trim trailing newlines to ensure spacing is consistent
             ).join('\n\n\n'); // three newlines between files
 
     }).join('\n\n\n') + '\n\n\n'; // three newlines between the last file and the next category, and three at the end for space when adding
   }
+}
+
+function displayAsterisk(file) {
+  return (file.categoryNotes && file.key === file.terminalCategory) ||
+    (!file.categoryNotes && file.key)
 }
 
 function generateDirectoryComparator(defaultTopicDisplayCategoryPath) {

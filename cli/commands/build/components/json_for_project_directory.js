@@ -1,5 +1,5 @@
 let jsonForExplFile = require('./json_for_expl_file.js');
-let { topicKeyOfString } = require('./helpers');
+let { topicKeyOfString, terminalCategoryofPath, isCategoryNotesFile } = require('./helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
@@ -12,17 +12,19 @@ function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
 
   directoriesToEnsure.push(destinationDataDirectory);
 
-  Object.keys(explFileData).forEach(function(path) {
-    if (!topicKeyOfString(explFileData[path])) return;
+  Object.keys(explFileData).forEach(function(filePath) {
+    if (!topicKeyOfString(explFileData[filePath])) return;
+    if (isCategoryNotesFile(filePath) && // disregard keys in category notes if the root topic doesn't match filename
+      topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) return;
 
-    let json = jsonForExplFile(path, explFileData, parserContext, options);
-    let topic = new Topic(topicKeyOfString(explFileData[path]), true);
+    let json = jsonForExplFile(filePath, explFileData, parserContext, options);
+    let topic = new Topic(topicKeyOfString(explFileData[filePath]), true);
     let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
 
     filesToWrite[destinationPath] = json;
 
     if (options.symlinks) {
-      let folderTopic = new Topic(topicKeyOfString(explFileData[path]));
+      let folderTopic = new Topic(topicKeyOfString(explFileData[filePath]));
       let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
       directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.fileName);
     }

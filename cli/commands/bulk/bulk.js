@@ -144,7 +144,7 @@ const bulk = async function(selectedFileList, options) {
       options.logging = false;
     }
 
-    // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server
+    // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server with
     watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
 
     let startedServer = false; // server may fail to start because of an invalid build, but a later fix may enable starting
@@ -157,7 +157,7 @@ const bulk = async function(selectedFileList, options) {
 
     process.on('SIGINT', () => {
       try { handleFinish({deleteBulkFile: true}, options); } catch(e) { console.error(e) }
-      log(chalk.magenta(`Canopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      log(chalk.magenta(`\nCanopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       process.exit();
     });
 
