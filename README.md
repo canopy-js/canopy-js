@@ -340,7 +340,7 @@ You can use a Canopy website using only the keyboard.
 | Right, h | Move to next link |
 | Return | Redirect to selected link |
 | Ctrl / Command + Return | Open in new tab |
-| z | Zoom to current link |
+| z | Zoom on current link |
 | Tab | Iterate through subtopics of a topic |
 | Escape | Deselect link |
 | d | Duplicate tab |
