@@ -334,17 +334,17 @@ You can use a Canopy website using only the keyboard.
 
 | Key | Action |
 ------|---------
-| Up / k  | Move to parent link |
-| Down / j | Select link |
-| Left / l | Move to previous link |
-| Right / h | Move to next link |
+| Up, k  | Move to parent link |
+| Down, j | Select link |
+| Left, l | Move to previous link |
+| Right, h | Move to next link |
 | Return | Redirect to selected link |
-| Ctrl/Command - Return | Open in new tab |
+| Ctrl / Command + Return | Open in new tab |
 | z | Zoom to current link |
 | Tab | Iterate through subtopics of a topic |
 | Escape | Deselect link |
 | d | Duplicate tab |
-| Shift - up | Select parent link of current topic |
+| Shift + up | Select parent link of current topic |
 
 Option/Alt clicking also redirects to the selected link.
 
