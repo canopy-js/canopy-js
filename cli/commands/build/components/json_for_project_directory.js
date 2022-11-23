@@ -1,5 +1,5 @@
 let jsonForExplFile = require('./json_for_expl_file.js');
-let { topicKeyOfString } = require('./helpers');
+let { topicKeyOfString, terminalCategoryofPath, isCategoryNotesFile } = require('./helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
@@ -38,15 +38,6 @@ function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
   if (options.reciprocals) parserContext.logNonReciprocals();
 
   return { directoriesToEnsure, filesToWrite };
-}
-
-function isCategoryNotesFile(filePath) {
-  return filePath.match(/([^\/]+)\/(\1).expl$/);
-}
-
-function terminalCategoryofPath(filePath) {
-  let items = filePath.split('/');
-  return items[items.length - 2];
 }
 
 module.exports = jsonForProjectDirectory;

@@ -1,5 +1,5 @@
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator } = require('./helpers');
+let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
@@ -29,25 +29,28 @@ class ParserContext {
 
   buildNamespaceObject(explFileData) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
-    Object.keys(explFileData).forEach(function(path){
-      let fileContents = explFileData[path];
+    Object.keys(explFileData).forEach(function(filePath){
+      let fileContents = explFileData[filePath];
       let paragraphsWithKeys = fileContents.split(/\n\n/);
       let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
       if (!topicParargaph.key) return;
       let currentTopic = new Topic(topicParargaph.key);
       let lineNumber = 1;
 
+      if (isCategoryNotesFile(filePath) && // disregard keys in category notes if the root topic doesn't match filename
+        topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) return;
+
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
         throw new Error(chalk.red(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
         - One file is: ${topicFilePaths[currentTopic.caps]}
-        - Another file is: ${path}
+        - Another file is: ${filePath}
         `));
       } else {
-        topicFilePaths[currentTopic.caps] = path;
+        topicFilePaths[currentTopic.caps] = filePath;
       }
 
       if (currentTopic.display.trim() !== currentTopic.display) {
-        throw new Error(chalk.red(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + path));
+        throw new Error(chalk.red(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + filePath));
       }
 
       topicSubtopics[currentTopic.caps] = {};
@@ -67,7 +70,7 @@ class ParserContext {
               [
                 currentTopic,
                 currentSubtopic,
-                path,
+                filePath,
                 subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps],
                 lineNumber
               ]
@@ -375,7 +378,6 @@ class ParserContext {
     if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
     return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, this.subtopicParents);
   }
-
 }
 
 module.exports = ParserContext;

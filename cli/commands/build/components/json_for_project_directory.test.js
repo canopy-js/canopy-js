@@ -850,6 +850,19 @@ test('it throws error for unrecognized link', () => {
   ));
 });
 
+test('it throws error for unrecognized link defined in category notes file', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
+    'topics/Midwest/Midwest.expl': `Wyoming: Idaho is a midwestern state.\n`,
+  };
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1`
+  ));
+});
+
 test('it throws error for regular redundant local references', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl':

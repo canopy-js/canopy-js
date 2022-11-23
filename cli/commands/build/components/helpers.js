@@ -128,6 +128,15 @@ function frontLoadImages(tokens) {
   });
 }
 
+function isCategoryNotesFile(filePath) {
+  return filePath.match(/([^\/]+)\/(\1).expl$/);
+}
+
+function terminalCategoryofPath(filePath) {
+  let items = filePath.split('/');
+  return items[items.length - 2];
+}
+
 module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
@@ -136,5 +145,7 @@ module.exports = {
   getExplFileData,
   LinkProximityCalculator,
   removeCircularListKeys,
-  frontLoadImages
+  frontLoadImages,
+  isCategoryNotesFile,
+  terminalCategoryofPath
 };
