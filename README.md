@@ -333,6 +333,7 @@ You can run a Node.js Express server for your project using `canopy serve` follo
 You can use a Canopy website using only the keyboard.
 
 | Key | Action |
+--------------------------
 | Up / k  | Move to parent link |
 | Down / j | Select link |
 | Left / l | Move to previous link |
