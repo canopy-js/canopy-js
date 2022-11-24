@@ -54,7 +54,7 @@ const resetDom = () => {
 
 function scrollPage(displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let top = Link.selection ? Link.selection.element.offsetTop - (window.screen.height * .22) : 0;
+  let top = Link.selection ? Link.selection.element.offsetTop - (window.screen.height * .23) : 0;
 
   window.scrollTo(
     {
