@@ -372,6 +372,26 @@ describe('BulkFileParser', function() {
     ]);
   });
 
+  test('it concatinates category notes to category topic', () => {
+    let bulkFileString = dedent`[A/B/C]
+    * C: Paragraph.
+
+    * This one has no key.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      'topics/A/B/C/C.expl': "C: Paragraph.\n\nThis one has no key.\n",
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
   test.only('it concatinates files for the same category listed twice', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic1: Paragraph.

@@ -49,12 +49,12 @@ class BulkFileParser {
           // Add to category notes
           categoryNotesBuffer += (!!categoryNotesBuffer ? '\n' : '') + file.text.trim() + '\n';
         }
-
-        if (categoryNotesBuffer) {
-          let existingNotes = fileContentsByPath[categoryNotesFilePath];
-          fileContentsByPath[categoryNotesFilePath] = (existingNotes ? existingNotes + '\n' : '') + categoryNotesBuffer;
-        }
       });
+
+      if (categoryNotesBuffer) {
+        let existingContents = fileContentsByPath[categoryNotesFilePath];
+        fileContentsByPath[categoryNotesFilePath] = (existingContents ? existingContents + '\n' : '') + categoryNotesBuffer;
+      }
     });
 
     return new FileSet(fileContentsByPath);
