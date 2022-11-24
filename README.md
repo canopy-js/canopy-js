@@ -69,9 +69,9 @@ Traverse the same content in different directions:
 
 ## Why?
 
-A human expert can give a brief introduction to a subject and then solicit input from the listener, adding more detail for someone advanced, or more background for a beginner. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never hear exactly the same explanation twice.
+A human expert can solicit input from the listener, catering to their interests, adding more background for a beginner, or more detail for someone advanced. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never hear exactly the same explanation twice.
 
-Canopy allows the author to express their ideas once in small modular pieces, then, the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, capturing the dense connections that can exist between topics of a project.
+Canopy allows an author to express their ideas once in small modular pieces, then, the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, capturing the dense connections that can exist between topics of a project.
 
 ## Getting Started
 
