@@ -133,7 +133,15 @@ This is a note.
 
 The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
-Paragraphs or notes can span multiple lines with a single newline and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note.
+Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note. For example:
+
+```
+Topic 1: This is the paragraph for Topic 1.
+This is a second line of the paragraph for Topic 1.
+
+Subtopic 1: This is a new paragraph node for Subtopic 1.
+
+```
 
 Subtopic paragraphs should have unique names within their enclosing topic file, and topics should have a unique name within the project at large.
 
@@ -141,7 +149,7 @@ Subtopic paragraphs should have unique names within their enclosing topic file, 
 
 Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs in the project.
 
-For example, if paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
+If paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
 
 Links are made using the `[[Link]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
 
@@ -149,18 +157,18 @@ There are three types of references: local, global, and import.
 
 #### Local References
 
-A local reference connects a topic to one of its subtopics, or connects a subtopic to a further subtopic within the same topic file.
+A local reference connects a topic to one of its subtopics, or connects a subtopic to a subtopic of the same topic. Local references cannot reference subtopics of other topics.
 
 One makes a local reference by referencing a named paragraph that exists in the same file as the reference:
 
 ```
-Topic 1: This is the topic, and this is a link to [[Subtopic 1]].
+Topic 1: This is the root topic, and this is a link to [[Subtopic 1]].
 
 Subtopic 1: this is a subtopic defined in the same file as the reference.
 
 ```
 
-When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of the page, because a subtopic is something that requires the context of the given topic to be understood.
+When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a new page, because a subtopic is something that requires the context of the given topic to be understood.
 
 For example, the following `expl` file:
 
@@ -176,15 +184,13 @@ Produces the following website:
 
 ![Local references](./readme/local.gif)
 
-Subtopics can only be referenced from within the topic file in which they are defined (with the exception of "import references," which will be explained below.)
+A root topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
 
-A topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
-
-If you want to have two references to a given subtopic from multiple subtopics of that topic, you should make the target subtopic a topic proper, or use the "import reference" functionality described below.
+If you want to have two references to a given subtopic from different subtopics of that topic, you should make the target subtopic a topic proper, or use the "import reference" functionality described below.
 
 #### Global References
 
-A global reference connects a topic or subtopic to an entirely different topic.
+A global reference connects a topic or subtopic to an entirely different topic. A global reference can only refer to the "root" paragraph of a topic, and not one of the internal subtopics it contains.
 
 To make a global link, we reference a topic defined in a different file:
 
@@ -213,22 +219,22 @@ New York: New York is a large state in the Northeastern United States. New Jerse
 Bordering states: New York shares some of its southern border with [[New Jersey]].
 ```
 
-Produce the following website, where we can either inline or redirect to the new topic via the global link:
+Produce the following website:
 <br>
 
 ![Global references](./readme/global.gif)
 <br>
 <br>
 
-When a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic of the global link.
+As pictured above, when a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic as the root paragraph of a new page.
 
-Unlike a subtopic, a topic can be referenced from any paragraph in any file in the project.
+Unlike a subtopic, a topic can be referenced from any paragraph of any file in the project.
 
 #### Import references
 
-An import reference is for when you want to reference a subtopic of a given topic from a paragraph of a different topic.
+An import reference is for when you want to reference a subtopic of a given topic from a paragraph belonging to a different topic.
 
-An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. You would want the paragraph for Fremont to reference Teton, however, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because maybe the user needs an explanation of what Wyoming is in the first place, and how it relates to Teton.
+An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming, so ideally the paragraph for Fremont would reference Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can define Teton itself.
 
 So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming.
 
@@ -256,9 +262,11 @@ Would produce the following website:
 ![Import references](./readme/import.gif)
 <br>
 
-In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont" to work, despite "Fremont" being a subtopic of a different topic than the current paragraph. When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the referencing paragraph.
 
-In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, due to the presence of multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
+When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+
+In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, in a case where there are multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
 
 ```
 This is a [[Global Link]], and this is an import reference to a subtopic called "Subtopic": [[Global Link#Subtopic]].
