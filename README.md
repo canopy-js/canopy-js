@@ -114,7 +114,7 @@ A Canopy website is composed of named paragraphs, some of which are called "topi
 
 Topics are standalone "conversation-starters" which can be displayed as the root paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed after a certain path of prior paragraphs that are necessary for context.
 
-Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is conventional to put all topic files into one or more levels of "category" subdirectories within the `topics` directory.
+Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is helpful to put all topic files into one or more levels of "category" subdirectories within the `topics` directory.
 
 A topic file is composed of a series of "paragraph nodes" and notes.
 
@@ -196,7 +196,7 @@ To make a global link, we reference a topic defined in a different file:
 
 ```
 Topic 1: This is a paragraph defined in a file called Topic_1.expl.
-We are going to reference [[Topic 2]], which is defined in a different file.
+We are going to reference [[Topic 2]], which is defined in a file called Topic_2.expl.
 ```
 
 ```
@@ -228,7 +228,7 @@ Produce the following website:
 
 As pictured above, when a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic as the root paragraph of a new page.
 
-Unlike a subtopic, a topic can be referenced from any paragraph of any file in the project.
+Unlike a subtopic which can only be referenced from within its topic, a topic can be referenced from any paragraph of any file in the project.
 
 #### Import references
 

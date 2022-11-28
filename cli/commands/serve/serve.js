@@ -7,7 +7,7 @@ function serve(options) {
   options = options || {};
   let port = options.port;
   let static = options.static;
-  port = port || 3001;
+  port = port || 4001;
 
   let validBuild = ['build', 'build/index.html', 'build/_data', 'build/canopy.js'].map(s => fs.existsSync(s)).every(Boolean);
   if (!validBuild) {
