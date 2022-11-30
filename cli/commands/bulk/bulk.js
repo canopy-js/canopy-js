@@ -16,6 +16,7 @@ let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { getDefaultTopicAndPath } = require('../shared/helpers');
+const readline = require('readline');
 
 const bulk = async function(selectedFileList, options) {
   function log(message) { if (options.logging) console.log(message) }
@@ -152,14 +153,31 @@ const bulk = async function(selectedFileList, options) {
       serve(options);
       startedServer = true;
     } catch(e) {
-      console.error(e);
+      console.error(e.message);
+    }
+
+    function handleSigInt() {
+      try { handleFinish({deleteBulkFile: true}, options); } catch(e) { console.error(e) }
+      log(chalk.magenta(`Canopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      process.exit();
     }
 
     process.on('SIGINT', () => {
-      try { handleFinish({deleteBulkFile: true}, options); } catch(e) { console.error(e) }
-      log(chalk.magenta(`\nCanopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-      process.exit();
+      handleSigInt();
     });
+
+
+    readline.emitKeypressEvents(process.stdin);
+    process.stdin.setRawMode(true);
+    process.stdin.on('keypress', (str, key) => debounce(() => {
+      if (key.ctrl && key.name === 'r') {
+        let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
+        setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
+        log(chalk.magenta(`Canopy bulk sync: New bulk file from manual reload at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      } else if (key.ctrl && (key.name === 'c' || key.name === 'd')) {
+        handleSigInt();
+      }
+    })(str, key));
 
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
     bulkFileWatcher.on('change', debounce((e) => {
