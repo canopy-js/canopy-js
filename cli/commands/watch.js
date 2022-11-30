@@ -32,7 +32,7 @@ function buildWrapper(options) {
     build(options);
   } catch (e) {
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
-    console.error(e);
+    console.error(e.message);
   }
 }
 

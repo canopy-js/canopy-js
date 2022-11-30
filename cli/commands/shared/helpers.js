@@ -12,6 +12,9 @@ function getDefaultTopicAndPath() {
   }
   if (!fs.existsSync(defaultTopicFilePath)) throw new Error(chalk.bgRed(`Default topic file does not exist: ${defaultTopicFilePath}`));
   let defaultTopicName = (new Paragraph(fs.readFileSync(defaultTopicFilePath).toString().trim())).key
+  if (!defaultTopicName) {
+    throw new Error(chalk.red(`Error: The file referenced in canopy_default_topic lacks a valid topic key: ${defaultTopicFilePath}`));
+  }
   let categoryPath = defaultTopicFilePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
   let defaultTopicDisplayCategoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
   return {
