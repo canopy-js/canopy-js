@@ -49,7 +49,11 @@ program.command('watch')
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
   .action((options) => {
-    watch(options);
+    try {
+      watch(options);
+    } catch (e) {
+      console.error(e.message);
+    }
   });
 
 program.command('serve')
