@@ -114,11 +114,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
   }
 
   if (Link.selection.type === 'url') {
-    if (newTab) {
-      return window.open(Link.selection.element.href, '_blank');
-    } else {
-      window.location = Link.selection.element.href;
-    }
+    return window.open(Link.selection.element.href, '_blank');
   }
 }
 
