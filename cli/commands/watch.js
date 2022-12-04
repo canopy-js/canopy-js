@@ -12,7 +12,7 @@ function watch(options) {
     return;
   }
 
-  if (!options.suppressInitialBuild) {
+  if (!options.suppressInitialBuild || (options.buildIfUnbuilt && !fs.existsSync('build/_data'))) {
     buildWrapper(options);
   }
 
