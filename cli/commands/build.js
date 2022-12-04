@@ -4,14 +4,12 @@ const dedent = require('dedent-js');
 const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
-let { getDefaultTopicAndPath } = require('./shared/helpers');
+let { getDefaultTopicAndPath, canopyLocation } = require('./shared/helpers');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
   let { defaultTopicFilePath, defaultTopicName } = getDefaultTopicAndPath();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
-
-  let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
   if (!keepBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
   fs.rmSync('build/_data', { recursive: true, force: true });

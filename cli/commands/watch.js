@@ -4,16 +4,15 @@ const build = require('./build');
 const chokidar = require('chokidar');
 let chalk = require('chalk');
 let shell = require('shelljs');
+let { canopyLocation } = require('./shared/helpers');
 
 function watch(options) {
-  let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
-
   if (!fs.existsSync('topics')) {
     console.log(chalk.red('Error: You must be in a project directory with a topics folder'));
     return;
   }
 
-  if (!options.suppressInitialBuild || (options.buildIfUnbuilt && !fs.existsSync('build/_data'))) {
+  if (!options.suppressInitialBuild) {
     buildWrapper(options);
   }
 
