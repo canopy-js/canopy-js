@@ -1,5 +1,6 @@
 let parseText = require('./parse_text');
 let { consolidateTextTokens } = require('./helpers');
+let { TextToken } = require('./tokens');
 
 function parseLine(line, tokens, parserContext) {
   if (line.match(/^```\s*/) || (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.open)) {
@@ -172,7 +173,10 @@ function handleFootnote(line, tokens, parserContext) {
 }
 
 function handleText(line, tokens, parserContext) {
-  consolidateTextTokens(parseText(line, parserContext)).forEach(token => {
+  // We add a space to text tokens at the end of a line because lines are concatenated without newlines
+  let paddingSpace = parserContext.lastLine ? [] : [new TextToken(' ')];
+
+  consolidateTextTokens(parseText(line, parserContext).concat(paddingSpace)).forEach(token => {
     tokens.push(token);
   });
 }
