@@ -568,4 +568,33 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Tab');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
   });
+
+  test('Pressing enter on URL link opens link in new tab', async ({ page, context }) => {
+    await page.goto('United_States/New_York/Style_examples#URLs');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('http://google.com');
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator('body').press('Enter')
+    ]);
+    await newPage.waitForLoadState();
+
+    await expect(newPage).toHaveURL(/google\.com/);
+  });
+
+  test('Regular-clicking on URL link opens new tab', async ({ page, context }) => {
+    await page.goto('United_States/New_York/Style_examples#URLs');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator('a:has-text("http://google.com")').click()
+    ]);
+
+    await newPage.waitForLoadState();
+
+    await expect(newPage).toHaveURL(/google\.com/);
+  });
 });
