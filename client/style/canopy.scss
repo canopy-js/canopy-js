@@ -86,6 +86,14 @@
       color: #0000ff !important;
     }
     */
+
+    &.canopy-url-link {
+      display: inline-block;
+
+      svg {
+        margin-left: 2px;
+      }
+     }
   }
 
 /////////////////////////////////////////////
