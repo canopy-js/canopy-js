@@ -159,20 +159,31 @@ function createImportLinkElement(token) {
 }
 
 function renderLinkLiteral(token) {
-  let linkSpan = document.createElement('SPAN');
   let linkElement = document.createElement('a');
+  let linkSpan = document.createElement('SPAN');
+
   linkSpan.classList.add('canopy-url-link-span');
   linkElement.classList.add('canopy-url-link');
   linkElement.classList.add('canopy-selectable-link');
-  linkElement.setAttribute('href', token.url);
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkElement);
   linkElement.dataset.type = 'url';
   linkElement.dataset.text = token.text;
-  linkSpan.appendChild(linkElement);
-  linkElement.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  linkElement.setAttribute('href', token.url);
+  linkElement.setAttribute('target', '_blank');
 
-  return linkSpan;
+  let styleElements = renderStyledText(token.text);
+  appendElementsToParent(styleElements, linkSpan);
+
+  let container = document.createElement('div');
+  container.classList.add('canopy-url-link-container');
+  container.appendChild(linkSpan);
+
+  // let svg = document.createElement('span');
+  // svg.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  // container.appendChild(svg)
+
+  linkElement.appendChild(linkSpan);
+
+  return linkElement;
 }
 
 function renderImage(token) {

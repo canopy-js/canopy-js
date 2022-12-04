@@ -100,14 +100,14 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
   });
 
   test('It creates footnotes', async ({ page }) => {
