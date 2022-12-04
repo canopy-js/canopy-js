@@ -133,6 +133,7 @@ const bulk = async function(selectedFileList, options) {
   if (options.sync) {
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
+    // Open bulk file in editor and process when closed
     if (!options.noEditor) {
       editor(options.bulkFileName, () => {
         try { handleFinish({deleteBulkFile: false}, options); } catch(e) { console.error(e) }
@@ -145,9 +146,11 @@ const bulk = async function(selectedFileList, options) {
       options.logging = false;
     }
 
+    // Watch topics and rebuild JSON on change
     // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server with
     watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
 
+    // Start server
     let startedServer = false; // server may fail to start because of an invalid build, but a later fix may enable starting
     try {
       serve(options);
@@ -166,9 +169,9 @@ const bulk = async function(selectedFileList, options) {
       handleSigInt();
     });
 
-
+    // Allow user to manually regenerate bulk file with control-R
     readline.emitKeypressEvents(process.stdin);
-    process.stdin.setRawMode(true);
+    if (process.stdin.isTTY) process.stdin.setRawMode(true);
     process.stdin.on('keypress', (str, key) => debounce(() => {
       if (key.ctrl && key.name === 'r') {
         let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
@@ -179,6 +182,7 @@ const bulk = async function(selectedFileList, options) {
       }
     })(str, key));
 
+    // Watch bulk file and update topics on change
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
     bulkFileWatcher.on('change', debounce((e) => {
       try {
@@ -194,11 +198,13 @@ const bulk = async function(selectedFileList, options) {
       }
     }));
 
+    // Watch bulk file and end session on delete
     bulkFileWatcher.on('unlink', (e) => {
       try { handleFinish({deleteBulkFile: false}, options); } catch(e) { console.error(e) }
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
 
+    // Watch topics and update bulk file on change
     const topicsWatcher = chokidar.watch(['topics'], { persistent: true, ignoreInitial: true });
     let handler = (e) => debounce(() => topicsChangeHandler(e))(e);
     topicsWatcher

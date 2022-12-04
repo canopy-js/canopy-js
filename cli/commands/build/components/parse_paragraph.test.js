@@ -15,7 +15,7 @@ test('it parses a text block', () => {
   expect(tokens).toEqual([
     {
       type: 'text',
-      text: 'This is a line.'
+      text: 'This is a line. ' // newline converted to extra space
     },
     {
       type: 'text',
