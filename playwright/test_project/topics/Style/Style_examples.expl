@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[footnotes]], and [[special topic names]].
 
-Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], [[plaintext that contains style tokens]].
+Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], and [[plaintext that contains style tokens]].
 
 Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], topics called [[_data]], and a [[topic with no child links]].
 
@@ -54,7 +54,11 @@ This is text with <s>an inline html element</s>.
 Escaped style characters:
 This is text with \_escaped\_ style characters.
 
-Code snippets:
+Code snippets: There are [[regular code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], and [[code snippets on boundaries]].
+
+Code snippets on boundaries: This is a `regular code snippet`, and these are backticks in tw`o word`s, which should not be stylized. (`This is a backtick starting after a parentheses`), this is *a `code snippet`* in bold text. This is a `code snippet ending after a period.`, and here is a `code snippet ending before a period`. Here is a `code snippet ending with a comma`, as such.
+
+Regular code snippets:
 This is a `code snippet`.
 
 Code snippets that escape backticks:
