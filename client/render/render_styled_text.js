@@ -18,7 +18,8 @@ function renderStyledText(text) {
 
   // Single backslashes are an escape character in code snippets in order to allow escaping the backtick character.
   // Thus, we want to escape everything in the code snippet, but not in such a way that user-entered single backslashes get doubled and become literals.
-  text = text.replace(/(^|[\s}_*`~]+)([`])(.*?[^\\])(\2)(?=[\s.,{*_`~]|$)/g, (_, characterBeforeCodeBlock, backtick, block, backtick2) => {
+  // First group - a backtick is only a special character if preceeded by whitepace, another special character, or wrapping punctuation
+  text = text.replace(/(^|[\s_*`~([{}\]\)]+)([`])(.*?[^\\])(\2)(?=[\s.,{*_`~{[(\]})]|$)/g, (_, characterBeforeCodeBlock, backtick, block, backtick2) => {
     return characterBeforeCodeBlock
       + backtick
       + block // For each code block,
@@ -29,7 +30,7 @@ function renderStyledText(text) {
   });
 
   text = (function convertStyleCharacters(text) {
-    let newText = text.replace(/(^|[\s}_*`~]+)([*`_~])(.*?(?!{{CLOSE|{{OPEN|\\))(\2)(?=[\s.,{*_`~]|$)/g, '$1{{OPEN$2}}$3{{CLOSE$4}}')
+    let newText = text.replace(/(^|[\s}_*`~{[(\]})]+)([*`_~])(.*?(?!{{CLOSE|{{OPEN|\\))(\2)(?=[\s.,{*_`~{[(\]})]|$)/g, '$1{{OPEN$2}}$3{{CLOSE$4}}')
     if (text === newText){
       return newText;
     } else {
