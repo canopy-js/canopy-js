@@ -26,15 +26,15 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'quote') {
     return renderBlockQuote(token);
   } else if (token.type === 'list') {
-    return renderList(token.topLevelNodes);
+    return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
-    return renderTable(token)
+    return renderTable(token, renderContext)
   } else if (token.type === 'html_block') {
     return renderHtmlBlock(token);
   } else if (token.type === 'footnote_rule') {
     return renderFootnoteRule(token);
   } else if (token.type === 'footnote_line') {
-    return renderFootnoteLine(token);
+    return renderFootnoteLine(token, renderContext);
   }
 }
 
@@ -260,7 +260,7 @@ function renderBlockQuote(token) {
   return blockQuoteElement;
 }
 
-function renderList(listNodeObjects) {
+function renderList(listNodeObjects, renderContext) {
   let listElement = listNodeObjects[0].ordered ?
     document.createElement('OL') :
     document.createElement('UL');
@@ -274,7 +274,7 @@ function renderList(listNodeObjects) {
 
     listNodeObject.tokensOfLine.forEach(
       (token) => {
-        let tokenElement = renderTokenElement(token);
+        let tokenElement = renderTokenElement(token, renderContext);
         listItemElement.appendChild(tokenElement);
       }
     );
