@@ -850,6 +850,16 @@ test('it throws error for unrecognized link', () => {
   ));
 });
 
+test('it does not throw error for demarcated link', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n` +
+                               `Wyoming:\n`, // a writer might do this to create a placeholder
+  };
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).not.toThrow();
+});
+
 test('it throws error for unrecognized link defined in category notes file', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
@@ -981,7 +991,7 @@ test('it does not throw error for redundantly defined subtopics that are not sub
 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).not.toThrow(chalk.red());
+  ).not.toThrow();
 });
 
 test('it throws error if import reference lacks matching global reference', () => {
