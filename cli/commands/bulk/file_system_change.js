@@ -76,8 +76,8 @@ function messageComparator(messageA, messageB) {
     if (directoryPathB.includes(directoryPathA) && directoryPathA !== directoryPathB) return -1;
   }
 
-  if (directoryPathA < directoryPathB) return -1; // otherwise alphabetize by path, within the separated deletes and additions
-  if (directoryPathA > directoryPathB) return 1;
+  if (fullPathA < fullPathB) return -1; // otherwise alphabetize by path, within the separated deletes and additions
+  if (fullPathA > fullPathB) return 1;
 }
 
 module.exports = FileSystemChange;

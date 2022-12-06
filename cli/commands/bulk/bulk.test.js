@@ -953,4 +953,61 @@ describe('FileSystemChangeCalculator', function() {
       chalk.green('Created file: topics/A/B/C/D/Topic.expl')
     ]);
   });
+
+  test("it properly alphabetizes additions", () => {
+    // We're worried that the system will notice that after the deletion of A/B/C/Topic.expl
+    // the folder A/B/C is empty vis a vis the existing files and will mark it for deletion before
+    // seeing that the same session is adding a new subdirectory to that folder so it is needed
+
+    let originalSelectionFileSet = new FileSet({});
+    let newBulkFileString = dedent`[A/B/C]
+
+    * Topic2: Paragraph.
+
+    * Topic: Paragraph.
+
+    [A/B/C/D]
+
+    * Topic3: Paragraph.`; + '\n';
+    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+    let allDiskFileSet = new FileSet({});
+
+    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+    expect(fileSystemChange.fileDeletions).toEqual([]);
+    expect(fileSystemChange.directoryDeletions).toEqual([]);
+    expect(fileSystemChange.fileCreations).toEqual([
+      [
+        'topics/A/B/C/Topic2.expl',
+        'Topic2: Paragraph.\n'
+      ],
+      [
+        'topics/A/B/C/Topic.expl',
+        'Topic: Paragraph.\n'
+      ],
+      [
+        'topics/A/B/C/D/Topic3.expl',
+        'Topic3: Paragraph.\n'
+      ]
+    ]);
+    expect(fileSystemChange.directoryCreations).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A',
+      'topics/A/B/C/D',
+    ]);
+    expect(fileSystemChange.fileAppendings).toEqual([]);
+
+    expect(fileSystemChange.messages).toEqual([
+      chalk.green('Created directory: topics/A'),
+      chalk.green('Created directory: topics/A/B'),
+      chalk.green('Created directory: topics/A/B/C'),
+      chalk.green('Created file: topics/A/B/C/Topic.expl'),
+      chalk.green('Created file: topics/A/B/C/Topic2.expl'),
+      chalk.green('Created directory: topics/A/B/C/D'),
+      chalk.green('Created file: topics/A/B/C/D/Topic3.expl')
+    ]);
+  });
 });
