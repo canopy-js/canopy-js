@@ -77,6 +77,151 @@ test('it matches local references', () => {
   );
 });
 
+test('it matches local with question marks', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. [[Why choose Idaho for your business needs?]]
+
+      Why choose Idaho for your business needs? This sentence also has a question mark - ?` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state. ",
+            "type":"text"
+          },
+          {
+            "text": "Why choose Idaho for your business needs?",
+            "type": "local",
+            "targetSubtopic": "Why choose Idaho for your business needs?",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          }
+        ],
+
+        "Why choose Idaho for your business needs?": [
+          {
+            "text" : "This sentence also has a question mark - ?", // to ensure we match only the first ? as part of the key
+            "type":"text"
+          }
+
+        ]
+      }
+    }
+  );
+});
+
+test('it matches local references with commas', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. Idaho has a [[state capital, and governor]].
+
+      State capital, and governor: The state capital of Idaho is Boise and it has a governor.` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state. Idaho has a ",
+            "type":"text"
+          },
+          {
+            "text": "state capital, and governor",
+            "type": "local",
+            "targetSubtopic": "State capital, and governor",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          },
+        ],
+
+        "State capital, and governor": [ // commas are legal key characters
+          {
+            "text" : "The state capital of Idaho is Boise and it has a governor.",
+            "type":"text"
+          }
+
+        ]
+      }
+    }
+  );
+});
+
+test('it matches local references with periods not followed by spaces', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. Idaho has a [[capital.js]].
+
+      Capital.js: The state capital of Idaho is Boise and it has a governor.` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state. Idaho has a ",
+            "type":"text"
+          },
+          {
+            "text": "capital.js",
+            "type": "local",
+            "targetSubtopic": "Capital.js",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho"
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          },
+        ],
+
+        "Capital.js": [ // commas are legal key characters
+          {
+            "text" : "The state capital of Idaho is Boise and it has a governor.",
+            "type":"text"
+          }
+
+        ]
+      }
+    }
+  );
+});
+
+test('it does not match local references with periods', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. Idaho has a [[State capital. and governor]].
+
+      State capital. and governor: The state capital of Idaho is Boise and it has a governor.` + '\n'
+
+  };
+  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
+    'Error: Reference [[State capital. and governor]] in [Idaho, Idaho] matches no global, local, or import reference.\n' +
+    'topics/Idaho/Idaho.expl:1'
+  ));
+});
+
 test('it matches global references', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming]].\n`,
@@ -1071,7 +1216,7 @@ test('it throws error for topic name beginning with whitespace', () => {
   ).toThrow(chalk.red(message));
 });
 
-test.only('it throws error for topic name ending with whitespace', () => {
+test('it throws error for topic name ending with whitespace', () => {
   let explFileData = {
     'topics/Idaho/Idaho_.expl': `Idaho : Idaho is a midwestern state.\n`,
   };
