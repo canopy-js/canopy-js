@@ -1216,7 +1216,7 @@ test('it throws error for topic name beginning with whitespace', () => {
   ).toThrow(chalk.red(message));
 });
 
-test.only('it throws error for topic name ending with whitespace', () => {
+test('it throws error for topic name ending with whitespace', () => {
   let explFileData = {
     'topics/Idaho/Idaho_.expl': `Idaho : Idaho is a midwestern state.\n`,
   };
