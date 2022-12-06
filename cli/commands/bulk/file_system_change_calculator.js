@@ -65,7 +65,9 @@ class FileSystemChangeCalculator {
 
     this.originalSelectionFileSet.directories.forEach(originallySelectedDirectory => {
       if (!this.newFileSet.hasDirectory(originallySelectedDirectory.path)) { // a directory was selected that got deleted
-        fileSystemChange.deleteDirectory(originallySelectedDirectory.path);
+        if (!this.diskFileSet.files.find(f => f.path.startsWith(originallySelectedDirectory.path) && !f.path.endsWith('.expl'))) { // non-expl files in directory prevent directory deletion
+          fileSystemChange.deleteDirectory(originallySelectedDirectory.path);
+        }
       }
     });
 
