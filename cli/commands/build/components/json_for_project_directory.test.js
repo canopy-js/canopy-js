@@ -561,7 +561,7 @@ test('it converts local references to import references if later found redundant
     ]);
 });
 
-test.only('it converts local references within lists to import references if later found redundant', () => {
+test('it converts local references within lists to import references if later found redundant', () => {
   let explFileData = { // first we think the first [[London]] is local, then we see later it isn't
     'topics/England/England.expl':
       dedent`England:
@@ -668,8 +668,8 @@ test('it throws error for redundant local references where both could be import 
 
   let message = dedent`Error: Two local references exist in topic [Ohio] to subtopic [London]
 
-    - One reference is in [Ohio, Ohio] - topics/Ohio/Ohio.expl:1
-    - One reference is in [Ohio, Columbus] - topics/Ohio/Ohio.expl:3
+    - One reference is in [Ohio] - topics/Ohio/Ohio.expl:1
+    - One reference is in [Columbus (Ohio)] - topics/Ohio/Ohio.expl:3
 
     Multiple local references to the same subtopic are not permitted.
     Consider making one of these local references a self-import reference.
@@ -812,7 +812,7 @@ test(`it skips category note files with keys that don't match the file name`, ()
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
 
-  expect(JSON.parse(Object.keys(filesToWrite))).toEqual([]);
+  expect(Object.keys(filesToWrite)).toEqual([]);
 });
 
 test(`it doesn't skip files with keys that don't match filenames for non-category note files`, () => {
@@ -852,8 +852,9 @@ test('it throws error for unrecognized link', () => {
 
 test('it does not throw error for demarcated link', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n` +
-                               `Wyoming:\n`, // a writer might do this to create a placeholder
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, near [[Wyoming]]
+
+                               Wyoming:` + '\n', // a writer might do this to create a placeholder
   };
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
@@ -885,8 +886,8 @@ test('it throws error for regular redundant local references', () => {
 
   let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
-    - One reference is in [Idaho, Idaho] - topics/Idaho/Idaho.expl:1
-    - One reference is in [Idaho, Western Half] - topics/Idaho/Idaho.expl:3
+    - One reference is in [Idaho] - topics/Idaho/Idaho.expl:1
+    - One reference is in [Western Half (Idaho)] - topics/Idaho/Idaho.expl:3
 
     Multiple local references to the same subtopic are not permitted.
     Consider making one of these local references a self-import reference.
@@ -1004,7 +1005,7 @@ test('it throws error if import reference lacks matching global reference', () =
     Idaho: This subtopic makes Idaho above a local reference and so the link to Boise shouldn't be a valid import reference.` + '\n',
   };
 
-  let message = `Error: Import reference to [Idaho, Boise] in [Wyoming, Wyoming] lacks global reference to topic [Idaho].\n` +
+  let message = `Error: Import reference to [Boise (Idaho)] in [Wyoming] lacks global reference to topic [Idaho].\n` +
     `topics/Wyoming/Wyoming.expl:1\n`;
 
   expect(
@@ -1017,10 +1018,11 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
 
     Boise: This is the capital.` + '\n',
+
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].\n`,
   };
 
-  let message = `Error: Import reference in [Wyoming, Wyoming] is refering to unsubsumed subtopic [Idaho, Boise]\n` +
+  let message = `Error: Import reference in [Wyoming] is referring to unsubsumed subtopic [Boise (Idaho)]\n` +
     `topics/Wyoming/Wyoming.expl:1\n`;
 
   expect(
@@ -1028,13 +1030,13 @@ test('it throws error if import reference is to unsubsumed subtopic of target to
   ).toThrow(chalk.red(message));
 });
 
-test('it throws error if import reference is to non-existant topic', () => {
+test('it throws error if import reference is to non-existent topic', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[England#London]] [[England]].\n`,
   };
 
-  let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existant topic [England]\n` +
+  let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existent topic [England]\n` +
     `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
@@ -1042,13 +1044,13 @@ test('it throws error if import reference is to non-existant topic', () => {
   ).toThrow(chalk.red(message));
 });
 
-test('it throws error if import reference is to non-existant subtopic', () => {
+test('it throws error if import reference is to non-existent subtopic', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].\n`,
   };
 
-  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existant subtopic of [Idaho]\n` +
+  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho]\n` +
     `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
@@ -1058,24 +1060,24 @@ test('it throws error if import reference is to non-existant subtopic', () => {
 
 test('it throws error for topic name beginning with whitespace', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': ` Idaho: Idaho is a midwestern state.\n`
+    'topics/Idaho/_Idaho.expl': ` Idaho: Idaho is a midwestern state.\n`
   };
 
   let message = `Error: Topic name [ Idaho] begins or ends with whitespace.\n` +
-    `topics/Idaho/Idaho.expl`;
+    `topics/Idaho/_Idaho.expl`;
 
   expect(
     () => console.log(jsonForProjectDirectory(explFileData, 'Idaho', {}))
   ).toThrow(chalk.red(message));
 });
 
-test('it throws error for topic name ending with whitespace', () => {
+test.only('it throws error for topic name ending with whitespace', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho : Idaho is a midwestern state.\n`,
+    'topics/Idaho/Idaho_.expl': `Idaho : Idaho is a midwestern state.\n`,
   };
 
   let message = `Error: Topic name [Idaho ] begins or ends with whitespace.\n` +
-    `topics/Idaho/Idaho.expl`;
+    `topics/Idaho/Idaho_.expl`;
 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
@@ -1139,7 +1141,7 @@ test('it logs non-reciprocal global references', () => {
   };
 
   let message = chalk.yellow('Warning: Nonreciprocal Global Reference\n' +
-    'Global reference in [Idaho, Idaho] exists to topic [Wyoming] with no reciprocal reference.\n' +
+    'Global reference in [Idaho] exists to topic [Wyoming] with no reciprocal reference.\n' +
     'topics/Idaho/Idaho.expl:1\n' +
     'Try creating a global reference from [Wyoming] to [Idaho]\n' +
     'topics/Wyoming/Wyoming.expl\n');

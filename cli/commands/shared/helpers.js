@@ -26,4 +26,12 @@ function getDefaultTopicAndPath() {
 
 let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
-module.exports = { getDefaultTopicAndPath, canopyLocation };
+function displaySegment(topicName, subtopicName) {
+  if (topicName === subtopicName) {
+    return `[${topicName}]`;
+  } else {
+    return `[${subtopicName} (${topicName})]`;
+  }
+}
+
+module.exports = { getDefaultTopicAndPath, canopyLocation, displaySegment };
