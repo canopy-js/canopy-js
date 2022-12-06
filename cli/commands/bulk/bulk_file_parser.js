@@ -10,7 +10,7 @@ class BulkFileParser {
 
   parseSections() {
     return this.bulkFileString.split(/(?=^\[[^\[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
-      .filter(Boolean).map((sectionString) => {
+      .map(s => s.trim()).filter(Boolean).map((sectionString) => {
         let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
         return {
           displayCategoryPath,
