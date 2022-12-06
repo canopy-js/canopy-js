@@ -45,3 +45,11 @@ then
 	    exit 1
 	fi
 fi
+
+if grep -q -r 'test.only' cli client; then
+	echo
+	echo "!!! ERROR: \"test.only\" found in test file:";
+	echo
+	grep -r 'test.only' cli client
+	echo
+fi
