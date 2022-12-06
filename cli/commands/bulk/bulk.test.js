@@ -160,7 +160,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[A/B/C]
 
-      Topic: Hello world.` + '\n\n\n'); // no asterisk
+      This key doesn't match the category name of "C": Hello world.` + '\n\n\n'); // no asterisk
 
   });
 });
@@ -392,7 +392,7 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test.only('it concatinates files for the same category listed twice', () => {
+  test('it concatinates files for the same category listed twice', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic1: Paragraph.
 
@@ -837,11 +837,9 @@ describe('FileSystemChangeCalculator', function() {
   });
 
   test('it does not delete directories that still contain non-expl files', () => {
-    // This is a more complicated case because we want to make sure we aren't looking at
-    // each file and not deleting the directory because the other file still exists, when both are getting deleted
-
     let originalSelectionFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
+      'topics/A/B/D/Topic2.expl': "Topic2: Paragraph.\n",
       'topics/A/B/C/README.md': "Hello world.\n",
     });
     let newBulkFileString = '\n';
@@ -857,18 +855,23 @@ describe('FileSystemChangeCalculator', function() {
 
     expect(fileSystemChange.fileDeletions).toEqual([
       'topics/A/B/C/Topic.expl',
+      'topics/A/B/D/Topic2.expl'
     ]);
-    expect(fileSystemChange.directoryDeletions).toEqual([]);
+    expect(fileSystemChange.directoryDeletions).toEqual([
+      'topics/A/B/D',
+    ]);
     expect(fileSystemChange.fileCreations).toEqual([]);
     expect(fileSystemChange.directoryCreations).toEqual([]);
     expect(fileSystemChange.fileAppendings).toEqual([]);
 
     expect(fileSystemChange.messages).toEqual([
       chalk.red('Deleted file: topics/A/B/C/Topic.expl'),
+      chalk.red('Deleted file: topics/A/B/D/Topic2.expl'),
+      chalk.red('Deleted directory: topics/A/B/D'),
     ]);
   });
 
-  test('it deletes directories that become unused, even if two levels of directory are being deleted', () => {
+  test.only('it deletes directories that become unused, even if two levels of directory are being deleted', () => {
     // This is a more complicated case because we want to make sure we aren't looking at
     // the inner directory and using it as a reason not to delete the outer directory when both need to be deleted
 
@@ -907,7 +910,7 @@ describe('FileSystemChangeCalculator', function() {
       chalk.red('Deleted file: topics/A/B/D/E/Topic3.expl'),
       chalk.red('Deleted directory: topics/A/B/D/E'),
       chalk.red('Deleted file: topics/A/B/D/Topic2.expl'),
-      chalk.red('Deleted directory: topics/A/B/D')
+      chalk.red('Deleted directory: topics/A/B/D'),
     ]);
   });
 
