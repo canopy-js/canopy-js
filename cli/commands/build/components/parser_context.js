@@ -3,6 +3,7 @@ let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topi
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
+let { displaySegment } = require('../../shared/helpers');
 let chalk = require('chalk');
 
 class ParserContext {
@@ -38,7 +39,9 @@ class ParserContext {
       let lineNumber = 1;
 
       if (isCategoryNotesFile(filePath) && // disregard keys in category notes if the root topic doesn't match filename
-        topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) return;
+        topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) {
+        return;
+      }
 
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
         throw new Error(chalk.red(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
@@ -261,7 +264,7 @@ class ParserContext {
           let targetSubTopic = new Topic(importReferenceToken.targetSubtopic);
           let originalTargetTopic = this.getOriginalTopic(targetTopic);
           let originalTargetSubtopic = this.getOriginalSubTopic(targetTopic, targetSubTopic);
-          throw new Error(chalk.red(`Error: Import reference to [${originalTargetTopic.mixedCase}, ${originalTargetSubtopic.mixedCase}] in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
+          throw new Error(chalk.red(`Error: Import reference to ${displaySegment(originalTargetTopic.mixedCase, originalTargetSubtopic.mixedCase)} in ${displaySegment(enclosingTopic.mixedCase, enclosingSubtopic.mixedCase)} lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
             `${filePath}:${lineNumber}\n`));
         }
       });
@@ -271,7 +274,7 @@ class ParserContext {
   validateImportReferenceTargets() {
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw new Error(chalk.red(`Error: Import reference in [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] is refering to unsubsumed subtopic [${targetTopic.mixedCase}, ${targetSubtopic.mixedCase}]\n` +
+        throw new Error(chalk.red(`Error: Import reference in ${displaySegment(enclosingTopic.mixedCase, enclosingSubtopic.mixedCase)} is referring to unsubsumed subtopic ${displaySegment(targetTopic.mixedCase, targetSubtopic.mixedCase)}\n` +
           `${filePath}:${lineNumber}\n`));
       }
     });
@@ -340,7 +343,7 @@ class ParserContext {
           let targetTopic = this.topicSubtopics[targetTopicCaps][targetTopicCaps];
           console.log(chalk.yellow(
             `Warning: Nonreciprocal Global Reference\n` +
-            `Global reference in [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
+            `Global reference in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
             `${this.topicFilePaths[currentTopic.caps]}:${this.subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]}\n` +
             `Try creating a global reference from [${targetTopic.mixedCase}] to [${currentTopic.mixedCase}]\n` +
             `${this.topicFilePaths[targetTopic.caps]}\n`
@@ -355,8 +358,8 @@ class ParserContext {
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic)) {
         throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
-            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic1.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
-            - One reference is in [${topic.mixedCase}, ${enclosingSubtopic2.mixedCase}] - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
+            - One reference is in ${displaySegment(topic.mixedCase, enclosingSubtopic1.mixedCase)} - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
+            - One reference is in ${displaySegment(topic.mixedCase, enclosingSubtopic2.mixedCase)} - ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
 
             Multiple local references to the same subtopic are not permitted.
             Consider making one of these local references a self-import reference.

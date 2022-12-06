@@ -13,7 +13,7 @@ ModeManager.createMode = function (modeName) {
 }
 
 ModeManager.createCommand = function (modeName, key, handlerFunction) {
-  if (!this._modes[modeName]) throw new Error('Creating command for non-existant mode');
+  if (!this._modes[modeName]) throw new Error('Creating command for non-existent mode');
   if (this._modes[modeName].hasOwnProperty(key)) throw new Error(`Conflicting command definitions for mode: '${modeName}' and key: ${key}`);
   this._modes[modeName][key] = handlerFunction;
 }
