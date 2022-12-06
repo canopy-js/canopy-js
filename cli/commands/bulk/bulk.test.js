@@ -160,7 +160,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[A/B/C]
 
-      Topic: Hello world.` + '\n\n\n'); // no asterisk
+      This key doesn't match the category name of "C": Hello world.` + '\n\n\n'); // no asterisk
 
   });
 });
@@ -392,7 +392,7 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test.only('it concatinates files for the same category listed twice', () => {
+  test('it concatinates files for the same category listed twice', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic1: Paragraph.
 
@@ -837,11 +837,9 @@ describe('FileSystemChangeCalculator', function() {
   });
 
   test('it does not delete directories that still contain non-expl files', () => {
-    // This is a more complicated case because we want to make sure we aren't looking at
-    // each file and not deleting the directory because the other file still exists, when both are getting deleted
-
     let originalSelectionFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
+      'topics/A/B/D/Topic2.expl': "Topic2: Paragraph.\n",
       'topics/A/B/C/README.md': "Hello world.\n",
     });
     let newBulkFileString = '\n';
@@ -857,14 +855,19 @@ describe('FileSystemChangeCalculator', function() {
 
     expect(fileSystemChange.fileDeletions).toEqual([
       'topics/A/B/C/Topic.expl',
+      'topics/A/B/D/Topic2.expl'
     ]);
-    expect(fileSystemChange.directoryDeletions).toEqual([]);
+    expect(fileSystemChange.directoryDeletions).toEqual([
+      'topics/A/B/D',
+    ]);
     expect(fileSystemChange.fileCreations).toEqual([]);
     expect(fileSystemChange.directoryCreations).toEqual([]);
     expect(fileSystemChange.fileAppendings).toEqual([]);
 
     expect(fileSystemChange.messages).toEqual([
       chalk.red('Deleted file: topics/A/B/C/Topic.expl'),
+      chalk.red('Deleted file: topics/A/B/D/Topic2.expl'),
+      chalk.red('Deleted directory: topics/A/B/D'),
     ]);
   });
 
@@ -907,7 +910,7 @@ describe('FileSystemChangeCalculator', function() {
       chalk.red('Deleted file: topics/A/B/D/E/Topic3.expl'),
       chalk.red('Deleted directory: topics/A/B/D/E'),
       chalk.red('Deleted file: topics/A/B/D/Topic2.expl'),
-      chalk.red('Deleted directory: topics/A/B/D')
+      chalk.red('Deleted directory: topics/A/B/D'),
     ]);
   });
 
@@ -948,6 +951,63 @@ describe('FileSystemChangeCalculator', function() {
       chalk.red('Deleted file: topics/A/B/C/Topic.expl'),
       chalk.green('Created directory: topics/A/B/C/D'),
       chalk.green('Created file: topics/A/B/C/D/Topic.expl')
+    ]);
+  });
+
+  test("it properly alphabetizes additions", () => {
+    // We're worried that the system will notice that after the deletion of A/B/C/Topic.expl
+    // the folder A/B/C is empty vis a vis the existing files and will mark it for deletion before
+    // seeing that the same session is adding a new subdirectory to that folder so it is needed
+
+    let originalSelectionFileSet = new FileSet({});
+    let newBulkFileString = dedent`[A/B/C]
+
+    * Topic2: Paragraph.
+
+    * Topic: Paragraph.
+
+    [A/B/C/D]
+
+    * Topic3: Paragraph.`; + '\n';
+    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let newFileSet = bulkFileParser.getFileSet();
+    let allDiskFileSet = new FileSet({});
+
+    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+    expect(fileSystemChange.fileDeletions).toEqual([]);
+    expect(fileSystemChange.directoryDeletions).toEqual([]);
+    expect(fileSystemChange.fileCreations).toEqual([
+      [
+        'topics/A/B/C/Topic2.expl',
+        'Topic2: Paragraph.\n'
+      ],
+      [
+        'topics/A/B/C/Topic.expl',
+        'Topic: Paragraph.\n'
+      ],
+      [
+        'topics/A/B/C/D/Topic3.expl',
+        'Topic3: Paragraph.\n'
+      ]
+    ]);
+    expect(fileSystemChange.directoryCreations).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A',
+      'topics/A/B/C/D',
+    ]);
+    expect(fileSystemChange.fileAppendings).toEqual([]);
+
+    expect(fileSystemChange.messages).toEqual([
+      chalk.green('Created directory: topics/A'),
+      chalk.green('Created directory: topics/A/B'),
+      chalk.green('Created directory: topics/A/B/C'),
+      chalk.green('Created file: topics/A/B/C/Topic.expl'),
+      chalk.green('Created file: topics/A/B/C/Topic2.expl'),
+      chalk.green('Created directory: topics/A/B/C/D'),
+      chalk.green('Created file: topics/A/B/C/D/Topic3.expl')
     ]);
   });
 });
