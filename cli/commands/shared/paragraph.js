@@ -5,10 +5,10 @@ class Paragraph {
     // of the "key", if the delimeter is a question mark, it is part of the key. White space after the colon or question mark
     // is not considered part of the key, but is matched so that it isn't part of the text either.
 
-    // Match characters which are either not clause-terminating punctuation, or which are backslash-preceeded clause-terminating punctuation,
-    // and these characters must be followed by a colon or a question mark.
+    // Match characters which are either not sentence-terminating punctuation, or which are backslash-escaped sentence-terminating punctuation,
+    // or which are sentence terminating punctuation not followed by a space; and these characters must be followed by a colon or a question mark.
     // If the terminator is a question mark or colon, accept the match, and if it is a question mark, include it in the match
-    let match = textWithKey.match(/^(?!-)((?:[^:.,;!]|(?<=\\)[:.,;!])+)(?::|(\?))\s+/m);
+    let match = textWithKey.match(/^(?!-)((?:[^:.!?]|(?<=\\)[:.!?]|[:.!?](?!\s))+)(?::|(\?))(\s+)?/m);
 
     if (!match) {
       return {

@@ -4,10 +4,9 @@ const build = require('./build');
 const chokidar = require('chokidar');
 let chalk = require('chalk');
 let shell = require('shelljs');
+let { canopyLocation } = require('./shared/helpers');
 
 function watch(options) {
-  let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
-
   if (!fs.existsSync('topics')) {
     console.log(chalk.red('Error: You must be in a project directory with a topics folder'));
     return;
@@ -32,7 +31,7 @@ function buildWrapper(options) {
     build(options);
   } catch (e) {
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
-    console.error(e);
+    console.error(e.message);
   }
 }
 

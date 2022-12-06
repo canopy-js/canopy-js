@@ -40,7 +40,7 @@ test.describe('Text styles', () => {
   });
 
   test('Backticks create inline code snippets', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Code_snippets');
+    await page.goto('/United_States/New_York/Style_examples#Regular_code_snippets');
     await expect(page.locator('.canopy-selected-section')).toHaveText("This is a code snippet.");
     await expect(page.locator('.canopy-selected-section code')).toHaveText("code snippet");
   });
@@ -60,6 +60,11 @@ test.describe('Text styles', () => {
       .toHaveText("This is a code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}.");
 
     await expect(page.locator('.canopy-selected-section code')).toHaveText("code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}");
+  });
+
+  test('Backticks can precede or succeed white space and regular punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Code_snippets_on_boundaries');
+    await expect(page.locator('.canopy-selected-section code')).toHaveCount(6);
   });
 
   test('Plaintext can contain style token literals', async ({ page }) => {
@@ -100,14 +105,14 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
   });
 
   test('It creates footnotes', async ({ page }) => {

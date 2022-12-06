@@ -26,15 +26,15 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'quote') {
     return renderBlockQuote(token);
   } else if (token.type === 'list') {
-    return renderList(token.topLevelNodes);
+    return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
-    return renderTable(token)
+    return renderTable(token, renderContext)
   } else if (token.type === 'html_block') {
     return renderHtmlBlock(token);
   } else if (token.type === 'footnote_rule') {
     return renderFootnoteRule(token);
   } else if (token.type === 'footnote_line') {
-    return renderFootnoteLine(token);
+    return renderFootnoteLine(token, renderContext);
   }
 }
 
@@ -159,20 +159,31 @@ function createImportLinkElement(token) {
 }
 
 function renderLinkLiteral(token) {
-  let linkSpan = document.createElement('SPAN');
   let linkElement = document.createElement('a');
+  let linkSpan = document.createElement('SPAN');
+
   linkSpan.classList.add('canopy-url-link-span');
   linkElement.classList.add('canopy-url-link');
   linkElement.classList.add('canopy-selectable-link');
-  linkElement.setAttribute('href', token.url);
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkElement);
   linkElement.dataset.type = 'url';
   linkElement.dataset.text = token.text;
-  linkSpan.appendChild(linkElement);
-  linkElement.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  linkElement.setAttribute('href', token.url);
+  linkElement.setAttribute('target', '_blank');
 
-  return linkSpan;
+  let styleElements = renderStyledText(token.text);
+  appendElementsToParent(styleElements, linkSpan);
+
+  let container = document.createElement('div');
+  container.classList.add('canopy-url-link-container');
+  container.appendChild(linkSpan);
+
+  // let svg = document.createElement('span');
+  // svg.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  // container.appendChild(svg)
+
+  linkElement.appendChild(linkSpan);
+
+  return linkElement;
 }
 
 function renderImage(token) {
@@ -249,7 +260,7 @@ function renderBlockQuote(token) {
   return blockQuoteElement;
 }
 
-function renderList(listNodeObjects) {
+function renderList(listNodeObjects, renderContext) {
   let listElement = listNodeObjects[0].ordered ?
     document.createElement('OL') :
     document.createElement('UL');
@@ -263,7 +274,7 @@ function renderList(listNodeObjects) {
 
     listNodeObject.tokensOfLine.forEach(
       (token) => {
-        let tokenElement = renderTokenElement(token);
+        let tokenElement = renderTokenElement(token, renderContext);
         listItemElement.appendChild(tokenElement);
       }
     );
