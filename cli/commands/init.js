@@ -16,6 +16,7 @@ function init() {
     canopy_bulk_file
     **/.DS_Store
     .canopy_bulk_last_session_files
+    .canopy_bulk_original_selection
     .canopy_bulk_backups/**` + '\n';
 
   fs.writeFileSync( '.gitignore', gitignore );
