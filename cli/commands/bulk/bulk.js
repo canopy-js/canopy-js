@@ -222,7 +222,7 @@ function debounceGenerator() {
     return () => {
       if (hasBeenCalledRecently) return;
       hasBeenCalledRecently = true;
-      setTimeout(() => (hasBeenCalledRecently = false), 500);
+      setTimeout(() => (hasBeenCalledRecently = false), 1000);
       callback();
     }
   }
