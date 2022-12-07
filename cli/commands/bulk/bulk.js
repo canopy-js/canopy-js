@@ -151,10 +151,8 @@ const bulk = async function(selectedFileList, options) {
     watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
 
     // Start server
-    let startedServer = false; // server may fail to start because of an invalid build, but a later fix may enable starting
     try {
-      serve(options);
-      startedServer = true;
+      serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
     } catch(e) {
       console.error(e.message);
     }
@@ -184,17 +182,12 @@ const bulk = async function(selectedFileList, options) {
 
     // Watch bulk file and update topics on change
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
-    bulkFileWatcher.on('change', debounce((e) => {
+    bulkFileWatcher.on('change', debounce(() => {
       try {
         log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         handleFinish({deleteBulkFile: false}, options);
-
-        if (!startedServer) {
-          serve(options);
-          startedServer = true;
-        }
       } catch(e) {
-        console.error(e, e.stack);
+        console.error(e.message);
       }
     }));
 
@@ -229,7 +222,7 @@ function debounceGenerator() {
     return () => {
       if (hasBeenCalledRecently) return;
       hasBeenCalledRecently = true;
-      setTimeout(() => (hasBeenCalledRecently = false), 500);
+      setTimeout(() => (hasBeenCalledRecently = false), 1000);
       callback();
     }
   }

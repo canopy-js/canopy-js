@@ -217,7 +217,7 @@ test('it does not match local references with periods', () => {
 
   };
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    'Error: Reference [[State capital. and governor]] in [Idaho, Idaho] matches no global, local, or import reference.\n' +
+    'Error: Reference [[State capital. and governor]] in [Idaho] matches no global, local, or import reference.\n' +
     'topics/Idaho/Idaho.expl:1'
   ));
 });
@@ -990,7 +990,7 @@ test('it throws error for unrecognized link', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
     `topics/Idaho/Idaho.expl:1`
   ));
 });
@@ -1014,7 +1014,7 @@ test('it throws error for unrecognized link defined in category notes file', () 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[Wyoming]] in [Idaho, Idaho] matches no global, local, or import reference.\n` +
+    `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
     `topics/Idaho/Idaho.expl:1`
   ));
 });
