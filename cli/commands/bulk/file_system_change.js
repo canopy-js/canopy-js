@@ -48,6 +48,14 @@ class FileSystemChange {
   sortMessages() {
     this.messages.sort(messageComparator);
   }
+
+  get noop() {
+    return this.fileDeletions.length === 0 &&
+      this.directoryDeletions.length === 0 &&
+      this.fileCreations.length === 0 &&
+      this.fileAppendings.length === 0 &&
+      this.directoryCreations.length === 0
+  }
 }
 
 function messageComparator(messageA, messageB) {
