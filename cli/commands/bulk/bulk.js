@@ -7,6 +7,7 @@ const {
   recursiveDirectoryFind,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
+  CyclePreventer
 } = require('./helpers');
 const watch = require('../watch');
 const serve = require('../serve/serve');
@@ -80,6 +81,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   let fileSystemManager = new FileSystemManager();
+  let cyclePreventer = new CyclePreventer();
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
@@ -109,6 +111,7 @@ const bulk = async function(selectedFileList, options) {
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
     fileSystemManager.execute(fileSystemChange, options.logging);
+    if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     getDefaultTopicAndPath() // Error in case the person changed the default topic file name
   }
 
@@ -170,36 +173,42 @@ const bulk = async function(selectedFileList, options) {
     // Allow user to manually regenerate bulk file with control-R
     readline.emitKeypressEvents(process.stdin);
     if (process.stdin.isTTY) process.stdin.setRawMode(true);
-    process.stdin.on('keypress', (str, key) => debounce(() => {
+    process.stdin.on('keypress', (str, key) => {
       if (key.ctrl && key.name === 'r') {
         let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
+        cyclePreventer.ignoreNextBulkFileChange();
         setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
         log(chalk.magenta(`Canopy bulk sync: New bulk file from manual reload at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       } else if (key.ctrl && (key.name === 'c' || key.name === 'd')) {
         handleSigInt();
       }
-    })(str, key));
+    });
 
     // Watch bulk file and update topics on change
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
-    bulkFileWatcher.on('change', debounce(() => {
+    bulkFileWatcher.on('change', () => {
       try {
-        log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+        if (cyclePreventer.ignoreBulkFileChange()) return cyclePreventer.respondToNextBulkFileChange();
+        log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         handleFinish({deleteBulkFile: false}, options);
       } catch(e) {
         console.error(e.message);
       }
-    }));
+    });
 
     // Watch bulk file and end session on delete
     bulkFileWatcher.on('unlink', (e) => {
       try { handleFinish({deleteBulkFile: false}, options); } catch(e) { console.error(e) }
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
+    cyclePreventer.watchingBulkFile();
 
     // Watch topics and update bulk file on change
     const topicsWatcher = chokidar.watch(['topics'], { persistent: true, ignoreInitial: true });
-    let handler = (e) => debounce(() => topicsChangeHandler(e))(e);
+    cyclePreventer.watchingTopics();
+
+    let handler = debounce((e) => topicsChangeHandler(e));
+
     topicsWatcher
       .on('add', handler)
       .on('addDir', handler)
@@ -208,9 +217,11 @@ const bulk = async function(selectedFileList, options) {
       .on('unlinkDir', handler);
 
     function topicsChangeHandler(e) {
+      if (cyclePreventer.ignoreTopicsChange()) return cyclePreventer.respondToNextTopicsChange();
       let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
+      cyclePreventer.ignoreNextBulkFileChange();
       setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
-      log(chalk.magenta(`Canopy bulk sync: New bulk file from topics change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid}) – triggered by: ${e}`));
+      log(chalk.magenta(`Canopy bulk sync: Updating bulk file from topics change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid}) – triggered by: ${e}`));
     }
   }
 };
@@ -219,11 +230,11 @@ let debounce = debounceGenerator();
 function debounceGenerator() {
   let hasBeenCalledRecently = false;
   return (callback) => {
-    return () => {
+    return (...arguments) => {
       if (hasBeenCalledRecently) return;
       hasBeenCalledRecently = true;
-      setTimeout(() => (hasBeenCalledRecently = false), 1000);
-      callback();
+      setTimeout(() => (hasBeenCalledRecently = false), 500);
+      return callback(...arguments);
     }
   }
 }
