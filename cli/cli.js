@@ -19,6 +19,7 @@ program.command('init')
       init();
     } catch (e) {
       console.error(e.message);
+      process.exit(1)
     }
   });
 
@@ -37,6 +38,7 @@ program.command('build')
       build(options);
     } catch (e) {
       console.error(e.message);
+      process.exit(1)
     }
   });
 
@@ -53,6 +55,7 @@ program.command('watch')
       watch(options);
     } catch (e) {
       console.error(e.message);
+      process.exit(1)
     }
   });
 
@@ -68,6 +71,7 @@ program.command('serve')
       serve(options);
     } catch (e) {
       console.error(e.message);
+      process.exit(1)
     }
   });
 
@@ -94,6 +98,7 @@ program.command('bulk')
     bulk(paths, options).catch((e) => {
       if (e.message !== 'fzf exited with error code 130') {
         console.error(e.message);
+        process.exit(1)
       }
     });
   });
@@ -105,6 +110,7 @@ program.command('sketch')
       sketch();
     } catch (e) {
       console.error(e.message);
+      process.exit(1)
     }
   });
 
