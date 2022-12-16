@@ -1239,8 +1239,8 @@ test('it logs global orphan topics', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`,
   };
 
-  let message = chalk.yellow(`Warning: Global Orphan\n` +
-    `Topic [Wyoming] is not connected to default topic [Idaho]\n` +
+  let message = chalk.magenta(`Warning: Global Orphan\n` +
+    `Topic [Wyoming] is not connected to the default topic [Idaho]\n` +
     `topics/Wyoming/Wyoming.expl\n`);
 
   jsonForProjectDirectory(explFileData, 'Idaho', { orphans: true });
@@ -1263,7 +1263,7 @@ test('it logs local orphan subtopics', () => {
     Boise: Boise is the capital of Idaho.` + '\n',
   };
 
-  let message = chalk.yellow(`Warning: Local Orphan\n` +
+  let message = chalk.magenta(`Warning: Local Orphan\n` +
     `Subtopic [Boise] lacks a connection to its topic [Idaho]\n` +
     `topics/Idaho/Idaho.expl:3\n`);
 
@@ -1285,7 +1285,7 @@ test('it logs non-reciprocal global references', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
 
-  let message = chalk.yellow('Warning: Nonreciprocal Global Reference\n' +
+  let message = chalk.magenta('Warning: Nonreciprocal Global Reference\n' +
     'Global reference in [Idaho] exists to topic [Wyoming] with no reciprocal reference.\n' +
     'topics/Idaho/Idaho.expl:1\n' +
     'Try creating a global reference from [Wyoming] to [Idaho]\n' +

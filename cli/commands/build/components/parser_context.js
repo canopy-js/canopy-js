@@ -303,9 +303,9 @@ class ParserContext {
     Object.keys(this.topicSubtopics).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       if (!this.connectedTopics[topic.caps]) {
-        console.log(chalk.yellow(
+        console.log(chalk.magenta(
           `Warning: Global Orphan\n` +
-          `Topic [${topic.mixedCase}] is not connected to default topic [${this.defaultTopic.mixedCase}]\n` +
+          `Topic [${topic.mixedCase}] is not connected to the default topic [${this.defaultTopic.mixedCase}]\n` +
           `${this.topicFilePaths[topic.caps]}\n`
         ));
       }
@@ -325,7 +325,7 @@ class ParserContext {
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
         if (!this.hasConnection(subtopic, topic)) {
-          console.log(chalk.yellow(`Warning: Local Orphan\n` +
+          console.log(chalk.magenta(`Warning: Local Orphan\n` +
             `Subtopic [${subtopic.mixedCase}] lacks a connection to its topic [${topic.mixedCase}]\n` +
             `${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][subtopic.caps]}\n`
           ));
@@ -341,7 +341,7 @@ class ParserContext {
           let currentSubtopic = this.subtopicsOfGlobalReferences[currentTopicCaps][targetTopicCaps];
           let currentTopic = this.topicSubtopics[currentTopicCaps][currentTopicCaps];
           let targetTopic = this.topicSubtopics[targetTopicCaps][targetTopicCaps];
-          console.log(chalk.yellow(
+          console.log(chalk.magenta(
             `Warning: Nonreciprocal Global Reference\n` +
             `Global reference in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
             `${this.topicFilePaths[currentTopic.caps]}:${this.subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]}\n` +

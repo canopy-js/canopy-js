@@ -73,6 +73,51 @@ function groupByPath(fileList) {
   }, {});
 }
 
+class CyclePreventer {
+  constructor() {
+    this.ignoreNextTopicsChangeBoolean = false;
+    this.ignoreNextBulkFileChangeBoolean = false;
+    this.watchingTopicsBoolean = false;
+    this.watchingBulkFileBoolean = false;
+  }
+
+  ignoreNextBulkFileChange() {
+    if (this.watchingBulkFileBoolean) {
+      this.ignoreNextBulkFileChangeBoolean = true;
+    }
+  }
+
+  ignoreNextTopicsChange() {
+    if (this.watchingTopicsBoolean) {
+      this.ignoreNextTopicsChangeBoolean = true;
+    }
+  }
+
+  watchingTopics () {
+    this.watchingTopicsBoolean = true;
+  }
+
+  watchingBulkFile() {
+    this.watchingBulkFileBoolean = true;
+  }
+
+  ignoreTopicsChange() {
+    return this.ignoreNextTopicsChangeBoolean;
+  }
+
+  ignoreBulkFileChange() {
+    return this.ignoreNextBulkFileChangeBoolean;
+  }
+
+  respondToNextTopicsChange() {
+    this.ignoreNextTopicsChangeBoolean = false;
+  }
+
+  respondToNextBulkFileChange() {
+    this.ignoreNextBulkFileChangeBoolean = false;
+  }
+}
+
 module.exports = {
   fileNameFor,
   takeDirectoryPath,
@@ -82,5 +127,6 @@ module.exports = {
   getDirectoryFiles,
   groupByPath,
   getAllFileAndDirectoryPathsRecursive,
-  allFilesAndDirectoriesOf
+  allFilesAndDirectoriesOf,
+  CyclePreventer
 };
