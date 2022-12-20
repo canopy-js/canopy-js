@@ -59,8 +59,8 @@ test.describe('Navigation', () => {
 
     await page.locator('body').press('Enter');
 
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('New_York#Southern_border'); // Link selected on redirect
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(page).toHaveURL('New_York'); // No link selected on redirect
     await expect(page.locator('h1')).toHaveText('New York');
   });
 
