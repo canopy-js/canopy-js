@@ -597,4 +597,16 @@ test.describe('Navigation', () => {
 
     await expect(newPage).toHaveURL(/google\.com/);
   });
+
+  test('Navigating to default topic replaces history state', async ({ page, context }) => {
+    await page.goto('/');
+    await expect(page).toHaveURL('United_States');
+    await page.goBack();
+    let URL = await page.url();
+    if (URL.includes('United_States')){
+      expect(page).toHaveURL('United_States'); // Firefox doesn't allow browser back to new tab state, so we test for back being no-op
+    } else {
+      expect(page.locator('#_canopy')).toHaveCount(0);
+    }
+  });
 });

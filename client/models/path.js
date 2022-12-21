@@ -300,7 +300,7 @@ class Path {
 
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic.display;
-    let historyApiFunction = newPath.equals(oldPath) ? replaceState : pushState;
+    let historyApiFunction = (Path.current.empty || newPath.equals(oldPath)) ? replaceState : pushState;
     let fullPathString = (projectPathPrefix ? `/${projectPathPrefix}` : '') + (hashUrls ? '/#' : '') + newPath.string;
 
     historyApiFunction(
