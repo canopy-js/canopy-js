@@ -20,13 +20,11 @@ if (platform === 'darwin') {
 }
 
 test.describe('Redirects', () => {
-  test('Browser back to empty path redirects to default topic', async ({ page }) => {
+  test('Empty path redirects to default topic', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
     await page.goto('/');
-    await expect(page).toHaveURL('United_States');
-    await page.goBack();
     await expect(page).toHaveURL('United_States');
   });
 
