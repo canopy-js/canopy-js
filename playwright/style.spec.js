@@ -64,7 +64,7 @@ test.describe('Text styles', () => {
 
   test('Backticks can precede or succeed white space and regular punctuation', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Code_snippets_on_boundaries');
-    await expect(page.locator('.canopy-selected-section code')).toHaveCount(6);
+    await expect(page.locator('.canopy-selected-section code')).toHaveCount(8);
   });
 
   test('Plaintext can contain style token literals', async ({ page }) => {
