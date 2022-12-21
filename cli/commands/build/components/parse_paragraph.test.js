@@ -24,7 +24,7 @@ test('it parses a text block', () => {
   ]);
 });
 
-test('it parses a code block', () => {
+test('it parses a fence-style code block', () => {
   let text = '```\n' +
     'if (x) {\n' +
     '  doSomething();\n' +
@@ -42,6 +42,28 @@ test('it parses a code block', () => {
     {
       type: 'code_block',
       text: 'if (x) {\n  doSomething();\n}\n'
+    }
+  ]);
+});
+
+test('it parses a line-prefix style code block', () => {
+  let text = '`\n' +
+    '` if (x) {\n' +
+    '`   doSomething();\n' +
+    '` }\n' +
+    '`';
+
+  let parserContext = {
+    currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
+    incrementLineNumber: jest.fn()
+  }
+
+  let tokens = parseParagraph(text, parserContext);
+
+  expect(tokens).toEqual([
+    {
+      type: 'code_block',
+      text: '\nif (x) {\n  doSomething();\n}\n\n'
     }
   ]);
 });
