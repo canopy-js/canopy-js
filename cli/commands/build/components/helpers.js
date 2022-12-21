@@ -137,6 +137,21 @@ function terminalCategoryofPath(filePath) {
   return items[items.length - 2];
 }
 
+function removeCodeBlockTypes(tokens) {
+  tokens.forEach(token => {
+    if (token.type === 'code_block') {
+      delete token.style;
+    }
+  });
+}
+
+function postProcess(tokens) {
+  frontLoadImages(tokens);
+  removeCircularListKeys(tokens);
+  removeCodeBlockTypes(tokens);
+  return tokens;
+}
+
 module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
@@ -147,5 +162,6 @@ module.exports = {
   removeCircularListKeys,
   frontLoadImages,
   isCategoryNotesFile,
-  terminalCategoryofPath
+  terminalCategoryofPath,
+  postProcess
 };
