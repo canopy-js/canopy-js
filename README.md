@@ -78,8 +78,10 @@ Canopy allows an author to express their ideas once in small modular pieces, the
 Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:
 
 ![Bulk mode](./readme/bulk.gif)
-<br><br>
-Read this documentation written in Canopy as a demo [here](canopyjs.org).
+<br>
+## Demo
+
+Read this documentation written in Canopy as a demo **[here](canopyjs.org)**.
 
 ## Getting Started
 
