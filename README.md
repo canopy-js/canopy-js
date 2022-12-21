@@ -73,15 +73,19 @@ A human expert can adapt to the listener, catering to their interests, adding mo
 
 Canopy allows an author to express their ideas once in small modular pieces, and then the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, capturing the dense set of connections that can exist between topics of a subject area.
 
-## Getting Started
-
-These are instructions for people wishing to start their own Canopy project.
-
-### Example flow
+## Example flow
 
 Here we use the CLI "bulk mode" to define several "topics" and then view them in the web view:
 
 ![Bulk mode](./readme/bulk.gif)
+<br>
+## Demo
+
+Read this documentation written in Canopy as a demo **[here](http://canopyjs.org)**.
+
+## Getting Started
+
+These are instructions for people wishing to start their own Canopy project.
 
 ### Installation
 
