@@ -5,6 +5,8 @@ let { TextToken } = require('./tokens');
 function parseLine(line, tokens, parserContext) {
   if (line.match(/^```\s*/) || (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.open)) {
     handleCodeBlock(line, tokens);
+  } else if (line.match(/^`( |$)/)) {
+    handleCodeLine(line, tokens);
   } else if (line.match(/^\s*>/)) {
     handleBlockQuote(line, tokens);
   } else if (line.match(/^\s*([A-Za-z0-9+*-]{1,3}\.|[+*-])\s+\S+/)) {
@@ -23,7 +25,8 @@ function parseLine(line, tokens, parserContext) {
 }
 
 function handleCodeBlock(line, tokens) {
-  if (tokens[tokens.length - 1]?.type === 'code_block' && tokens[tokens.length - 1]?.['open']) {
+  let previousToken = tokens[tokens.length - 1];
+  if (previousToken?.type === 'code_block' && previousToken.style === 'fence' && previousToken?.['open']) {
     if (line.match(/^```\s*/)) {
       delete tokens[tokens.length - 1].open;
     } else {
@@ -33,10 +36,26 @@ function handleCodeBlock(line, tokens) {
     tokens.push({
       type: 'code_block',
       open: true,
+      style: 'fence',
       text: ''
     });
   } else {
     throw new Error('Error identifying code block');
+  }
+}
+
+function handleCodeLine(line, tokens) {
+  let text = line.match(/^` (.*)$/)?.[1] || '';
+  let previousToken = tokens[tokens.length - 1];
+
+  if (previousToken?.type === 'code_block' && previousToken?.style === 'prefix') {
+    previousToken.text += text + '\n';
+  } else {
+    tokens.push({
+      type: 'code_block',
+      style: 'prefix',
+      text: text + '\n'
+    });
   }
 }
 
