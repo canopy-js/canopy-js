@@ -56,7 +56,7 @@ This is text with \_escaped\_ style characters.
 
 Code snippets: There are [[regular code snippets]], [[code snippets that escape backticks]], and [[code snippets that contain style characters and tokens]], and [[code snippets on boundaries]].
 
-Code snippets on boundaries: This is a `regular code snippet`, and these are backticks in tw`o word`s, which should not be stylized. (`This is a backtick starting after a parentheses`), this is *a `code snippet`* in bold text. This is a `code snippet ending after a period.`, and here is a `code snippet ending before a period`. Here is a `code snippet ending with a comma`, as such.
+Code snippets on boundaries: This is a `regular code snippet`, and these are backticks in tw`o word`s, which should not be stylized. (`This is a backtick starting after a parentheses`), this is *a `code snippet`* in bold text. This is a `code snippet ending after a period.`, and here is a `code snippet ending before a period`. Here is a `code snippet ending with a comma`, and this is a "`code snippet` in quotation marks," and this is "another `one`".
 
 Regular code snippets:
 This is a `code snippet`.
