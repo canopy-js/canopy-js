@@ -34,7 +34,7 @@ class FileSystemManager {
   getFileSet(filePathList) {
     let fileContentsByPath = {};
 
-    filePathList.forEach(filePath => {
+    filePathList.filter(fp => fs.existsSync(fp)).forEach(filePath => {
       let fileContents = fs.readFileSync(filePath).toString();
       fileContentsByPath[filePath] = fileContents;
     });
