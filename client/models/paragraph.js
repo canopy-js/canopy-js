@@ -126,7 +126,9 @@ class Paragraph {
     targetSubtopic = targetSubtopic || targetTopic;
 
     return this.linkBySelector(
-      (link) => link.targetTopic.caps === targetTopic.caps && link.targetSubtopic.caps === targetSubtopic.caps
+      (link) => link.isParent &&
+        link.targetTopic.caps === targetTopic.caps &&
+        link.targetSubtopic.caps === targetSubtopic.caps
     );
   }
 

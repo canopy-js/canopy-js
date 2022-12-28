@@ -63,7 +63,7 @@ test('it parses a line-prefix style code block', () => {
   expect(tokens).toEqual([
     {
       type: 'code_block',
-      text: '\nif (x) {\n  doSomething();\n}\n\n'
+      text: '\nif (x) {\n  doSomething();\n}\n'
     }
   ]);
 });

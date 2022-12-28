@@ -49,12 +49,12 @@ function handleCodeLine(line, tokens) {
   let previousToken = tokens[tokens.length - 1];
 
   if (previousToken?.type === 'code_block' && previousToken?.style === 'prefix') {
-    previousToken.text += text + '\n';
+    previousToken.text += '\n' + text;
   } else {
     tokens.push({
       type: 'code_block',
       style: 'prefix',
-      text: text + '\n'
+      text: text
     });
   }
 }
