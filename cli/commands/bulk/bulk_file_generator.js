@@ -20,7 +20,7 @@ class BulkFileGenerator {
             ).join('\n\n\n'); // three newlines between files
 
     }).join('\n\n\n') // three newlines between the last file and the next category
-    + '\n\n\n'; // three newlines at the end for space when adding
+    + '\n\n'; // two newlines at the end for space when adding
   }
 }
 
