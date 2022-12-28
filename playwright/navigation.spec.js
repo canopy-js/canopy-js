@@ -575,16 +575,26 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('http://google.com');
 
+    await page.context().route(
+        'http://*google.com/**',
+        route => route.fulfill({ body: 'I am on www.google.com' })
+    )
+
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
       page.locator('body').press('Enter')
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage).toHaveURL(/google\.com/);
+    await expect(newPage.locator('body')).toHaveText('I am on www.google.com');
   });
 
   test('Regular-clicking on URL link opens new tab', async ({ page, context }) => {
+    await page.context().route(
+      'http://*google.com/**',
+      route => route.fulfill({ body: 'I am on www.google.com' })
+    )
+
     await page.goto('United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
 
@@ -595,7 +605,7 @@ test.describe('Navigation', () => {
 
     await newPage.waitForLoadState();
 
-    await expect(newPage).toHaveURL(/google\.com/);
+    await expect(newPage.locator('body')).toHaveText('I am on www.google.com');
   });
 
   test('Navigating to default topic replaces history state', async ({ page, context }) => {
