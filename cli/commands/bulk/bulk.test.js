@@ -56,7 +56,7 @@ describe('BulkFileGenerator', function() {
 
       * Topic4: Hello world.
 
-      Subtopic: Hello.` + '\n\n\n');
+      Subtopic: Hello.` + '\n\n');
 
   });
 
@@ -77,7 +77,7 @@ describe('BulkFileGenerator', function() {
 
       * Topic #4: Hello world.
 
-      Subtopic: Hello.` + '\n\n\n');
+      Subtopic: Hello.` + '\n\n');
 
   });
 
@@ -99,7 +99,7 @@ describe('BulkFileGenerator', function() {
 
       [A]
 
-      * Topic2: Hello world.` + '\n\n\n');
+      * Topic2: Hello world.` + '\n\n');
 
   });
 
@@ -127,7 +127,7 @@ describe('BulkFileGenerator', function() {
 
       [Inbox]
 
-      Inbox notes.` + '\n\n\n');
+      Inbox notes.` + '\n\n');
 
   });
 
@@ -144,7 +144,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[X]
 
-      * Topic: Hello world.` + '\n\n\n');
+      * Topic: Hello world.` + '\n\n');
 
   });
 
@@ -160,7 +160,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[A/B/C]
 
-      This key doesn't match the category name of "C": Hello world.` + '\n\n\n'); // no asterisk
+      This key doesn't match the category name of "C": Hello world.` + '\n\n'); // no asterisk
 
   });
 });
