@@ -8,19 +8,21 @@ class BulkFileGenerator {
   }
 
   generateBulkFile() {
-    return this.fileSet.directories.sort(this.directoryComparator).filter(d => d.files.length > 0).map(directory => {
-      return `[${directory.displayPath}]\n\n` // two newlines after the category path header
-        + directory
-            .files
-            .sort(this.fileComparator)
-            .filter(f => f.path.endsWith('.expl'))
-            .map(file =>
-              (displayAsterisk(file) ? '* ' : '')
-              + file.contents.trim() // trim trailing newlines to ensure spacing is consistent
-            ).join('\n\n\n'); // three newlines between files
+    return this.fileSet.directories.sort(this.directoryComparator)
+      .filter(d => d.files.find(f => f.path.endsWith('.expl'))) // a directory must have at least one expl file to be rendered
+      .map(directory => {
+        return `[${directory.displayPath}]\n\n` // two newlines after the category path header
+          + directory
+              .files
+              .sort(this.fileComparator)
+              .filter(f => f.path.endsWith('.expl'))
+              .map(file =>
+                (displayAsterisk(file) ? '* ' : '')
+                + file.contents.trim() // trim trailing newlines to ensure spacing is consistent
+              ).join('\n\n\n'); // three newlines between files
 
-    }).join('\n\n\n') // three newlines between the last file and the next category
-    + '\n\n'; // two newlines at the end for space when adding
+      }).join('\n\n\n') // three newlines between the last file and the next category
+      + '\n\n'; // two newlines at the end for space when adding
   }
 }
 

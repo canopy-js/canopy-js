@@ -123,8 +123,15 @@
 
   blockquote {
     padding: 0 .7em;
-    border-left: 0.25em solid lightgray;
     color: #565e67;
+
+    &[dir="rtl"] {
+      border-right: 0.25em solid lightgray;
+    }
+
+    &[dir="ltr"] {
+      border-left: 0.25em solid lightgray;
+    }
 
     margin-block-start: .5em;
     margin-block-end: .5em;

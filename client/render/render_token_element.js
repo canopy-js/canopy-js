@@ -254,8 +254,12 @@ function renderCodeBlock(token) {
 
 function renderBlockQuote(token) {
   let blockQuoteElement = document.createElement('BLOCKQUOTE');
-
+  blockQuoteElement.setAttribute('dir', 'auto');
   blockQuoteElement.innerText = token.text;
+  window.setTimeout(() => { // wait until the page renders for dir auto to resolve, then detect choice and set explicitly for css
+    let direction = window.getComputedStyle(blockQuoteElement, null).direction
+    blockQuoteElement.setAttribute('dir', direction);
+  }, 0);
 
   return blockQuoteElement;
 }
