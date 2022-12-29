@@ -119,9 +119,7 @@ const bulk = async function(selectedFileList, options) {
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
     editor('canopy_bulk_file', () => {
-      try {
-        handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
-      } catch(e) { console.error(e.message); }
+      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
     })
   }
 
@@ -130,7 +128,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.finish) { // non-editor mode
-    try { handleFinish({ deleteBulkFile: true }, options); } catch(e) { console.error(e); }
+    handleFinish({ deleteBulkFile: true }, options);
   }
 
   if (options.sync) {
@@ -139,7 +137,7 @@ const bulk = async function(selectedFileList, options) {
     // Open bulk file in editor and process when closed
     if (!options.noEditor) {
       editor(options.bulkFileName, () => {
-        try { handleFinish({deleteBulkFile: false}, options); } catch(e) { console.error(e) }
+        handleFinish({deleteBulkFile: false}, options);
         log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         process.exit();
       });
@@ -154,14 +152,10 @@ const bulk = async function(selectedFileList, options) {
     watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
 
     // Start server
-    try {
-      serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
-    } catch(e) {
-      console.error(e.message);
-    }
+    serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
 
     function handleSigInt() {
-      try { handleFinish({deleteBulkFile: true}, options); } catch(e) { console.error(e) }
+      handleFinish({deleteBulkFile: true}, options);
       log(chalk.magenta(`Canopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       process.exit();
     }
@@ -187,18 +181,14 @@ const bulk = async function(selectedFileList, options) {
     // Watch bulk file and update topics on change
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
     bulkFileWatcher.on('change', () => {
-      try {
-        if (cyclePreventer.ignoreBulkFileChange()) return cyclePreventer.respondToNextBulkFileChange();
-        log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-        handleFinish({deleteBulkFile: false}, options);
-      } catch(e) {
-        console.error(e.message);
-      }
+      if (cyclePreventer.ignoreBulkFileChange()) return cyclePreventer.respondToNextBulkFileChange();
+      log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      handleFinish({deleteBulkFile: false}, options);
     });
 
     // Watch bulk file and end session on delete
     bulkFileWatcher.on('unlink', (e) => {
-      try { handleFinish({deleteBulkFile: false}, options); } catch(e) { console.error(e) }
+      handleFinish({deleteBulkFile: false}, options);
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
     cyclePreventer.watchingBulkFile();
