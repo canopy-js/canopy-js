@@ -24,6 +24,7 @@ class FileSet {
 
       this.filesObject[filePath] = file;
 
+      // Add this file to the appropriate directory, or create new directory that contains it
       if (this.directoriesObject.hasOwnProperty(directoryPath)) {
         this.directoriesObject[directoryPath].files.push(file);
       } else {
@@ -36,6 +37,7 @@ class FileSet {
         };
       }
 
+      // Add subpaths of this directory path to the directories list
       directoryPath = pathLibrary.dirname(directoryPath);
       while (directoryPath.includes('topics') && !directoryPath.endsWith('topics')) {
         if (!this.directoriesObject.hasOwnProperty(directoryPath)) {
@@ -92,6 +94,8 @@ function terminalCategoryofFilePath(filePath) {
 }
 
 function generateDisplayPath(directoryPath) {
+  if (!directoryPath.match(/topics\/(.*)/)) return 'PLEASE ADD CATEGORY'; // eg .DS_STORE in root directory
+
   return directoryPath
     .match(/topics\/(.*)/)[1]
     .split('/')

@@ -148,6 +148,39 @@ describe('BulkFileGenerator', function() {
 
   });
 
+  test('it ignores files with other paths in the root topics directory', () => {
+    let originalSelectedFilesByContents = {
+      'topics/X/Topic.expl': 'Topic: Hello world.\n',
+      'topics/Readme.md': 'Hello world.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[X]
+
+      * Topic: Hello world.` + '\n\n');
+
+  });
+
+  test('it suggests renaming expl files in the root topics directory', () => {
+    let originalSelectedFilesByContents = {
+      'topics/Topic.expl': 'Topic: Hello world.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[PLEASE ADD CATEGORY]
+
+      * Topic: Hello world.` + '\n\n');
+
+  });
+
   test("it does not put an asterisk for category notes with keys that don't match the category name", () => {
     let originalSelectedFilesByContents = {
       'topics/A/B/C/C.expl': `This key doesn't match the category name of "C": Hello world.\n`,
