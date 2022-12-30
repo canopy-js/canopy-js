@@ -129,8 +129,8 @@ class Link {
     if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.targetTopic.mixedCase}"]` +
-        `[data-subtopic-name="${this.targetSubtopic.mixedCase}"]` +
+        `section[data-topic-name="${this.targetTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${this.targetSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
