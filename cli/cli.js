@@ -3,6 +3,7 @@ const init = require('./commands/init');
 const build = require('./commands/build');
 const watch = require('./commands/watch');
 const serve = require('./commands/serve/serve');
+const dev = require('./commands/dev');
 const bulk = require('./commands/bulk/bulk');
 const sketch = require('./commands/sketch/sketch');
 
@@ -53,6 +54,28 @@ program.command('watch')
   .action((options) => {
     try {
       watch(options);
+    } catch (e) {
+      console.error(e.message);
+      process.exit(1)
+    }
+  });
+
+program.command('dev')
+  .description('watch a Canopy project and rebuild JSON assets on text change')
+  .argument('[portArgument]', 'Additional way of specifying port', null) // serve options
+  .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
+  .option('-s, --suppress-open', 'do not open link in browser', false)
+  .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
+  .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
+  .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
+  .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
+  .option('-l, --logging', 'print logs', true)
+  .action((portArgument, options) => {
+    try {
+      options.port = options.port || Number(portArgument) || null;
+
+      dev(options);
     } catch (e) {
       console.error(e.message);
       process.exit(1)
