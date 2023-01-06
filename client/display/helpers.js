@@ -1,5 +1,4 @@
 import { canopyContainer } from 'helpers/getters';
-import renderStyledText from 'render/render_styled_text';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';

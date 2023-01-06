@@ -1,7 +1,7 @@
 let Matchers = require('./matchers');
 let { TextToken } = require('./tokens');
 
-function parseText(text, parserContext) {
+function parseText({ text, parserContext }) {
   let tokens = [];
   parserContext.currentText = text;
   parserContext.currentTokens = tokens;
@@ -13,12 +13,15 @@ function parseText(text, parserContext) {
     let string = characters.slice(i).join('');
     let result;
     for (let j = 0; j < Matchers.length; j++) {
-      result = Matchers[j](string, parserContext, i);
+      let startOfLine =
+        (text[i - 1] === "\n") || // really is start of new line
+        (text[i - 1] === undefined && !parserContext.recursing); // start of text when not parsing token within token ie start of paragraph
+
+      result = Matchers[j]({ string, parserContext, index: i, previousCharacter: text[i - 1], startOfLine });
       if (result) {
         let [token, length] = result;
-
         if (result[0]) { // escapedCharacterMatcher doesn't return a token but adds to buffer
-          if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
+          if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
           parserContext.buffer = '';
           tokens.push(token);
         }
@@ -31,7 +34,7 @@ function parseText(text, parserContext) {
     parserContext.buffer += characters[i];
   }
 
-  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
+  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
 
   return tokens;
 }

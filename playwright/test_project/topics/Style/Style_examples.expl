@@ -1,8 +1,8 @@
-Style examples: These are some style examples. There are [[inline text styles]], [[tables]], [[code blocks]], [[block quotes]], [[HTML blocks]], [[lists]].
+Style examples: These are some style examples. There are [[inline text styles]], [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[script tags]], [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[footnotes]], and [[special topic names]].
 
-Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]], and [[plaintext that contains style tokens]].
+Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], and [[code snippets]].
 
 Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], topics called [[_data]], and a [[topic with no child links]].
 
@@ -23,10 +23,18 @@ This is regular text.
 > This is the second line
 More text.
 
+RTL block quotes:
+This is regular text.
+< אלה מילים
+< הם מימין לשמול
+More text.
+
 HTML blocks:
 <figure>
   <s> This is an html block </s>
 </figure>
+
+Script tags: <script> setTimeout(function checkRender() { if (document.querySelector('.canopy-topic-section').offsetParent) { if (document.getElementById(123).offsetParent) { alert(); } } else { setTimeout(checkRender, 0); } }, 0) // Wait until content has rendered and then check if this section is visible, to avoid running alert on every page. </script><div id="123">ABC</div>
 
 Lists:
 1. This
@@ -66,9 +74,6 @@ This is a `code snippet that contains an escaped backtick \` but also intentiona
 
 Code snippets that contain style characters and tokens:
 This is a `code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}`.
-
-Plaintext that contains style tokens:
-This is plaintext that contains style tokens like {{OPEN_}} ABC {{CLOSE_}}.
 
 Images:
 This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly Fish")

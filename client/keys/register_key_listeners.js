@@ -16,6 +16,8 @@ import Link from 'models/link';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
+    if (document.activeElement.tagName === "INPUT") return; // User is typing in text box
+
     let modifiers =
       (e.metaKey ? 'meta-' : '') +
       (e.ctrlKey ? 'ctrl-' : '') +

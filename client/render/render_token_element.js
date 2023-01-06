@@ -1,6 +1,5 @@
 import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
-import renderStyledText from 'render/render_styled_text';
 import Link from 'models/link';
 import Topic from '../../cli/commands/shared/topic';
 
@@ -14,34 +13,41 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
   } else if (token.type === 'url') {
-    return renderLinkLiteral(token);
+    return renderLinkLiteral(token, renderContext);
   } else if (token.type === 'image') {
     return renderImage(token);
   } else if (token.type === 'html_element') {
     return renderHtmlElement(token);
-  } else if (token.type === 'footnote') {
+  } else if (token.type === 'footnote_marker') {
     return renderFootnoteSymbol(token);
   } else if (token.type === 'code_block') {
     return renderCodeBlock(token);
-  } else if (token.type === 'quote') {
-    return renderBlockQuote(token);
-  } else if (token.type === 'list') {
+  } else if (token.type === 'block_quote') {
+    return renderBlockQuote(token, renderContext);
+  } else if (token.type === 'outline') {
     return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
     return renderTable(token, renderContext)
   } else if (token.type === 'html_block') {
     return renderHtmlBlock(token);
-  } else if (token.type === 'footnote_rule') {
-    return renderFootnoteRule(token);
-  } else if (token.type === 'footnote_line') {
-    return renderFootnoteLine(token, renderContext);
+  } else if (token.type === 'footnote_lines') {
+    return renderFootnoteLines(token, renderContext);
+  } else if (token.type === 'bold') {
+    return renderBoldText(token, renderContext);
+  } else if (token.type === 'strikethrough') {
+    return renderStrikethroughText(token, renderContext);
+  } else if (token.type === 'italics') {
+    return renderItalicText(token, renderContext);
+  } else if (token.type === 'inline_code') {
+    return renderInlineCodeText(token, renderContext);
+  } else {
+    throw `Unhandled token type: ${token.type}`
   }
 }
 
 function renderTextToken(token) {
   let spanElement = document.createElement('SPAN');
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, spanElement);
+  spanElement.innerText = token.text;
 
   return spanElement;
 }
@@ -52,10 +58,10 @@ function renderLocalLink(token, renderContext) {
   } = renderContext;
 
   localLinkSubtreeCallback(token);
-  return createLocalLinkElement(token)
+  return createLocalLinkElement(token, renderContext)
 }
 
-function createLocalLinkElement(token) {
+function createLocalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.targetTopic = token.targetTopic;
@@ -64,8 +70,10 @@ function createLocalLinkElement(token) {
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
 
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkElement);
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    linkElement.appendChild(subtokenElement);
+  });
 
   linkElement.addEventListener(
     'click',
@@ -87,17 +95,20 @@ function renderGlobalLink(token, renderContext) {
     globalLinkSubtreeCallback
   } = renderContext;
 
-  let linkElement = createGlobalLinkElement(token, pathArray);
+  let linkElement = createGlobalLinkElement(token, renderContext);
 
   globalLinkSubtreeCallback(token, linkElement);
 
   return linkElement;
 }
 
-function createGlobalLinkElement(token) {
+function createGlobalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkElement);
+
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    linkElement.appendChild(subtokenElement);
+  });
 
   linkElement.classList.add('canopy-global-link');
   linkElement.classList.add('canopy-selectable-link');
@@ -125,16 +136,18 @@ function renderImportLink(token, renderContext) {
     pathArray
   } = renderContext;
 
-  let linkElement = createImportLinkElement(token, pathArray);
+  let linkElement = createImportLinkElement(token, renderContext);
 
   return linkElement;
 }
 
-function createImportLinkElement(token) {
+function createImportLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
 
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkElement);
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    linkElement.appendChild(subtokenElement);
+  });
 
   linkElement.classList.add('canopy-global-link');
   linkElement.classList.add('canopy-selectable-link');
@@ -158,7 +171,7 @@ function createImportLinkElement(token) {
   return linkElement
 }
 
-function renderLinkLiteral(token) {
+function renderLinkLiteral(token, renderContext) {
   let linkElement = document.createElement('a');
   let linkSpan = document.createElement('SPAN');
 
@@ -170,8 +183,10 @@ function renderLinkLiteral(token) {
   linkElement.setAttribute('href', token.url);
   linkElement.setAttribute('target', '_blank');
 
-  let styleElements = renderStyledText(token.text);
-  appendElementsToParent(styleElements, linkSpan);
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    linkSpan.appendChild(subtokenElement);
+  });
 
   let container = document.createElement('div');
   container.classList.add('canopy-url-link-container');
@@ -223,23 +238,17 @@ function renderImage(token) {
 
 function renderHtmlElement(token) {
   let divElement = document.createElement('DIV');
-  divElement.innerHTML = token.html;
+  let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
+  divElement.appendChild(fragment);
   divElement.classList.add('canopy-raw-html');
   return divElement;
 }
-
 
 function renderFootnoteSymbol(token) {
   let superscriptElement = document.createElement('SUP');
   let textNode = document.createTextNode(token.text);
   superscriptElement.appendChild(textNode);
   return superscriptElement;
-}
-
-function appendElementsToParent(collection, parent) {
-  collection.forEach((item) => {
-    parent.appendChild(item);
-  });
 }
 
 function renderCodeBlock(token) {
@@ -252,18 +261,14 @@ function renderCodeBlock(token) {
   return preElement;
 }
 
-function renderBlockQuote(token) {
+function renderBlockQuote(token, renderContext) {
   let blockQuoteElement = document.createElement('BLOCKQUOTE');
-  blockQuoteElement.setAttribute('dir', 'auto');
-  blockQuoteElement.innerText = token.text;
-  window.setTimeout(function checkDirection() { // wait until the page renders for dir auto to resolve, then detect choice and set explicitly for css
-    let direction = window.getComputedStyle(blockQuoteElement, null).direction
-    if (!direction) {
-       window.setTimeout(checkDirection, 0);
-    } else {
-      blockQuoteElement.setAttribute('dir', direction);
-    }
-  }, 0);
+  blockQuoteElement.setAttribute('dir', token.direction);
+
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    blockQuoteElement.appendChild(subtokenElement);
+  });
 
   return blockQuoteElement;
 }
@@ -329,23 +334,58 @@ function renderHtmlBlock(token) {
   return htmlContainer;
 }
 
-function renderFootnoteRule() {
+function renderFootnoteLines(footnoteLinesToken, renderContext) {
+  let div = document.createElement('DIV');
   let horizonalRule = document.createElement('HR');
   horizonalRule.classList.add('canopy-footnote-rule');
-  return horizonalRule;
-}
+  div.appendChild(horizonalRule)
 
-function renderFootnoteLine(footnoteLineToken, renderContext) {
-  let footnoteSpan = document.createElement('SPAN');
-  footnoteSpan.classList.add('canopy-footnote-span');
-  let textNode = document.createTextNode(footnoteLineToken.superscript + '. ');
-  footnoteSpan.appendChild(textNode);
-  footnoteLineToken.tokens.forEach((token) => {
-    let tokenElement = renderTokenElement(token, renderContext);
-    footnoteSpan.appendChild(tokenElement);
+  footnoteLinesToken.lines.forEach(line => {
+    let footnoteSpan = document.createElement('SPAN');
+    footnoteSpan.classList.add('canopy-footnote-span');
+    let textNode = document.createTextNode(line.superscript + '. ');
+    footnoteSpan.appendChild(textNode);
+    line.tokens.forEach((token) => {
+      let tokenElement = renderTokenElement(token, renderContext);
+      footnoteSpan.appendChild(tokenElement);
+    });
+
+    div.appendChild(footnoteSpan);
   });
 
-  return footnoteSpan;
+  return div;
+}
+
+function renderBoldText(token, renderContext) {
+  let element = document.createElement('B');
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    element.appendChild(subtokenElement);
+  });
+  return element;
+}
+function renderStrikethroughText(token, renderContext) {
+  let element = document.createElement('S');
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    element.appendChild(subtokenElement);
+  });
+  return element;
+}
+
+function renderItalicText(token, renderContext) {
+  let element = document.createElement('I');
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    element.appendChild(subtokenElement);
+  });
+  return element;
+}
+
+function renderInlineCodeText(token, renderContext) {
+  let element = document.createElement('CODE');
+  element.innerText = token.text;
+  return element;
 }
 
 export default renderTokenElement;
