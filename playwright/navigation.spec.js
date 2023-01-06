@@ -378,18 +378,27 @@ test.describe('Navigation', () => {
 
     // When an import reference is navigated to inline, both the parent global link and the import link should be "open"
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("northern border").canopy-open-link >> visible=true')})).toHaveCount(1);
+      { has: page.locator('a:visible.canopy-open-link',
+        { has: page.locator('text="northern border"') })}
+    )).toHaveCount(1);
+
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("New Jersey").canopy-open-link >> visible=true')})).toHaveCount(1);
+      { has: page.locator('a:visible.canopy-open-link',
+        { has: page.locator('text="New Jersey"') })}
+    )).toHaveCount(1);
 
     await page.locator('body').press('ArrowRight');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Attractions');
 
     // Now that we have navigated away from the import path, only the global parent link should be open
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("northern border").canopy-open-link >> visible=true')})).toHaveCount(0);
+      { has: page.locator('a:visible.canopy-open-link', { has: page.locator('text="northern border"') })}
+    )).toHaveCount(0);
+
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("New Jersey").canopy-open-link >> visible=true')})).toHaveCount(1);
+      { has: page.locator('a:visible.canopy-open-link',
+        { has: page.locator('text="New Jersey"') })}
+    )).toHaveCount(1);
   });
 
   test('Enter on import reference redirects to target', async ({ page }) => {
@@ -409,7 +418,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("northern border")').click()
+    await page.locator('a:has-text("northern border")').click();
 
     await expect(page.locator('h1')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
@@ -417,14 +426,21 @@ test.describe('Navigation', () => {
 
     // The import reference should be selected and open
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("northern border").canopy-open-link.canopy-selected-link >> visible=true')})).toHaveCount(1);
+      { has: page.locator('a:visible.canopy-open-link.canopy-selected-link',
+        { has: page.locator('text="northern border"') })}
+    )).toHaveCount(1);
 
-    // The global reference should be open but not selected
+    // The global reference should be open
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("New Jersey").canopy-open-link >> visible=true')})).toHaveCount(1);
+      { has: page.locator('a:visible.canopy-open-link',
+        { has: page.locator('text="New Jersey"') })}
+    )).toHaveCount(1);
 
+    // But the global reference should not be selected
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
-      { has: page.locator('a:text("New Jersey").canopy-open-link.canopy-selected-link >> visible=true')})).toHaveCount(0);
+      { has: page.locator('a:visible.canopy-open-link.canopy-selected-link',
+        { has: page.locator('text="New Jersey"') })}
+    )).toHaveCount(0);
 
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
@@ -608,7 +624,7 @@ test.describe('Navigation', () => {
     await expect(newPage.locator('body')).toHaveText('I am on www.google.com');
   });
 
-  test('Navigating to default topic replaces history state', async ({ page, context }) => {
+  test('Redirecting to default topic replaces history state', async ({ page, context }) => {
     await page.goto('/');
     await expect(page).toHaveURL('United_States');
     await page.goBack();
@@ -617,7 +633,7 @@ test.describe('Navigation', () => {
     if (URL.includes('United_States')){
       expect(page).toHaveURL('United_States'); // Firefox doesn't allow browser back to new tab state, so we test for back being no-op
     } else {
-      expect(page.locator('#_canopy')).toHaveCount(0);
+      expect(await page.locator('#_canopy').count()).toEqual(0);
     }
   });
 });
