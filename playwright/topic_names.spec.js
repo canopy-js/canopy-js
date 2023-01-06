@@ -30,7 +30,7 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator(`a:visible:text-is("Martha's Vineyard")`).click({
+      page.locator('a:visible', { has: page.locator('text="Martha\'s Vineyard"') }).click({
         modifiers: [systemNewTabKey]
       })
     ]);

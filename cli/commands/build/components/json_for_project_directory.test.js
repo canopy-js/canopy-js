@@ -57,7 +57,13 @@ test('it matches local references', () => {
             "targetSubtopic": "State Capital",
             "targetTopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "state capital",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -102,14 +108,20 @@ test('it matches local with question marks', () => {
             "targetSubtopic": "Why choose Idaho for your business needs?",
             "targetTopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Why choose Idaho for your business needs?",
+                 "type": "text",
+               },
+             ]
           }
         ],
 
         "Why choose Idaho for your business needs?": [
           {
             "text" : "This sentence also has a question mark - ?", // to ensure we match only the first ? as part of the key
-            "type":"text"
+            "type": "text"
           }
 
         ]
@@ -143,7 +155,13 @@ test('it matches local references with commas', () => {
             "targetSubtopic": "State capital, and governor",
             "targetTopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "state capital, and governor",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -188,7 +206,13 @@ test('it matches local references with periods not followed by spaces', () => {
             "targetSubtopic": "Capital.js",
             "targetTopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "capital.js",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -245,7 +269,13 @@ test('it matches global references', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -297,7 +327,13 @@ test('it matches global references using explicit syntax to override local refer
             "targetSubtopic": "Wyoming",
             "targetTopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : " the small town, and is like ",
@@ -309,7 +345,13 @@ test('it matches global references using explicit syntax to override local refer
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : " the US State.",
@@ -365,7 +407,13 @@ test('it lets you give arbitrary names to references', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -415,7 +463,13 @@ test('it matches implicit import references', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "my favorite state",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -453,7 +507,13 @@ test('it matches implicit import references in any order within a sentence', () 
             "targetSubtopic": "Yellowstone National Park",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Yellowstone National Park",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : " of ",
@@ -465,7 +525,13 @@ test('it matches implicit import references in any order within a sentence', () 
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -511,7 +577,13 @@ test('it matches an implicit import reference to the closest candidate link', ()
             "targetSubtopic": "Columbus",
             "targetTopic": "Ohio",
             "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation"
+            "enclosingSubtopic" : "Vacation",
+            "tokens": [
+              {
+                 "text": "Columbus",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ", ",
@@ -523,7 +595,13 @@ test('it matches an implicit import reference to the closest candidate link', ()
             "targetSubtopic": "Ohio",
             "targetTopic": "Ohio",
             "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation"
+            "enclosingSubtopic" : "Vacation",
+            "tokens": [
+              {
+                 "text": "Ohio",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ", and ",
@@ -536,7 +614,13 @@ test('it matches an implicit import reference to the closest candidate link', ()
             "targetSubtopic": "London",
             "targetTopic": "England",
             "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation"
+            "enclosingSubtopic" : "Vacation",
+            "tokens": [
+              {
+                 "text": "London",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ", ",
@@ -549,6 +633,12 @@ test('it matches an implicit import reference to the closest candidate link', ()
             "targetTopic": "England",
             "enclosingTopic": "Vacation",
             "enclosingSubtopic" : "Vacation",
+            "tokens": [
+              {
+                 "text": "England",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -590,7 +680,13 @@ test('it makes local references into import references if that resolves redundan
         "targetSubtopic": "Cities",
         "targetTopic": "England",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "England"
+        "enclosingSubtopic" : "England",
+        "tokens": [
+          {
+             "text": "cities",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ". One of England's cities is ",
@@ -602,7 +698,13 @@ test('it makes local references into import references if that resolves redundan
         "targetSubtopic": "London",
         "targetTopic": "England",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "England"
+        "enclosingSubtopic" : "England",
+        "tokens": [
+          {
+             "text": "London",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ".",
@@ -622,7 +724,13 @@ test('it makes local references into import references if that resolves redundan
         "targetSubtopic": "London",
         "targetTopic": "Ohio",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "Cities"
+        "enclosingSubtopic" : "Cities",
+        "tokens": [
+          {
+             "text": "London",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ", ",
@@ -634,7 +742,13 @@ test('it makes local references into import references if that resolves redundan
         "targetSubtopic": "Ohio",
         "targetTopic": "Ohio",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "Cities"
+        "enclosingSubtopic" : "Cities",
+        "tokens": [
+          {
+             "text": "Ohio",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ".",
@@ -673,7 +787,13 @@ test('it converts local references to import references if later found redundant
         "targetSubtopic": "Cities",
         "targetTopic": "England",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "England"
+        "enclosingSubtopic" : "England",
+        "tokens": [
+          {
+             "text": "cities",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ". I'd also like to go to ",
@@ -685,7 +805,13 @@ test('it converts local references to import references if later found redundant
         "targetTopic": "Ohio",
         "targetSubtopic": "London",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "England"
+        "enclosingSubtopic" : "England",
+        "tokens": [
+          {
+             "text": "London",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ", ",
@@ -697,7 +823,13 @@ test('it converts local references to import references if later found redundant
         "targetTopic": "Ohio",
         "targetSubtopic": "Ohio",
         "enclosingTopic": "England",
-        "enclosingSubtopic" : "England"
+        "enclosingSubtopic" : "England",
+        "tokens": [
+          {
+             "text": "Ohio",
+             "type": "text",
+           },
+         ]
       },
       {
         "text" : ".",
@@ -744,7 +876,13 @@ test('it converts local references within lists to import references if later fo
                 "targetTopic": "England",
                 "targetSubtopic": "Cities",
                 "enclosingTopic": "England",
-                "enclosingSubtopic": "England"
+                "enclosingSubtopic": "England",
+                "tokens": [
+                  {
+                     "text": "cities",
+                     "type": "text",
+                   },
+                 ]
               },
               {
                 "text": ".",
@@ -767,7 +905,13 @@ test('it converts local references within lists to import references if later fo
                 "targetTopic": "Ohio",
                 "targetSubtopic": "London",
                 "enclosingTopic": "England",
-                "enclosingSubtopic": "England"
+                "enclosingSubtopic": "England",
+                "tokens": [
+                  {
+                     "text": "London",
+                     "type": "text",
+                   },
+                 ]
               },
               {
                 "text": ", ",
@@ -779,7 +923,13 @@ test('it converts local references within lists to import references if later fo
                 "targetTopic": "Ohio",
                 "targetSubtopic": "Ohio",
                 "enclosingTopic": "England",
-                "enclosingSubtopic": "England"
+                "enclosingSubtopic": "England",
+                "tokens": [
+                  {
+                     "text": "Ohio",
+                     "type": "text",
+                   },
+                 ]
               },
               {
                 "text": ".",
@@ -789,8 +939,7 @@ test('it converts local references within lists to import references if later fo
             "children": []
           }
         ],
-        "type": "list",
-        "text": "1. England is a European country. England has various [[cities]].\n2. I'd also like to go to [[London]], [[Ohio]].\n"
+        "type": "outline"
       }
     ]
   );
@@ -855,7 +1004,13 @@ test('it matches import references with explicit syntax and lets you rename the 
             "targetSubtopic": "Yellowstone National Park",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "my favorite park",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : " in ",
@@ -867,7 +1022,13 @@ test('it matches import references with explicit syntax and lets you rename the 
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -901,7 +1062,13 @@ test('it matches back-to-back global references', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text": "Wyoming",
@@ -909,7 +1076,13 @@ test('it matches back-to-back global references', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           },
           {
             "text" : ".",
@@ -943,7 +1116,13 @@ test('it matches global references at the end of strings', () => {
             "targetSubtopic": "Wyoming",
             "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho"
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
           }
         ]
       }
@@ -1299,37 +1478,4 @@ test('it logs non-reciprocal global references', () => {
 
   expect(messagePresent).toEqual(true);
   console.log = log;
-});
-
-
-////////////////////////////////////////////////
-
-
-test('it front-loads image tokens per paragraph', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, and this is the flag. ![Flag](./flag.gif)\n`
-  };
-
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "type" : "image",
-            "resourceUrl": "./flag.gif",
-            "title": null,
-            "altText": "Flag",
-            "anchorUrl": null
-          },
-          {
-            "text": "Idaho is a midwestern state, and this is the flag. ",
-            "type": "text"
-          }
-        ]
-      }
-    }
-  );
 });

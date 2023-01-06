@@ -66,13 +66,6 @@ test.describe('Text styles', () => {
     await page.goto('/United_States/New_York/Style_examples#Code_snippets_on_boundaries');
     await expect(page.locator('.canopy-selected-section code')).toHaveCount(8);
   });
-
-  test('Plaintext can contain style token literals', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Plaintext_that_contains_style_tokens');
-    await page.locator('.canopy-selected-section');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is plaintext that contains style tokens like {{OPEN_}} ABC {{CLOSE_}}.")
-    await expect(page.locator('.canopy-selected-section i')).toHaveCount(0);
-  });
 });
 
 test.describe('Inline entities', () => {
@@ -145,7 +138,7 @@ test.describe('Block entities', () => {
 
     await expect(await page.innerText('.canopy-selected-section code')).toEqual(
       `// This is a code block\n`+
-      `if (x) { y; }\n`
+      `if (x) { y; }`
     );
   });
 
@@ -155,8 +148,21 @@ test.describe('Block entities', () => {
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
       `This is a block quote that has two lines\n` +
-      `This is the second line\n`
+      `This is the second line`
     );
+  });
+
+  test('It creates RTL block quotes', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#RTL_block_quotes');
+    await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
+
+    await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
+      `אלה מילים\n` +
+      `הם מימין לשמול`
+    );
+
+    await expect(await page.locator('.canopy-selected-section blockquote')).toHaveAttribute('dir', 'rtl');
+
   });
 
   test('It creates multi-line html blocks', async ({ page }) => {
@@ -165,6 +171,13 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section figure')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section s')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section s')).toHaveText('This is an html block');
+  });
+
+  test('It creates script tags', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Script_tags');
+    page.on('dialog', async dialog => {
+      expect(dialog.type()).toContain('alert');
+    });
   });
 
   test('It creates nested lists', async ({ page }) => {

@@ -5,34 +5,150 @@ let {
   TextToken,
   UrlToken,
   ImageToken,
-  FootnoteToken,
-  HtmlToken
+  FootnoteMarkerToken,
+  HtmlToken,
+  CodeBlockToken,
+  BlockQuoteToken,
+  OutlineToken,
+  TableToken,
+  FootnoteLinesToken,
+  ItalicsToken,
+  BoldToken,
+  InlineCodeSnippetToken,
+  StrikethroughToken
 } = require('./tokens');
 
 const Matchers = [
+  fenceCodeBlockMatcher,
+  prefixCodeBlockMatcher,
+  blockQuoteMatcher,
+  outlineMatcher,
+  tableMatcher,
+  htmlBlockMatcher,
+  footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
   importReferenceMatcher,
-  escapedCharacterMatcher,
-  footnoteMatcher,
-  imageMatcher,
-  hyperlinkMatcher,
-  urlMatcher,
   linkedImageMatcher,
-  htmlMatcher
+  inlineHtmlMatcher,
+  escapedCharacterMatcher,
+  footnoteMarkerMatcher,
+  imageMatcher,
+  italicsMatcher,
+  boldMatcher,
+  codeSnippetMatcher,
+  strikeThroughMatcher,
+  hyperlinkMatcher,
+  urlMatcher
 ];
 
 let Topic = require('../../shared/topic');
 let { displaySegment } = require('../../shared/helpers');
 let chalk = require('chalk');
 
-function localReferenceMatcher(string, parserContext, index) {
+function fenceCodeBlockMatcher({ string, startOfLine }) {
+  let match = string.match(/^```\n(.*\n)```(\n|$)/s);
+
+  if (match && startOfLine) {
+    let text = match[1];
+    if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
+
+    return [
+      new CodeBlockToken(text),
+      match[0].length
+    ];
+  }
+}
+
+function prefixCodeBlockMatcher({ string, startOfLine }) {
+  let match = string.match(/^(`((\n|$)| [^\n]*(\n|$)))+/s); // if there is content on the line, we require a space
+
+  if (match && startOfLine) {
+    let text = match[0].split(/(?<=^|\n)` ?/).join('');
+    if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
+
+    return [
+      new CodeBlockToken(text),
+      match[0].length
+    ];
+  }
+}
+
+function blockQuoteMatcher({ string, parserContext, startOfLine }) {
+  let match =
+    string.match(/^((<) [^\n]+(\n|$))+/s)
+    || string.match(/^((>) [^\n]+(\n|$))+/s); // one direction or the other not a mix
+
+  if (match && startOfLine) {
+    let text = Array.from(
+      match[0]
+        .matchAll(/(?<=^|\n)(?:[><]) ?([^\n]+)/g))
+        .map(m => m[1])
+        .join('\n');
+
+    if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
+    let direction = match[2] === '>' ? 'ltr' : 'rtl';
+
+    return [
+      new BlockQuoteToken(text, direction, parserContext),
+      match[0].length
+    ];
+  }
+}
+
+function outlineMatcher({ string, parserContext, startOfLine }) {
+  let match = string.match(/^(\s*(([A-Za-z0-9+*-]{1,3}\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
+
+  if (match && startOfLine) {
+    return [
+      new OutlineToken(match[0], parserContext),
+      match[0].length
+    ];
+  }
+}
+
+function tableMatcher({ string, parserContext, startOfLine }) {
+  let match = string.match(/^(?:(?:\|(?:[^\n]*\|)|(?:\s*[=#-]+\s*))(?:\n|$))+/s);
+
+  if (match && startOfLine) {
+    return [
+      new TableToken(match[0], parserContext),
+      match[0].length
+    ];
+  }
+}
+
+function htmlBlockMatcher({ string, startOfLine }) {
+  let match = string.match(/^(?:(\s*<\/?[^\n<>+]+(>[^\n<>]+<\/?[^\n<>]*)?>)+\s*(\n|$))+/s);
+
+  if (match && startOfLine) {
+    return [
+      new HtmlToken(match[0]),
+      match[0].length
+    ];
+  }
+}
+
+function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
+  let match = string.match(/^(\[\^[^\]]+]:[^\n]+(\n|$))+/s);
+
+  if (match && startOfLine) {
+    return [
+      new FootnoteLinesToken(match[0], parserContext),
+      match[0].length
+    ];
+  }
+}
+
+function localReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
+
   if (!linkTarget) return; // This is not a valid link
   if (linkFragment) return; // Any link with a # symbol is a global or import
   let targetSubtopic = new Topic(linkTarget);
   if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
+
   if (parserContext.currentTopicHasSubtopic(targetSubtopic)) {
     if (parserContext.subtopicReferenceIsRedundant(targetSubtopic)) {
       let currentLinkCouldBeImport = parserContext.localReferenceCouldBeImport(targetSubtopic, index);
@@ -52,7 +168,8 @@ function localReferenceMatcher(string, parserContext, index) {
       parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
-      linkText
+      linkText,
+      parserContext
     );
 
     parserContext.registerLocalReference(targetSubtopic, index, linkText, localReferenceToken);
@@ -63,7 +180,7 @@ function localReferenceMatcher(string, parserContext, index) {
   }
 }
 
-function globalReferenceMatcher(string, parserContext) {
+function globalReferenceMatcher({ string, parserContext }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return; // invalid link
@@ -80,7 +197,8 @@ function globalReferenceMatcher(string, parserContext) {
         parserContext.getOriginalTopic(targetTopic).mixedCase,
         currentTopic.mixedCase,
         currentSubtopic.mixedCase,
-        linkText
+        linkText,
+        parserContext
       ), fullText.length
     ];
   } else {
@@ -88,7 +206,7 @@ function globalReferenceMatcher(string, parserContext) {
   }
 }
 
-function importReferenceMatcher(string, parserContext, index) {
+function importReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
   let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
   if (!linkTarget) return; // not a well-formed link
@@ -120,7 +238,8 @@ function importReferenceMatcher(string, parserContext, index) {
       parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
-      linkText
+      linkText,
+      parserContext
     ), fullText.length
   ];
 }
@@ -157,48 +276,50 @@ function determineTopicAndSubtopic(linkTarget, linkFragment) {
   };
 }
 
-function escapedCharacterMatcher(string, parserContext) {
+function escapedCharacterMatcher({ string, parserContext }) {
   let match = string.match(/^\\(.)/);
   if (match) {
-    parserContext.buffer += match[0];
+    parserContext.buffer += match[1];
+
     return [null, match[0].length]
   } else {
     return null;
   }
 }
 
-function footnoteMatcher(string) {
+function footnoteMarkerMatcher({ string, startOfLine }) {
+
   let match = string.match(/^\[\^([^\]]+)\]/);
-  if (match) {
+  if (match && !startOfLine) { // a footnote marker cannot start a line to distinguish from footnote line itself
     return [
-      new FootnoteToken(match[1]),
+      new FootnoteMarkerToken(match[1]),
       match[0].length
     ];
   }
 }
 
-function hyperlinkMatcher(string) {
+function hyperlinkMatcher({ string, parserContext }) {
   let match = string.match(/^\[([^!\]]+)\](?:\(([^)]*)\))/);
   if (match) {
     let [_, text, url] = match;
     return [
-      new UrlToken(url, text),
+      new UrlToken(url, text, parserContext),
       match[0].length
     ];
   }
 }
 
-function urlMatcher(string) {
+function urlMatcher({ string, parserContext }) {
   let match = string.match(/^(\S+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
       new UrlToken(match[1]),
-      match[1].length
+      match[0].length
     ];
   }
 }
 
-function imageMatcher(string) {
+function imageMatcher({ string }) {
   let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
   if (match) {
     return [
@@ -212,7 +333,7 @@ function imageMatcher(string) {
   }
 }
 
-function linkedImageMatcher(string) {
+function linkedImageMatcher({ string }) {
   let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)/);
 
   if (match) {
@@ -228,13 +349,73 @@ function linkedImageMatcher(string) {
   }
 }
 
-function htmlMatcher(string) {
+function inlineHtmlMatcher({ string }) {
   let match = string.match(/^<([^>]+)>([\s\S]*<\/\1>)?/);
 
   if (match) {
     return [
       new HtmlToken(
         match[0]
+      ),
+      match[0].length
+    ];
+  }
+}
+
+function italicsMatcher({ string, parserContext, previousCharacter }) {
+  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^_((.*?[^\\]))_(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+
+  if (match && validPreviousCharacter) {
+    return [
+      new ItalicsToken(
+        match[1],
+        parserContext
+      ),
+      match[0].length
+    ];
+  }
+}
+
+function boldMatcher({ string, parserContext, previousCharacter }) {
+  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^\*((.*?[^\\]))\*(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+
+  if (match && validPreviousCharacter) {
+    return [
+      new BoldToken(
+        match[1],
+        parserContext
+      ),
+      match[0].length
+    ];
+  }
+}
+
+function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
+  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^`((.*?[^\\]))`(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+
+  if (match && validPreviousCharacter) {
+    return [
+      new InlineCodeSnippetToken(
+        match[1],
+        parserContext
+      ),
+      match[0].length
+    ];
+  }
+}
+
+function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
+  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^~((.*?[^\\]))~(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+
+  if (match && validPreviousCharacter) {
+    return [
+      new StrikethroughToken(
+        match[1],
+        parserContext
       ),
       match[0].length
     ];
