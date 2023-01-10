@@ -319,30 +319,37 @@ function urlMatcher({ string, parserContext }) {
   }
 }
 
-function imageMatcher({ string }) {
-  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
+function imageMatcher({ string, parserContext }) {
+  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["'](.*)["'])?\)/);
   if (match) {
     return [
       new ImageToken(
-        match[1],
-        match[2],
-        match[3],
-        null
+        {
+          alt: match[1],
+          resourceUrl:
+          match[2],
+          title: match[3],
+          parserContext
+        }
       ), match[0].length
     ];
   }
 }
 
-function linkedImageMatcher({ string }) {
-  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)/);
+function linkedImageMatcher({ string, parserContext }) {
+  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"(.*)"\)\]\(([^)]*)\)/);
 
   if (match) {
     return [
       new ImageToken(
-        match[1],
-        match[2],
-        match[3],
-        match[4]
+        {
+          alt: match[1],
+          resourceUrl:
+          match[2],
+          title: match[3],
+          anchorUrl: match[4],
+          parserContext
+        }
       ),
       match[0].length
     ];

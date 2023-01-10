@@ -71,27 +71,27 @@ test.describe('Text styles', () => {
 test.describe('Inline entities', () => {
   test('It creates images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Images');
-    await expect(page.locator('.canopy-selected-section span')).toHaveText("This is a picture of jelly fish.");
+    await expect(page.locator('.canopy-selected-section p > span:has-text("This is a picture of jelly fish.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly Fish");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title)).toEqual('Jelly Fish');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
-    await expect(await page.locator('.canopy-selected-section div')).toHaveText("Jelly Fish");
   });
 
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
-    await expect(page.locator('.canopy-selected-section span')).toHaveText("This picture of a Jelly fish is also a link.");
+    await expect(page.locator('.canopy-selected-section p > span:has-text("This picture of a Jelly fish is also a link.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly fish link");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title)).toEqual('Jelly fish link');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section div')).toHaveText("Jelly fish link");
   });
 
   test('It creates links from URLs', async ({ page }) => {
