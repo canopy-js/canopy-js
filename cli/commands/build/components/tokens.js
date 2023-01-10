@@ -72,10 +72,11 @@ function UrlToken(url, text, parserContext) {
   }
 }
 
-function ImageToken(alt, resourceUrl, title, anchorUrl) {
+function ImageToken({ alt, resourceUrl, title, anchorUrl, parserContext }) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title || null;
+  this.tokens = parseText({ text: title || '', parserContext: parserContext.clone({ preserveNewlines: false, recursing: true }) });
   this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
 }

@@ -15,7 +15,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'url') {
     return renderLinkLiteral(token, renderContext);
   } else if (token.type === 'image') {
-    return renderImage(token);
+    return renderImage(token, renderContext);
   } else if (token.type === 'html_element') {
     return renderHtmlElement(token);
   } else if (token.type === 'footnote_marker') {
@@ -201,15 +201,12 @@ function renderLinkLiteral(token, renderContext) {
   return linkElement;
 }
 
-function renderImage(token) {
+function renderImage(token, renderContext) {
   let divElement = document.createElement('DIV');
-  divElement.classList.add('canopy-image-div');
+  divElement.classList.add('canopy-image');
 
   let imageElement = document.createElement('IMG');
-  divElement.appendChild(imageElement);
-
   imageElement.setAttribute('src', token.resourceUrl);
-  imageElement.classList.add('canopy-image');
 
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
@@ -219,12 +216,14 @@ function renderImage(token) {
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
-    let captionElement = document.createElement('SUP');
-    let captionDiv = document.createElement('DIV');
-    captionElement.appendChild(document.createTextNode(token.title));
-    captionElement.classList.add('canopy-image-caption');
-    captionDiv.classList.add('canopy-caption-div');
-    divElement.appendChild(captionElement);
+    let spanElement = document.createElement('SPAN');
+    spanElement.classList.add('canopy-image-caption');
+    divElement.appendChild(spanElement);
+
+    token.tokens.forEach(subtoken => {
+      let subtokenElement = renderTokenElement(subtoken, renderContext);
+      spanElement.appendChild(subtokenElement);
+    });
   } else {
     divElement.appendChild(anchorElement);
   }
