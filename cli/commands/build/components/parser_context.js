@@ -28,7 +28,7 @@ class ParserContext {
       this.buildNamespaceObject(explFileData);
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
-      this.recursing = false; // are we parsing tokens inside another token?
+      this.ignoreMultiLineTokens = false; // are we parsing tokens inside another token?
     }
   }
 

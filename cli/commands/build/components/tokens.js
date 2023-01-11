@@ -21,7 +21,7 @@ function LocalReferenceToken(
 ) {
   this.text = text;
   this.type = 'local';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -38,7 +38,7 @@ function GlobalReferenceToken(
 ) {
   this.text = text;
   this.type = 'global';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -55,7 +55,7 @@ function ImportReferenceToken(
 ) {
   this.text = text;
   this.type = 'import';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -68,7 +68,7 @@ function UrlToken(url, text, parserContext) {
   if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
-    this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ preserveNewlines: true, recursing: true }) });
+    this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   }
 }
 
@@ -76,7 +76,7 @@ function ImageToken({ alt, resourceUrl, title, anchorUrl, parserContext }) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title || null;
-  this.tokens = parseText({ text: title || '', parserContext: parserContext.clone({ preserveNewlines: false, recursing: true }) });
+  this.tokens = parseText({ text: title || '', parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
   this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
 }
@@ -98,7 +98,7 @@ function CodeBlockToken(text) {
 
 function BlockQuoteToken(text, direction, parserContext) {
   this.type = 'block_quote';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.direction = direction;
 }
 
@@ -114,7 +114,7 @@ function OutlineToken(text, parserContext) {
 
     let ordinal = match[1];
     let lineContents = match[2];
-    let tokensOfLine = parseText({ text: lineContents, parserContext: parserContext.clone({ preserveNewlines: false, recursing: true }) });
+    let tokensOfLine = parseText({ text: lineContents, parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -188,7 +188,7 @@ function TableToken(text, parserContext) {
     let tokensByCell = cellStrings.map(
       (cellString) => parseText({
         text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
-        parserContext: parserContext.clone({ preserveNewlines: null, recursing: true })
+        parserContext: parserContext.clone({ preserveNewlines: null, ignoreMultiLineTokens: true })
       })
     );
 
@@ -205,7 +205,7 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
   matches.forEach(match => {
     let superscript = match[1];
     let text = match[2];
-    let footnoteTokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: null, recursing: true }) });
+    let footnoteTokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: null, ignoreMultiLineTokens: true }) });
 
     this.lines.push({
       superscript,
@@ -216,12 +216,12 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
 
 function ItalicsToken(text, parserContext, _, previousCharacter) {
   this.type = 'italics';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 function BoldToken(text, parserContext, _, previousCharacter) {
   this.type = 'bold';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 function InlineCodeSnippetToken(text, parserContext) {
@@ -231,7 +231,7 @@ function InlineCodeSnippetToken(text, parserContext) {
 
 function StrikethroughToken(text, parserContext, _, previousCharacter) {
   this.type = 'strikethrough';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ recursing: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 module.exports = {

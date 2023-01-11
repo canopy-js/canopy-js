@@ -3,14 +3,11 @@ import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
 import updateView from 'display/update_view';
+import renderTokenElement from 'render/render_token_element';
 
-function setHeader(topicName) {
-  let existingHeader = document.querySelector('#_canopy h1')
-  if (existingHeader) { existingHeader.remove(); }
-  let headerDomElement = document.createElement('h1');
-  let styleElements = renderStyledText(topicName);
-  Array.from(styleElements).forEach((element) => {headerDomElement.appendChild(element)});
-  canopyContainer.prepend(headerDomElement);
+function setHeader(topic) {
+  let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);
+  headerDomElement.style.display = 'block';
 }
 
 function hideAllSectionElements() {
@@ -32,6 +29,12 @@ function deselectSectionElement() {
   });
 }
 
+function hideHeaders() {
+  Array.from(document.querySelectorAll('#_canopy h1')).forEach(header => {
+    header.style.display = 'none';
+  });
+}
+
 function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
@@ -46,6 +49,7 @@ function tryPathPrefix(path, displayOptions) {
 }
 
 const resetDom = () => {
+  hideHeaders();
   deselectAllLinks();
   hideAllSectionElements();
   deselectSectionElement();

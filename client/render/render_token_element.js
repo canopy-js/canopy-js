@@ -28,8 +28,6 @@ function renderTokenElement(token, renderContext) {
     return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
     return renderTable(token, renderContext)
-  } else if (token.type === 'html_block') {
-    return renderHtmlBlock(token);
   } else if (token.type === 'footnote_lines') {
     return renderFootnoteLines(token, renderContext);
   } else if (token.type === 'bold') {
