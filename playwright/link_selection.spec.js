@@ -22,7 +22,7 @@ if (platform === 'darwin') {
 test.describe('Link Selection', () => {
   test('Link selection is remembered with browser history', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -45,7 +45,7 @@ test.describe('Link Selection', () => {
 
   test('Link selection persists over refresh', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await page.reload();
@@ -54,7 +54,7 @@ test.describe('Link Selection', () => {
 
   test('Last link selections are prefered when going down', async ({ page }) => {
     await page.goto('/United_States/New_York');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
 
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -69,7 +69,7 @@ test.describe('Link Selection', () => {
 
   test('Last link selections are prefered when going up', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await page.locator('body').press('ArrowDown');

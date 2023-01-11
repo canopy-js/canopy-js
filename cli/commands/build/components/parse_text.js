@@ -15,7 +15,7 @@ function parseText({ text, parserContext }) {
     for (let j = 0; j < Matchers.length; j++) {
       let startOfLine =
         (text[i - 1] === "\n") || // really is start of new line
-        (text[i - 1] === undefined && !parserContext.recursing); // start of text when not parsing token within token ie start of paragraph
+        (text[i - 1] === undefined && !parserContext.ignoreMultiLineTokens); // start of text when not parsing token within token ie start of paragraph
 
       result = Matchers[j]({ string, parserContext, index: i, previousCharacter: text[i - 1], startOfLine });
       if (result) {

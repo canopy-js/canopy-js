@@ -108,6 +108,12 @@ test.describe('Inline entities', () => {
     await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
   });
 
+  test('It creates inline HTML elements', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
+    await expect(await page.locator('.canopy-selected-section').evaluate((element) => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
+    await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
+  });
+
   test('It creates footnotes', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Footnotes');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is regular text with a footnote1.");
@@ -167,10 +173,15 @@ test.describe('Block entities', () => {
 
   test('It creates multi-line html blocks', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#HTML_blocks');
-    await expect(page.locator('.canopy-selected-section div')).toHaveText('This is an html block');
-    await expect(page.locator('.canopy-selected-section figure')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section figure')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section s')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section s')).toHaveText('This is an html block');
+    await expect(page.locator('.canopy-selected-section a')).toHaveCount(1);
+  });
+
+  test('It creates run-on-tag html blocks', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Run-on_tag_HTML_blocks');
+    await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
   });
 
   test('It creates script tags', async ({ page }) => {
