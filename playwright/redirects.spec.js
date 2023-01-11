@@ -22,7 +22,7 @@ if (platform === 'darwin') {
 test.describe('Redirects', () => {
   test('Empty path redirects to default topic', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
     await page.goto('/');
     await expect(page).toHaveURL('United_States');
@@ -36,7 +36,7 @@ test.describe('Redirects', () => {
       consoleLogs.push(`[${message.type()}] ${message.text()}`);
     });
     await page.goto('/United_States/New_York/Mars');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /United_States/New_York/Mars');
     await expect(consoleLogs).toContainEqual('[log] Trying:  /United_States/New_York');
@@ -50,7 +50,7 @@ test.describe('Redirects', () => {
       consoleLogs.push(`[${message.type()}] ${message.text()}`);
     })
     await page.goto('/United_States/New_York/New_Jersey'); // valid topic but no link from New York -> New Jersey
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /United_States/New_York/New_Jersey');
     await expect(consoleLogs).toContainEqual('[log] Trying:  /United_States/New_York');
@@ -64,7 +64,7 @@ test.describe('Redirects', () => {
       consoleLogs.push(`[${message.type()}] ${message.text()}`);
     })
     await page.goto('/Mars');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /Mars');
     await expect(consoleLogs).toContainEqual('[error] No path prefixes remain to try. Redirecting to default topic: /United_States');
@@ -72,7 +72,7 @@ test.describe('Redirects', () => {
 
   test('Null link selector callback renders page without link selection ', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Topic_with_no_child_links');
-    await expect(page.locator('h1')).toHaveText('United States');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('Enter');
     await expect(page).toHaveURL('Topic_with_no_child_links');
     await expect(page.locator('.canopy-selected-link')).toHaveCount(0);

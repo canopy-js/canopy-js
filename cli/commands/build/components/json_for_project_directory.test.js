@@ -20,6 +20,12 @@ test('it creates text tokens', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic": {
         "Idaho": [
           {
@@ -45,6 +51,12 @@ test('it matches local references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -96,6 +108,12 @@ test('it matches local with question marks', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -143,6 +161,12 @@ test('it matches local references with commas', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -194,6 +218,12 @@ test('it matches local references with periods not followed by spaces', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -257,6 +287,12 @@ test('it matches global references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -289,6 +325,12 @@ test('it matches global references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
     {
       "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
@@ -315,6 +357,12 @@ test('it matches global references using explicit syntax to override local refer
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -372,6 +420,12 @@ test('it matches global references using explicit syntax to override local refer
   expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
     {
       "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
@@ -395,6 +449,12 @@ test('it lets you give arbitrary names to references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -427,6 +487,12 @@ test('it lets you give arbitrary names to references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
     {
       "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Wyoming": [
           {
@@ -450,6 +516,12 @@ test('it matches implicit import references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
 
@@ -494,6 +566,12 @@ test('it matches implicit import references in any order within a sentence', () 
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
 
@@ -564,9 +642,14 @@ test('it matches an implicit import reference to the closest candidate link', ()
   expect(JSON.parse(filesToWrite['build/_data/Vacation.json'])).toEqual(
     {
       "displayTopicName": "Vacation",
+      "topicTokens": [
+         {
+          "text": "Vacation",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Vacation": [
-
           {
             "text" : "I'd like to go to ",
             "type":"text"
@@ -992,6 +1075,12 @@ test('it matches import references with explicit syntax and lets you rename the 
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -1050,6 +1139,12 @@ test('it matches back-to-back global references', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -1104,6 +1199,12 @@ test('it matches global references at the end of strings', () => {
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {
@@ -1148,6 +1249,12 @@ test(`it doesn't skip files with keys that don't match filenames for non-categor
   expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
     {
       "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
       "paragraphsBySubtopic" : {
         "Idaho": [
           {

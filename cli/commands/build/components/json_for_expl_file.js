@@ -1,6 +1,7 @@
 let parseParagraph = require('./parse_paragraph');
 let Topic = require('../../shared/topic');
 let Paragraph = require('../../shared/paragraph');
+let parseText = require('./parse_text');
 
 function jsonForExplFile(filePath, explFileData, parserContext, options) {
   let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
@@ -24,6 +25,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,
+    topicTokens: parseText({ text: rootParagraph.key, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) }),
     paragraphsBySubtopic
   };
 

@@ -1,6 +1,8 @@
-Style examples: These are some style examples. There are [[inline text styles]], [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[script tags]], [[lists]].
+Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[footnotes]], and [[special topic names]].
+Multi-line tokens: There are [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+
+Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[inline HTML]] and [[footnotes]].
 
 Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], and [[code snippets]].
 
@@ -32,9 +34,31 @@ More text.
 HTML blocks:
 <figure>
   <s> This is an html block </s>
+  Even with text on its own line.
+  <figure>
+    It doesn't end early because of the closing tag
+  </figure>
 </figure>
+<b></b>[[New York]]<b></b> These are two separate HTML tags
 
-Script tags: <script> alert(); </script>
+Run-on tag HTML blocks:
+<img class="picture"
+     src="https://interactive-examples.mdn.mozilla.net/media/cc0-images/grapefruit-slice-332-332.jpg"
+     alt="Grapefruit slice atop a pile of other slices">
+
+Script tags:
+<script>
+ setTimeout(function checkRender() {
+    if (document.querySelector('.canopy-topic-section').offsetParent) {
+      if (document.getElementById(123).offsetParent) {
+        alert();
+      }
+    } else {
+      setTimeout(checkRender, 0);
+    }
+  }, 0) // Wait until content has rendered and then check if this section is visible, to avoid running alert on every page.
+ </script>
+ <div id="123">ABC</div>
 
 Lists:
 1. This
@@ -77,15 +101,19 @@ This is a `code snippet that contains _style characters_ and style tokens like {
 
 Images:
 This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly Fish")
+Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Linked images:
 This picture of a Jelly fish is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly fish link")](http://google.com)
+Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 URLs:
 This is a URL, http://google.com.
 
 Hyperlinks:
 This is a [link](http://google.com).
+
+Inline HTML: Text. <b> This is a test.</b> Text.
 
 Footnotes:
 This is regular text with a footnote[^1].

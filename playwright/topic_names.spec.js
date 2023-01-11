@@ -30,13 +30,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:visible', { has: page.locator('text="Martha\'s Vineyard"') }).click({
+      page.locator('a:visible', { has: page.locator('text="Martha\'s Vineyard" >> visible=true') }).click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await expect(newPage.locator(`text=Martha's Vineyard is a an Island in Massachusetts >> visible=true`)).toHaveCount(1);
   });
@@ -54,13 +54,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('text=the word "vinyard"').click({
+      page.locator('text=the word "vinyard" >> visible=true').click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
     await expect(newPage.locator('text=This is a word in English >> visible=true')).toHaveCount(1);
   });
@@ -77,13 +77,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=the world's #1 gift shop").click({
+      page.locator("text=the world's #1 gift shop >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await expect(newPage.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
   });
@@ -101,13 +101,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=What attractions are nearby Martha's Vineyard?").click({
+      page.locator("text=What attractions are nearby Martha's Vineyard? >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
     await expect(newPage.locator('text=There are a lot of them. >> visible=true')).toHaveCount(1);
   });
@@ -124,13 +124,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=Martha's Vineyard: a history").click({
+      page.locator("text=Martha's Vineyard: a history >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
     await expect(newPage.locator('text=This is a good book. >> visible=true')).toHaveCount(1);
   });
@@ -147,13 +147,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=_Hello world_").click({
+      page.locator("text=_Hello world_  >> visible=true").click({
         modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
 
     await expect(newPage).toHaveURL("%5C_Hello_world%5C_");
-    await expect(newPage.locator('h1')).toHaveText("_Hello world_");
+    await expect(newPage.locator('h1:visible')).toHaveText("_Hello world_");
     await expect(await newPage.title()).toEqual('_Hello world_');
     await expect(newPage.locator('text=This is a nice restaurant. >> visible=true')).toHaveCount(1);
   });
@@ -170,13 +170,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=M&Ms").click({
+      page.locator("text=M&Ms >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/M&Ms");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("M&Ms");
     await expect(newPage.locator('text=This is a kind of candy. >> visible=true')).toHaveCount(1);
   });
@@ -194,12 +194,12 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=100% orange juice").click({
+      page.locator("text=100% orange juice >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("100% orange juice");
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/100%25_orange_juice");
     await expect(newPage.locator('text=This is very good orange juice. >> visible=true')).toHaveCount(1);
@@ -217,13 +217,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=The %3C shop").click({
+      page.locator("text=The %3C shop >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%253C_shop");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("The %3C shop");
     await expect(newPage.locator('text=This is a good store. >> visible=true')).toHaveCount(1);
   });
@@ -240,14 +240,14 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=Good Books (bookstore)").click({
+      page.locator("text=Good Books (bookstore) >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Good_Books_(bookstore)");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('text=This is a bookstore. >> visible=true')).toHaveCount(1);
   });
 
@@ -263,14 +263,14 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=The $1 store").click({
+      page.locator("text=The $1 store >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_$1_Store");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("The $1 Store");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('text=This is an inexpensive store. >> visible=true')).toHaveCount(1);
   });
 
@@ -286,13 +286,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=1+1").click({
+      page.locator("text=1+1 >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/1+1");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("1+1");
     await expect(newPage.locator('text=This is a children\'s clothing store. >> visible=true')).toHaveCount(1);
   });
@@ -309,13 +309,13 @@ test.describe('Topic names', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=Phone_book").click({
+      page.locator("text=Phone_book >> visible=true").click({
         modifiers: [systemNewTabKey]
       })
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Phone%5C_book");
-    await expect(newPage.locator('h1')).toHaveText("United States");
+    await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Phone_book");
     await expect(newPage.locator('text=This is a book of buisnesses. >> visible=true')).toHaveCount(1);
   });
@@ -332,9 +332,9 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('Italic topic names');
-    await expect(page.locator('h1 i')).toHaveCount(1);
-    await expect(page.locator('h1 i')).toHaveText('Italic');
+    await expect(page.locator('h1:visible')).toHaveText('Italic topic names');
+    await expect(page.locator('h1 i >> visible=true')).toHaveCount(1);
+    await expect(page.locator('h1 i >> visible=true')).toHaveText('Italic');
   });
 
   test('Topic names can contain code snippets', async ({ page }) => {
@@ -348,9 +348,9 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('Code snippet topic names');
-    await expect(page.locator('h1 code')).toHaveCount(1);
-    await expect(page.locator('h1 code')).toHaveText('Code snippet');
+    await expect(page.locator('h1:visible')).toHaveText('Code snippet topic names');
+    await expect(page.locator('h1 code >> visible=true')).toHaveCount(1);
+    await expect(page.locator('h1 code >> visible=true')).toHaveText('Code snippet');
   });
 
   test('Topic names can contain literal underscores', async ({ page }) => {
@@ -363,8 +363,8 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('_Topic names with literal underscores_');
-    await expect(page.locator('h1 i')).toHaveCount(0);
+    await expect(page.locator('h1:visible')).toHaveText('_Topic names with literal underscores_');
+    await expect(page.locator('h1 i >> visible=true')).toHaveCount(0);
   });
 
   test('Topic names can contain literal backticks', async ({ page }) => {
@@ -377,8 +377,8 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('`Topic names with literal backticks`');
-    await expect(page.locator('h1 code')).toHaveCount(0);
+    await expect(page.locator('h1:visible')).toHaveText('`Topic names with literal backticks`');
+    await expect(page.locator('h1 code >> visible=true')).toHaveCount(0);
   });
 
   test('Topic names can contain literal backslashes', async ({ page }) => {
@@ -390,7 +390,7 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('Topic names with \\ backslashes');
+    await expect(page.locator('h1:visible')).toHaveText('Topic names with \\ backslashes');
   });
 
   test('_data is a valid topic name', async ({ page }) => {
@@ -402,6 +402,6 @@ test.describe('Topic names', () => {
       modifiers: ['Alt']
     })
 
-    await expect(page.locator('h1')).toHaveText('_data');
+    await expect(page.locator('h1:visible')).toHaveText('_data');
   });
 });

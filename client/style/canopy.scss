@@ -169,8 +169,34 @@
   }
 
   .canopy-image {
-    width: 220px;
-    max-height: 250px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+
+    a {
+      margin: 0 auto;
+    }
+
+    img {
+      display: block;
+      width: 98%;
+      margin: 0 auto;
+    }
+
+    span.canopy-image-caption {
+      width: 98%;
+      margin: 0px auto;
+      padding: 6px 0;
+      text-align: left;
+      display: block;
+      font-size: 18px;
+      margin-top: 4px;
+      line-height: 18px;
+      color: #595959;
+
+      span {
+        display: inline;
+      }
+    }
   }
 
   div.canopy-image-div {

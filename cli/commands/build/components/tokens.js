@@ -1,3 +1,7 @@
+function parseText(options) {
+  return require('./parse_text')(options); // avoid circular dependency
+}
+
 function TextToken(text, preserveNewlines) {
   if (!preserveNewlines) {
     text = text.replace('\n', ' ');
@@ -17,7 +21,7 @@ function LocalReferenceToken(
 ) {
   this.text = text;
   this.type = 'local';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: true, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -34,7 +38,7 @@ function GlobalReferenceToken(
 ) {
   this.text = text;
   this.type = 'global';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: true, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -51,7 +55,7 @@ function ImportReferenceToken(
 ) {
   this.text = text;
   this.type = 'import';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: true, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -64,14 +68,15 @@ function UrlToken(url, text, parserContext) {
   if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
-    this.tokens = parserContext.parseText({ text: text || url, parserContext: parserContext.clone(), preserveNewlines: true, recursive: true });
+    this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   }
 }
 
-function ImageToken(alt, resourceUrl, title, anchorUrl) {
+function ImageToken({ alt, resourceUrl, title, anchorUrl, parserContext }) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = title || null;
+  this.tokens = parseText({ text: title || '', parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
   this.altText = alt || null;
   this.anchorUrl = anchorUrl || null;
 }
@@ -93,8 +98,7 @@ function CodeBlockToken(text) {
 
 function BlockQuoteToken(text, direction, parserContext) {
   this.type = 'block_quote';
-  parserContext.clone();
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: true, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
   this.direction = direction;
 }
 
@@ -102,7 +106,7 @@ function OutlineToken(text, parserContext) {
   this.topLevelNodes = [];
   this.type = 'outline';
 
-  text.split("\n").forEach((line) => { // we trim so that a trailing newline is removed
+  text.split("\n").filter(Boolean).forEach((line) => { // filter handles terminal newline
     let initialWhitespace = line.match(/^(\s*)/)[1];
     let orderedListMatch = line.match(/^\s*(\S+)\.\s?(.*$)/);
     let unorderedListMatch = line.match(/^\s*([+*-])\s?(.*$)/);
@@ -110,7 +114,7 @@ function OutlineToken(text, parserContext) {
 
     let ordinal = match[1];
     let lineContents = match[2];
-    let tokensOfLine = parserContext.parseText({ text: lineContents, parserContext: parserContext.clone(), preserveNewlines: false, recursive: true });
+    let tokensOfLine = parseText({ text: lineContents, parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -182,7 +186,10 @@ function TableToken(text, parserContext) {
       slice(1, -1);
 
     let tokensByCell = cellStrings.map(
-      (cellString) => parserContext.parseText({ text: cellString.trim(), parserContext: parserContext.clone(), preserveNewlines: null, recursive: true }) // we trim because the person might be using spaces to line up unevenly sized cells
+      (cellString) => parseText({
+        text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+        parserContext: parserContext.clone({ preserveNewlines: null, ignoreMultiLineTokens: true })
+      })
     );
 
     this.rows.push(tokensByCell);
@@ -198,7 +205,7 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
   matches.forEach(match => {
     let superscript = match[1];
     let text = match[2];
-    let footnoteTokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: null, recursive: true });
+    let footnoteTokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: null, ignoreMultiLineTokens: true }) });
 
     this.lines.push({
       superscript,
@@ -209,12 +216,12 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
 
 function ItalicsToken(text, parserContext, _, previousCharacter) {
   this.type = 'italics';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: parserContext.preserveNewlines, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 function BoldToken(text, parserContext, _, previousCharacter) {
   this.type = 'bold';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: parserContext.preserveNewlines, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 function InlineCodeSnippetToken(text, parserContext) {
@@ -224,7 +231,7 @@ function InlineCodeSnippetToken(text, parserContext) {
 
 function StrikethroughToken(text, parserContext, _, previousCharacter) {
   this.type = 'strikethrough';
-  this.tokens = parserContext.parseText({ text, parserContext: parserContext.clone(), preserveNewlines: parserContext.preserveNewlines, recursive: true });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) });
 }
 
 module.exports = {

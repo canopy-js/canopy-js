@@ -24,13 +24,12 @@ const Matchers = [
   blockQuoteMatcher,
   outlineMatcher,
   tableMatcher,
-  htmlBlockMatcher,
+  htmlMatcher,
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
   importReferenceMatcher,
   linkedImageMatcher,
-  inlineHtmlMatcher,
   escapedCharacterMatcher,
   footnoteMarkerMatcher,
   imageMatcher,
@@ -118,15 +117,45 @@ function tableMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function htmlBlockMatcher({ string, startOfLine }) {
-  let match = string.match(/^(?:(\s*<\/?[^\n<>+]+(>[^\n<>]+<\/?[^\n<>]*)?>)+\s*(\n|$))+/s);
+function htmlMatcher({ string }) {
+  let fragments = string.match(/(<[^>]+>|((?!<[^>]+>).)*)/gs);
+  let result = null;
 
-  if (match && startOfLine) {
-    return [
-      new HtmlToken(match[0]),
-      match[0].length
-    ];
-  }
+  fragments.forEach((fragment, index) => { // Look at eg <a><b><c> then <a><b> then <a> for balanced fragment
+    let segment = fragments.slice(0, fragments.length - index).join('');
+
+    let match = segment.match(/^<([^<> ]+)[^<>]*>(.*<[^>]+>)?/s);
+    if (match) {
+      let [_, openingTagName, doubleTag] = match;
+      let singleTag = !doubleTag;
+
+      let balancedFirstTag = !singleTag && (Array.from(match[0].matchAll(/<(\/?)([^<> ]+[^<>]*)>/gs)).slice(1).reduce((count, match) => {
+        let [_, forwardSlash, tagName] = match;
+
+        if (count === 0) return NaN; // if we've close the opening tag before finishing, reject the block eg <div></div><div></div>
+
+        if (tagName.toLowerCase() === openingTagName.toLowerCase()) {
+          if (forwardSlash) {
+            count--;
+          } else {
+            count++;
+          }
+        }
+
+        return count;
+
+      }, 1) === 0); // if we end with zero having never hit zero in between, the outer tag is balanced eg <b><b></b></b> and not <b></b><b></b>
+
+      if (singleTag || balancedFirstTag) {
+        result = result || [
+        new HtmlToken(match[0]),
+          match[0].length
+        ];
+      }
+    }
+  });
+
+  return result;
 }
 
 function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
@@ -310,7 +339,7 @@ function hyperlinkMatcher({ string, parserContext }) {
 }
 
 function urlMatcher({ string, parserContext }) {
-  let match = string.match(/^(\S+:\/\/\S+[^.,;!\s])/);
+  let match = string.match(/^([^/\s]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
       new UrlToken(match[1]),
@@ -319,43 +348,37 @@ function urlMatcher({ string, parserContext }) {
   }
 }
 
-function imageMatcher({ string }) {
-  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']([^)]*)["'])?\)/);
+function imageMatcher({ string, parserContext }) {
+  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["'](.*)["'])?\)/);
   if (match) {
     return [
       new ImageToken(
-        match[1],
-        match[2],
-        match[3],
-        null
+        {
+          alt: match[1],
+          resourceUrl:
+          match[2],
+          title: match[3],
+          parserContext
+        }
       ), match[0].length
     ];
   }
 }
 
-function linkedImageMatcher({ string }) {
-  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"([^)]*)"\)\]\(([^)]*)\)/);
+function linkedImageMatcher({ string, parserContext }) {
+  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"(.*)"\)\]\(([^)]*)\)/);
 
   if (match) {
     return [
       new ImageToken(
-        match[1],
-        match[2],
-        match[3],
-        match[4]
-      ),
-      match[0].length
-    ];
-  }
-}
-
-function inlineHtmlMatcher({ string }) {
-  let match = string.match(/^<([^>]+)>([\s\S]*<\/\1>)?/);
-
-  if (match) {
-    return [
-      new HtmlToken(
-        match[0]
+        {
+          alt: match[1],
+          resourceUrl:
+          match[2],
+          title: match[3],
+          anchorUrl: match[4],
+          parserContext
+        }
       ),
       match[0].length
     ];

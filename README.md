@@ -71,7 +71,7 @@ Traverse the same content in different directions:
 
 A human expert can adapt to the listener, catering to their interests, adding more background for a beginner, or more detail for someone advanced. Multiple explanations may mention the same points, but in different contexts and orderings. Even though the same building blocks are being used, you'll never hear exactly the same explanation twice.
 
-Canopy allows an author to express their ideas once in small modular pieces, and then the web interface combines them to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, capturing the dense set of connections that can exist between topics of a subject area.
+Canopy allows an author to express their ideas once in small modular pieces, which the web interface combines to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each point can reference many more, better capturing the web of connections that can exist between topics of a subject area.
 
 ## Example flow
 

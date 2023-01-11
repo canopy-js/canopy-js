@@ -7,9 +7,9 @@ let { displaySegment } = require('../../shared/helpers');
 let chalk = require('chalk');
 
 class ParserContext {
-  constructor(explFileData, defaultTopicString, priorParserContext) {
+  constructor({ explFileData, defaultTopicString, priorParserContext, options }) {
     if (priorParserContext) {
-      Object.assign(this, priorParserContext)
+      Object.assign(this, priorParserContext, options) // create a new object with new properties, but with references to prior data properties
     } else {
       this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
       this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
@@ -17,7 +17,7 @@ class ParserContext {
       this.subtopicsOfGlobalReferences = {}; // by topic, by target topic, the subtopic of topic that contains the global reference to target topic
       this.importReferencesToCheck = []; // a list of import references with metadata to validate at the end of the second-pass
       this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
-      this.provisionalLocalReferences = {}; // a list of local reference tokens for converstion to import if later found to be redundant
+      this.provisionalLocalReferences = {}; // a list of local reference tokens for conversion to import if later found to be redundant
       this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
       this.defaultTopic = new Topic(defaultTopicString); // the default topic of the project, used to log orphan topics not connected to it
       this.topicConnections = {}; // by topic, an object of other topics that that topic has outgoing global references to
@@ -26,11 +26,14 @@ class ParserContext {
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
       this.lineNumber = 0; // the current line number being parsed
       this.buildNamespaceObject(explFileData);
+
+      this.preserveNewlines = false; // should text tokens preserve newlines?
+      this.ignoreMultiLineTokens = false; // are we parsing tokens inside another token?
     }
   }
 
-  clone() {
-    return new ParserContext(null, null, this); // reuse the data about the project but allow new properties on the object
+  clone(options) {
+    return new ParserContext({ priorParserContext: this, options }); // reuse the data about the project but allow new properties on the instance
   }
 
   // This function does a first-pass over all the expl files of the project and creates several
