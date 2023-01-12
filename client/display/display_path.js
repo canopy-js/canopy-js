@@ -5,7 +5,8 @@ import {
   setHeader,
   tryPathPrefix,
   resetDom,
-  scrollPage
+  scrollPage,
+  fixExternalLinkIcons
 } from 'display/helpers';
 
 const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
@@ -25,6 +26,7 @@ const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
   pathToDisplay.paragraph.select();
   displayPathTo(pathToDisplay.paragraph);
   scrollPage(displayOptions);
+  fixExternalLinkIcons();
 };
 
 const displayPathTo = (paragraph) => {

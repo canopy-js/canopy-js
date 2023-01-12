@@ -100,19 +100,69 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+  });
+
+  test('It will not separate link icon from prior word', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let tokensBottom = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    expect(svgBottom - tokensBottom).toBeLessThan(5);
+
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowLeft');
+    expect(svgBottom - tokensBottom).toBeLessThan(5); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(svgBottom - tokensBottom).toBeLessThan(5); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
+
+  });
+
+  test('It will not separate link icon from following punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let nextTokenBottom = await page.evaluate(() =>
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5);
+
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowLeft');
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
+  });
+
+  test('It will separate link icon from following non-punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_following_non-punctuation');
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let nextTokenBottom = await page.evaluate(() =>
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10);
+
+    await page.locator('body').press('ArrowLeft');
+    await page.locator('body').press('ArrowRight');
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
-    await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
+    await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
   });
 
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
-    await expect(await page.locator('.canopy-selected-section').evaluate((element) => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
+    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
     await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
   });
 

@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
-Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[inline HTML]] and [[footnotes]].
+Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]] and [[footnotes]].
 
 Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], and [[code snippets]].
 
@@ -109,6 +109,21 @@ Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. He
 
 URLs:
 This is a URL, http://google.com.
+
+Link icon special cases: There are [[links with no breaks]], [[links with prior word break]], [[links with following punctuation break]], and [[links with following non-punctuation]].
+
+Links with no breaks:
+This is a [link](http://google.com).
+
+Links with prior word break:
+This is a [link link link link link link link link link link link link link link link liiiii](http://google.com).
+
+Links with following punctuation break:
+This is a [link link link link link link link link link link link link link link link liiiiy](http://google.com)-
+
+Links with following non-punctuation:
+This is a [link link link link link link link link link link link link link link link liiy](http://google.com) abc.
+
 
 Hyperlinks:
 This is a [link](http://google.com).

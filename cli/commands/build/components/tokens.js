@@ -65,6 +65,7 @@ function ImportReferenceToken(
 function UrlToken(url, text, parserContext) {
   this.type = 'url';
   this.url = url || text;
+  this.text = text || url;
   if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
