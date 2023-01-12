@@ -328,7 +328,7 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[([^!\]]+)\](?:\(([^)]*)\))/);
+  let match = string.match(/^\[([^!\]]+)\](?:\(([^ )]*)\))/);
   if (match) {
     let [_, text, url] = match;
     return [
@@ -349,7 +349,7 @@ function urlMatcher({ string, parserContext }) {
 }
 
 function imageMatcher({ string, parserContext }) {
-  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["'](.*)["'])?\)/);
+  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']((?:.(?!" "))+.)["'](?: ["']((?:.(?![^\\]"))*..)["'])?)?\)/);
   if (match) {
     return [
       new ImageToken(
@@ -358,6 +358,7 @@ function imageMatcher({ string, parserContext }) {
           resourceUrl:
           match[2],
           title: match[3],
+          caption: match[4],
           parserContext
         }
       ), match[0].length
@@ -366,7 +367,7 @@ function imageMatcher({ string, parserContext }) {
 }
 
 function linkedImageMatcher({ string, parserContext }) {
-  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*"(.*)"\)\]\(([^)]*)\)/);
+  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*(?:["']((?:.(?!" "))+.)["'](?: ["']((?:.(?![^\\]"))*..)["'])?)?\)\]\(([^)]*)\)/);
 
   if (match) {
     return [
@@ -376,7 +377,8 @@ function linkedImageMatcher({ string, parserContext }) {
           resourceUrl:
           match[2],
           title: match[3],
-          anchorUrl: match[4],
+          caption: match[5] && match[4],
+          anchorUrl: match[5] || match[4],
           parserContext
         }
       ),

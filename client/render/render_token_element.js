@@ -209,11 +209,15 @@ function renderImage(token, renderContext) {
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
   anchorElement.setAttribute('target', '_blank');
+  anchorElement.classList.add('canopy-image-anchor');
   anchorElement.appendChild(imageElement);
   divElement.appendChild(anchorElement);
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
+  }
+
+  if (token.caption) {
     let spanElement = document.createElement('SPAN');
     spanElement.classList.add('canopy-image-caption');
     divElement.appendChild(spanElement);
