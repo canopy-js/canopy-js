@@ -67,6 +67,35 @@ function scrollPage(displayOptions) {
   );
 }
 
+// We don't want a line break between the last word and the external link icon, or the icon and a following punctuation mark
+// Eg "word1 word2[icon]." - we don't want line break between word2-icon or icon-., so if we detect, add BR after word1
+
+// So, every time there is a page change or a resize, we check if there are any external link icons on a different line than
+// the word that came before them or the text that came after them, and if so, we insert a break tag before the last word before
+// the icon, so that the last word, icon, and terminating punctuation all fall out on the next line together.
+
+function fixExternalLinkIcons() {
+  Array.from(document.querySelectorAll('.canopy-url-link-break-tag:not([hidden])')).forEach(el => el.remove());
+  Array.from(document.querySelectorAll('.canopy-url-link-svg-container:not([hidden])')).forEach(svgContainer => {
+    let tokensContainer = svgContainer.parentElement.querySelector('.canopy-url-link-tokens-container');
+    let elementAfterLink = svgContainer.parentElement.nextSibling;
+
+    if (document.querySelector('.canopy-selected-section')?.contains(svgContainer)) { // link is visible
+      let lineBreakBetweenWordAndIcon = (svgContainer.getBoundingClientRect().bottom - tokensContainer.getBoundingClientRect().bottom) > 1; // If the icon is lower than the link text
+
+      let punctuationAfterIcon = !!elementAfterLink?.innerText?.match(/^[,.:\-;"'\[\]\(\){}](\s|$)/);
+      let lineBreakBetweenIconAndPunctuation = punctuationAfterIcon && // the text after the icon is punctuation connected to the link text, like a period.
+        ((elementAfterLink?.getBoundingClientRect().bottom - svgContainer.getBoundingClientRect().bottom) > 1); // the text after the icon is lower than the icon
+
+      if (lineBreakBetweenWordAndIcon || lineBreakBetweenIconAndPunctuation) {
+        tokensContainer.innerHTML = tokensContainer.innerHTML.replace(/(\S*)<\/span>$/, (s) => '<span class="canopy-url-link-break-tag"><br></span>' + s)
+      }
+    }
+  });
+}
+
+addEventListener("resize", fixExternalLinkIcons);
+
 function validatePathAndLink(pathToDisplay, linkToSelect) {
   if (!(pathToDisplay instanceof Path)) throw new Error('Invalid path argument');
   if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
@@ -77,5 +106,6 @@ export {
   resetDom,
   tryPathPrefix,
   scrollPage,
-  validatePathAndLink
+  validatePathAndLink,
+  fixExternalLinkIcons
 };
