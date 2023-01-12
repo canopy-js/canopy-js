@@ -18,7 +18,7 @@ function serve(options) {
 
   runServer(port, options.logging);
 
-  if (!options.suppressOpen) {
+  if (options.open) {
     open(`http://localhost:${port}`);
   }
 }
