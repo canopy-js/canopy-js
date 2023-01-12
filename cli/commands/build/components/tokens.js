@@ -72,12 +72,13 @@ function UrlToken(url, text, parserContext) {
   }
 }
 
-function ImageToken({ alt, resourceUrl, title, anchorUrl, parserContext }) {
+function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext }) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
-  this.title = title || null;
-  this.tokens = parseText({ text: title || '', parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
+  this.title = title.split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
+  this.tokens = parseText({ text: caption || '', parserContext: parserContext.clone({ preserveNewlines: false, ignoreMultiLineTokens: true }) });
   this.altText = alt || null;
+  this.caption = caption;
   this.anchorUrl = anchorUrl || null;
 }
 

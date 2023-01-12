@@ -124,6 +124,10 @@
     padding: 0 .7em;
     color: #565e67;
 
+    a {
+      color: #565e67;
+    }
+
     &[dir="rtl"] {
       border-right: 0.25em solid lightgray;
     }
@@ -192,6 +196,10 @@
       margin-top: 4px;
       line-height: 18px;
       color: #595959;
+
+      a {
+        color: #595959;
+      }
 
       span {
         display: inline;
