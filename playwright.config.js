@@ -76,19 +76,19 @@ const config = {
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: 'cd playwright/test_project && canopy build && canopy serve -s -p 3000',
+      command: 'cd playwright/test_project && canopy build && canopy serve --no-open -p 3000',
       port: 3000
     },
     {
-      command: 'cp -R playwright/test_project playwright/prefix_test && cd playwright/prefix_test && canopy build --project-path-prefix test && canopy serve -s -p 3001',
+      command: 'cp -R playwright/test_project playwright/prefix_test && cd playwright/prefix_test && canopy build --project-path-prefix test && canopy serve --no-open -p 3001',
       port: 3001
     },
     {
-      command: 'cp -R playwright/test_project playwright/hash_urls_test && cd playwright/hash_urls_test && canopy build --hash-urls && canopy serve -s -p 3002',
+      command: 'cp -R playwright/test_project playwright/hash_urls_test && cd playwright/hash_urls_test && canopy build --hash-urls && canopy serve --no-open -p 3002',
       port: 3002
     },
     {
-      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_test && cd playwright/hash_urls_and_prefix_test && canopy build --hash-urls --project-path-prefix test && canopy serve -s -p 3003',
+      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_test && cd playwright/hash_urls_and_prefix_test && canopy build --hash-urls --project-path-prefix test && canopy serve --no-open -p 3003',
       port: 3003
     }
   ],
