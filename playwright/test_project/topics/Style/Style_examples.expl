@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
-Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[inline HTML]] and [[footnotes]].
+Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]] and [[footnotes]].
 
 Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], and [[code snippets]].
 
@@ -100,15 +100,30 @@ Code snippets that contain style characters and tokens:
 This is a `code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}`.
 
 Images:
-This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly Fish")
+This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly fish title" "Jelly Fish - [W. Carter](https://en.wikipedia.org/wiki/File:Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg)")
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Linked images:
-This picture of a Jelly fish is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly fish link")](http://google.com)
+This picture of a frog is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg "Frog title" "Frog link - [Rushenb](https://en.wikipedia.org/wiki/Wallace%27s_flying_frog#/media/File:Rhacophorus_nigropalmatus.jpg)")](http://google.com)
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 URLs:
 This is a URL, http://google.com.
+
+Link icon special cases: There are [[links with no breaks]], [[links with prior word break]], [[links with following punctuation break]], and [[links with following non-punctuation]].
+
+Links with no breaks:
+This is a [link](http://google.com).
+
+Links with prior word break:
+This is a [link link link link link link link link link link link link link link link liiiii](http://google.com).
+
+Links with following punctuation break:
+This is a [link link link link link link link link link link link link link link link liiiiy](http://google.com)-
+
+Links with following non-punctuation:
+This is a [link link link link link link link link link link link link link link link liiiy](http://google.com) abc.
+
 
 Hyperlinks:
 This is a [link](http://google.com).

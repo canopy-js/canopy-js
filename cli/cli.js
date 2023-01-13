@@ -64,7 +64,7 @@ program.command('dev')
   .description('watch a Canopy project and rebuild JSON assets on text change')
   .argument('[portArgument]', 'Additional way of specifying port', null) // serve options
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
-  .option('-s, --suppress-open', 'do not open link in browser', false)
+  .option('--no-open', 'do not open link in browser', true)
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
   .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
@@ -74,7 +74,6 @@ program.command('dev')
   .action((portArgument, options) => {
     try {
       options.port = options.port || Number(portArgument) || null;
-
       dev(options);
     } catch (e) {
       console.error(e.message);
@@ -86,7 +85,7 @@ program.command('serve')
   .description('run a server for a Canopy project')
   .argument('[portArgument]', 'Additional way of specifying port', null)
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
-  .option('-s, --suppress-open', 'do not open link in browser', false)
+  .option('--no-open', 'do not open link in browser', true)
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .action((portArgument, options) => {
     options.port = options.port || Number(portArgument) || null;

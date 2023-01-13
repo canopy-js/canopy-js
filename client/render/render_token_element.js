@@ -170,10 +170,7 @@ function createImportLinkElement(token, renderContext) {
 }
 
 function renderLinkLiteral(token, renderContext) {
-  let linkElement = document.createElement('a');
-  let linkSpan = document.createElement('SPAN');
-
-  linkSpan.classList.add('canopy-url-link-span');
+  let linkElement = document.createElement('A');
   linkElement.classList.add('canopy-url-link');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'url';
@@ -181,20 +178,19 @@ function renderLinkLiteral(token, renderContext) {
   linkElement.setAttribute('href', token.url);
   linkElement.setAttribute('target', '_blank');
 
+  let tokensContainer = document.createElement('SPAN');
+  tokensContainer.classList.add('canopy-url-link-tokens-container');
+  linkElement.appendChild(tokensContainer);
+
   token.tokens.forEach(subtoken => {
     let subtokenElement = renderTokenElement(subtoken, renderContext);
-    linkSpan.appendChild(subtokenElement);
+    tokensContainer.appendChild(subtokenElement);
   });
 
-  let container = document.createElement('div');
-  container.classList.add('canopy-url-link-container');
-  container.appendChild(linkSpan);
-
-  // let svg = document.createElement('span');
-  // svg.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
-  // container.appendChild(svg)
-
-  linkElement.appendChild(linkSpan);
+  let svgContainer = document.createElement('SPAN');
+  svgContainer.classList.add('canopy-url-link-svg-container');
+  svgContainer.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
+  linkElement.appendChild(svgContainer);
 
   return linkElement;
 }
@@ -209,11 +205,15 @@ function renderImage(token, renderContext) {
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
   anchorElement.setAttribute('target', '_blank');
+  anchorElement.classList.add('canopy-image-anchor');
   anchorElement.appendChild(imageElement);
   divElement.appendChild(anchorElement);
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
+  }
+
+  if (token.caption) {
     let spanElement = document.createElement('SPAN');
     spanElement.classList.add('canopy-image-caption');
     divElement.appendChild(spanElement);

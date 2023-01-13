@@ -73,44 +73,96 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Images');
     await expect(page.locator('.canopy-selected-section p > span:has-text("This is a picture of jelly fish.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly Fish");
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly Fish - W. Carter");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
-    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title)).toEqual('Jelly Fish');
+    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
+      .toEqual('Jelly fish title');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
-    await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href))
+    await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
   });
 
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
-    await expect(page.locator('.canopy-selected-section p > span:has-text("This picture of a Jelly fish is also a link.")')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section p > span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly fish link");
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Frog link - Rushenb");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
-      .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
-    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title)).toEqual('Jelly fish link');
+      .toEqual('https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg');
+    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
+      .toEqual('Frog title');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
-    await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
+    await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href)).toEqual('http://google.com/');
   });
 
   test('It creates links from URLs', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+  });
+
+  test('It will not separate link icon from prior word', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let tokensBottom = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    expect(svgBottom - tokensBottom).toBeLessThan(5);
+
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowLeft');
+    expect(svgBottom - tokensBottom).toBeLessThan(5); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(svgBottom - tokensBottom).toBeLessThan(5); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
+
+  });
+
+  test('It will not separate link icon from following punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let nextTokenBottom = await page.evaluate(() =>
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5);
+
+    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('ArrowLeft');
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(nextTokenBottom - svgBottom).toBeLessThan(5); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
+  });
+
+  test('It will separate link icon from following non-punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Links_with_following_non-punctuation');
+    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().bottom);
+    let nextTokenBottom = await page.evaluate(() =>
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10);
+
+    await page.locator('body').press('ArrowLeft');
+    await page.locator('body').press('ArrowRight');
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10); // Even after navigation BR is there
+
+    await page.setViewportSize({ width: 600, height: 600 });
+    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10); // now that the BR is unnecessary, it should not be there, and the elements should still be aligned
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
-    await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(0); // svg is deprecated
+    await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
+    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
   });
 
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
-    await expect(await page.locator('.canopy-selected-section').evaluate((element) => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
+    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
     await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
   });
 

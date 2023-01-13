@@ -36,7 +36,7 @@
   }
 
   p {
-    overflow: hidden;
+    overflow: visible; // In case external link icon is at end of line
     font-size: 22px;
     max-width: 700px;
     margin: auto;
@@ -76,21 +76,25 @@
       }
     }
 
-    /*
-    &.canopy-dfs-previously-selected-link {
-      color: #ff0000 !important;
-    }
-
-    &.canopy-reverse-dfs-previously-selected-link {
-      color: #0000ff !important;
-    }
-    */
-
     &.canopy-url-link {
       display: inline;
+      overflow-wrap: break-word;
+      white-space: normal;
+
+      .canopy-url-link-svg-container {
+        white-space: nowrap;
+      }
+
+      span {
+        display: inline;
+      }
 
       svg {
-        margin-left: 2px;
+        height: 15px;
+        width: 12px;
+        margin-left: 1px;
+        margin-right: -2px;
+        vertical-align: -4px;
       }
      }
   }
@@ -123,6 +127,10 @@
   blockquote {
     padding: 0 .7em;
     color: #565e67;
+
+    a {
+      color: #565e67;
+    }
 
     &[dir="rtl"] {
       border-right: 0.25em solid lightgray;
@@ -193,6 +201,10 @@
       line-height: 18px;
       color: #595959;
 
+      a {
+        color: #595959;
+      }
+
       span {
         display: inline;
       }
@@ -212,17 +224,6 @@
 
   div.canopy-image-div > sup {
     display: block;
-  }
-
-  .canopy-url-link-span > svg {
-    height: 15px;
-    width: 12px;
-    display: none;
-  }
-
-  .canopy-selected-link + svg, .canopy-url-link-span:hover > svg {
-    display: inline-block;
-    vertical-align: middle;
   }
 
   ol, ul {

@@ -89,7 +89,7 @@ test('it creates markdown automatic urls', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates markdown images', () => {
+test('it creates markdown images without captions', () => {
   let text = 'This is an ![image](example.com/image "Title").';
 
   let parserContext = ParserContextMock();
@@ -104,6 +104,7 @@ test('it creates markdown images', () => {
 
   expect(result[1].type).toEqual('image');
   expect(result[1].title).toEqual('Title');
+  expect(result[1].caption).toEqual(undefined);
   expect(result[1].resourceUrl).toEqual('example.com/image');
   expect(result[1].anchorUrl).toEqual(null);
 
@@ -111,7 +112,53 @@ test('it creates markdown images', () => {
   expect(result[2].text).toEqual('.');
 });
 
-test('it creates linked markdown images', () => {
+test('it creates markdown images with captions', () => {
+  let text = 'This is an ![image](example.com/image "Title" "Caption").';
+
+  let parserContext = ParserContextMock();
+
+  let result = parseParagraph(
+    text,
+    parserContext
+  );
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('This is an ');
+
+  expect(result[1].type).toEqual('image');
+  expect(result[1].title).toEqual('Title');
+  expect(result[1].caption).toEqual('Caption');
+  expect(result[1].resourceUrl).toEqual('example.com/image');
+  expect(result[1].anchorUrl).toEqual(null);
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual('.');
+});
+
+test('it creates markdown images with titles that escape quotes and captions', () => {
+  let text = 'This is an ![image](example.com/image "Title\\" \\"" "Caption").';
+
+  let parserContext = ParserContextMock();
+
+  let result = parseParagraph(
+    text,
+    parserContext
+  );
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('This is an ');
+
+  expect(result[1].type).toEqual('image');
+  expect(result[1].title).toEqual('Title" "');
+  expect(result[1].caption).toEqual('Caption');
+  expect(result[1].resourceUrl).toEqual('example.com/image');
+  expect(result[1].anchorUrl).toEqual(null);
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual('.');
+});
+
+test('it creates linked markdown images without captions', () => {
   let text = 'This is an [![image](example.com/image "Title")](google.com).';
 
   let parserContext = ParserContextMock();
@@ -126,6 +173,29 @@ test('it creates linked markdown images', () => {
 
   expect(result[1].type).toEqual('image');
   expect(result[1].title).toEqual('Title');
+  expect(result[1].resourceUrl).toEqual('example.com/image');
+  expect(result[1].anchorUrl).toEqual('google.com');
+
+  expect(result[2].type).toEqual('text');
+  expect(result[2].text).toEqual('.');
+});
+
+test('it creates linked markdown images with captions', () => {
+  let text = 'This is an [![image](example.com/image "Title" "Caption")](google.com).';
+
+  let parserContext = ParserContextMock();
+
+  let result = parseParagraph(
+    text,
+    parserContext
+  );
+
+  expect(result[0].type).toEqual('text');
+  expect(result[0].text).toEqual('This is an ');
+
+  expect(result[1].type).toEqual('image');
+  expect(result[1].title).toEqual('Title');
+  expect(result[1].caption).toEqual('Caption');
   expect(result[1].resourceUrl).toEqual('example.com/image');
   expect(result[1].anchorUrl).toEqual('google.com');
 
