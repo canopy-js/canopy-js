@@ -1,18 +1,13 @@
 name: Build Prod Code
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ['Tests']
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Wait for tests to succeed
-      uses: lewagon/wait-on-check-action@v1.2.0
-      with:
-        ref: ${{ github.ref }}
-        check-name: 'Run the tests'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        wait-interval: 10
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
