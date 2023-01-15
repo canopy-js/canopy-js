@@ -84,6 +84,9 @@ const bulk = async function(selectedFileList, options) {
   let cyclePreventer = new CyclePreventer();
   let newBulkFileString;
   let oldBulkFileString;
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName}($|\n)`, 's'))) {
+    console.log(chalk.red(`Add custom bulk file name to your .gitignore: ${options.bulkFileName}`));
+  }
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
@@ -103,10 +106,7 @@ const bulk = async function(selectedFileList, options) {
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (!newBulkFileString) { // deletion of bulk file
-      console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`));
-      process.exit();
-    }
+    if (!newBulkFileString) console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
     let bulkFileParser = new BulkFileParser(newBulkFileString);
     let newFileSet = bulkFileParser.getFileSet();
