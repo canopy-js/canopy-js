@@ -82,6 +82,8 @@ const bulk = async function(selectedFileList, options) {
 
   let fileSystemManager = new FileSystemManager();
   let cyclePreventer = new CyclePreventer();
+  let newBulkFileString;
+  let oldBulkFileString;
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
@@ -101,6 +103,10 @@ const bulk = async function(selectedFileList, options) {
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
+    if (!newBulkFileString) { // deletion of bulk file
+      console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`));
+      process.exit();
+    }
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
     let bulkFileParser = new BulkFileParser(newBulkFileString);
     let newFileSet = bulkFileParser.getFileSet();
@@ -135,7 +141,7 @@ const bulk = async function(selectedFileList, options) {
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
     // Open bulk file in editor and process when closed
-    if (!options.noEditor) {
+    if (options.editor) {
       editor(options.bulkFileName, () => {
         handleFinish({deleteBulkFile: false}, options);
         log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
@@ -182,7 +188,13 @@ const bulk = async function(selectedFileList, options) {
     const bulkFileWatcher = chokidar.watch([options.bulkFileName], { persistent: true });
     bulkFileWatcher.on('change', () => {
       if (cyclePreventer.ignoreBulkFileChange()) return cyclePreventer.respondToNextBulkFileChange();
-      log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+
+      oldBulkFileString = newBulkFileString;
+      newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
+
+      if (oldBulkFileString && oldBulkFileString !== newBulkFileString) {
+        log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      }
       handleFinish({deleteBulkFile: false}, options);
     });
 

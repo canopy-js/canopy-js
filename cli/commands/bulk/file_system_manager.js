@@ -85,7 +85,7 @@ class FileSystemManager {
 
   getBulkFile(fileName) {
     if (!fs.existsSync(fileName)) {
-      throw chalk.red(`Expected bulk file at ./${fileName} but did not find one`);
+      return null;
     }
     return fs.readFileSync(fileName).toString();
   }

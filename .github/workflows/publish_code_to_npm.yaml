@@ -1,45 +1,14 @@
 name: Publish to NPM
 on:
- push:
-   tags:
-     - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_run:
+    workflows: [Tests]
+    branches: [main]
+    types:
+      - completed
 jobs:
-  test:
-    name: Run the tests
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: '14.x'
-    - name: Install dependencies
-      run: npm ci
-    - name: Build canopy assets
-      run: npm run build-prod
-    - name: Install canopy
-      run: npm install -g .
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run regular tests
-      run: npm run jest
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-results
-        path: test-results/
-        retention-days: 30
   build:
     runs-on: ubuntu-latest
-    needs: test
+    if: startsWith(github.ref, 'refs/tags/') && github.event.workflow_run.conclusion == 'success'
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
