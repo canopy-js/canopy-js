@@ -114,6 +114,7 @@ program.command('bulk')
   .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies('sync'))
+  .option('--no-open', 'do not open link in browser', true)
   .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')
   .action((paths, options) => {
