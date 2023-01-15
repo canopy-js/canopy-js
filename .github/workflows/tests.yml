@@ -1,12 +1,9 @@
 name: Tests
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
 jobs:
   test:
-    name: Run the tests
+    name: Tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
