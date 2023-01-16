@@ -95,7 +95,7 @@ function build(options) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
 
-  fs.copySync(`${canopyLocation}/cli/commands/build/assets`, 'build/');
+  fs.copySync(`${canopyLocation}/cli/build/assets`, 'build/');
 
   if (symlinks) {
     let topicDirectories = getDirectories('build');

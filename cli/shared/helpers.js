@@ -19,8 +19,9 @@ function getDefaultTopicAndPath() {
   }
   let categoryPath = defaultTopicFilePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
   let defaultTopicDisplayCategoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
+  let defaultTopicSlug = (new Topic(defaultTopicName)).slug;
   return {
-    defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicName
+    defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicName, defaultTopicSlug
   }
 }
 

@@ -91,11 +91,11 @@ const bulk = async function(selectedFileList, options) {
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
-    let defaultTopicDisplayCategoryPath, defaultTopicFilePath;
-    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath } = getDefaultTopicAndPath());} catch(e) {} // validate default topic
+    let defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug;
+    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug } = getDefaultTopicAndPath());} catch(e) {} // validate default topic
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    options.bulkFileName = options.bulkFileName || defaultTopicSlug || 'canopy_bulk_file';
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);

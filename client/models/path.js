@@ -1,6 +1,6 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
 import Paragraph from 'models/paragraph';
-import Topic from '../../cli/commands/shared/topic';
+import Topic from '../../cli/shared/topic';
 
 class Path {
   constructor(argument) {
