@@ -1,4 +1,4 @@
-import Topic from '../../cli/commands/shared/topic';
+import Topic from '../../cli/shared/topic';
 import renderTokenElement from './render_token_element';
 
 function generateHeader(topicTokens, displayTopicName) {

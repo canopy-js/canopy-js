@@ -1,7 +1,7 @@
 import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
-import Topic from '../../cli/commands/shared/topic';
+import Topic from '../../cli/shared/topic';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
