@@ -32,51 +32,6 @@ function build(options) {
         data-hash-urls="${hashUrls || ''}">
       </div>
       <script src="${projectPathPrefix||''}/_canopy.js"></script>
-      <style>
-        @font-face {
-            font-family: 'FreeSerif';
-            src: url('/_FreeSerif.woff2') format('woff2'),
-                url('/_FreeSerif.woff') format('woff');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'FreeSerif';
-            src: url('/_FreeSerifBoldItalic.woff2') format('woff2'),
-                url('/_FreeSerifBoldItalic.woff') format('woff');
-            font-weight: bold;
-            font-style: italic;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'FreeSerif';
-            src: url('/_FreeSerifBold.woff2') format('woff2'),
-                url('/_FreeSerifBold.woff') format('woff');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'FreeSerif';
-            src: url('/_FreeSerifItalic.woff2') format('woff2'),
-                url('/_FreeSerifItalic.woff') format('woff');
-            font-weight: normal;
-            font-style: italic;
-            font-display: swap;
-        }
-
-        #_canopy p {
-          font-family: FreeSerif, serif;
-        }
-      </style>
-      <link rel="preload" href="/_FreeSerif.woff2" as="font" type="font/woff2" crossorigin>
-      <link rel="preload" href="/_FreeSerifItalic.woff2" as="font" type="font/woff2" crossorigin>
-      <link rel="preload" href="/_FreeSerifBold.woff2" as="font" type="font/woff2" crossorigin>
-      <link rel="preload" href="/_FreeSerifBoldItalic.woff2" as="font" type="font/woff2" crossorigin>
       </body>
       </html>`;
 
@@ -94,8 +49,6 @@ function build(options) {
   if (fs.existsSync(`assets`)) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
-
-  fs.copySync(`${canopyLocation}/cli/commands/build/assets`, 'build/');
 
   if (symlinks) {
     let topicDirectories = getDirectories('build');

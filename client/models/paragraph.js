@@ -2,7 +2,7 @@ import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 import { getAncestorElement } from 'helpers/getters';
-import Topic from '../../cli/commands/shared/topic';
+import Topic from '../../cli/shared/topic';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not

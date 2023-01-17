@@ -12,7 +12,7 @@ class Topic {
 
     this.escapedMixedCase = CSS.escape(this.mixedCase);
 
-    this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks
+    this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
       .replace(/%/g, '%25')
       .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
       .replace(/#/g, '%23')
@@ -28,9 +28,17 @@ class Topic {
       .replace(/_/g, ' '); // We de-slugify the URL and turn it to caps to retreive the given topic from the response data, but if there were literal underscores originally
                            // this information is lost. Therefore, we remove all underscores to make sure we can use the URL topic name to find the given topic.
 
-    this.fileName = this.slug; // This is the string that will be used for the file name on disk
+    this.fileName = this.slug. // This is the string that will be used for the file name on disk. Does not have to be reversable
+      replace(/"/g, '%22').
+      replace(/'/g, '%27').
+      replace(/:/g, '%3A').
+      replace(/</g, '%3C').
+      replace(/>/g, '%3E').
+      replace(/\|/g, '%7C').
+      replace(/\*/g, '%2A').
+      replace(/\?/g, '%3F');
 
-    this.requestFileName = encodeURIComponent(this.slug); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+    this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
   }
 
   static fromMixedCase(string) {

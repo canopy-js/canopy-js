@@ -119,7 +119,7 @@ Links with prior word break:
 This is a [link link link link link link link link link link link link link link link liiiii](http://google.com).
 
 Links with following punctuation break:
-This is a [link link link link link link link link link link link link link link link liiiiy](http://google.com)-
+This is a [link link link link link link link link link link link link link link link liiiy](http://google.com)-
 
 Links with following non-punctuation:
 This is a [link link link link link link link link link link link link link link link liiy](http://google.com) abc.

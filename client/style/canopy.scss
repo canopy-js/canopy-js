@@ -44,6 +44,7 @@
     line-height: 1.3;
     letter-spacing: -.003em;
     font-weight: 400;
+    font-family: Times, serif;
   }
 
 ///////////// Link styles /////////////////
@@ -77,9 +78,16 @@
     }
 
     &.canopy-url-link {
+      text-decoration: none; // we don't want to underline non-breaking spaces so only underline tokens not whole a tag
       display: inline;
       overflow-wrap: break-word;
       white-space: normal;
+
+      .canopy-url-link-tokens-container {
+        padding-right:15px;
+        text-decoration: underline #DDDDDD; // we only underline the tokens of the URL
+        color: black;
+      }
 
       .canopy-url-link-svg-container {
         white-space: nowrap;
@@ -92,8 +100,8 @@
       svg {
         height: 15px;
         width: 12px;
-        margin-left: 1px;
-        margin-right: -2px;
+        margin-left: -15px; // We add 3 non-breaking spaces, then move the svg over them so the last word always wraps with svg
+        margin-right: -2px; // If character after is punctuation, it will also wrap with svg
         vertical-align: -5px;
       }
      }
