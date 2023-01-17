@@ -1,4 +1,0 @@
-﻿license: GPL
-link: https://www.fontspace.com/freeserif-font-f13277
-
-Conversion to woff format by transfonter.org
