@@ -19,9 +19,6 @@ app.use(function(req, res, next) {
 // static file serve
 app.use('*/_canopy.js', express.static(buildPath + '_canopy.js'));
 app.use('*/_canopy.js.map', express.static(buildPath + '_canopy.js.map'));
-app.use('*/_FreeSerif*', (req, res) => {
-  res.sendFile(buildPath + req.baseUrl);
-});
 app.use('*/_data', express.static(buildPath + '_data'));
 app.use('*/_assets', express.static(buildPath + '_assets'));
 
