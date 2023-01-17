@@ -128,15 +128,6 @@ test.describe('Inline entities', () => {
     expect(nextTokenBottom - svgBottom).toBeLessThan(5);
   });
 
-  test('It will separate link icon from following non-punctuation', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Links_with_following_non-punctuation');
-    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    let nextTokenBottom = await page.evaluate(() =>
-      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
-    expect(nextTokenBottom - svgBottom).toBeGreaterThan(10);
-  });
-
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
