@@ -162,7 +162,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('h1:visible')).toHaveText('New York');
   });
 
-  test('Meta-clicking on open global opens new tab to inlined path', async ({ page, context }) => {
+  test('Meta-clicking on open global opens new tab to new topic', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
@@ -175,12 +175,12 @@ test.describe('Navigation', () => {
 
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('United States');
-    await expect(newPage.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(newPage).toHaveURL('United_States/New_York');
+    await expect(newPage.locator('h1:visible')).toHaveText('New York');
+    await expect(newPage.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(newPage).toHaveURL('New_York');
   });
 
-  test('Meta-clicking on closed global opens new tab to inlined path', async ({ page, context }) => {
+  test('Meta-clicking on closed global opens new tab to new path', async ({ page, context }) => {
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
 
@@ -193,12 +193,12 @@ test.describe('Navigation', () => {
 
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('United States');
-    await expect(newPage.locator('.canopy-selected-link')).toHaveText('New Jersey');
-    await expect(newPage).toHaveURL('United_States/New_Jersey');
+    await expect(newPage.locator('h1:visible')).toHaveText('New Jersey');
+    await expect(newPage.locator('.canopy-selected-link')).toHaveCount(0);
+    await expect(newPage).toHaveURL('New_Jersey');
   });
 
-  test('Meta-alt-clicking on global link opens new tab to redirected path', async ({ page, context }) => {
+  test('Meta-alt-clicking on global link opens new tab to existing path', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -210,9 +210,9 @@ test.describe('Navigation', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('New York');
-    await expect(newPage.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
-    await expect(newPage).toHaveURL('New_York');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(newPage).toHaveURL('United_States/New_York');
   });
 
   test('Pressing down on local link advances path', async ({ page }) => {
@@ -322,7 +322,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('New_York#Southern_border');
   });
 
-  test('Meta-clicking on local opens new tab to that path', async ({ page, context }) => {
+  test('Meta-clicking on local link opens new tab to zoomed path', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -334,12 +334,12 @@ test.describe('Navigation', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(newPage.locator('h1:visible')).toHaveText('New York');
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(newPage).toHaveURL('United_States/New_York#Southern_border');
+    await expect(newPage).toHaveURL('New_York#Southern_border');
   });
 
-  test('Meta-option-clicking on local opens new tab to the zoomed path', async ({ page, context }) => {
+  test('Meta-option-clicking on local opens new tab to the existing path', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -351,9 +351,9 @@ test.describe('Navigation', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('New York');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(newPage).toHaveURL('New_York#Southern_border');
+    await expect(newPage).toHaveURL('United_States/New_York#Southern_border');
   });
 
   test('Selecting import reference previews path', async ({ page }) => {
@@ -470,12 +470,12 @@ test.describe('Navigation', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(newPage.locator('h1:visible')).toHaveText('New Jersey');
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(newPage).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await expect(newPage).toHaveURL('New_Jersey#Northern_border');
   });
 
-  test('Meta-alt-clicking on an import opens to the import path', async ({ page, context }) => {
+  test('Meta-alt-clicking on an import opens to the existing path', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
@@ -487,9 +487,9 @@ test.describe('Navigation', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('New Jersey');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
     await expect(newPage.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(newPage).toHaveURL('New_Jersey#Northern_border');
+    await expect(newPage).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
   });
 
   test('Meta-enter on an import opens to the import path', async ({ page, context }) => {

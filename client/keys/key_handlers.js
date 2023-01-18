@@ -72,7 +72,7 @@ function moveRightward() {
 }
 
 function moveDownOrRedirect({ newTab, altKey }) {
-  if (Link.selection.isLocal && !altKey) {
+  if (Link.selection.isLocal) {
     let link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
     let path = link.paragraphPathWhenSelected;
 

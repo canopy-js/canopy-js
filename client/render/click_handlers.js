@@ -8,11 +8,11 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
     if (newTab && !e.altKey) { // no zoom
-      return window.open(location.origin + link.targetPath.string, '_blank');
+      return window.open(location.origin + link.targetPath.lastSegment.string, '_blank');
     }
 
     if (newTab && e.altKey) { // zoom
-      return window.open(location.origin + link.targetPath.lastSegment.string, '_blank');
+      return window.open(location.origin + link.targetPath.string, '_blank');
     }
 
     if (!newTab && e.altKey) { //zoom
@@ -55,13 +55,13 @@ function onGlobalAndImportLinkClick (link) {
       return updateView(path, linkToSelect, { scrollStyle: 'auto' });
     }
 
-    if (newTab && !e.altKey) { // inline
-      path = link.paragraphPathWhenSelected; // open the link in new tab
+    if (newTab && !e.altKey) { // zoom
+      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
       return window.open(location.origin + path.string, '_blank');
     }
 
-    if (newTab && e.altKey) {
-      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
+    if (newTab && e.altKey) { // inline
+      path = link.paragraphPathWhenSelected; // open the link in new tab
       return window.open(location.origin + path.string, '_blank');
     }
   }

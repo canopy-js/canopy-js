@@ -65,7 +65,7 @@ class Topic {
 
 Topic.convertUnderscoresToSpaces = function convertUnderscoresToSpaces(string) {
   // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
-  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
+  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal instead of backslash literal followed by a space
     .map(string => string
       .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
       .map(string => string.replace(/_/g, ' '))
