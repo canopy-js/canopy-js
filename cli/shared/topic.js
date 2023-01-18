@@ -13,7 +13,7 @@ class Topic {
     this.escapedMixedCase = CSS.escape(this.mixedCase);
 
     this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
-      .replace(/%/g, '%25')
+      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a %
       .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
       .replace(/#/g, '%23')
       .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
@@ -65,7 +65,7 @@ class Topic {
 
 Topic.convertUnderscoresToSpaces = function convertUnderscoresToSpaces(string) {
   // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
-  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
+  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal instead of backslash literal followed by a space
     .map(string => string
       .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
       .map(string => string.replace(/_/g, ' '))

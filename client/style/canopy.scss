@@ -54,10 +54,6 @@
     color: black;
     cursor: pointer;
 
-    &:hover {
-      text-decoration: underline;
-    }
-
     &:focus {
       outline:0;
     }
@@ -67,30 +63,39 @@
       text-decoration: underline;
     }
 
+    &:hover {
+      text-decoration: underline #000000;
+    }
+
     &.canopy-selected-link {
       background-color: #edeefc;
       text-shadow: 0px 0px 0px #000000;
       text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
     }
 
     &.canopy-url-link {
-      text-decoration: none; // we don't want to underline non-breaking spaces so only underline tokens not whole a tag
+      text-decoration: none; // we want the selection background to extend beyond the icon but the underlining only until the end of the icon's bottom
       display: inline;
       overflow-wrap: break-word;
       white-space: normal;
+      margin-right: -2px; // we want the text after the icon to hug the icon, eg if it is a period
 
       .canopy-url-link-tokens-container {
-        padding-right:15px;
-        text-decoration: underline #DDDDDD; // we only underline the tokens of the URL
-        color: black;
+        text-decoration: underline #DDDDDD;
+
+        &:hover {
+          text-decoration: underline #000000; // hover underline should be black
+        }
       }
 
       .canopy-url-link-svg-container {
-        white-space: nowrap;
+        padding-right: 3px; // this is the spacing after the icon that extends the selected-link-selection bg but not the underlining
+        margin-left: -8px; // We add 3 non-breaking spaces, then move the svg over them so the last word always wraps with svg
+        margin-right: -8px; // If character after is punctuation and we move it within the spacing, it will also wrap with the svg
+      }
+
+      .canopy-url-link-tokens-spacing { // this is the spacing before the icon that creates space for the icon's negative margin
+        font-size: 18px;                // we use spaces and not padding because spaces can get text-decoration
       }
 
       span {
@@ -100,9 +105,7 @@
       svg {
         height: 15px;
         width: 12px;
-        margin-left: -15px; // We add 3 non-breaking spaces, then move the svg over them so the last word always wraps with svg
-        margin-right: -2px; // If character after is punctuation, it will also wrap with svg
-        vertical-align: -5px;
+        vertical-align: -4px; // move the icon in-line with the text
       }
      }
   }
