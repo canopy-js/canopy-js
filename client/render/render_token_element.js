@@ -187,10 +187,14 @@ function renderLinkLiteral(token, renderContext) {
     tokensContainer.appendChild(subtokenElement);
   });
 
+  tokensContainer.innerHTML += '<span class="canopy-url-link-tokens-spacing">&nbsp;&nbsp;</span>';
+
   let svgContainer = document.createElement('SPAN');
   svgContainer.classList.add('canopy-url-link-svg-container');
   svgContainer.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
   linkElement.appendChild(svgContainer);
+
+  linkElement.innerHTML += '<span class="canopy-url-link-svg-spacing">&nbsp;</span>'; // we don't want this to
 
   return linkElement;
 }
