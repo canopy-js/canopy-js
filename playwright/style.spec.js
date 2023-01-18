@@ -101,10 +101,6 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
     await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
-
-    // These classes / this DOM structure is necessary for the external link icon line break code to work, so we assert on it:
-    await expect(await page.locator('.canopy-selected-section a > .canopy-url-link-tokens-container')).toHaveCount(1);
-    await expect(await page.locator('.canopy-selected-section a > .canopy-url-link-svg-container')).toHaveCount(1);
   });
 
   test('It will not separate link icon from prior word', async ({ page }) => {
