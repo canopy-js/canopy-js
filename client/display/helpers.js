@@ -55,16 +55,18 @@ const resetDom = () => {
   deselectSectionElement();
 }
 
-function scrollPage(displayOptions) {
+function scrollPage(linkToSelect, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let top = Link.selection ? Link.selection.element.offsetTop - (window.screen.height * .23) : 0;
+  let top = linkToSelect ? linkToSelect.element.offsetTop - (window.screen.height * .23) : 0;
 
-  window.scrollTo(
-    {
-      top,
-      behavior
-    }
-  );
+  if (Math.abs(window.scrollY - top) > 35) { // changing link selection by more than two lines of text should trigger scroll
+    setTimeout(() => window.scrollTo(
+      {
+        top,
+        behavior
+      }
+    ), 0);
+  }
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {

@@ -367,7 +367,6 @@ class Link {
     let sessionData = sessionStorage.getItem(Path.current.string);
     if (sessionData && sessionData !== 'null') {
       let link = new Link(JSON.parse(sessionData));
-      try { link.element; } catch { link = null; } // in case metadata is invalid
       return link;
     } else {
       return null;
@@ -377,7 +376,6 @@ class Link {
   static get historySelection() {
     if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
       let link = new Link(history.state);
-      try { link.element; } catch { link = null; } // in case metadata is invalid
       return link;
     } else {
       return null;

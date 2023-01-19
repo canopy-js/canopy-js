@@ -101,6 +101,10 @@ class Path {
     return new Path(this.pathArray.slice(0, -1));
   }
 
+  get rootTopicOnly() {
+    return this.length === 1 && this.firstTopic.caps === this.firstSubtopic.caps;
+  }
+
   get length() {
     if (!this.pathArray[0]) {
       return 0;
