@@ -20,13 +20,13 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
       return updateView(path, link.atNewPath(path));
     }
 
-    if (!newTab && !e.altKey && link.isSelected) {
-      path = link.parentLink?.paragraphPathWhenSelected || Path.current.rootTopicPath;
-      return updateView(path, linkToSelect);
+    if (!newTab && !e.altKey && link.isSelected) { // unselect link
+      path = link.parentLink?.path || Path.current.rootTopicPath;
+      return updateView(path);
     }
 
-    if (!newTab && !e.altKey && !link.isSelected) {
-      path = link.paragraphPathWhenSelected;
+    if (!newTab && !e.altKey && !link.isSelected) { // select link
+      path = link.path;
       linkToSelect = link;
       return updateView(path, linkToSelect);
     }
@@ -41,7 +41,7 @@ function onGlobalAndImportLinkClick (link) {
 
     if (!newTab && !e.altKey && link.isSelected) { // close global child
       path = link.enclosingParagraph.path;
-      return updateView(path, linkToSelect);
+      return updateView(path);
     }
 
     if (!newTab && !e.altKey && !link.isSelected) { // open global child
@@ -52,7 +52,7 @@ function onGlobalAndImportLinkClick (link) {
 
     if (!newTab && e.altKey) { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return updateView(path, linkToSelect, { scrollStyle: 'auto' });
+      return updateView(path, null, { scrollStyle: 'auto' });
     }
 
     if (newTab && !e.altKey) { // zoom
