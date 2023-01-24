@@ -13,10 +13,10 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
   try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, displayOptions); }
   if (!pathToDisplay.paragraph.pageRoot && !linkToSelect) linkToSelect = pathToDisplay.paragraph.parentLink;
-  if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.paragraphPathWhenSelected, linkToSelect, displayOptions);
+  if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.path, linkToSelect, displayOptions);
 
   resetDom();
-  Path.setPath(linkToSelect?.urlPathWhenSelected || pathToDisplay);
+  Path.setPath(linkToSelect?.path || pathToDisplay);
   setHeader(pathToDisplay.rootTopicPath.topic);
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect

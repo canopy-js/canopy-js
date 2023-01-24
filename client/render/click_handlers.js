@@ -45,7 +45,7 @@ function onGlobalAndImportLinkClick (link) {
     }
 
     if (!newTab && !e.altKey && !link.isSelected) { // open global child
-      path = link.paragraphPathWhenSelected;
+      path = link.path;
       linkToSelect = link;
       return updateView(path, linkToSelect);
     }
@@ -61,7 +61,7 @@ function onGlobalAndImportLinkClick (link) {
     }
 
     if (newTab && e.altKey) { // inline
-      path = link.paragraphPathWhenSelected; // open the link in new tab
+      path = link.path; // open the link in new tab
       return window.open(location.origin + path.string, '_blank');
     }
   }
