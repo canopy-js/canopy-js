@@ -55,10 +55,13 @@ test.describe('Link Selection', () => {
   test('Last link selections are prefered when going down', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
-
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await page.locator('body').press('ArrowUp');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
+    await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await page.locator('body').press('ArrowUp');
     await expect(page.locator('.canopy-selected-link')).toHaveText("New York");

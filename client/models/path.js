@@ -201,6 +201,10 @@ class Path {
 
     let pathString = '/';
 
+    if (projectPathPrefix) pathString += `${projectPathPrefix}/`;
+
+    if (hashUrls) pathString += '#/';
+
     pathString += pathArray.map(([topic, subtopic]) => {
       let pathSegmentString = topic.slug;
       if (subtopic && subtopic.slug !== topic.slug) {
@@ -301,7 +305,7 @@ class Path {
     let oldPath = Path.current;
     let documentTitle = newPath.firstTopic.display;
     let historyApiFunction = (Path.current.empty || newPath.equals(oldPath)) ? replaceState : pushState;
-    let fullPathString = (projectPathPrefix ? `/${projectPathPrefix}` : '') + (hashUrls ? '/#' : '') + newPath.string;
+    let fullPathString = newPath.string;
 
     historyApiFunction(
       history.state, // this will be changed via Link#persistInHistory

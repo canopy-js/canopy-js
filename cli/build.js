@@ -22,7 +22,7 @@ function build(options) {
     let html = dedent`
       <html>
       <head>
-      ${favicon ? '<link rel="icon" type="image/x-icon" href="/_assets/favicon.ico">' : ''}
+      ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
       <meta charset="utf-8">
       </head>
       <body>
@@ -33,7 +33,7 @@ function build(options) {
         data-hash-urls="${hashUrls || ''}">
       </div>
       ${customCss ? '<link rel="stylesheet" href="_assets/custom.css">' : ''}
-      <script src="${projectPathPrefix||''}/_canopy.js"></script>
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </body>
       </html>\n`;
 
