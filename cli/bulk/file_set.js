@@ -2,7 +2,6 @@
 let pathLibrary = require('path');
 let Topic = require('../shared/topic');
 let Paragraph = require('../shared/paragraph');
-let { getDefaultTopicAndPath } = require('./helpers');
 
 class FileSet {
   constructor(fileContentsByPath) {

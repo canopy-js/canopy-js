@@ -6,9 +6,9 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
 const sketch = require('./sketch/sketch');
-let { getDefaultTopicAndPath } = require('./shared/helpers');
-let defaultTopicSlug;
-try { ({ defaultTopicSlug } = getDefaultTopicAndPath()); } catch {}
+let { DefaultTopic } = require('./shared/helpers');
+let defaultTopic = {};
+try { defaultTopic = new DefaultTopic(); } catch {}
 
 const program = new Command();
 
@@ -113,7 +113,7 @@ program.command('bulk')
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
   .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
   .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
-  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name').default(defaultTopicSlug))
+  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name').default(defaultTopic.slug))
   .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies('sync'))

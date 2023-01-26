@@ -17,7 +17,7 @@ let FileSystemManager = require('./file_system_manager');
 let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
-let { getDefaultTopicAndPath } = require('../shared/helpers');
+let { DefaultTopic } = require('../shared/helpers');
 const readline = require('readline');
 
 const bulk = async function(selectedFileList, options) {
@@ -92,11 +92,13 @@ const bulk = async function(selectedFileList, options) {
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
-    let defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug;
-    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug } = getDefaultTopicAndPath());} catch(e) {} // validate default topic
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath);
+    let defaultTopic = {};
+    try { defaultTopic = new DefaultTopic() } catch(e) { console.log(chalk.red(e.message));} // validate default topic
+
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || defaultTopicSlug || 'canopy_bulk_file';
+
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
@@ -109,23 +111,28 @@ const bulk = async function(selectedFileList, options) {
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
     if (!newBulkFileString) console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
+
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.getFileSet();
+    if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
+
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
     let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
+
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
-    getDefaultTopicAndPath() // Error in case the person changed the default topic file name
+    new DefaultTopic() // Error in case the person changed the default topic file name
   }
 
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
-    editor('canopy_bulk_file', () => {
+    editor(options.bulkFileName, () => {
       handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
     })
   }
