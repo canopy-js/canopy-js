@@ -132,7 +132,7 @@ const bulk = async function(selectedFileList, options) {
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
-    editor(options.bulkFileName, () => {
+    editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
       handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
     })
   }
@@ -148,16 +148,18 @@ const bulk = async function(selectedFileList, options) {
   if (options.sync) {
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
+    if (!process.env['VISUAL']) console.log(chalk.bgYellow(chalk.black('Try setting your VISUAL environment variable so that Canopy knows which editor to use for bulk sync')));
+
     // Open bulk file in editor and process when closed
     if (options.editor) {
-      editor(options.bulkFileName, () => {
+      editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
         handleFinish({deleteBulkFile: false}, options);
         log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         process.exit();
       });
     }
 
-    if (['emacs', 'vim', undefined].includes(process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
+    if (['emacs', 'vim', 'nano', undefined].includes(process.env.VISUAL) && ['emacs', 'vim', 'nano', undefined].includes(process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
     }
 
