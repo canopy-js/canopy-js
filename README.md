@@ -137,7 +137,7 @@ This is a note.
 
 The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
-Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note. For example:
+Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, which indicates a new paragraph or note. For example:
 
 ```
 Topic 1: This is the paragraph for Topic 1.
@@ -273,14 +273,88 @@ When the link for "Teton" is selected, the path from Wyoming's paragraph to the 
 In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, in a case where there are multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
 
 ```
-This is a [[Global Link]], and this is an import reference to a subtopic called "Subtopic": [[Global Link#Subtopic]].
+This is a [[Global Link]], and this is an explicit import reference: [[Global Link#Subtopic]].
 
 ```
 
+#### Additional link syntax ####
+
+If you want to make the display text of a link differ completely from the target name, you can do this:
+```
+[[Target name|Display text]]
+```
+
+If you want to make a the target and display text almost the same with small differences, use the interpolation syntax. The interpolation syntax divides the link text by unescaped pipe characters, and then interprets the first segment as text that should be part of both the target and the display text, the second segment as text that is only supposed to add to the target name, and the third segment as being text that only is supposed to add to the display text, and it cycles in iterations of three. For example:
+
+
+| If you write | The target name will be | The display text will be |
+|--------------|-------------------------|--------------------------|
+| \[\[shared \| key\| display\| shared]] | shared key shared | shared display shared |
+| \[\[topic\|\|s]] | topic | topics |
+| \[\[the \|US \|\|Treasury]] | the US Treasury | the Treasury |
+| \[\[the answer\|\| to the question]] | the answer to the question | the answer |
+| \[\[harmon\|y\|ies]] | harmony | harmonies |
+| \[\[1\|2\|3\|4\|5\|6\|7\|8\|9]] | 124578 | 134679 |
+
+You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
+
+Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with interpolation syntax, you would just need to make the "target" string end up as `A#B`.
+
 ### Using Markup
 
-Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported. Asterisks indicate bold and underscores indicate italics.
+Usual markdown-style styling is generally available.
 
+#### Lists ####
+```
+1. This is a list.
+  a. This is a subpoint
+```
+#### Fenced code blocks ####
+````
+```
+if (x) y(); //This is a code block
+```
+````
+#### Prefix code blocks ####
+````
+`
+` if (x) y(); //This is a code block
+`
+````
+#### Tables ####
+````
+| This | is | a | table |
+|------|----|---|-------|
+|  A   | B  | C |   D   |
+````
+#### Block quotes ####
+````
+> This
+> is
+> a
+> block
+> quote
+````
+#### RTL block quotes ####
+````
+This is regular text.
+< המילים האלה
+< הן מימין לשמאל
+More text.
+````
+#### Footnotes ####
+````
+This is text with a footnote[^1].
+[^1]: This is the footnote.
+````
+#### Style ####
+````
+This text is *bold*, _italic_, `code snippet`, ~strike through~.
+````
+#### HTML ####
+````
+This is text with some <b> HTML </b> mixed in.
+````
 ### Using Bulk Mode
 
 It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
@@ -310,7 +384,7 @@ For example:
 
 ![Bulk mode](./readme/bulk.gif)
 
-You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
+You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `VISUAL='subl -w' canopy bulk` to temporarily set your visual editor, or, you can add `export VISUAL='subl -w'` eg to your shell config file. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
