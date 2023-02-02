@@ -303,28 +303,24 @@ Usual markdown-style styling is generally available.
 1. This is a list.
   a. This is a subpoint
 ```
-
 #### Fenced code blocks ####
 ````
 ```
 if (x) y(); //This is a code block
 ```
 ````
-
 #### Prefix code blocks ####
 ````
 `
 ` if (x) y(); //This is a code block
 `
 ````
-
 #### Tables ####
 ````
 |This|is|a|table|
 =================
 | A  | B|C|  D  |
 ````
-
 #### Block quotes ####
 ````
 > This
@@ -333,23 +329,26 @@ if (x) y(); //This is a code block
 > block
 > quote
 ````
-
+#### RTL block quotes ####
+````
+This is regular text.
+< אלה מילים
+< הם מימין לשמול
+More text.
+````
 #### Footnotes ####
 ````
 This is text with a footnote[^1].
 [^1]: This is the footnote.
 ````
-
 #### Style ####
 ````
 This text is *bold*, _italic_, `code snippet`, ~strike through~.
 ````
-
 #### HTML ####
 ````
 This is text with some <b> HTML </b> mixed in.
 ````
-
 ### Using Bulk Mode
 
 It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
