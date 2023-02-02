@@ -186,8 +186,8 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `אלה מילים\n` +
-      `הם מימין לשמול`
+      `המילים האלה\n` +
+      `הן מימין לשמאל`
     );
 
     await expect(await page.locator('.canopy-selected-section blockquote')).toHaveAttribute('dir', 'rtl');

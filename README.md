@@ -332,8 +332,8 @@ if (x) y(); //This is a code block
 #### RTL block quotes ####
 ````
 This is regular text.
-< אלה מילים
-< הם מימין לשמול
+< המילים האלה
+< הן מימין לשמאל
 More text.
 ````
 #### Footnotes ####
