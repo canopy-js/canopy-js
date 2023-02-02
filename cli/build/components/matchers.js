@@ -44,6 +44,7 @@ const Matchers = [
 let Topic = require('../../shared/topic');
 let { displaySegment } = require('../../shared/helpers');
 let chalk = require('chalk');
+let { parseLink, determineTopicAndSubtopic } = require('./helpers');
 
 function fenceCodeBlockMatcher({ string, startOfLine }) {
   let match = string.match(/^```\n(.*\n)```(\n|$)/s);
@@ -216,7 +217,6 @@ function globalReferenceMatcher({ string, parserContext }) {
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
 
-
   if (parserContext.topicExists(targetTopic)) {
     parserContext.registerGlobalReference(targetTopic, currentTopic, currentSubtopic);
 
@@ -237,7 +237,7 @@ function globalReferenceMatcher({ string, parserContext }) {
 
 function importReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
+  let { linkTarget, linkFragment, linkText, fullText, multiPipe } = parseLink(string);
   if (!linkTarget) return; // not a well-formed link
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
   if (!targetTopic) { // The user chose to just give the subtopic and imply the topic by proximity
@@ -245,8 +245,9 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`));
+    throw new Error(chalk.red(`Error: Reference ${fullText} ${multiPipe ? 'referencing target ['+linkTarget+'] ':''}in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}` +
+      (multiPipe ? '\n\nRemember, multi-pipe links are interpreted as [[text for both target and display|just target|just display|both|just target|just display]]' : '')));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
@@ -255,7 +256,7 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}]\n` +
+    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` +
       `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
 
@@ -271,38 +272,6 @@ function importReferenceMatcher({ string, parserContext, index }) {
       parserContext
     ), fullText.length
   ];
-}
-
-function parseLink(string) {
-  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
-  let match = string
-    .replace(/\\#/g, '__LITERAL_AMPERSAND__')
-    .match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
-
-  match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
-
-  return {
-    linkTarget: match && match[1] || null, // eg "France"
-    linkFragment: match && match[2] || null, // eg "Paris"
-    linkText: match && (match[3] || match[2] || match[1] || null), // The specified link text, defaulting to subtopic
-    fullText: match && match[0] // the whole reference eg "[[France#Paris]]""
-  };
-}
-
-function determineTopicAndSubtopic(linkTarget, linkFragment) {
-  let targetTopic, targetSubtopic;
-  if (linkFragment) {
-    targetTopic = new Topic(linkTarget);
-    targetSubtopic = new Topic(linkFragment);
-  } else {
-    targetTopic = null;
-    targetSubtopic = new Topic(linkTarget);
-  }
-
-  return {
-    targetTopic,
-    targetSubtopic
-  };
 }
 
 function escapedCharacterMatcher({ string, parserContext }) {

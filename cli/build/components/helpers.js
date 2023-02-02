@@ -1,6 +1,7 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 let Paragraph = require('../../shared/paragraph');
+let Topic = require('../../shared/topic');
 let { TextToken } = require('./tokens');
 let chalk = require('chalk');
 
@@ -137,6 +138,57 @@ function terminalCategoryofPath(filePath) {
   return items[items.length - 2];
 }
 
+function parseLink(string) {
+  let displayText = '';
+  let keyText = '';
+  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/);
+  if (!linkMatch) return {};
+  let linkContents = linkMatch[1];
+  let numberOfUnescapedPipes = linkContents.match(/(?<!\\)\|/g)?.length || 0;
+  let fullText = linkMatch[0];
+
+  if (numberOfUnescapedPipes > 1) { // eg [[the |US ||treasury]] ie shared|key|display|shared
+    linkContents.split(/(?<!\\)\|/g).forEach((substring, index) => {
+      if (index % 3 === 0) (keyText += substring) && (displayText += substring);
+      if (index % 3 === 1) keyText += substring;
+      if (index % 3 === 2) displayText += substring;
+    });
+  } else if (numberOfUnescapedPipes === 1) {
+    let segments = linkContents.split(/(?<!\\)\|/g);
+    keyText = segments[0];
+    displayText = segments[1];
+  } else {
+    keyText = linkContents;
+  }
+
+  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
+  let match = keyText.match(/^((?:(?!(?<!\\)[\]#|]).)+)(?:#((?:(?!(?<!\\)[\]#|]).)+))?(?:\|((?:(?!(?<!\\)[\]#|]).)+))?/);
+
+  return {
+    linkTarget: match && match[1] || null, // eg "France"
+    linkFragment: match && match[2] || null, // eg "Paris"
+    linkText: displayText || (match && (match[3] || match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
+    fullText,
+    multiPipe: numberOfUnescapedPipes > 1
+  };
+}
+
+function determineTopicAndSubtopic(linkTarget, linkFragment) {
+  let targetTopic, targetSubtopic;
+  if (linkFragment) {
+    targetTopic = new Topic(linkTarget);
+    targetSubtopic = new Topic(linkFragment);
+  } else {
+    targetTopic = null;
+    targetSubtopic = new Topic(linkTarget);
+  }
+
+  return {
+    targetTopic,
+    targetSubtopic
+  };
+}
+
 module.exports = {
   consolidateTextTokens,
   topicKeyOfString,
@@ -147,5 +199,7 @@ module.exports = {
   removeCircularListKeys,
   frontLoadImages,
   isCategoryNotesFile,
-  terminalCategoryofPath
+  terminalCategoryofPath,
+  parseLink,
+  determineTopicAndSubtopic
 };

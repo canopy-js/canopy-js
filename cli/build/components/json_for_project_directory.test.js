@@ -505,6 +505,263 @@ test('it lets you give arbitrary names to references', () => {
   );
 });
 
+test('it lets you select a display substring', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|the state of ||Wyoming]].\n`,
+    'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, like ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "The state of Wyoming",
+            "targetTopic": "The state of Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/The_state_of_Wyoming.json'])).toEqual(
+    {
+      "displayTopicName": "The state of Wyoming",
+      "topicTokens": [
+         {
+          "text": "The state of Wyoming",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "The state of Wyoming": [
+          {
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
+          }
+        ]
+      }
+    }
+  );
+});
+
+test('it adds to the error message for multipipe strings', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|the state of |Wyoming]].\n`,
+    'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
+
+  };
+
+  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
+    `Error: Reference [[|the state of |Wyoming]] referencing target [the state of ] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1\n\n` +
+    `Remember, multi-pipe links are interpreted as [[text for both target and display|just target|just display|both|just target|just display]]`
+  ));
+
+});
+
+test('it lets you interpolate different strings for keys and display', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming| state||]].\n`,
+    'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, like ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "targetSubtopic": "Wyoming state",
+            "targetTopic": "Wyoming state",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/Wyoming_state.json'])).toEqual(
+    {
+      "displayTopicName": "Wyoming state",
+      "topicTokens": [
+         {
+          "text": "Wyoming state",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic": {
+        "Wyoming state": [
+          {
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
+          }
+        ]
+      }
+    }
+  );
+});
+
+test('it lets you select the display string with import references', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|Wyoming state#||Cheyenne| city]] of [[Wyoming state]].\n`,
+    'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+        {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic": {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, like ",
+            "type":"text"
+          },
+          {
+            "enclosingSubtopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "targetSubtopic": "Cheyenne city",
+            "targetTopic": "Wyoming state",
+            "text": "Cheyenne",
+            "tokens": [
+              {
+                "text": "Cheyenne",
+                "type": "text",
+              },
+            ],
+            "type": "import",
+          },
+          {
+            "text": " of ",
+            "type": "text",
+          },
+          {
+            "enclosingSubtopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "targetSubtopic": "Wyoming state",
+            "targetTopic": "Wyoming state",
+            "text": "Wyoming state",
+            "tokens": [
+              {
+                "text": "Wyoming state",
+                "type": "text",
+              },
+            ],
+            "type": "global",
+          },
+          {
+           "text": ".",
+           "type": "text",
+          }
+        ]
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/Wyoming_state.json'])).toEqual(
+    {
+      "displayTopicName": "Wyoming state",
+      "topicTokens": [
+         {
+          "text": "Wyoming state",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic": {
+        "Cheyenne city": [
+          {
+            "text": "This is the capital.",
+            "type": "text",
+          },
+        ],
+        "Wyoming state": [
+          {
+            "text": "Wyoming is a midwestern state whose capital is ",
+            "type": "text",
+          },
+          {
+            "enclosingSubtopic": "Wyoming state",
+            "enclosingTopic": "Wyoming state",
+            "targetSubtopic": "Cheyenne city",
+            "targetTopic": "Wyoming state",
+            "text": "Cheyenne city",
+            "tokens": [
+              {
+                "text": "Cheyenne city",
+                "type": "text",
+              },
+            ],
+            "type": "local",
+          },
+          {
+            "text": ".",
+            "type": "text",
+          }
+        ]
+        }
+      }
+    );
+});
+
 test('it matches implicit import references', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming|my favorite state]].\n`,
@@ -1514,7 +1771,7 @@ test('it throws error if import reference is to non-existent subtopic', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].\n`,
   };
 
-  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho]\n` +
+  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho], [Boise]\n` +
     `topics/Wyoming/Wyoming.expl:1`;
 
   expect(
