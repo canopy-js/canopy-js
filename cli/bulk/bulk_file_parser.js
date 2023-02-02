@@ -48,6 +48,7 @@ class BulkFileParser {
         if (file.asterisk && file.key) {
           // Create topic file
           let topicFilePath = `${section.diskDirectoryPath}/${(new Topic(file.key)).fileName}.expl`;
+          if (fileContentsByPath.hasOwnProperty(topicFilePath)) console.log(chalk.bgYellow(chalk.black(`Warning: Topic [${file.key}] is defined twice in bulk file.`)));
           fileContentsByPath[topicFilePath] = file.text.trim() + '\n';
 
           if (file.doubleAsterisk) {
