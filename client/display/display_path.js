@@ -21,9 +21,9 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect
 
-  pathToDisplay.paragraph.select();
   displayPathTo(pathToDisplay.paragraph);
   scrollPage(linkToSelect, displayOptions);
+  pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
 };
 
 const displayPathTo = (paragraph) => {

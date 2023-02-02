@@ -354,10 +354,12 @@ class Link {
   }
 
   static select(linkToSelect) {
-    linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
-    Link.persistInHistory(linkToSelect);
-    Link.persistInSession(linkToSelect);
-    Link.persistLastSelectionData(linkToSelect);
+    if (linkToSelect) {
+      linkToSelect.element.classList.add('canopy-selected-link');
+      Link.persistInHistory(linkToSelect);
+      Link.persistInSession(linkToSelect);
+      Link.persistLastSelectionData(linkToSelect);
+    }
   }
 
   static selectionPresentInEvent(e) {
