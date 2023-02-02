@@ -138,8 +138,12 @@ class ParserContext {
     return this.tokens;
   }
 
-  incrementLineNumber() {
-    this.lineNumber++;
+  incrementLineNumber(num) {
+    if (num) {
+      this.lineNumber += num;
+    } else {
+      this.lineNumber++;
+    }
   }
 
   set filePath(filePath) {

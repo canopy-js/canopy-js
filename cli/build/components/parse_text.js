@@ -24,6 +24,7 @@ function parseText({ text, parserContext }) {
           if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
           parserContext.buffer = '';
           tokens.push(token);
+          parserContext.incrementLineNumber(string.slice(length).match(/\n/g)?.length || 0);
         }
 
         i += length - 1; // after this loop finishes it will increment to the next unprocessed character

@@ -1654,7 +1654,7 @@ test('it handles odd-numbers of blank lines', () => {
   ).toThrow(chalk.red(message));
 });
 
-test('it handles lines counting within nested block', () => {
+test('it handles line counting within nested block', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho:
     >
@@ -1662,15 +1662,28 @@ test('it handles lines counting within nested block', () => {
     > Idaho is a midwestern state. Its capital is [[Boise]]` + '\n',
   };
 
-  let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
-    `First definition: topics/Idaho/Idaho.expl:6\n` +
-    `Second definition: topics/Idaho/Idaho.expl:8`;
-
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
     `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
     `topics/Idaho/Idaho.expl:3`
+    ));
+});
+
+test('it handles lines counting after block', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    >
+    >
+    > Idaho is a midwestern state.
+    Its capital is [[Boise]]` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:4`
     ));
 });
 

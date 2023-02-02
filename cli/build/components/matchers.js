@@ -245,7 +245,6 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    console.error({ linkTarget, linkFragment, linkText, fullText })
     throw new Error(chalk.red(`Error: Reference ${fullText} in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
       `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
