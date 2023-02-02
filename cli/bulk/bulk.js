@@ -66,13 +66,6 @@ const bulk = async function(selectedFileList, options) {
     );
   }
 
-  if (options.last) {
-    if (fs.existsSync('.canopy_bulk_last_session_files')) {
-      let lastFiles = JSON.parse(fs.readFileSync('.canopy_bulk_last_session_files').toString());
-      selectedFileList = selectedFileList.concat(lastFiles);
-    }
-  }
-
   if (selectedFileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       selectedFileList = [];

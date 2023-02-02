@@ -9,7 +9,6 @@ dist
 /playwright/.cache/
 playwright/test_project/build
 playwright/test_project/.canopy_bulk_backup_log
-playwright/test_project/.canopy_bulk_last_session_files
 playwright/test_project/.canopy_bulk_original_selection
 playwright/test_project/United_States
 playwright/hash_urls_and_prefix_test/**
