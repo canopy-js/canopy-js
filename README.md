@@ -277,6 +277,23 @@ This is a [[Global Link]], and this is an import reference to a subtopic called 
 
 ```
 
+#### Additional link syntax ####
+
+If you want to make the display text differ from the target, do this:
+```
+[[Target|Display text]]`
+```
+If you want to make the display text one substring of the target, do this:
+```
+[[The |United States| of America]]
+```
+
+If you want to make a the target and display text almost the same with small differences, use the interpolation syntax, eg:
+```
+The song has many [[harmon|y|ies|]]
+```
+The above will create a target of "harmony" but a display text of "harmonies." This syntax will take the pipe-separated segments of the link contents and will interpret them as "shared" (to be added to target and display), then target only, then display only, and then cycles, ie `[[shared|topic only|display only|shared|topic only|display only|shared]]`.
+
 ### Using Markup
 
 Usual markdown-style styling is generally available.
