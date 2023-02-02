@@ -306,6 +306,8 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
+  tableElement.setAttribute('dir', 'auto');
+
   token.rows.forEach(
     (tokensByCellOfRow) => {
       let tableRowElement = document.createElement('TR');
