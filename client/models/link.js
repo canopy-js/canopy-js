@@ -39,7 +39,7 @@ class Link {
 
   contradicts(path) {
     if (!(path instanceof Path)) throw new Error('Invalid path argument to Link#contradicts');
-    return this.paragraphPathWhenSelected.string !== path.string;
+    return this.path.string !== path.string;
   }
 
   get element () {
@@ -157,9 +157,9 @@ class Link {
 
   get localPathSegmentWhenSelected() {
     if (this.isGlobalOrImport) {
-      return new Path(this.paragraphPathWhenSelected.pathArray.slice(-2));
+      return new Path(this.path.pathArray.slice(-2));
     } else {
-      return this.paragraphPathWhenSelected.lastSegment;
+      return this.path.lastSegment;
     }
   }
 
@@ -204,15 +204,16 @@ class Link {
     }
   }
 
-  get path() {
-    throw new Error("Depreciated in favor of #paragraphPathWhenSelected");
-  }
-
   get pathToDisplay() {
-    throw new Error("Depreciated in favor of #paragraphPathWhenSelected");
+    throw new Error("Depreciated in favor of #path");
   }
 
-  get paragraphPathWhenSelected() {
+  // Previously there were multiple path concepts related to links, eg the path to the paragraph containing the link,
+  // or the path to the target of the link (if it is local, global, or import), and thirdly the path of paragraphs
+  // to display when the given link is selected. When previously a selected import reference previewed the target
+  // path but used the URL of the enclosing paragraph, these three concepts could vary, but now they always coincide.
+
+  get path() {
     if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
@@ -223,7 +224,7 @@ class Link {
   }
 
   get urlPathWhenSelected() {
-    return this.paragraphPathWhenSelected;
+    throw new Error("Depreciated in favor of #path"); // no longer different from path of displayed paragraph
   }
 
   static collectMetadata(linkElement) {
@@ -353,10 +354,12 @@ class Link {
   }
 
   static select(linkToSelect) {
-    linkToSelect && linkToSelect.element.classList.add('canopy-selected-link');
-    Link.persistInHistory(linkToSelect);
-    Link.persistInSession(linkToSelect);
-    Link.persistLastSelectionData(linkToSelect);
+    if (linkToSelect) {
+      linkToSelect.element.classList.add('canopy-selected-link');
+      Link.persistInHistory(linkToSelect);
+      Link.persistInSession(linkToSelect);
+      Link.persistLastSelectionData(linkToSelect);
+    }
   }
 
   static selectionPresentInEvent(e) {
@@ -367,7 +370,6 @@ class Link {
     let sessionData = sessionStorage.getItem(Path.current.string);
     if (sessionData && sessionData !== 'null') {
       let link = new Link(JSON.parse(sessionData));
-      try { link.element; } catch { link = null; } // in case metadata is invalid
       return link;
     } else {
       return null;
@@ -377,7 +379,6 @@ class Link {
   static get historySelection() {
     if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
       let link = new Link(history.state);
-      try { link.element; } catch { link = null; } // in case metadata is invalid
       return link;
     } else {
       return null;

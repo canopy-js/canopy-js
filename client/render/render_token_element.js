@@ -2,6 +2,7 @@ import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handl
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Topic from '../../cli/shared/topic';
+import { projectPathPrefix, hashUrls } from 'helpers/getters';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -83,7 +84,7 @@ function createLocalLinkElement(token, renderContext) {
 
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `/${targetTopic.slug}#${targetSubtopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}#${targetSubtopic.slug}`;
   return linkElement;
 }
 
@@ -120,7 +121,7 @@ function createGlobalLinkElement(token, renderContext) {
   linkElement.dataset.text = token.text;
 
   let targetTopic = Topic.fromMixedCase(token.targetTopic);
-  linkElement.href = `/${targetTopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}`;
 
   linkElement.addEventListener(
     'click',
@@ -159,7 +160,7 @@ function createImportLinkElement(token, renderContext) {
 
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `/${targetTopic.slug}#${targetSubtopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}#${targetSubtopic.slug}`;
 
   linkElement.addEventListener(
     'click',
@@ -305,6 +306,8 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
+  tableElement.setAttribute('dir', 'auto');
+
   token.rows.forEach(
     (tokensByCellOfRow) => {
       let tableRowElement = document.createElement('TR');

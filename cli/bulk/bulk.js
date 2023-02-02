@@ -10,13 +10,14 @@ const {
   CyclePreventer
 } = require('./helpers');
 const watch = require('../watch');
+const build = require('../build');
 const serve = require('../serve/serve');
 let chalk = require('chalk');
 let FileSystemManager = require('./file_system_manager');
 let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
-let { getDefaultTopicAndPath } = require('../shared/helpers');
+let { DefaultTopic } = require('../shared/helpers');
 const readline = require('readline');
 
 const bulk = async function(selectedFileList, options) {
@@ -65,13 +66,6 @@ const bulk = async function(selectedFileList, options) {
     );
   }
 
-  if (options.last) {
-    if (fs.existsSync('.canopy_bulk_last_session_files')) {
-      let lastFiles = JSON.parse(fs.readFileSync('.canopy_bulk_last_session_files').toString());
-      selectedFileList = selectedFileList.concat(lastFiles);
-    }
-  }
-
   if (selectedFileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       selectedFileList = [];
@@ -85,17 +79,19 @@ const bulk = async function(selectedFileList, options) {
   let newBulkFileString;
   let oldBulkFileString;
   if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName}($|\n)`, 's'))) {
-    console.log(chalk.red(`Add custom bulk file name to your .gitignore: ${options.bulkFileName}`));
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName}`)));
   }
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
-    let defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug;
-    try {({ defaultTopicDisplayCategoryPath, defaultTopicFilePath, defaultTopicSlug } = getDefaultTopicAndPath());} catch(e) {} // validate default topic
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath);
+    let defaultTopic = {};
+    try { defaultTopic = new DefaultTopic() } catch(e) { console.log(chalk.red(e.message));} // validate default topic
+
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || defaultTopicSlug || 'canopy_bulk_file';
+
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
@@ -108,23 +104,28 @@ const bulk = async function(selectedFileList, options) {
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
     if (!newBulkFileString) console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
+
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.getFileSet();
+    if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
+
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
     let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
+
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
-    getDefaultTopicAndPath() // Error in case the person changed the default topic file name
+    new DefaultTopic() // Error in case the person changed the default topic file name
   }
 
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
-    editor('canopy_bulk_file', () => {
+    editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
       handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
     })
   }
@@ -140,22 +141,33 @@ const bulk = async function(selectedFileList, options) {
   if (options.sync) {
     setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
 
+    if (!process.env['VISUAL']) console.log(chalk.bgYellow(chalk.black('Try setting your VISUAL environment variable so that Canopy knows which editor to use for bulk sync')));
+
     // Open bulk file in editor and process when closed
     if (options.editor) {
-      editor(options.bulkFileName, () => {
+      editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
         handleFinish({deleteBulkFile: false}, options);
         log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
         process.exit();
       });
     }
 
-    if (['emacs', 'vim', undefined].includes(process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
+    if (['emacs', 'vim', 'nano', undefined].includes(process.env.VISUAL) && ['emacs', 'vim', 'nano', undefined].includes(process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
+    }
+
+    try {
+      build(Object.assign({ ...options, ...{ logging: false }}))
+      console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+    } catch (e) {
+      console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      console.log(e.message);
+      console.log(chalk.magenta(`If you correct the error and refresh your browser, the project should build and display properly.`));
     }
 
     // Watch topics and rebuild JSON on change
     // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server with
-    watch(Object.assign({ ...options, ...{ suppressInitialBuild: true, buildIfUnbuilt: true }}));
+    watch(Object.assign({ ...options, ...{ suppressInitialBuild: true }}));
 
     // Start server
     serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it

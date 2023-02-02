@@ -44,6 +44,7 @@ const Matchers = [
 let Topic = require('../../shared/topic');
 let { displaySegment } = require('../../shared/helpers');
 let chalk = require('chalk');
+let { parseLink, determineTopicAndSubtopic } = require('./helpers');
 
 function fenceCodeBlockMatcher({ string, startOfLine }) {
   let match = string.match(/^```\n(.*\n)```(\n|$)/s);
@@ -216,7 +217,6 @@ function globalReferenceMatcher({ string, parserContext }) {
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
 
-
   if (parserContext.topicExists(targetTopic)) {
     parserContext.registerGlobalReference(targetTopic, currentTopic, currentSubtopic);
 
@@ -245,6 +245,7 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
+    console.error({ linkTarget, linkFragment, linkText, fullText })
     throw new Error(chalk.red(`Error: Reference ${fullText} in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
       `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
@@ -271,38 +272,6 @@ function importReferenceMatcher({ string, parserContext, index }) {
       parserContext
     ), fullText.length
   ];
-}
-
-function parseLink(string) {
-  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
-  let match = string
-    .replace(/\\#/g, '__LITERAL_AMPERSAND__')
-    .match(/^\[\[([^|#\]]+)(?:#([^|#\]]+))?(?:\|([^|\]]+))?\]\]/);
-
-  match = match?.map(string => string?.replace(/__LITERAL_AMPERSAND__/g, '\\#'));
-
-  return {
-    linkTarget: match && match[1] || null, // eg "France"
-    linkFragment: match && match[2] || null, // eg "Paris"
-    linkText: match && (match[3] || match[2] || match[1] || null), // The specified link text, defaulting to subtopic
-    fullText: match && match[0] // the whole reference eg "[[France#Paris]]""
-  };
-}
-
-function determineTopicAndSubtopic(linkTarget, linkFragment) {
-  let targetTopic, targetSubtopic;
-  if (linkFragment) {
-    targetTopic = new Topic(linkTarget);
-    targetSubtopic = new Topic(linkFragment);
-  } else {
-    targetTopic = null;
-    targetSubtopic = new Topic(linkTarget);
-  }
-
-  return {
-    targetTopic,
-    targetSubtopic
-  };
 }
 
 function escapedCharacterMatcher({ string, parserContext }) {

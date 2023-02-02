@@ -279,7 +279,59 @@ This is a [[Global Link]], and this is an import reference to a subtopic called 
 
 ### Using Markup
 
-Usual markdown-style styling is generally available, such as lists, code blocks, tables, footnotes, block quotes, and styling characters. Inline HTML is supported. Asterisks indicate bold and underscores indicate italics.
+Usual markdown-style styling is generally available.
+
+#### Lists ####
+```
+1. This is a list.
+  a. This is a subpoint
+```
+
+#### Fenced code blocks ####
+````
+```
+if (x) y(); //This is a code block
+```
+````
+
+#### Prefix code blocks ####
+````
+`
+` if (x) y(); //This is a code block
+`
+````
+
+#### Tables ####
+````
+|This|is|a|table|
+=================
+| A  | B|C|  D  |
+````
+
+#### Block quotes ####
+````
+> This
+> is
+> a
+> block
+> quote
+````
+
+#### Footnotes ####
+````
+This is text with a footnote[^1].
+[^1]: This is the footnote.
+````
+
+#### Style ####
+````
+This text is *bold*, _italic_, `code snippet`, ~strike through~.
+````
+
+#### HTML ####
+````
+This is text with some <b> HTML </b> mixed in.
+````
 
 ### Using Bulk Mode
 

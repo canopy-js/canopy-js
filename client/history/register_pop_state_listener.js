@@ -11,7 +11,7 @@ function registerPopStateListener() {
   window.addEventListener('popstate', (e) => {
     let linkSelection = Link.selectionPresentInEvent(e) ? new Link(e.state) : null;
 
-    try { linkSelection.element; } catch { linkSelection = null; } // in case metadata is invalid
+    // try { linkSelection.element; } catch { linkSelection = null; } // in case metadata is invalid
 
     let scrollStyle;
     if (Paragraph.current.path.rootTopicPath.equals(Path.current.rootTopicPath)) { // Navigating within the same page

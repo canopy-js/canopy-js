@@ -32,6 +32,7 @@ function parseText({ text, parserContext }) {
     }
     if (result) continue;
     parserContext.buffer += characters[i];
+    if (characters[i] === '\n') parserContext.incrementLineNumber();
   }
 
   if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));

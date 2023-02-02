@@ -35,7 +35,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[A/B/C]
 
-      * Topic: Hello world.
+      ** Topic: Hello world.
 
       Subtopic: Hello.
 
@@ -94,7 +94,7 @@ describe('BulkFileGenerator', function() {
     expect(dataFile).toEqual(
       dedent`[A/B/C]
 
-      * Topic: Hello world.
+      ** Topic: Hello world.
 
 
       [A]
@@ -205,7 +205,7 @@ describe('BulkFileParser', function() {
     * Topic: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n"
@@ -223,7 +223,7 @@ describe('BulkFileParser', function() {
     * Topic: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n"
@@ -246,7 +246,7 @@ describe('BulkFileParser', function() {
     Link: Hello world!` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph. Here is a [[link]], and here is a [square bracket].\n\nLink: Hello world!\n"
@@ -264,7 +264,7 @@ describe('BulkFileParser', function() {
     Topic: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/C.expl': "Topic: Paragraph.\n"
@@ -284,7 +284,7 @@ describe('BulkFileParser', function() {
     * Topic2: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -316,7 +316,7 @@ describe('BulkFileParser', function() {
     * Topic3: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -339,7 +339,7 @@ describe('BulkFileParser', function() {
     * Topic3: Paragraph.`+ '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -364,7 +364,7 @@ describe('BulkFileParser', function() {
     * This one has no key.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -390,7 +390,7 @@ describe('BulkFileParser', function() {
     * This one also has no key.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -412,7 +412,7 @@ describe('BulkFileParser', function() {
     * This one has no key.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/C.expl': "C: Paragraph.\n\nThis one has no key.\n",
@@ -438,7 +438,7 @@ describe('BulkFileParser', function() {
     * Note 2.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -463,7 +463,7 @@ describe('BulkFileParser', function() {
     * Topic2: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
@@ -494,7 +494,7 @@ describe('BulkFileParser', function() {
     * Topic: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n"
@@ -513,7 +513,7 @@ describe('BulkFileParser', function() {
     * Topic: Paragraph.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n"
@@ -535,7 +535,7 @@ describe('BulkFileParser', function() {
     * Topic #4: Hello world.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1%3F.expl': 'Topic1? Paragraph.\n',
@@ -552,7 +552,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Hello world.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({});
 
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
@@ -578,7 +578,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: New data.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     });
@@ -611,7 +611,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: New data.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     });
@@ -640,7 +640,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Choice #4: New data.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({});
 
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
@@ -678,7 +678,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Preexisting data.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     });
@@ -701,7 +701,7 @@ describe('FileSystemChangeCalculator', function() {
     });
     let newBulkFileString = '';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     });
@@ -735,7 +735,7 @@ describe('FileSystemChangeCalculator', function() {
     });
     let newBulkFileString = '[A/B/C]';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': 'Topic: Preexisting data.\n'
     });
@@ -773,7 +773,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Paragraph.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n"
@@ -804,7 +804,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Paragraph.`; + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
       'topics/A/B/D/Topic2.expl': "Topic2: Paragraph.\n"
@@ -842,7 +842,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Paragraph.`; + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
       'topics/A/B/D/Topic2.expl': "Topic2: Paragraph.\n"
@@ -877,7 +877,7 @@ describe('FileSystemChangeCalculator', function() {
     });
     let newBulkFileString = '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
       'topics/A/B/C/README.md': "Hello world.\n"
@@ -917,7 +917,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Paragraph.`; + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
       'topics/A/B/D/Topic2.expl': "Topic2: Paragraph.\n",
@@ -959,7 +959,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic: Paragraph.`; + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({
       'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n",
     });
@@ -1003,7 +1003,7 @@ describe('FileSystemChangeCalculator', function() {
 
     * Topic3: Paragraph.`; + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let newFileSet = bulkFileParser.getFileSet();
+    let { newFileSet } = bulkFileParser.getFileSet();
     let allDiskFileSet = new FileSet({});
 
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);

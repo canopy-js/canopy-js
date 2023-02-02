@@ -4,11 +4,11 @@ const dedent = require('dedent-js');
 const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
-let { getDefaultTopicAndPath, canopyLocation } = require('./shared/helpers');
+let { DefaultTopic, canopyLocation } = require('./shared/helpers');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
-  let { defaultTopicFilePath, defaultTopicName } = getDefaultTopicAndPath();
+  let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
   if (!keepBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
@@ -17,23 +17,25 @@ function build(options) {
 
   if (!manualHtml) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
+    let customCss = fs.existsSync(`assets/custom.css`);
 
     let html = dedent`
       <html>
       <head>
-      ${favicon ? '<link rel="icon" type="image/x-icon" href="/_assets/favicon.ico">' : ''}
+      ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
       <meta charset="utf-8">
       </head>
       <body>
       <div
         id="_canopy"
-        data-default-topic="${defaultTopicName}"
+        data-default-topic="${defaultTopic.name}"
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      <script src="${projectPathPrefix||''}/_canopy.js"></script>
+      ${customCss ? '<link rel="stylesheet" href="_assets/custom.css">' : ''}
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </body>
-      </html>`;
+      </html>\n`;
 
     fs.writeFileSync('build/index.html', html);
   }
@@ -44,7 +46,7 @@ function build(options) {
     + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
   ));
 
-  buildProject(defaultTopicName, options);
+  buildProject(defaultTopic.name, options);
 
   if (fs.existsSync(`assets`)) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });

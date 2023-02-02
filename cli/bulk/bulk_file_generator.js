@@ -5,6 +5,7 @@ class BulkFileGenerator {
     this.fileSet = fileSet;
     this.directoryComparator = generateDirectoryComparator(defaultTopicDisplayCategoryPath);
     this.fileComparator = generateFileComparator(defaultTopicFilePath);
+    this.defaultTopicFilePath = defaultTopicFilePath;
   }
 
   generateBulkFile() {
@@ -17,18 +18,28 @@ class BulkFileGenerator {
               .sort(this.fileComparator)
               .filter(f => f.path.endsWith('.expl'))
               .map(file =>
-                (displayAsterisk(file) ? '* ' : '')
+                (this.generateInitialAsterisks(file))
                 + file.contents.trim() // trim trailing newlines to ensure spacing is consistent
               ).join('\n\n\n'); // three newlines between files
 
       }).join('\n\n\n') // three newlines between the last file and the next category
       + '\n\n'; // two newlines at the end for space when adding
   }
-}
 
-function displayAsterisk(file) {
-  return (file.categoryNotes && file.key === file.terminalCategory) ||
-    (!file.categoryNotes && file.key)
+  generateInitialAsterisks(file) {
+    if ((file.categoryNotes && file.key === file.terminalCategory) || // if the initial key of a category notes file matches the category, it is a category topic
+      (!file.categoryNotes && file.key)) { // if the file is not a category notes file and it has a key, it is a regular topic file
+
+      if (file.path === this.defaultTopicFilePath) {
+        return '** '; // default topic
+      } else {
+        return '* '; // regular topic file
+      }
+
+    } else {
+      return ''; // notes file
+    }
+  }
 }
 
 function generateDirectoryComparator(defaultTopicDisplayCategoryPath) {

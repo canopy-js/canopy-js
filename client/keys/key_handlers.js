@@ -11,7 +11,7 @@ function moveUpward() {
   }
 
   return updateView(
-    link.parentLink.paragraphPathWhenSelected,
+    link.parentLink.path,
     new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
   );
 }
@@ -22,7 +22,7 @@ function topicParentLink() {
     link.enclosingParagraph.topicParagraph.parentLink;
 
   return updateView(
-    newLink?.paragraphPathWhenSelected || Path.current,
+    newLink?.path || Path.current,
     newLink || link
   );
 }
@@ -32,7 +32,7 @@ function moveDownward() {
 
   if (oldLink.isImport) {
     updateView(
-      oldLink.paragraphPathWhenSelected,
+      oldLink.path,
       oldLink.targetParagraph.parentLink
     );
   }
@@ -41,14 +41,14 @@ function moveDownward() {
     let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph?.parentLink;
 
     updateView(
-      newLink.paragraphPathWhenSelected,
+      newLink.path,
       new Link(() => Link.lastSelectionOfParagraph(newLink.enclosingParagraph) || newLink)
     );
   }
 
   if (!oldLink.isParent) {
     updateView(
-      oldLink.paragraphPathWhenSelected,
+      oldLink.path,
       oldLink
     );
   }
@@ -57,7 +57,7 @@ function moveDownward() {
 function moveLeftward() {
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
-    link.paragraphPathWhenSelected,
+    link.path,
     link
   );
 }
@@ -66,7 +66,7 @@ function moveRightward() {
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
-    link.paragraphPathWhenSelected,
+    link.path,
     link
   );
 }
@@ -74,7 +74,7 @@ function moveRightward() {
 function moveDownOrRedirect({ newTab, altKey }) {
   if (Link.selection.isLocal) {
     let link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
-    let path = link.paragraphPathWhenSelected;
+    let path = link.path;
 
     if (newTab) {
       return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank'); // zoom
@@ -125,7 +125,7 @@ function depthFirstSearch() {
   if (link.isLocal && link.hasChildren) {
     let nextLink = link.firstChildLink || link.nextSibling || link;
     return updateView(
-      nextLink.paragraphPathWhenSelected,
+      nextLink.path,
       nextLink
     );
   }
@@ -159,7 +159,7 @@ function depthFirstSearch() {
     })(link);
 
     return updateView(
-      linkToSelect.paragraphPathWhenSelected,
+      linkToSelect.path,
       linkToSelect
     );
   }

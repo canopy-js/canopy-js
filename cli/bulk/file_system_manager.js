@@ -1,6 +1,8 @@
 let fs = require('fs-extra');
 let FileSet = require('./file_set');
 let chalk = require('chalk');
+let Paragraph = require('../shared/paragraph');
+let { DefaultTopic } = require('../shared/helpers');
 
 class FileSystemManager {
   execute(fileSystemChange, logging) {
@@ -92,6 +94,15 @@ class FileSystemManager {
 
   deleteBulkFile(fileName) {
     fs.unlinkSync(fileName);
+  }
+
+  persistDefaultTopicPath(newDefaultTopicPath, newDefaultTopicName) {
+    try {
+      let defaultTopic = new DefaultTopic();
+      if (defaultTopic.name !== newDefaultTopicName) console.log(chalk.yellow(`Changing default topic from [${existingKey}] to [${newDefaultTopicName}]`));
+    } catch(e){} // if the file system has gotten in a bad state and the old default topic isn't available, just persist the new one.
+
+    fs.writeFileSync('canopy_default_topic', newDefaultTopicPath + '\n');
   }
 }
 

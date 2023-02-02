@@ -8,23 +8,22 @@ import {
   scrollPage,
 } from 'display/helpers';
 
-const displayPath = (pathToDisplay, linkToSelect, displayOptions) => {
+function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   displayOptions = displayOptions || {};
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
   try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, displayOptions); }
-  if (linkToSelect?.contradicts(pathToDisplay)) {
-    return updateView(linkToSelect.paragraphPathWhenSelected, linkToSelect, displayOptions);
-  }
+  if (!pathToDisplay.paragraph.pageRoot && !linkToSelect) linkToSelect = pathToDisplay.paragraph.parentLink;
+  if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.path, linkToSelect, displayOptions);
 
   resetDom();
-  Path.setPath(linkToSelect?.urlPathWhenSelected || pathToDisplay);
+  Path.setPath(linkToSelect?.path || pathToDisplay);
   setHeader(pathToDisplay.rootTopicPath.topic);
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect
 
-  pathToDisplay.paragraph.select();
   displayPathTo(pathToDisplay.paragraph);
-  scrollPage(displayOptions);
+  scrollPage(linkToSelect, displayOptions);
+  pathToDisplay.paragraph.select();
 };
 
 const displayPathTo = (paragraph) => {
@@ -32,7 +31,6 @@ const displayPathTo = (paragraph) => {
   if (paragraph.isPageRoot) return;
   paragraph.parentLink && paragraph.parentLinks.forEach(link => link.open());
   paragraph.ancestorImportReferences.forEach(link => link.open());
-  if (paragraph.parentLink && !Link.selection) Link.select(paragraph.parentLink);
   displayPathTo(paragraph.parentParagraph);
 }
 

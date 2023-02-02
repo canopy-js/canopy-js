@@ -80,16 +80,38 @@ const config = {
       port: 3000
     },
     {
-      command: 'cp -R playwright/test_project playwright/prefix_test && cd playwright/prefix_test && canopy build --project-path-prefix test && canopy serve --no-open -p 3001',
+      command: 'cp -R playwright/test_project playwright/prefix_test ' +
+               '&& cd playwright/prefix_test ' +
+               '&& canopy build --project-path-prefix test ' +
+               '&& canopy serve --no-open -p 3001',
       port: 3001
     },
     {
-      command: 'cp -R playwright/test_project playwright/hash_urls_test && cd playwright/hash_urls_test && canopy build --hash-urls && canopy serve --no-open -p 3002',
+      command: 'cp -R playwright/test_project playwright/hash_urls_test ' +
+               '&& cd playwright/hash_urls_test ' +
+               '&& canopy build --hash-urls ' +
+               '&& canopy serve --no-open -p 3002',
       port: 3002
     },
     {
-      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_test && cd playwright/hash_urls_and_prefix_test && canopy build --hash-urls --project-path-prefix test && canopy serve --no-open -p 3003',
+      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_test ' +
+               '&& cd playwright/hash_urls_and_prefix_test ' +
+               '&& canopy build --hash-urls --project-path-prefix test ' +
+               '&& canopy serve --no-open -p 3003',
       port: 3003
+    },
+    {
+      command: 'cd playwright/hash_urls_test/build && ruby -run -ehttpd . -p3004 > /dev/null 2>&1',
+      port: 3004
+    },
+    {
+      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_static_test ' +
+               '&& cd playwright/hash_urls_and_prefix_static_test ' +
+               '&& canopy build --hash-urls --project-path-prefix test ' +
+               '&& mkdir -p root/test ' +
+               '&& cp -r build/** root/test ' +
+               '&& ruby -run -ehttpd root -p3005 > /dev/null 2>&1',
+      port: 3005
     }
   ],
 

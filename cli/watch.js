@@ -12,11 +12,11 @@ function watch(options) {
     return;
   }
 
-  if (!options.suppressInitialBuild || (options.buildIfUnbuilt && !fs.existsSync('build/_data'))) {
+  if (!options.suppressInitialBuild) {
     buildWrapper(options);
   }
 
-  const watcher = chokidar.watch(['topics', `${canopyLocation}/dist`], { persistent: true, ignoreInitial: true });
+  const watcher = chokidar.watch(['topics', 'assets', `${canopyLocation}/dist`, `${canopyLocation}/cli`], { persistent: true, ignoreInitial: true });
 
   let handler = (e) => debounce(() => buildWrapper({...options, ...{ filesEdited: e }}), 500);
   watcher.on('add', handler)

@@ -52,13 +52,18 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
   });
 
-  test('Last link selections are prefered when going down', async ({ page }) => {
+  test('Last link selections are preferred when going down', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
-
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowRight');
+    // make sure the entire displayPath render is done before advancing
+    await expect(page.locator('.canopy-selected-section')).toContainText("Martha's Vineyard is a an Island in Massachusetts.");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await page.locator('body').press('ArrowUp');
+    await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
+    await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await page.locator('body').press('ArrowUp');
     await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
@@ -67,7 +72,7 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
   });
 
-  test('Last link selections are prefered when going up', async ({ page }) => {
+  test('Last link selections are preferred when going up', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('ArrowDown');

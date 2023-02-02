@@ -6,9 +6,9 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
 const sketch = require('./sketch/sketch');
-let { getDefaultTopicAndPath } = require('./shared/helpers');
-let defaultTopicSlug;
-try { ({ defaultTopicSlug } = getDefaultTopicAndPath()); } catch {}
+let { DefaultTopic } = require('./shared/helpers');
+let defaultTopic = {};
+try { defaultTopic = new DefaultTopic(); } catch {}
 
 const program = new Command();
 
@@ -49,7 +49,7 @@ program.command('build')
 program.command('watch')
   .description('watch a Canopy project and rebuild JSON assets on text change')
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
-  .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
+  .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
@@ -69,7 +69,7 @@ program.command('dev')
   .addOption(new Option('-p, --port <number>', 'port number').env('PORT'))
   .option('--no-open', 'do not open link in browser', true)
   .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false) //build options
-  .option('-h, --hashbang-urls', 'build site for use with hangbang URLs', false)
+  .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
@@ -111,9 +111,8 @@ program.command('bulk')
   .addOption(new Option('-r, --recursive', 'used in conjunction with --pick, allows selection of recursive directory contents').conflicts(['finish']).implies({ pick: true }))
   .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
-  .addOption(new Option('-l, --last', 'retrieve files from last bulk session').conflicts('finish'))
   .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
-  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name', defaultTopicSlug))
+  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name').default(defaultTopic.slug))
   .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies('sync'))
