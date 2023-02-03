@@ -57,9 +57,10 @@ const resetDom = () => {
 
 function scrollPage(linkToSelect, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let top = linkToSelect ? linkToSelect.element.offsetTop + // align bottom of link with 23rd % of page, to make room for child paragraph
-    linkToSelect.element.offsetHeight -
-    (window.screen.height * .23) : 0;
+  let topOfNewLink = linkToSelect?.element.offsetTop || 0;
+  let heightOfLink = linkToSelect?.element.offsetHeight || 0;
+  let idealPositionOfLinkOnViewport = window.innerHeight * .3; // align bottom of link with eye level, to make room for child paragraph
+  let top = topOfNewLink + heightOfLink - idealPositionOfLinkOnViewport;
 
   if (Math.abs(window.scrollY - top) > 35) { // changing link selection by more than two lines of text should trigger scroll
     window.scrollTo(
@@ -67,7 +68,7 @@ function scrollPage(linkToSelect, displayOptions) {
         top,
         behavior
       }
-    )
+    );
   }
 }
 

@@ -16,14 +16,14 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.path, linkToSelect, displayOptions);
 
   resetDom();
-  Path.setPath(linkToSelect?.path || pathToDisplay);
+  Path.setPath(linkToSelect?.path || pathToDisplay); // must be done before link.select because selection cache is by current URL
   setHeader(pathToDisplay.rootTopicPath.topic);
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect
 
   displayPathTo(pathToDisplay.paragraph);
-  scrollPage(linkToSelect, displayOptions);
   pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
+  scrollPage(linkToSelect, displayOptions);
 };
 
 const displayPathTo = (paragraph) => {
