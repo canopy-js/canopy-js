@@ -147,11 +147,7 @@ function parseLink(string) {
   let numberOfUnescapedPipes = linkContents.match(/(?<!\\)\|/g)?.length || 0;
   let fullText = linkMatch[0];
 
-  if (numberOfUnescapedPipes === 2) { // eg [[A |B| C]], selecting B as display, eg see [[|the answer| to question x]]
-    let segments = linkContents.split(/(?<!\\)\|/g);
-    keyText = segments.join('');
-    displayText = segments[1];
-  } else if (numberOfUnescapedPipes > 2) { // eg [[the |US ||treasury]] ie shared|key|display|shared
+  if (numberOfUnescapedPipes > 1) { // eg [[the |US ||treasury]] ie shared|key|display|shared
     linkContents.split(/(?<!\\)\|/g).forEach((substring, index) => {
       if (index % 3 === 0) (keyText += substring) && (displayText += substring);
       if (index % 3 === 1) keyText += substring;
@@ -172,7 +168,8 @@ function parseLink(string) {
     linkTarget: match && match[1] || null, // eg "France"
     linkFragment: match && match[2] || null, // eg "Paris"
     linkText: displayText || (match && (match[3] || match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
-    fullText
+    fullText,
+    multiPipe: numberOfUnescapedPipes > 1
   };
 }
 

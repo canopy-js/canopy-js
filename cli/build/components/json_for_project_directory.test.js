@@ -507,7 +507,7 @@ test('it lets you give arbitrary names to references', () => {
 
 test('it lets you select a display substring', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of |Wyoming|]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|the state of ||Wyoming]].\n`,
     'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
 
   };
@@ -570,6 +570,20 @@ test('it lets you select a display substring', () => {
       }
     }
   );
+});
+
+test('it adds to the error message for multipipe strings', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|the state of |Wyoming]].\n`,
+    'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
+
+  };
+
+  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
+    `Error: Reference [[|the state of |Wyoming]] referencing target [the state of ] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1`
+  ));
+
 });
 
 test('it lets you interpolate different strings for keys and display', () => {
@@ -641,7 +655,7 @@ test('it lets you interpolate different strings for keys and display', () => {
 
 test('it lets you select the display string with import references', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming state#|Cheyenne| city]] of [[Wyoming state]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[|Wyoming state#||Cheyenne| city]] of [[Wyoming state]].\n`,
     'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -1756,7 +1770,7 @@ test('it throws error if import reference is to non-existent subtopic', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].\n`,
   };
 
-  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho]\n` +
+  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho], [Boise]\n` +
     `topics/Wyoming/Wyoming.expl:1`;
 
   expect(

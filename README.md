@@ -137,7 +137,7 @@ This is a note.
 
 The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
-Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, indicating a new paragraph or note. For example:
+Paragraph nodes or notes can span multiple lines connected by single newline characters and still be considered one unit, so long as you do not use a double newline, which indicates a new paragraph or note. For example:
 
 ```
 Topic 1: This is the paragraph for Topic 1.
@@ -279,20 +279,23 @@ This is a [[Global Link]], and this is an import reference to a subtopic called 
 
 #### Additional link syntax ####
 
-If you want to make the display text differ from the target, do this:
+If you want to make the display text differ completely from the target name, you can do this:
 ```
-[[Target|Display text]]`
-```
-If you want to make the display text one substring of the target, do this:
-```
-[[The |United States| of America]]
+[[Target name|Display text]]`
 ```
 
-If you want to make a the target and display text almost the same with small differences, use the interpolation syntax, eg:
-```
-The song has many [[harmon|y|ies|]]
-```
-The above will create a target of "harmony" but a display text of "harmonies." This syntax will take the pipe-separated segments of the link contents and will interpret them as "shared" (to be added to target and display), then target only, then display only, and then cycles, ie `[[shared|topic only|display only|shared|topic only|display only|shared]]`.
+If you want to make a the target and display text almost the same with small differences, use the interpolation syntax. The interpolation syntax divides the link text by unescaped pipe characters, and then interprets the first segment as text that should be part of both the target and the display text, the second segment as text that is only supposed to add to the target name, and the third segment as being text that only is supposed to add to the display text, and it cycles in iterations of three. For example:
+
+
+| If you write | The target name will be | The display text will be |
+=====================================================================
+| [[shared | key| display| shared]] | shared key shared | shared display shared |
+| [[topic||s]] | topic | topics |
+| [[the |US ||Treasury]] | the US Treasury | the Treasury |
+| [[the answer|| to the question]] | the answer to the question | the answer |
+| [[harmon|y|ies]] | harmony | harmonies |
+
+You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text ie `[[Target name|Display text]]`.
 
 ### Using Markup
 
@@ -317,9 +320,9 @@ if (x) y(); //This is a code block
 ````
 #### Tables ####
 ````
-|This|is|a|table|
-=================
-| A  | B|C|  D  |
+| This | is | a | table |
+=========================
+|  A   | B  | C |   D   |
 ````
 #### Block quotes ####
 ````
