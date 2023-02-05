@@ -289,11 +289,11 @@ If you want to make a the target and display text almost the same with small dif
 
 | If you write | The target name will be | The display text will be |
 |--------------|-------------------------|--------------------------|
-| \[\[shared | key| display| shared]] | shared key shared | shared display shared |
-| \[\[topic||s]] | topic | topics |
-| \[\[the |US ||Treasury]] | the US Treasury | the Treasury |
-| \[\[the answer|| to the question]] | the answer to the question | the answer |
-| \[\[harmon|y|ies]] | harmony | harmonies |
+| \[\[shared \| key\| display\| shared]] | shared key shared | shared display shared |
+| \[\[topic\|\|s]] | topic | topics |
+| \[\[the \|US \|\|Treasury]] | the US Treasury | the Treasury |
+| \[\[the answer\|\| to the question]] | the answer to the question | the answer |
+| \[\[harmon\|y\|ies]] | harmony | harmonies |
 
 You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text ie `[[Target name|Display text]]`.
 
