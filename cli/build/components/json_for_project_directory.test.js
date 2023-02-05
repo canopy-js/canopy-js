@@ -581,7 +581,8 @@ test('it adds to the error message for multipipe strings', () => {
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
     `Error: Reference [[|the state of |Wyoming]] referencing target [the state of ] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1`
+    `topics/Idaho/Idaho.expl:1\n\n` +
+    `Remember, multi-pipe links are interpreted as [[text for both target and display|just target|just display|both|just target|just display]]`
   ));
 
 });

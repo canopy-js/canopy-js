@@ -246,7 +246,8 @@ function importReferenceMatcher({ string, parserContext, index }) {
 
   if (!targetTopic) {
     throw new Error(chalk.red(`Error: Reference ${fullText} ${multiPipe ? 'referencing target ['+linkTarget+'] ':''}in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`));
+      `${parserContext.filePath}:${parserContext.lineNumber}` +
+      (multiPipe ? '\n\nRemember, multi-pipe links are interpreted as [[text for both target and display|just target|just display|both|just target|just display]]' : '')));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
