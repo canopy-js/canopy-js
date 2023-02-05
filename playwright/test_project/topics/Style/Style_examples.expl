@@ -10,7 +10,7 @@ Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic 
 
 Tables:
 | This | is | a | table |
--------------------------
+|---|---|---|-----------|
 | 2 | 4 | 6 | 8 |
 
 Code blocks:

@@ -290,6 +290,7 @@ If you want to make a the target and display text almost the same with small dif
 | If you write | The target name will be | The display text will be |
 |--------------|-------------------------|--------------------------|
 | \[\[shared \| key\| display\| shared]] | shared key shared | shared display shared |
+| \[\[1\|2\|3\|4\|5\|6\|7\|8\|9]] | 124578 | 134679 |
 | \[\[topic\|\|s]] | topic | topics |
 | \[\[the \|US \|\|Treasury]] | the US Treasury | the Treasury |
 | \[\[the answer\|\| to the question]] | the answer to the question | the answer |
@@ -321,7 +322,7 @@ if (x) y(); //This is a code block
 #### Tables ####
 ````
 | This | is | a | table |
-=========================
+|------|----|---|-------|
 |  A   | B  | C |   D   |
 ````
 #### Block quotes ####
