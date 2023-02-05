@@ -281,7 +281,7 @@ This is a [[Global Link]], and this is an import reference to a subtopic called 
 
 If you want to make the display text differ completely from the target name, you can do this:
 ```
-[[Target name|Display text]]`
+[[Target name|Display text]]
 ```
 
 If you want to make a the target and display text almost the same with small differences, use the interpolation syntax. The interpolation syntax divides the link text by unescaped pipe characters, and then interprets the first segment as text that should be part of both the target and the display text, the second segment as text that is only supposed to add to the target name, and the third segment as being text that only is supposed to add to the display text, and it cycles in iterations of three. For example:
