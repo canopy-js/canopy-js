@@ -288,7 +288,7 @@ If you want to make a the target and display text almost the same with small dif
 
 
 | If you write | The target name will be | The display text will be |
-=====================================================================
+|--------------|-------------------------|--------------------------|
 | [[shared | key| display| shared]] | shared key shared | shared display shared |
 | [[topic||s]] | topic | topics |
 | [[the |US ||Treasury]] | the US Treasury | the Treasury |
