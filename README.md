@@ -279,7 +279,7 @@ This is a [[Global Link]], and this is an explicit import reference: [[Global Li
 
 #### Additional link syntax ####
 
-If you want to make the display text differ completely from the target name, you can do this:
+If you want to make the display text of a link differ completely from the target name, you can do this:
 ```
 [[Target name|Display text]]
 ```
