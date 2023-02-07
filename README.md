@@ -273,7 +273,7 @@ When the link for "Teton" is selected, the path from Wyoming's paragraph to the 
 In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, in a case where there are multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
 
 ```
-This is a [[Global Link]], and this is an import reference to a subtopic called "Subtopic": [[Global Link#Subtopic]].
+This is a [[Global Link]], and this is an explicit import reference: [[Global Link#Subtopic]].
 
 ```
 
