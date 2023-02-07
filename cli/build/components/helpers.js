@@ -41,7 +41,7 @@ by proximity to that link.
 class LinkProximityCalculator {
   constructor(text) {
     this.links = Array.from(
-      text.matchAll(/\[\[((?:.(?!\]\]))*.)\]\]/g) // [[ followed by any number of not ]], followed by ]]
+      text.matchAll(/\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
     ).map(match => ({
       start: match.index,
       end: match.index + match[0].length,
