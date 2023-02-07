@@ -289,14 +289,16 @@ If you want to make a the target and display text almost the same with small dif
 
 | If you write | The target name will be | The display text will be |
 |--------------|-------------------------|--------------------------|
-| \[\[shared \| key\| display\| shared]] | shared key shared | shared display shared |
-| \[\[topic\|\|s]] | topic | topics |
-| \[\[the \|US \|\|Treasury]] | the US Treasury | the Treasury |
-| \[\[the answer\|\| to the question]] | the answer to the question | the answer |
-| \[\[harmon\|y\|ies]] | harmony | harmonies |
-| \[\[1\|2\|3\|4\|5\|6\|7\|8\|9]] | 124578 | 134679 |
+| `[[shared \| key\| display\| shared]]` | shared key shared | shared display shared |
+| `[[topic||s]]` | topic | topics |
+| `[[the |US ||Treasury]]` | the US Treasury | the Treasury |
+| `[[the answer|| to the question]]` | the answer to the question | the answer |
+| `[[harmon|y|ies]]` | harmony | harmonies |
+| `[[1|2|3|4|5|6|7|8|9]]` | 124578 | 134679 |
 
 You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
+
+Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with interpolation syntax, you would just need to make the "target" string end up as `A#B`.
 
 ### Using Markup
 
@@ -382,7 +384,7 @@ For example:
 
 ![Bulk mode](./readme/bulk.gif)
 
-You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `EDITOR='subl -w' canopy bulk` to temporarily change your default editor. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
+You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `VISUAL='subl -w' canopy bulk` to temporarily set your visual editor, or, you can add `export VISUAL='subl -w'` eg to your shell config file. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
