@@ -264,7 +264,7 @@ class ParserContext {
     });
   }
 
-  validateImportReferenceGlobalMatching() {
+  validateImportReferenceGlobalMatching() { // every import reference must have a global reference to the target subtopic's topic in the same paragraph
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, tokens, filePath, lineNumber}) => {
       tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
         let globalToken = tokens.find(
@@ -286,7 +286,7 @@ class ParserContext {
     });
   }
 
-  validateImportReferenceTargets() {
+  validateImportReferenceTargets() { // every import reference must point at a subtopic that actually exists in the target topic
     this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
       if (!this.hasConnection(targetSubtopic, targetTopic)) {
         throw new Error(chalk.red(`Error: Import reference in ${displaySegment(enclosingTopic.mixedCase, enclosingSubtopic.mixedCase)} is referring to unsubsumed subtopic ${displaySegment(targetTopic.mixedCase, targetSubtopic.mixedCase)}\n` +
@@ -297,7 +297,7 @@ class ParserContext {
 
   validateSubtopicDefinitions() {
     this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
-      if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessable, it is invalid data
+      if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessible, it is invalid data
         throw new Error(chalk.red(`Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
           `Second definition: ${filePath}:${lineNumber2}`));
