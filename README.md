@@ -287,15 +287,17 @@ If you want to make the display text of a link differ completely from the target
 If you want to make a the target and display text almost the same with small differences, there are several syntaxes you can use:
 
 
-| Syntax name | If you write | The target name will be | The display text will be |
+| Syntax name | If you write | Target name will be | Display text will be |
 |-------------|--------------|-------------------------|--------------------------|
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
 | Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
-| Target addition | \[\[the \{US\} Treasury]] | the US Treasury | the Treasury |
-| Exclusive target addition | \[\[\{\{\|the\|\}\} US \{\{\|Treasury\|\}\}]] | the Treasury | the US Treasury |
+| Target addition | \[\[the \{US \}Treasury]] | the US Treasury | the Treasury |
+| Exclusive target addition | \[\[type of {{\|dog\|}}]] | dog | type of dog |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
-You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
+So single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
+
+You can remember the interpolation rule by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
 
 Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`.
 
