@@ -138,38 +138,74 @@ function terminalCategoryofPath(filePath) {
   return items[items.length - 2];
 }
 
-function parseLink(string) {
-  let displayText = '';
-  let keyText = '';
+function parseLink(string, parserContext) {
   let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/);
   if (!linkMatch) return {};
   let linkContents = linkMatch[1];
-  let numberOfUnescapedPipes = linkContents.match(/(?<!\\)\|/g)?.length || 0;
+  let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
   let fullText = linkMatch[0];
+  let manualDisplayText = false; // did the user set the display text, or is it inferred from the targetText?
 
-  if (numberOfUnescapedPipes > 1) { // eg [[the |US ||treasury]] ie shared|key|display|shared
-    linkContents.split(/(?<!\\)\|/g).forEach((substring, index) => {
-      if (index % 3 === 0) (keyText += substring) && (displayText += substring);
-      if (index % 3 === 1) keyText += substring;
-      if (index % 3 === 2) displayText += substring;
+  if (linkContents.match(/(?<!\\)\{/)) {
+    let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/g));
+    segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
+      if (plainText) { // a section of regular text in a link eg [[ABC...
+        displayText += plainText;
+        targetText += plainText;
+      } else {
+        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.fileAndLineNumber}`));
+        manualDisplayText = true;
+
+        if (openingBraces.length === 1) { // eg [[{ ... }]]
+          let pipeSegments = braceContents.split(/(?<!\\)\|/);
+          if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
+            targetText += pipeSegments[0];
+            displayText += pipeSegments[1];
+          } else if (pipeSegments && pipeSegments.length === 3) { // eg {|x|}, exclusive display text
+            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) { // eg { a|b|c }
+              throw new Error(chalk.red(`Link is using exclusive display syntax ie {|x|} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
+            } else {
+              exclusiveDisplayText += pipeSegments[1];
+              targetText += pipeSegments[1];
+            }
+          } else { // this is a link text segment such as {A}, where A is added to the display text only
+            displayText += braceContents;
+          }
+        }
+
+        if (openingBraces.length === 2) {
+          let pipeSegments = braceContents.split(/(?<!\\)\|/);
+          if (pipeSegments && ![1,3].includes(pipeSegments.length)) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: ${fullText}\n${parserContext.fileAndLineNumber}`));
+          if (pipeSegments && pipeSegments.length === 3) { // eg {{|x|}} exclusive target text
+            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
+            exclusiveTargetText += pipeSegments[1];
+            displayText += pipeSegments[1];
+          } else if (pipeSegments && pipeSegments.length === 1) { // this is a link text segment such as {{A}} where the text is added to the target only
+            targetText += braceContents;
+          }
+        }
+      }
     });
-  } else if (numberOfUnescapedPipes === 1) {
-    let segments = linkContents.split(/(?<!\\)\|/g);
-    keyText = segments[0];
+
+    displayText = exclusiveDisplayText || displayText;
+    targetText = exclusiveTargetText || targetText;
+  } else if (linkContents.match(/(?<!\\)\|/)) { // eg [[A|B]]
+    let segments = linkContents.split(/(?<!\\)\|/);
+    targetText = segments[0];
     displayText = segments[1];
-  } else {
-    keyText = linkContents;
+    manualDisplayText = true;
+  } else { // regular link eg [[London]] or [[England#London]]
+    targetText = linkContents;
   }
 
-  // Match [[a]] or [[a#b]] or [[a|b]] or [[a#b|c]] or [[number\#3#number\#4]]
-  let match = keyText.match(/^((?:(?!(?<!\\)[\]#|]).)+)(?:#((?:(?!(?<!\\)[\]#|]).)+))?(?:\|((?:(?!(?<!\\)[\]#|]).)+))?/);
+  let match = targetText.match(/^((?:(?!(?<!\\)#).)+)(?:#((?:(?!(?<!\\)#).)+))?$/); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
 
   return {
     linkTarget: match && match[1] || null, // eg "France"
     linkFragment: match && match[2] || null, // eg "Paris"
-    linkText: displayText || (match && (match[3] || match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
+    linkText: manualDisplayText ? displayText : (match && (match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
     fullText,
-    multiPipe: numberOfUnescapedPipes > 1
+    manualDisplayText
   };
 }
 

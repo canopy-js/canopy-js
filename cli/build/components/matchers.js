@@ -177,7 +177,7 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 
 function localReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
+  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string, parserContext);
 
   if (!linkTarget) return; // This is not a valid link
   if (linkFragment) return; // Any link with a # symbol is a global or import
@@ -217,7 +217,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
 function globalReferenceMatcher({ string, parserContext }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string);
+  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string, parserContext);
   if (!linkTarget) return; // invalid link
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
@@ -242,7 +242,7 @@ function globalReferenceMatcher({ string, parserContext }) {
 
 function importReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText, multiPipe } = parseLink(string);
+  let { linkTarget, linkFragment, linkText, fullText, manualDisplayText } = parseLink(string, parserContext);
   if (!linkTarget) return; // not a well-formed link
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
   if (!targetTopic) { // The user chose to just give the subtopic and imply the topic by proximity
@@ -250,9 +250,8 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} ${multiPipe ? 'referencing target ['+linkTarget+'] ':''}in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}` +
-      (multiPipe ? '\n\nRemember, multi-pipe links are interpreted as [[text for both target and display|just target|just display|both|just target|just display]]' : '')));
+    throw new Error(chalk.red(`Error: Reference ${fullText} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
+      `${parserContext.filePath}:${parserContext.lineNumber}`));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
