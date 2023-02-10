@@ -290,9 +290,9 @@ If you want to make a the target and display text almost the same with small dif
 | Syntax name | If you write | The target name will be | The display text will be |
 |-------------|--------------|-------------------------|--------------------------|
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
-| Exclusive display addition | \[\[{{the answer}} to the question]] | the answer to the question | the answer |
-| Target addition | \[\[the \{\|US\|\} Treasury]] | the US Treasury | the Treasury |
-| Exclusive target addition | \[\[\{\{|the|\}\} US \{\{\|Treasury\|\}\}]] | the Treasury | the US Treasury |
+| Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
+| Target addition | \[\[the \{US\} Treasury]] | the US Treasury | the Treasury |
+| Exclusive target addition | \[\[\{\{\|the\|\}\} US \{\{\|Treasury\|\}\}]] | the Treasury | the US Treasury |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
 You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
