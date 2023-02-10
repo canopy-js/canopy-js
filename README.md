@@ -291,7 +291,7 @@ If you want to make the link target and display text different, there are severa
 | Exclusive target addition | \[\[type of {{\|dog\|}}]] | dog | type of dog |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
-So single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
+The common theme is that single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
 
 You can remember the interpolation rule by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
 
