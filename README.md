@@ -279,16 +279,12 @@ This is a [[Global Link]], and this is an explicit import reference: [[Global Li
 
 #### Additional link syntax ####
 
-If you want to make the display text of a link differ completely from the target name, you can do this:
-```
-[[Target name|Display text]]
-```
-
-If you want to make a the target and display text almost the same with small differences, there are several syntaxes you can use:
+If you want to make a the target and display text different, there are several syntaxes you can use:
 
 
 | Syntax name | If you write | Target name will be | Display text will be |
 |-------------|--------------|-------------------------|--------------------------|
+| Simple syntax | \[\[Target name\|Display text]] | Target name | Display text |
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
 | Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
 | Target addition | \[\[the \{\{US \}\}Treasury]] | the US Treasury | the Treasury |
