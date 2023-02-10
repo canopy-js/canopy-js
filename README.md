@@ -286,9 +286,9 @@ If you want to make the link target and display text different, there are severa
 |-------------|--------------|-------------------------|--------------------------|
 | Simple | \[\[target name\|display text]] | target name | display text |
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
-| Exclusive display specification | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
+| Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
 | Target addition | \[\[the \{\{US \}\}Treasury]] | the US Treasury | the Treasury |
-| Exclusive target specification | \[\[type of {{\|dog\|}}]] | dog | type of dog |
+| Exclusive target addition | \[\[type of {{\|dog\|}}]] | dog | type of dog |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
 The common theme is that single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
