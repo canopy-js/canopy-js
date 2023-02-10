@@ -284,7 +284,7 @@ If you want to make the link target and display text different, there are severa
 
 | Syntax name | If you write | Target name will be | Display text will be |
 |-------------|--------------|-------------------------|--------------------------|
-| Simple syntax | \[\[Target name\|Display text]] | Target name | Display text |
+| Simple syntax | \[\[target name\|display text]] | target name | display text |
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
 | Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
 | Target addition | \[\[the \{\{US \}\}Treasury]] | the US Treasury | the Treasury |
