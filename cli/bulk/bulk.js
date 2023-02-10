@@ -156,18 +156,9 @@ const bulk = async function(selectedFileList, options) {
       options.logging = false;
     }
 
-    try {
-      build(Object.assign({ ...options, ...{ logging: false }}))
-      console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-    } catch (e) {
-      console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-      console.log(e.message);
-      console.log(chalk.magenta(`If you correct the error and refresh your browser, the project should build and display properly.`));
-    }
-
     // Watch topics and rebuild JSON on change
     // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server with
-    watch(Object.assign({ ...options, ...{ suppressInitialBuild: true }}));
+    watch(options);
 
     // Start server
     serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it

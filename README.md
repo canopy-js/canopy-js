@@ -284,21 +284,20 @@ If you want to make the display text of a link differ completely from the target
 [[Target name|Display text]]
 ```
 
-If you want to make a the target and display text almost the same with small differences, use the interpolation syntax. The interpolation syntax divides the link text by unescaped pipe characters, and then interprets the first segment as text that should be part of both the target and the display text, the second segment as text that is only supposed to add to the target name, and the third segment as being text that only is supposed to add to the display text, and it cycles in iterations of three. For example:
+If you want to make a the target and display text almost the same with small differences, there are several syntaxes you can use:
 
 
-| If you write | The target name will be | The display text will be |
-|--------------|-------------------------|--------------------------|
-| \[\[shared \| key\| display\| shared]] | shared key shared | shared display shared |
-| \[\[topic\|\|s]] | topic | topics |
-| \[\[the \|US \|\|Treasury]] | the US Treasury | the Treasury |
-| \[\[the answer\|\| to the question]] | the answer to the question | the answer |
-| \[\[harmon\|y\|ies]] | harmony | harmonies |
-| \[\[1\|2\|3\|4\|5\|6\|7\|8\|9]] | 124578 | 134679 |
+| Syntax name | If you write | The target name will be | The display text will be |
+|-------------|--------------|-------------------------|--------------------------|
+| Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
+| Exclusive display addition | \[\[{{the answer}} to the question]] | the answer to the question | the answer |
+| Target addition | \[\[the \{\|US\|\} Treasury]] | the US Treasury | the Treasury |
+| Exclusive target addition | \[\[\{\{|the|\}\} US \{\{\|Treasury\|\}\}]] | the Treasury | the US Treasury |
+| Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
 You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
 
-Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with interpolation syntax, you would just need to make the "target" string end up as `A#B`.
+Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`.
 
 ### Using Markup
 
