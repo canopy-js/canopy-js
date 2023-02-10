@@ -279,7 +279,7 @@ This is a [[Global Link]], and this is an explicit import reference: [[Global Li
 
 #### Additional link syntax ####
 
-If you want to make a the target and display text different, there are several syntaxes you can use:
+If you want to make the link target and display text different, there are several syntaxes you can use:
 
 
 | Syntax name | If you write | Target name will be | Display text will be |
