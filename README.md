@@ -295,9 +295,7 @@ If you want to make a the target and display text almost the same with small dif
 | Exclusive target addition | \[\[type of {{\|dog\|}}]] | dog | type of dog |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
-So single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
-
-You can remember the interpolation rule by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
+You can remember the rule by thinking of every |X|Y| unit as being a microcosm of a simple link where the text before the pipe is the target and the text after is the display text eg `[[Target name|Display text]]`.
 
 Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`.
 
