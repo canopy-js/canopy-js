@@ -153,7 +153,7 @@ function parseLink(string, parserContext) {
         displayText += plainText;
         targetText += plainText;
       } else {
-        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}`));
+        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.fileAndLineNumber}`));
         manualDisplayText = true;
 
         if (openingBraces.length === 1) { // eg [[{ ... }]]
@@ -163,7 +163,7 @@ function parseLink(string, parserContext) {
             displayText += pipeSegments[1];
           } else if (pipeSegments && pipeSegments.length === 3) { // eg {|x|}, exclusive display text
             if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) { // eg { a|b|c }
-              throw new Error(chalk.red(`Link is using target addition syntax ie {|x|} but pipes are not on edges: ${fullText}`));
+              throw new Error(chalk.red(`Link is using exclusive display syntax ie {|x|} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
             } else {
               exclusiveDisplayText += pipeSegments[1];
               targetText += pipeSegments[1];
@@ -175,9 +175,9 @@ function parseLink(string, parserContext) {
 
         if (openingBraces.length === 2) {
           let pipeSegments = braceContents.split(/(?<!\\)\|/);
-          if (pipeSegments && ![1,3].includes(pipeSegments.length)) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: ${fullText}`));
+          if (pipeSegments && ![1,3].includes(pipeSegments.length)) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: ${fullText}\n${parserContext.fileAndLineNumber}`));
           if (pipeSegments && pipeSegments.length === 3) { // eg {{|x|}} exclusive target text
-            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} but pipes are not on the edges: ${fullText}`));
+            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
             exclusiveTargetText += pipeSegments[1];
             displayText += pipeSegments[1];
           } else if (pipeSegments && pipeSegments.length === 1) { // this is a link text segment such as {{A}} where the text is added to the target only

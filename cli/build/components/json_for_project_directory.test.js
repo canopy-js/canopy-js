@@ -668,18 +668,20 @@ test('it errors for links like {a|b|c} that have too many pipes', () => {
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using target addition syntax ie {|x|} but pipes are not on edges: [[the state of {Wyoming|is|nice}]]`
+    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of {Wyoming|is|nice}]]\n` +
+    'topics/Idaho/Idaho.expl:1'
   ));
 });
 
 test('it errors for links like {a|b|c} that have pipes not on the edges', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {{ |Wyoming| }}]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of { |Wyoming| }]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} but pipes are not on the edges: [[the state of {{ |Wyoming| }}]]`
+    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of { |Wyoming| }]]\n` +
+    'topics/Idaho/Idaho.expl:1'
   ));
 });
 
@@ -738,7 +740,8 @@ test('it errors for links like {{|a|b|}} that have too many pipes', () => {
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming|is|nice}}]]`
+    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming|is|nice}}]]\n`+
+    'topics/Idaho/Idaho.expl:1'
   ));
 });
 
@@ -749,7 +752,8 @@ test('it errors for links like {{|a}} that have too few pipes', () => {
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming}}]]`
+    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming}}]]\n` +
+    'topics/Idaho/Idaho.expl:1'
   ));
 });
 
@@ -761,7 +765,8 @@ test('it errors for links like {{a|b|c}} that don\'t have pipes on the edges', (
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} but pipes are not on the edges: [[the state of {{ |Wyoming| }}]]`
+    `Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: [[the state of {{ |Wyoming| }}]]\n` +
+    'topics/Idaho/Idaho.expl:1'
   ));
 });
 

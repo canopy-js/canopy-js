@@ -286,12 +286,14 @@ If you want to make the link target and display text different, there are severa
 |-------------|--------------|-------------------------|--------------------------|
 | Simple | \[\[target name\|display text]] | target name | display text |
 | Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
-| Exclusive display addition | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
+| Exclusive display specification | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
 | Target addition | \[\[the \{\{US \}\}Treasury]] | the US Treasury | the Treasury |
-| Exclusive target addition | \[\[type of {{\|dog\|}}]] | dog | type of dog |
+| Exclusive target specification | \[\[type of {{\|dog\|}}]] | dog | type of dog |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
 
 The common theme is that single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
+
+If an exclusive syntax is used multiple times, the instances will be concatenated.
 
 You can remember the interpolation rule by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
 

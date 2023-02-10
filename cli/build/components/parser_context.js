@@ -389,6 +389,10 @@ class ParserContext {
     });
   }
 
+  get fileAndLineNumber() {
+    return `${this.topicFilePaths[this.currentTopic.caps]}:${this.lineNumber}`;
+  }
+
   hasConnection(subtopic, topic) { // Does a given subtopic have a local-reference path to the given topic?
     if (subtopic.caps === topic.caps) return true;
     if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
