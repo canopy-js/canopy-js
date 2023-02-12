@@ -153,7 +153,7 @@ function parseLink(string, parserContext) {
         displayText += plainText;
         targetText += plainText;
       } else {
-        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.fileAndLineNumber}`));
+        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.filePathAndLineNumber}`));
         manualDisplayText = true;
 
         if (openingBraces.length === 1) { // eg [[{ ... }]]
@@ -162,8 +162,8 @@ function parseLink(string, parserContext) {
             targetText += pipeSegments[0];
             displayText += pipeSegments[1];
           } else { // this is a link text segment such as {A}, where A is added to the display text only
-            exclusiveDisplayText += pipeSegments[1];
-            targetText += pipeSegments[1];
+            exclusiveDisplayText += braceContents;
+            targetText += braceContents;
           }
         }
 

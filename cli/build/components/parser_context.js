@@ -24,7 +24,10 @@ class ParserContext {
       this.topicFilePaths = {}; // by topic, the file path where that topic is defined
       this.currentTopic = null; // the current topic file being parsed
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
-      this.lineNumber = 0; // the current line number being parsed
+
+      this.lineNumber = 1; // the current line number being parsed
+      this.characterNumber = 1; // the current line number being parsed
+      this.linePrefixSize = 0;
       this.buildNamespaceObject(explFileData);
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
@@ -105,6 +108,7 @@ class ParserContext {
 
   setLineNumberToCurrentSubtopic() {
     this.lineNumber = this.subtopicLineNumbers[this.currentTopic.caps][this.currentSubtopic.caps];
+    this.characterNumber = 1;
   }
 
   setTopicAndSubtopic(topic, subtopic) {
@@ -138,12 +142,31 @@ class ParserContext {
     return this.tokens;
   }
 
+  resetCharacterNumber() {
+    this.characterNumber = 1 + this.linePrefixSize;
+  }
+
+  incrementCharacterNumber(num) {
+    if (num === 0) return;
+    if (num) {
+      this.characterNumber += num;
+    } else {
+      this.characterNumber++;
+    }
+  }
+
   incrementLineNumber(num) {
+    if (num === 0) return;
+    this.characterNumber = 1 + this.linePrefixSize;
     if (num) {
       this.lineNumber += num;
     } else {
       this.lineNumber++;
     }
+  }
+
+  get filePathAndLineNumber() {
+    return `${this.topicFilePaths[this.currentTopic.caps]}:${this.lineNumber}:${this.characterNumber}`;
   }
 
   set filePath(filePath) {
@@ -387,10 +410,6 @@ class ParserContext {
             `));
       }
     });
-  }
-
-  get fileAndLineNumber() {
-    return `${this.topicFilePaths[this.currentTopic.caps]}:${this.lineNumber}`;
   }
 
   hasConnection(subtopic, topic) { // Does a given subtopic have a local-reference path to the given topic?

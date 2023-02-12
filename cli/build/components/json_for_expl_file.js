@@ -15,6 +15,8 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
     parserContext.setTopicAndSubtopic(new Topic(rootParagraph.key), new Topic(paragraph.key));
     parserContext.setLineNumberToCurrentSubtopic();
+    if (!paragraph.newlineAfterDelimiter) parserContext.incrementCharacterNumber(paragraph.key.length + paragraph.charsAfterKey); // move cursor from last key char to first text char
+    if (paragraph.newlineAfterDelimiter) parserContext.incrementLineNumber();
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
