@@ -487,56 +487,9 @@ test('it lets you give arbitrary display names to references like [[a|b]]', () =
   );
 });
 
-test('it lets you add to the display string only like [[{the state of }Wyoming]]', () => {
+test('it lets you select an exclusive display substring like [[{the answer} to the question]]', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[{the state of }Wyoming]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "text" : "Idaho is a midwestern state, like ",
-            "type":"text"
-          },
-          {
-            "text": "the state of Wyoming",
-            "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "the state of Wyoming",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          }
-        ],
-      }
-    }
-  );
-});
-
-test('it lets you select an exclusive display substring like [[{|the answer|} to the question]]', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {|Wyoming|}]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
     'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
 
   };
@@ -583,111 +536,20 @@ test('it lets you select an exclusive display substring like [[{|the answer|} to
 
 test('it adds to the error message for manual display strings clarifying the resolved target', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {|Wyoming|}]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Error: Reference [[the state of {|Wyoming|}]] referencing target [the state of Wyoming] in [Idaho] matches no global, local, or import reference.\n` +
+    `Error: Reference [[the state of {Wyoming}]] referencing target [the state of Wyoming] in [Idaho] matches no global, local, or import reference.\n` +
     `topics/Idaho/Idaho.expl:1`
   ));
 });
 
-test('it lets you add to the target text like [[Wyoming{|state|}]]', () => {
+test('it lets you set an exclusive target text like [[{{Wyoming}} state]]', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming{{ state}}]].\n`,
-    'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state.\n`
-
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "text" : "Idaho is a midwestern state, like ",
-            "type":"text"
-          },
-          {
-            "text": "Wyoming",
-            "type": "global",
-            "targetSubtopic": "Wyoming state",
-            "targetTopic": "Wyoming state",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "Wyoming",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          }
-        ],
-      }
-    }
-  );
-
-  expect(JSON.parse(filesToWrite['build/_data/Wyoming_state.json'])).toEqual(
-    {
-      "displayTopicName": "Wyoming state",
-      "topicTokens": [
-         {
-          "text": "Wyoming state",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic": {
-        "Wyoming state": [
-          {
-            "text" : "Wyoming is a midwestern state.",
-            "type":"text"
-          }
-        ]
-      }
-    }
-  );
-});
-
-test('it errors for links like {a|b|c} that have too many pipes', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming|is|nice}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of {Wyoming|is|nice}]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it errors for links like {a|b|c} that have pipes not on the edges', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of { |Wyoming| }]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of { |Wyoming| }]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it lets you set an exclusive target text like [[{|Wyoming|} state]]', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[{|Wyoming|} state]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[{{Wyoming}} state]].\n`,
     'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state.\n`
 
   };

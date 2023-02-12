@@ -161,28 +161,15 @@ function parseLink(string, parserContext) {
           if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
             targetText += pipeSegments[0];
             displayText += pipeSegments[1];
-          } else if (pipeSegments && pipeSegments.length === 3) { // eg {|x|}, exclusive display text
-            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) { // eg { a|b|c }
-              throw new Error(chalk.red(`Link is using exclusive display syntax ie {|x|} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
-            } else {
-              exclusiveDisplayText += pipeSegments[1];
-              targetText += pipeSegments[1];
-            }
           } else { // this is a link text segment such as {A}, where A is added to the display text only
-            displayText += braceContents;
+            exclusiveDisplayText += pipeSegments[1];
+            targetText += pipeSegments[1];
           }
         }
 
         if (openingBraces.length === 2) {
-          let pipeSegments = braceContents.split(/(?<!\\)\|/);
-          if (pipeSegments && ![1,3].includes(pipeSegments.length)) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: ${fullText}\n${parserContext.fileAndLineNumber}`));
-          if (pipeSegments && pipeSegments.length === 3) { // eg {{|x|}} exclusive target text
-            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
-            exclusiveTargetText += pipeSegments[1];
-            displayText += pipeSegments[1];
-          } else if (pipeSegments && pipeSegments.length === 1) { // this is a link text segment such as {{A}} where the text is added to the target only
-            targetText += braceContents;
-          }
+          exclusiveTargetText += braceContents;
+          displayText += braceContents;
         }
       }
     });
