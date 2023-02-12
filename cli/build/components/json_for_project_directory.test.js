@@ -272,7 +272,7 @@ test('it does not match local references with periods', () => {
   };
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
     'Error: Reference [[State capital. and governor]] in [Idaho] matches no global, local, or import reference.\n' +
-    'topics/Idaho/Idaho.expl:1'
+    'topics/Idaho/Idaho.expl:1:49'
   ));
 });
 
@@ -487,56 +487,9 @@ test('it lets you give arbitrary display names to references like [[a|b]]', () =
   );
 });
 
-test('it lets you add to the display string only like [[{the }a]]', () => {
+test('it lets you select an exclusive display substring like [[{the answer} to the question]]', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[{the state of }Wyoming]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "text" : "Idaho is a midwestern state, like ",
-            "type":"text"
-          },
-          {
-            "text": "the state of Wyoming",
-            "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "the state of Wyoming",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          }
-        ],
-      }
-    }
-  );
-});
-
-test('it lets you select an exclusive display substring like [[{|the answer|} to the question]]', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {|Wyoming|}]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
     'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
 
   };
@@ -581,23 +534,117 @@ test('it lets you select an exclusive display substring like [[{|the answer|} to
   );
 });
 
+test('it lets you select multiple exclusive display substrings like [[{the }US {postal service}]]', () => {
+  let explFileData = {
+    'topics/US/Services.expl': `Services: Americans like [[{the }US {postal service}]].\n`,
+    'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Services.json'])).toEqual(
+    {
+      "displayTopicName": "Services",
+      "topicTokens": [
+         {
+          "text": "Services",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Services": [
+          {
+            "text" : "Americans like ",
+            "type":"text"
+          },
+          {
+            "text": "the postal service",
+            "type": "global",
+            "targetSubtopic": "The US postal service",
+            "targetTopic": "The US postal service",
+            "enclosingTopic": "Services",
+            "enclosingSubtopic" : "Services",
+            "tokens": [
+              {
+                 "text": "the postal service",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
+test('it lets you select multiple exclusive display substrings with interpolation like [[{the |a }US {postal service}]]', () => {
+  let explFileData = {
+    'topics/US/Services.expl': `Services: The US has [[{the |a }US {postal service}]].\n`,
+    'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Services.json'])).toEqual(
+    {
+      "displayTopicName": "Services",
+      "topicTokens": [
+         {
+          "text": "Services",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Services": [
+          {
+            "text" : "The US has ",
+            "type":"text"
+          },
+          {
+            "text": "a postal service",
+            "type": "global",
+            "targetSubtopic": "The US postal service",
+            "targetTopic": "The US postal service",
+            "enclosingTopic": "Services",
+            "enclosingSubtopic" : "Services",
+            "tokens": [
+              {
+                 "text": "a postal service",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
 test('it adds to the error message for manual display strings clarifying the resolved target', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {|Wyoming|}]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
 
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Error: Reference [[the state of {|Wyoming|}]] referencing target [the state of Wyoming] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1`
+    `Error: Reference [[the state of {Wyoming}]] in [Idaho] referencing target [the state of Wyoming] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1:42`
   ));
 });
 
-test('it lets you add to the target text like [[Wyoming{|state|}]]', () => {
+test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming{{ state}}]].\n`,
-    'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state.\n`
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {{Wyoming}}]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -618,15 +665,15 @@ test('it lets you add to the target text like [[Wyoming{|state|}]]', () => {
             "type":"text"
           },
           {
-            "text": "Wyoming",
+            "text": "the state of Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming state",
-            "targetTopic": "Wyoming state",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
               {
-                 "text": "Wyoming",
+                 "text": "the state of Wyoming",
                  "type": "text",
                },
              ]
@@ -639,135 +686,6 @@ test('it lets you add to the target text like [[Wyoming{|state|}]]', () => {
       }
     }
   );
-
-  expect(JSON.parse(filesToWrite['build/_data/Wyoming_state.json'])).toEqual(
-    {
-      "displayTopicName": "Wyoming state",
-      "topicTokens": [
-         {
-          "text": "Wyoming state",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic": {
-        "Wyoming state": [
-          {
-            "text" : "Wyoming is a midwestern state.",
-            "type":"text"
-          }
-        ]
-      }
-    }
-  );
-});
-
-test('it errors for links like {a|b|c} that have too many pipes', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming|is|nice}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of {Wyoming|is|nice}]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it errors for links like {a|b|c} that have pipes not on the edges', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of { |Wyoming| }]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive display syntax ie {|x|} but pipes are not on edges: [[the state of { |Wyoming| }]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it lets you set an exclusive target text like [[{|Wyoming|} state]]', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[{|Wyoming|} state]].\n`,
-    'topics/Wyoming/Wyoming_state.expl': `Wyoming state: Wyoming is a midwestern state.\n`
-
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "text" : "Idaho is a midwestern state, like ",
-            "type":"text"
-          },
-          {
-            "text": "Wyoming",
-            "type": "global",
-            "targetSubtopic": "Wyoming state",
-            "targetTopic": "Wyoming state",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "Wyoming",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          }
-        ],
-      }
-    }
-  );
-});
-
-test('it errors for links like {{|a|b|}} that have too many pipes', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {{|Wyoming|is|nice}}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming|is|nice}}]]\n`+
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it errors for links like {{|a}} that have too few pipes', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {{|Wyoming}}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: [[the state of {{|Wyoming}}]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
-});
-
-test('it errors for links like {{a|b|c}} that don\'t have pipes on the edges', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {{ |Wyoming| }}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: [[the state of {{ |Wyoming| }}]]\n` +
-    'topics/Idaho/Idaho.expl:1'
-  ));
 });
 
 test('it lets you interpolate different values for display and target like [[harmon{y|ies}]]', () => {
@@ -819,7 +737,7 @@ test('it lets you interpolate different values for display and target like [[har
 
 test('it lets you select an exclusive display string with import references like [[Wyoming#{{Cheyenne}} city]]', () => {
   let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming#{|Cheyenne|} city]] of [[Wyoming]].\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming#{Cheyenne} city]] of [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
@@ -1699,7 +1617,7 @@ test('it throws error for unrecognized link', () => {
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
     `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1`
+    `topics/Idaho/Idaho.expl:1:42`
   ));
 });
 
@@ -1723,7 +1641,7 @@ test('it throws error for unrecognized link defined in category notes file', () 
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
     `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1`
+    `topics/Idaho/Idaho.expl:1:42`
   ));
 });
 
@@ -1846,7 +1764,7 @@ test('it handles line counting within nested block', () => {
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
     `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:3`
+    `topics/Idaho/Idaho.expl:4:47`
     ));
 });
 
@@ -1863,7 +1781,20 @@ test('it handles lines counting after block', () => {
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
     `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:4`
+    `topics/Idaho/Idaho.expl:5:16`
+    ));
+});
+
+test('it handles character counting after token', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: [[Idaho|This is a good link]] followed by a [[Boise|bad link]]` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[Boise|bad link]] in [Idaho] referencing target [Boise] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:1:52`
     ));
 });
 
@@ -1923,7 +1854,7 @@ test('it throws error if import reference is to non-existent topic', () => {
   };
 
   let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existent topic [England]\n` +
-    `topics/Wyoming/Wyoming.expl:1`;
+    `topics/Wyoming/Wyoming.expl:1:52`;
 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
@@ -1937,7 +1868,7 @@ test('it throws error if import reference is to non-existent subtopic', () => {
   };
 
   let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho], [Boise]\n` +
-    `topics/Wyoming/Wyoming.expl:1`;
+    `topics/Wyoming/Wyoming.expl:1:52`;
 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})

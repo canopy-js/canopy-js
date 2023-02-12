@@ -100,7 +100,14 @@ function CodeBlockToken(text) {
 
 function BlockQuoteToken(text, direction, parserContext) {
   this.type = 'block_quote';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, ignoreMultiLineTokens: true }) });
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({
+      preserveNewlines: true,
+      ignoreMultiLineTokens: true,
+      linePrefixSize: 2 // ie "> "
+    })
+  });
   this.direction = direction;
 }
 

@@ -18,21 +18,28 @@ function parseText({ text, parserContext }) {
         (text[i - 1] === undefined && !parserContext.ignoreMultiLineTokens); // start of text when not parsing token within token ie start of paragraph
 
       result = Matchers[j]({ string, parserContext, index: i, previousCharacter: text[i - 1], startOfLine });
+
       if (result) {
         let [token, length] = result;
         if (result[0]) { // escapedCharacterMatcher doesn't return a token but adds to buffer
           if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
           parserContext.buffer = '';
           tokens.push(token);
-          parserContext.incrementLineNumber(string.slice(length).match(/\n/g)?.length || 0);
+
+          parserContext.incrementLineNumber(string.slice(0, length).match(/\n/g)?.length || 0);
+          parserContext.incrementCharacterNumber(string.slice(0, length).split('\n').slice(-1)[0].length || 0);
+          if (string.slice(0, length)[length - 1] === '\n') parserContext.resetCharacterNumber();
         }
 
         i += length - 1; // after this loop finishes it will increment to the next unprocessed character
         break;
       }
     }
+
     if (result) continue;
+
     parserContext.buffer += characters[i];
+    parserContext.incrementCharacterNumber();
     if (characters[i] === '\n') parserContext.incrementLineNumber();
   }
 

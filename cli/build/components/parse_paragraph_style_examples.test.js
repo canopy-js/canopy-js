@@ -3,7 +3,8 @@ let parseParagraph = require('./parse_paragraph');
 function ParserContextMock(priorContext) {
   let context = {
     currentTopicAndSubtopic: { currentTopic: 'A', currentSubtopic: 'B'},
-    incrementLineNumber: jest.fn()
+    incrementLineNumber: jest.fn(),
+    incrementCharacterNumber: jest.fn()
   }
 
   priorContext && Object.assign(context, priorContext);

@@ -145,6 +145,8 @@ function parseLink(string, parserContext) {
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
   let fullText = linkMatch[0];
   let manualDisplayText = false; // did the user set the display text, or is it inferred from the targetText?
+  let exclusiveTargetSyntax = false;
+  let exclusiveDisplaySyntax = false;
 
   if (linkContents.match(/(?<!\\)\{/)) {
     let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/g));
@@ -153,7 +155,7 @@ function parseLink(string, parserContext) {
         displayText += plainText;
         targetText += plainText;
       } else {
-        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.fileAndLineNumber}`));
+        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.filePathAndLineNumber}`));
         manualDisplayText = true;
 
         if (openingBraces.length === 1) { // eg [[{ ... }]]
@@ -161,34 +163,25 @@ function parseLink(string, parserContext) {
           if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
             targetText += pipeSegments[0];
             displayText += pipeSegments[1];
-          } else if (pipeSegments && pipeSegments.length === 3) { // eg {|x|}, exclusive display text
-            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) { // eg { a|b|c }
-              throw new Error(chalk.red(`Link is using exclusive display syntax ie {|x|} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
-            } else {
-              exclusiveDisplayText += pipeSegments[1];
-              targetText += pipeSegments[1];
-            }
-          } else { // this is a link text segment such as {A}, where A is added to the display text only
-            displayText += braceContents;
+            exclusiveTargetText += pipeSegments[0]; // if we later see an exclusive syntax, retroactively we will have added interpolations to it
+            exclusiveDisplayText += pipeSegments[1];
+          } else { // this is a link text segment such as {A}, which exclusively selects A as the display text
+            exclusiveDisplaySyntax = true;
+            exclusiveDisplayText += braceContents;
+            targetText += braceContents;
           }
         }
 
-        if (openingBraces.length === 2) {
-          let pipeSegments = braceContents.split(/(?<!\\)\|/);
-          if (pipeSegments && ![1,3].includes(pipeSegments.length)) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} has wrong number of pipes: ${fullText}\n${parserContext.fileAndLineNumber}`));
-          if (pipeSegments && pipeSegments.length === 3) { // eg {{|x|}} exclusive target text
-            if (pipeSegments[0].length > 0 || pipeSegments[2].length > 0) throw new Error(chalk.red(`Link is using exclusive target syntax ie {{|x|}} but pipes are not on edges: ${fullText}\n${parserContext.fileAndLineNumber}`));
-            exclusiveTargetText += pipeSegments[1];
-            displayText += pipeSegments[1];
-          } else if (pipeSegments && pipeSegments.length === 1) { // this is a link text segment such as {{A}} where the text is added to the target only
-            targetText += braceContents;
-          }
+        if (openingBraces.length === 2) { // for a link like {{A}} which exclusively selects A as the target text
+          exclusiveTargetSyntax = true;
+          exclusiveTargetText += braceContents;
+          displayText += braceContents;
         }
       }
     });
 
-    displayText = exclusiveDisplayText || displayText;
-    targetText = exclusiveTargetText || targetText;
+    displayText = exclusiveDisplaySyntax ? exclusiveDisplayText : displayText;
+    targetText = exclusiveTargetSyntax ? exclusiveTargetText : targetText;
   } else if (linkContents.match(/(?<!\\)\|/)) { // eg [[A|B]]
     let segments = linkContents.split(/(?<!\\)\|/);
     targetText = segments[0];

@@ -76,14 +76,14 @@ function prefixCodeBlockMatcher({ string, startOfLine }) {
 
 function blockQuoteMatcher({ string, parserContext, startOfLine }) {
   let match =
-    string.match(/^((<) [^\n]+(\n|$))+/s)
-    || string.match(/^((>) [^\n]+(\n|$))+/s); // one direction or the other not a mix
+    string.match(/^((<)(?: [^\n]+|(?=\n))(\n|$))+/s)
+    || string.match(/^((>)(?: [^\n]+|(?=\n))(\n|$))+/s); // one direction or the other not a mix
 
   if (match && startOfLine) {
     let text = Array.from(
       match[0]
-        .matchAll(/(?<=^|\n)(?:[><]) ?([^\n]+)/g))
-        .map(m => m[1])
+        .matchAll(/(?<=^|\n)(?:[><])(?: ([^\n]+)|(?=\n))/g))
+        .map(m => m?.[1] || '')
         .join('\n');
 
     if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
@@ -250,18 +250,18 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} matches no global, local, or import reference.\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`));
+    throw new Error(chalk.red(`Error: Reference ${fullText} in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
+      `${parserContext.filePathAndLineNumber}`));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
     throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`));
+      `${parserContext.filePathAndLineNumber}`));
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
     throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` +
-      `${parserContext.filePath}:${parserContext.lineNumber}`));
+      `${parserContext.filePathAndLineNumber}`));
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);

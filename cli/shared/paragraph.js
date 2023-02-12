@@ -23,6 +23,8 @@ class Paragraph {
 
     this.key = key;
     this.text = text;
+    this.charsAfterKey = match[2] === '?' ? 1 : 2;
+    this.newlineAfterDelimiter = match[3] === '\n';
   }
 }
 
