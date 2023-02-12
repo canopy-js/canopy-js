@@ -285,17 +285,14 @@ If you want to make the link target and display text different, there are severa
 | Syntax name | If you write | Target name will be | Display text will be |
 |-------------|--------------|-------------------------|--------------------------|
 | Simple | \[\[target name\|display text]] | target name | display text |
-| Display addition | \[\[{the state of }Wyoming]] | Wyoming | the state of Wyoming |
-| Exclusive display specification | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
-| Target addition | \[\[the \{\{US \}\}Treasury]] | the US Treasury | the Treasury |
-| Exclusive target specification | \[\[type of {{\|dog\|}}]] | dog | type of dog |
+| Exclusive display | \[\[{\|the answer\|} to the question]] | the answer to the question | the answer |
+| Exclusive target | \[\[{{dog}}s]] | dog | dogs |
 | Interpolation | \[\[harmon{y\|ies}]] | harmony | harmonies |
+| Mix | \[\[{the \|a }US {postal service}]] | the US postal service | a postal service |
 
-The common theme is that single braces `{}` represent display text, double braces `{{}}` represent target text, and inner pipes `{|x|}` or `{{|x|}}` represent exclusivity.
+If an exclusive syntax is used multiple times, the instances will be concatenated, as will interpolation syntax when combined with either syntax.
 
-If an exclusive syntax is used multiple times, the instances will be concatenated.
-
-You can remember the interpolation rule by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
+You can remember the order of the interpolation syntax by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
 
 Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`.
 

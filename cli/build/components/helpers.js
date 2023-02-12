@@ -145,6 +145,8 @@ function parseLink(string, parserContext) {
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
   let fullText = linkMatch[0];
   let manualDisplayText = false; // did the user set the display text, or is it inferred from the targetText?
+  let exclusiveTargetSyntax = false;
+  let exclusiveDisplaySyntax = false;
 
   if (linkContents.match(/(?<!\\)\{/)) {
     let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/g));
@@ -161,21 +163,25 @@ function parseLink(string, parserContext) {
           if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
             targetText += pipeSegments[0];
             displayText += pipeSegments[1];
-          } else { // this is a link text segment such as {A}, where A is added to the display text only
+            exclusiveTargetText += pipeSegments[0]; // if we later see an exclusive syntax, retroactively we will have added interpolations to it
+            exclusiveDisplayText += pipeSegments[1];
+          } else { // this is a link text segment such as {A}, which exclusively selects A as the display text
+            exclusiveDisplaySyntax = true;
             exclusiveDisplayText += braceContents;
             targetText += braceContents;
           }
         }
 
-        if (openingBraces.length === 2) {
+        if (openingBraces.length === 2) { // for a link like {{A}} which exclusively selects A as the target text
+          exclusiveTargetSyntax = true;
           exclusiveTargetText += braceContents;
           displayText += braceContents;
         }
       }
     });
 
-    displayText = exclusiveDisplayText || displayText;
-    targetText = exclusiveTargetText || targetText;
+    displayText = exclusiveDisplaySyntax ? exclusiveDisplayText : displayText;
+    targetText = exclusiveTargetSyntax ? exclusiveTargetText : targetText;
   } else if (linkContents.match(/(?<!\\)\|/)) { // eg [[A|B]]
     let segments = linkContents.split(/(?<!\\)\|/);
     targetText = segments[0];

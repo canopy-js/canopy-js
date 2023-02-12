@@ -534,6 +534,100 @@ test('it lets you select an exclusive display substring like [[{the answer} to t
   );
 });
 
+test('it lets you select multiple exclusive display substrings like [[{the }US {postal service}]]', () => {
+  let explFileData = {
+    'topics/US/Services.expl': `Services: Americans like [[{the }US {postal service}]].\n`,
+    'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Services.json'])).toEqual(
+    {
+      "displayTopicName": "Services",
+      "topicTokens": [
+         {
+          "text": "Services",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Services": [
+          {
+            "text" : "Americans like ",
+            "type":"text"
+          },
+          {
+            "text": "the postal service",
+            "type": "global",
+            "targetSubtopic": "The US postal service",
+            "targetTopic": "The US postal service",
+            "enclosingTopic": "Services",
+            "enclosingSubtopic" : "Services",
+            "tokens": [
+              {
+                 "text": "the postal service",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
+test('it lets you select multiple exclusive display substrings with interpolation like [[{the |a }US {postal service}]]', () => {
+  let explFileData = {
+    'topics/US/Services.expl': `Services: The US has [[{the |a }US {postal service}]].\n`,
+    'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Services.json'])).toEqual(
+    {
+      "displayTopicName": "Services",
+      "topicTokens": [
+         {
+          "text": "Services",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Services": [
+          {
+            "text" : "The US has ",
+            "type":"text"
+          },
+          {
+            "text": "a postal service",
+            "type": "global",
+            "targetSubtopic": "The US postal service",
+            "targetTopic": "The US postal service",
+            "enclosingTopic": "Services",
+            "enclosingSubtopic" : "Services",
+            "tokens": [
+              {
+                 "text": "a postal service",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : ".",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
 test('it adds to the error message for manual display strings clarifying the resolved target', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
