@@ -27,7 +27,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,
-    topicTokens: parseText({ text: rootParagraph.key, parserContext: parserContext.clone({ ignoreMultiLineTokens: true }) }),
+    topicTokens: parseText({ text: rootParagraph.key, parserContext: parserContext.clone({ insideToken: true }) }),
     paragraphsBySubtopic
   };
 

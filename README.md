@@ -25,13 +25,15 @@ Canopy takes a set of text files like this:
 ```
 United States: The United States is a country that contains [[New York]] and [[New Jersey]].
 
-New York: New York is a northeastern American state whose capital is [[Albany]].
+New York:
+New York is a northeastern American state whose capital is [[Albany]].
 New York has 20.2 million people, and contains New York City.
 New York covers a total area of 54,556 square miles.
 
 Albany: Albany is a mid-sized American city in upstate New York.
 
-New Jersey:   New Jersey is a northeastern American state whose capital is [[Trenton]].
+New Jersey:
+New Jersey is a northeastern American state whose capital is [[Trenton]].
 New Jersey has 9.3 million residents. The state was a major site of the American Revolutionary War,
 and later became a center of manufacturing and immigration.
 
@@ -429,6 +431,10 @@ You can use a Canopy website using only the keyboard.
 | Shift + up | Select parent link of current topic |
 
 Option/Alt clicking also redirects to the selected link.
+
+### Sample workflows ###
+
+Once you have a Github repo for your Canopy project, you can add premade Github Actions that accomplish certain common tasks for your project. These actions are available in the [example workflows repo](https://github.com/canopy-js/example-workflows). Currently one can automatically build one's project and upload to static assets hosting on Netlify, one can allow basic online editing of a deployed project using the "online edit" workflow, and one can automatically build and release one's Canopy project as Electron.js desktop apps for various platforms.
 
 ## Development
 
