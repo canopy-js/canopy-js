@@ -8,7 +8,7 @@ class Paragraph {
     // Match characters which are either not sentence-terminating punctuation, or which are backslash-escaped sentence-terminating punctuation,
     // or which are sentence terminating punctuation not followed by a space; and these characters must be followed by a colon or a question mark.
     // If the terminator is a question mark or colon, accept the match, and if it is a question mark, include it in the match
-    let match = textWithKey.match(/^(?!-)((?:[^:.!?]|(?<=\\)[:.!?]|[:.!?](?!\s))+)(?::|(\?))(\s+)?/m);
+    let match = textWithKey.match(/^(?!-)((?:[^:.!?\n]|(?<=\\)[:.!?]|[:.!?](?!\s))+)(?::|(\?))(\s+|\n|$)/m);
 
     if (!match) {
       return {
