@@ -78,19 +78,18 @@ const bulk = async function(selectedFileList, options) {
   let cyclePreventer = new CyclePreventer();
   let newBulkFileString;
   let oldBulkFileString;
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName}`)));
-  }
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopic = {};
     try { defaultTopic = new DefaultTopic() } catch(e) { console.log(chalk.red(e.message));} // validate default topic
-
+    if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
+      console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName||defaultTopic.slug}`)));
+    }
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || defaultTopicSlug || 'canopy_bulk_file';
+    options.bulkFileName = options.bulkFileName || defaultTopic.slug || 'canopy_bulk_file';
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
@@ -102,11 +101,11 @@ const bulk = async function(selectedFileList, options) {
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (!newBulkFileString) console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
+    if (typeof newBulkFileString !== 'string') console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString);
-    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.getFileSet();
+    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
     if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
@@ -119,7 +118,7 @@ const bulk = async function(selectedFileList, options) {
 
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
-    new DefaultTopic() // Error in case the person changed the default topic file name
+    try { new DefaultTopic() } catch(e) { console.log(e) } // Error in case the person changed the default topic file name
   }
 
   let normalMode = !options.start && !options.finish && !options.sync;

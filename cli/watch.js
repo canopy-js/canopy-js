@@ -37,7 +37,6 @@ function buildAndWriteHtmlError(options) {
     build(options);
   } catch(e) {
     if (options.sync) {
-      console.log("Writing file", stripAnsi(e.message))
       fs.writeFileSync(
         'build/index.html',
         `<h1 style="text-align: center;">Error building project</h1>

@@ -34,7 +34,7 @@ class BulkFileParser {
     });
   }
 
-  getFileSet() {
+  generateFileSet() {
     let fileContentsByPath = {};
     let defaultTopicPath;
     let defaultTopicKey;
@@ -49,7 +49,7 @@ class BulkFileParser {
           // Create topic file
           let topicFilePath = `${section.diskDirectoryPath}/${(new Topic(file.key)).fileName}.expl`;
           if (fileContentsByPath.hasOwnProperty(topicFilePath)) console.log(chalk.bgYellow(chalk.black(`Warning: Topic [${file.key}] is defined twice in bulk file.`)));
-          fileContentsByPath[topicFilePath] = file.text.trim() + '\n';
+          fileContentsByPath[topicFilePath] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
 
           if (file.doubleAsterisk) {
             if (defaultTopicPath) {

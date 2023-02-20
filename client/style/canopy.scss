@@ -1,6 +1,6 @@
 #_canopy {
   padding-top: 15px;
-  overflow-anchor: none; // Prevent browser from trying to maintain position when page contents change, which interferes with window.scrollTo
+  overflow-anchor: none; // Prevent browser from trying to maintain position when page contents change, which might interfere with window.scrollTo
 
   /* Removing DOM elements from the bottom of the screen can force the page to scroll upward to the existing elements
   which is not animated. If we keep a padding on the bottom of the last element just beyond the viewport, then
@@ -196,17 +196,17 @@
 
     img {
       display: block;
-      width: 98%;
+      width: 100%;
       margin: 0 auto;
     }
 
     span.canopy-image-caption {
-      width: 98%;
       margin: 0px auto;
+      width: 100%;
       padding: 6px 0;
       text-align: left;
       display: block;
-      font-size: 18px;
+      font-size: 16px;
       margin-top: 4px;
       line-height: 18px;
       color: #595959;

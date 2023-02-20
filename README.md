@@ -345,6 +345,27 @@ More text.
 This is text with a footnote[^1].
 [^1]: This is the footnote.
 ````
+
+#### Images ####
+
+```
+\!\[Alt Text](path/to/asset.jpg)
+
+\!\[Alt Text](path/to/asset.jpg "Optional title")
+
+\!\[Alt Text](path/to/asset.jpg "Optional title" "Optional caption")
+```
+
+Any inline-token such as Canopy references can be used in the image caption.
+
+By default images link to their sources.
+
+#### Linked Images ####
+
+```
+\[\!\[Alt text](path/to/asset.jpg "Optional title" "Optional caption")](\h\ttp://hyperlink-target.com)
+```
+
 #### Style ####
 ````
 This text is *bold*, _italic_, `code snippet`, ~strike through~.
@@ -435,6 +456,10 @@ Option/Alt clicking also redirects to the selected link.
 ### Sample workflows ###
 
 Once you have a Github repo for your Canopy project, you can add premade Github Actions that accomplish certain common tasks for your project. These actions are available in the [example workflows repo](https://github.com/canopy-js/example-workflows). Currently one can automatically build one's project and upload to static assets hosting on Netlify, one can allow basic online editing of a deployed project using the "online edit" workflow, and one can automatically build and release one's Canopy project as Electron.js desktop apps for various platforms.
+
+### Editor Plugins ###
+
+At the moment there are plugin scripts available for Sublime Text that facilitate editing large bulk files, available in the [sublime repo](https://github.com/canopy-js/sublime). Resources for other editors may be added at a later point.
 
 ## Development
 

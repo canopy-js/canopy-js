@@ -11,7 +11,9 @@ class FileSystemManager {
     });
 
     fileSystemChange.directoryDeletions.forEach(directoryPath => {
-      fs.rmSync(directoryPath, { recursive: true });
+      if (fs.existsSync(directoryPath)) { // parent directory might have already been recursively deleted
+        fs.rmSync(directoryPath, { recursive: true });
+      }
     });
 
     fileSystemChange.directoryCreations.forEach(directoryPath => {

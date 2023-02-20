@@ -76,7 +76,7 @@ function UrlToken(url, text, parserContext) {
 function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext }) {
   this.type = 'image';
   this.resourceUrl = resourceUrl;
-  this.title = title.split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
+  this.title = (title||'').split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
   this.tokens = parseText({ text: caption || '', parserContext: parserContext.clone({ preserveNewlines: false, insideToken: true }) });
   this.altText = alt || null;
   this.caption = caption;
