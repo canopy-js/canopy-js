@@ -19,7 +19,7 @@ class BulkFileGenerator {
               .filter(f => f.path.endsWith('.expl'))
               .map(file =>
                 (this.generateInitialAsterisks(file))
-                + file.contents.trim() // trim trailing newlines to ensure spacing is consistent
+                + file.contents.replace(/\n\n+/g, '\n\n').trim() // trim trailing newlines to ensure spacing is consistent
               ).join('\n\n\n'); // three newlines between files
 
       }).join('\n\n\n') // three newlines between the last file and the next category
