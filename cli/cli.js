@@ -37,10 +37,12 @@ program.command('build')
   .option('-l, --logging', 'print logs', true)
   .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
   .option('-r, --reciprocals', 'Note which topics reference topics that do not reference them back.', false)
+  .option('-e, --error', 'Throw errors with trace for debugging', false)
   .action((options) => {
     try {
       build(options);
     } catch (e) {
+      if (options.error) throw e;
       console.error(e.message);
       process.exit(1)
     }

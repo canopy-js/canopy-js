@@ -345,6 +345,27 @@ More text.
 This is text with a footnote[^1].
 [^1]: This is the footnote.
 ````
+
+#### Images ####
+
+```
+\!\[Alt Text](path/to/asset.jpg)
+
+\!\[Alt Text](path/to/asset.jpg "Optional title")
+
+\!\[Alt Text](path/to/asset.jpg "Optional title" "Optional caption")
+```
+
+Any inline-token such as Canopy references can be used in the image caption.
+
+By default images link to their sources.
+
+#### Linked Images ####
+
+```
+\[\!\[Alt text](path/to/asset.jpg "Optional title" "Optional caption")](\h\ttp://hyperlink-target.com)
+```
+
 #### Style ####
 ````
 This text is *bold*, _italic_, `code snippet`, ~strike through~.
