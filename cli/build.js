@@ -32,7 +32,7 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      ${customCss ? '<link rel="stylesheet" href="_assets/custom.css">' : ''}
+      ${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}
       <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </body>
       </html>\n`;
