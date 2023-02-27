@@ -2,6 +2,7 @@ import { canopyContainer, defaultTopic, projectPathPrefix } from 'helpers/getter
 import updateView from 'display/update_view';
 import REQUEST_CACHE from 'requests/request_cache';
 import Path from 'models/path';
+import { preloadImages } from 'requests/helpers';
 
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
@@ -10,6 +11,7 @@ const requestJson = (topic) => {
   let promise = fetch(dataPath).
     then(res => {
       return res.json().then((json) => {
+        preloadImages(json);
         return json;
       });
     }).catch(() => {
