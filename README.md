@@ -403,7 +403,7 @@ For example:
 
 ![Bulk mode](./readme/bulk.gif)
 
-You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `VISUAL='subl -w' canopy bulk` to temporarily set your visual editor, or, you can add `export VISUAL='subl -w'` eg to your shell config file. When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
+You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `CANOPY_EDITOR='subl -w' canopy bulk` to temporarily set your editor, or, you can add `export CANOPY_EDITOR='subl -w'` eg to your shell config file. (In the absence of a `CANOPY_EDITOR` environment variable, Canopy will check for `VISUAL` and then `EDITOR`.) When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
