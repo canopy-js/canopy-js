@@ -236,9 +236,12 @@ function renderImage(token, renderContext) {
     imageElement.setAttribute('alt', token.altText);
   }
 
+  imageElement.style.setProperty('height', '700px');
+  imageElement.style.setProperty('opacity', '0');
   imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
-    if (!canopyContainer.dataset.imageLoadScrollBehavior) console.error('Image-load-initiated scroll behavior not stored');
-    imagesLoaded() && scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+    imageElement.style.setProperty('height', null);
+    imageElement.style.setProperty('opacity', '1');
+    scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
   });
 
   return divElement;
@@ -249,10 +252,13 @@ function renderHtmlElement(token) {
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);
   divElement.classList.add('canopy-raw-html');
-  [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that havent loaded yet
+  [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
+    imageElement.style.setProperty('height', '700px');
+    imageElement.style.setProperty('opacity', '0');
     imageElement.addEventListener('load', () => { // wait for them to load
-      if (!canopyContainer.dataset.imageLoadScrollBehavior) console.error('Image-load-initiated scroll behavior not stored');
-      imagesLoaded() && scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior }); // then scroll the page with the appropriate scroll behavior
+      imageElement.style.setProperty('height', null);
+      imageElement.style.setProperty('opacity', '1');
+      scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
     });
   });
   return divElement;

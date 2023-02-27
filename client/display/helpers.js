@@ -61,11 +61,7 @@ function scrollPage(linkToSelect, displayOptions) {
   let heightOfLink = linkToSelect?.element.offsetHeight || 0;
   let idealPositionOfLinkOnViewport = window.innerHeight * .3; // align bottom of link with eye level, to make room for child paragraph
   let top = topOfNewLink + heightOfLink - idealPositionOfLinkOnViewport;
-
-  if (!imagesLoaded()) { // allow image load event to scroll page so it doesn't scroll before and after load
-    canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-    return;
-  }
+  canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
   if (Math.abs(window.scrollY - top) > 35) { // changing link selection by more than two lines of text should trigger scroll
     window.scrollTo(
@@ -75,14 +71,6 @@ function scrollPage(linkToSelect, displayOptions) {
       }
     );
   }
-}
-
-function imagesLoaded() {
-  return [...document.querySelectorAll(
-    '.canopy-image img, .canopy-raw-html img' // these types of images loading trigger scroll, so they should cancel scroll when unloaded
-  )].every((imageElement) => {
-    return imageElement.complete;
-  });
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {
@@ -95,6 +83,5 @@ export {
   resetDom,
   tryPathPrefix,
   scrollPage,
-  imagesLoaded,
   validatePathAndLink
 };
