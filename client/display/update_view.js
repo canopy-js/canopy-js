@@ -8,6 +8,7 @@ import { validatePathAndLink } from 'display/helpers';
 const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
   validatePathAndLink(pathToDisplay, linkToSelect);
   if (pathToDisplay.empty) pathToDisplay = Path.default;
+  document.title = pathToDisplay.firstTopic.mixedCase;
 
   let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer).catch(e => console.error(e));
 
