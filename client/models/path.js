@@ -24,6 +24,14 @@ class Path {
     return this.string === otherPath.string;
   }
 
+  forEach(callback) {
+    this.pathArray.forEach(callback);
+  }
+
+  slice() {
+    return this.pathArray.slice.call(this.pathArray, ...arguments);
+  }
+
   static validatePathArray(array) {
     array.forEach(tuple => {
       if (tuple.length !== 2) throw newError(`Invalid path segment format: ${tuple}`);
