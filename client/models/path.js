@@ -270,34 +270,26 @@ class Path {
     }
   }
 
-  static elementAtRelativePath(suppliedPath, suppliedRootElement) {
-    if (!(suppliedPath instanceof Path)) throw newError('pathToDisplay must be a Path object');
-    if (!suppliedRootElement || !suppliedRootElement.tagName) 'Root element must be a DOM node';
-
-    let rootElement = suppliedRootElement;
-    if (!suppliedRootElement) { rootElement = canopyContainer; }
-    let path = suppliedPath;
+  static elementAtRelativePath(path, rootElement) {
+    if (!(path instanceof Path)) throw newError('pathToDisplay must be a Path object');
+    rootElement = rootElement || canopyContainer;
 
     let currentNode = rootElement;
-    if (rootElement === canopyContainer) {
-      currentNode = rootElement.querySelector(
-        `[data-topic-name="${path.firstTopic.escapedMixedCase}"]` +
-        `[data-subtopic-name="${path.firstSubtopic.escapedMixedCase}"]` +
-        `[data-path-depth="${0}"]`
-      );
-
-      if (path.length === 1) { return currentNode; }
-      if (!currentNode) return null;
-      path = path.withoutFirstSegment;
-    }
-
     let subpath = path;
+    let currentPathDepth = Number(rootElement.dataset.pathDepth || -1);
+
     for (let i = 0; i < path.length; i++) {
-      let newPathDepth = Number(currentNode.dataset.pathDepth) + 1;
+      currentPathDepth = currentPathDepth + 1;
       currentNode = currentNode.querySelector(
+        `:scope > ` + // the next topic must be a direct child of the current subtopic, not some other subtopic with the same global link
+        `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${subpath.firstTopic.escapedMixedCase}"]` +
+        `[data-path-depth="${currentPathDepth}"]` +
+        (subpath.firstTopic.mixedCase !== subpath.firstSubtopic.mixedCase ? // only look for a subtopic if the path segment has one
+        ` ` +
         `[data-topic-name="${subpath.firstTopic.escapedMixedCase}"]` +
         `[data-subtopic-name="${subpath.firstSubtopic.escapedMixedCase}"]` +
-        `[data-path-depth="${newPathDepth}"]`
+        `[data-path-depth="${currentPathDepth}"]` : '')
       );
 
       if (!currentNode) return null;
