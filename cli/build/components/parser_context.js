@@ -412,12 +412,14 @@ class ParserContext {
     });
   }
 
-  hasConnection(subtopic, topic) { // Does a given subtopic have a local-reference path to the given topic?
+  hasConnection(subtopic, topic, visitedSubtopics = {}) { // Does a given subtopic have a local-reference path to the given topic?
     if (subtopic.caps === topic.caps) return true;
     if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
     if (!this.subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
     if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
-    return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, this.subtopicParents);
+    if (visitedSubtopics[subtopic.caps]) return false; // ignore the cycle and allow other paths to continue
+    visitedSubtopics[subtopic.caps] = true;
+    return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, visitedSubtopics);
   }
 }
 

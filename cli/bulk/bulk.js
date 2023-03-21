@@ -151,7 +151,7 @@ const bulk = async function(selectedFileList, options) {
       });
     }
 
-    if (['emacs', 'vim', 'nano', undefined].includes(process.env.VISUAL) && ['emacs', 'vim', 'nano', undefined].includes(process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
+    if (['emacs', 'vim', 'nano', undefined].includes(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
     }
 

@@ -9,6 +9,8 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
     return Promise.resolve(null);
   }
 
+  pathToDisplay.slice(1).forEach(([topic]) => { requestJson(topic) }); // preload later path segments
+
   let preexistingElement = Path.elementAtRelativePath(pathToDisplay.firstSegment, parentElement);
   if (preexistingElement) {
     if (!Path.connectingLinkValid(parentElement, pathToDisplay)) return Promise.resolve();
