@@ -183,26 +183,28 @@ function TableToken(text, parserContext) {
   this.type = 'table';
   this.rows = [];
 
-  text.split("\n").forEach(line => {
-    if (line.match(/^\s*[=#-|]+\s*$/)) {
-      return; // ignore horizontal row marker
-    }
+  text.split("\n")
+    .filter(Boolean) // the trailing newline will create an empty row
+    .forEach(line => {
+      if (line.match(/^\s*[=#\-|]+\s*$/)) {
+        return; // ignore horizontal row marker
+      }
 
-    let cellStrings = line.
-      replace(/\\\|/g, '__ESCAPED_PIPE__').
-      split('|').
-      map(string => string.replace(/__ESCAPED_PIPE__/g, '|')).
-      slice(1, -1);
+      let cellStrings = line.
+        replace(/\\\|/g, '__ESCAPED_PIPE__').
+        split('|').
+        map(string => string.replace(/__ESCAPED_PIPE__/g, '|')).
+        slice(1, -1);
 
-    let tokensByCell = cellStrings.map(
-      (cellString) => parseText({
-        text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
-        parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true })
-      })
-    );
+      let tokensByCell = cellStrings.map(
+        (cellString) => parseText({
+          text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+          parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true })
+        })
+      );
 
-    this.rows.push(tokensByCell);
-  });
+      this.rows.push(tokensByCell);
+    });
 }
 
 function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
