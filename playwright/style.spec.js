@@ -148,7 +148,7 @@ test.describe('Inline entities', () => {
 test.describe('Block entities', () => {
   test('It creates tables', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables');
-    await expect(page.locator('.canopy-selected-section table')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(2);
 
     await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
     await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
@@ -158,7 +158,12 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(4)).toHaveText('2');
     await expect(page.locator('.canopy-selected-section table tr td').nth(5)).toHaveText('4');
     await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(7)).toHaveText('8');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(7)).toHaveText('8'); // newline doesn't invalidate table
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(8)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(9)).toHaveText('b');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(10)).toHaveText('1');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
   });
 
   test('It creates multi-line code blocks', async ({ page }) => {

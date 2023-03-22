@@ -12,6 +12,10 @@ Tables:
 | This | is | a | table |
 |---|---|---|-----------|
 | 2 | 4 | 6 | 8 |
+Second table:
+|a|b|
+|-|-|
+|1|2|
 
 Code blocks:
 ```

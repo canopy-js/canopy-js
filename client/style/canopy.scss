@@ -173,9 +173,9 @@
   }
 
   table {
-    margin: 7px auto;
-    table-layout: fixed;
-    width: 70%;
+    margin: 18px auto;
+    table-layout: auto;
+    max-width: 90%;
     border-collapse: collapse;
     border: 2px solid black;
 

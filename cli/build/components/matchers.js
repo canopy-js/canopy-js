@@ -110,15 +110,17 @@ function outlineMatcher({ string, parserContext, startOfLine }) {
 function tableMatcher({ string, parserContext, startOfLine }) {
   let match = string.match(/^(?:(?:\|(?:[^\n]*\|))(?:\n|$))+/);
   if (!match) return null;
+  let tableMatch = match[0];
+  if (tableMatch.endsWith('\n')) tableMatch = tableMatch.slice(0, -1);
 
-  let lines = match[0].split(/\n/g).map(l => l.split(/(?<!\\)\|/).slice(1, -1)); // split rows by unescaped pipe characters
+  let lines = tableMatch.split(/\n/g).map(l => l.split(/(?<!\\)\|/).slice(1, -1)); // split rows by unescaped pipe characters
   if (!lines.every(l => l.length === lines[0].length)) return null; // all rows must have an equal number of cells
   if (!lines[1]?.every(c => c.match(/^[-=]*$/))) return null; // the second row cells must be all delimiters
 
   if (match && startOfLine) {
     return [
-      new TableToken(match[0], parserContext),
-      match[0].length
+      new TableToken(tableMatch, parserContext),
+      tableMatch.length
     ];
   }
 }
