@@ -1,4 +1,8 @@
+import json from '../../package.json';
+
 const canopyContainer = document.getElementById('_canopy');
+
+canopyContainer.dataset.canopyVersion = json.version;
 
 const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
 
