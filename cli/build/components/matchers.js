@@ -364,7 +364,7 @@ function linkedImageMatcher({ string, parserContext }) {
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^_((.*?[^\\]))_(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^_((.*?[^\\]))_(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -379,7 +379,7 @@ function italicsMatcher({ string, parserContext, previousCharacter }) {
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^\*((.*?[^\\]))\*(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^\*((.*?[^\\]))\*(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -394,7 +394,7 @@ function boldMatcher({ string, parserContext, previousCharacter }) {
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^`((.*?[^\\]))`(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^`((.*?[^\\]))`(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -409,7 +409,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^~((.*?[^\\]))~(?=[\s.,{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^~((.*?[^\\]))~(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
 
   if (match && validPreviousCharacter) {
     return [

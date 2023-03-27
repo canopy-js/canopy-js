@@ -87,7 +87,7 @@ Read this documentation written in Canopy as a demo **[here](http://canopyjs.org
 
 ## Getting Started
 
-These are instructions for people wishing to start their own Canopy project.
+These are instructions for people wishing to start their own Canopy project from the command line. If you would like to create and publish a project using only the Github web interface, you can follow the instructions on the [Canopy project template repo](https://github.com/canopy-js/template-repo).
 
 ### Installation
 

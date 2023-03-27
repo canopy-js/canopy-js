@@ -32,7 +32,7 @@ function init() {
       **/.DS_Store
       .canopy_bulk_original_selection
       .canopy_bulk_backups/**
-      ${defaultTopicSlug}` + '\n';
+      /${defaultTopicSlug}` + '\n';
 
     fs.writeFileSync( '.gitignore', gitignore );
 
