@@ -89,7 +89,11 @@ Read this documentation written in Canopy as a demo **[here](http://canopyjs.org
 
 These are instructions for people wishing to start their own Canopy project.
 
-### Installation
+### Web Editor Installation
+
+If you would like to create and publish a project using only the Github web interface, you can follow the instructions on the [Canopy project template repo](https://github.com/canopy-js/template-repo).
+
+### Command-line Installation
 
 Install the CLI:
 
@@ -113,6 +117,10 @@ You will be asked for a default topic name, this tells the web application what 
 The init command should create a directory called `topics`, and a file like `myProject/topics/Category/My_Default_Topic.expl`.
 
 A Canopy project is edited by creating new `.expl` files in the project's `topics` directory.
+
+## Creating Content
+
+Now that you've initialized a Canopy project, it is time to start adding content.
 
 ### Creating Topic Files
 
