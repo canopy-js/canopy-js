@@ -23,11 +23,11 @@
     border: 0;
     border-top: 5px solid #ccc;
     margin: 0px auto;
-    padding-bottom: 30px;
+    padding-bottom: 35px;
   }
 
   section.canopy-topic-section {
-    padding-top: 40px;
+    padding-top: 35px;
   }
 
   section {
@@ -187,8 +187,11 @@
   }
 
   .canopy-image {
+    &:not(:last-child) {
+      margin-bottom: 15px;
+    }
+
     margin-top: 15px;
-    margin-bottom: 15px;
 
     a {
       margin: 0 auto;
