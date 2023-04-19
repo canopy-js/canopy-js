@@ -34,4 +34,10 @@ function displaySegment(topicName, subtopicName) {
   }
 }
 
-module.exports = { DefaultTopic, canopyLocation, displaySegment };
+function tryDefaultTopic() {
+  let defaultTopic = {};
+  try { defaultTopic = new DefaultTopic(); } catch {}
+  return defaultTopic;
+}
+
+module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic };

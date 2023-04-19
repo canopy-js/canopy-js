@@ -7,7 +7,8 @@ const {
   recursiveDirectoryFind,
   getRecursiveSubdirectoryFiles,
   getDirectoryFiles,
-  CyclePreventer
+  CyclePreventer,
+  logOrWriteError
 } = require('./helpers');
 const watch = require('../watch');
 const build = require('../build');
@@ -76,32 +77,29 @@ const bulk = async function(selectedFileList, options) {
 
   let fileSystemManager = new FileSystemManager();
   let cyclePreventer = new CyclePreventer();
-  let newBulkFileString;
   let oldBulkFileString;
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopic = {};
-    try { defaultTopic = new DefaultTopic() } catch(e) { console.log(chalk.red(e.message));} // validate default topic
-    if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
-      console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName||defaultTopic.slug}`)));
-    }
+    logOrWriteError(() => { defaultTopic = new DefaultTopic() }, options); // validate existence of default topic
+    checkGitIgnoreForBulkFile(options);
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || defaultTopic.slug || 'canopy_bulk_file';
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
+    oldBulkFileString = bulkFileString;
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, bulkFileString);
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
   }
 
-  function handleFinish({deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList}, options) {
+  function handleFinish({deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList}) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (typeof newBulkFileString !== 'string') console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString);
@@ -112,20 +110,21 @@ const bulk = async function(selectedFileList, options) {
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
 
+    fileSystemManager.deleteOriginalSelectionFile();
     let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
 
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
-    try { new DefaultTopic() } catch(e) { console.log(e) } // Error in case the person changed the default topic file name
+    new DefaultTopic(); // Error in case the person changed the default topic file name
   }
 
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
     editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
-      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }, options)
+      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true })
     })
   }
 
@@ -134,7 +133,7 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.finish) { // non-editor mode
-    handleFinish({ deleteBulkFile: true }, options);
+    handleFinish({ deleteBulkFile: true });
   }
 
   if (options.sync) {
@@ -144,10 +143,12 @@ const bulk = async function(selectedFileList, options) {
 
     // Open bulk file in editor and process when closed
     if (options.editor) {
-      editor(options.bulkFileName, { editor: process.env['CANOPY_EDITOR'] || process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
-        handleFinish({deleteBulkFile: false}, options);
-        log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-        process.exit();
+      editor(options.bulkFileName, { editor: process.env['CANOPY_EDITOR'] || process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, (code, sig) => {
+        logOrWriteError(() => {
+          handleFinish({deleteBulkFile: false});
+          log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+          process.exit();
+        }, options);
       });
     }
 
@@ -163,7 +164,7 @@ const bulk = async function(selectedFileList, options) {
     serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
 
     function handleSigInt() {
-      handleFinish({deleteBulkFile: true}, options);
+      logOrWriteError(() => handleFinish({deleteBulkFile: true}), options);
       log(chalk.magenta(`Canopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       process.exit();
     }
@@ -191,18 +192,20 @@ const bulk = async function(selectedFileList, options) {
     bulkFileWatcher.on('change', () => {
       if (cyclePreventer.ignoreBulkFileChange()) return cyclePreventer.respondToNextBulkFileChange();
 
-      oldBulkFileString = newBulkFileString;
-      newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
+      let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
 
       if (oldBulkFileString && oldBulkFileString !== newBulkFileString) {
         log(chalk.magenta(`Canopy bulk sync: Updating topic files from bulk file change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       }
-      handleFinish({deleteBulkFile: false}, options);
+
+      oldBulkFileString = newBulkFileString;
+
+      logOrWriteError(() => handleFinish({deleteBulkFile: false}), options);
     });
 
     // Watch bulk file and end session on delete
     bulkFileWatcher.on('unlink', (e) => {
-      handleFinish({deleteBulkFile: false}, options);
+      logOrWriteError(() => handleFinish({deleteBulkFile: false}), options);
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
     cyclePreventer.watchingBulkFile();
@@ -243,5 +246,10 @@ function debounceGenerator() {
   }
 }
 
+function checkGitIgnoreForBulkFile(options) {
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName||defaultTopic.slug}`)));
+  }
+}
 
 module.exports = bulk;

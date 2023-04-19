@@ -73,12 +73,15 @@ class FileSystemManager {
 
   loadOriginalSelectionFileSet() {
     if (!fs.existsSync('.canopy_bulk_original_selection')) {
-      throw chalk.red('Expected .canopy_bulk_original_selection file but did not find one');
+      throw new Error(chalk.red('Expected .canopy_bulk_original_selection file but did not find one'));
     }
     let json = fs.readFileSync('.canopy_bulk_original_selection').toString();
-    fs.unlinkSync('.canopy_bulk_original_selection');
     let selectedFilesList = JSON.parse(json);
     return this.getFileSet(selectedFilesList);
+  }
+
+  deleteOriginalSelectionFile() { // this has to be separate from loadOriginalSelectionFileSet in the case where a parsing error prevents processing
+    fs.unlinkSync('.canopy_bulk_original_selection');
   }
 
   getOriginalSelectionFileList() {
@@ -91,7 +94,10 @@ class FileSystemManager {
     if (!fs.existsSync(fileName)) {
       return null;
     }
-    return fs.readFileSync(fileName).toString();
+    let newBulkFileString = fs.readFileSync(fileName).toString()
+    if (typeof newBulkFileString !== 'string') console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
+
+    return newBulkFileString;
   }
 
   deleteBulkFile(fileName) {

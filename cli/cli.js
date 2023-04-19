@@ -6,10 +6,9 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
 const sketch = require('./sketch/sketch');
-let { DefaultTopic } = require('./shared/helpers');
-let defaultTopic = {};
-try { defaultTopic = new DefaultTopic(); } catch {}
-
+let { tryDefaultTopic } = require('./shared/helpers');
+let { throwOrWriteError } = require('./bulk/helpers');
+let defaultTopic = tryDefaultTopic();
 const program = new Command();
 
 program
