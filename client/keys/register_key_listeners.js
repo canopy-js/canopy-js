@@ -28,7 +28,9 @@ const registerKeyListeners = () => {
     let shortcutName = modifiers + keyName;
 
     if (['tab', 'down', 'up', 'left', 'right'].includes(keyName)) {
-      e.preventDefault();
+      if (!((e.metaKey || e.ctrlKey) && ['left', 'right'].includes(keyName))) { // unless browser back
+        e.preventDefault();
+      }
     }
 
     if (Link.selection) {
