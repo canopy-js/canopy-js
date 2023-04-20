@@ -8,7 +8,8 @@ import {
   depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,
-  duplicate
+  duplicate,
+  browserBack
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
 import Path from 'models/path';
@@ -68,7 +69,8 @@ const shortcutRelationships = {
   'meta-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // mac
   'ctrl-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // windows & linux
 
-  'tab': depthFirstSearch
+  'tab': depthFirstSearch,
+  'shift-tab': browserBack
 }
 
 const keyNames = {

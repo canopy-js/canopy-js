@@ -165,6 +165,14 @@ function depthFirstSearch() {
   }
 }
 
+function browserBack() { // an undo for DFS
+  let oldPathname = window.location.pathname;
+  history.back();
+  if (oldPathname !== window.location.pathname) { // we aren't undoing a DFS
+    history.forward();
+  }
+}
+
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = currentLink.localPathSegmentWhenSelected;
@@ -196,5 +204,6 @@ export {
   depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,
-  duplicate
+  duplicate,
+  browserBack
 };
