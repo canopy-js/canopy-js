@@ -139,7 +139,7 @@ function terminalCategoryofPath(filePath) {
 }
 
 function parseLink(string, parserContext) {
-  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/);
+  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/s);
   if (!linkMatch) return {};
   let linkContents = linkMatch[1];
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
@@ -149,7 +149,7 @@ function parseLink(string, parserContext) {
   let exclusiveDisplaySyntax = false;
 
   if (linkContents.match(/(?<!\\)\{/)) {
-    let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/g));
+    let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/gs));
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
       if (plainText) { // a section of regular text in a link eg [[ABC...
         displayText += plainText;
@@ -191,11 +191,11 @@ function parseLink(string, parserContext) {
     targetText = linkContents;
   }
 
-  let match = targetText.match(/^((?:(?!(?<!\\)#).)+)(?:#((?:(?!(?<!\\)#).)+))?$/); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
+  let match = targetText.match(/^((?:(?!(?<!\\)#).)+)(?:#((?:(?!(?<!\\)#).)+))?$/s); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
 
   return {
-    linkTarget: match && match[1] || null, // eg "France"
-    linkFragment: match && match[2] || null, // eg "Paris"
+    linkTarget: (match && match[1])?.replace(/\n/g, ' ') || null, // eg "France"
+    linkFragment: (match && match[2])?.replace(/\n/g, ' ') || null, // eg "Paris"
     linkText: manualDisplayText ? displayText : (match && (match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
     fullText,
     manualDisplayText

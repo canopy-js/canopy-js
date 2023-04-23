@@ -186,6 +186,13 @@ test.describe('Block entities', () => {
     );
   });
 
+  test('It creates block quotes with multi-line links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Block_quotes_with_multi-line_links');
+    await expect(page.locator('.canopy-selected-section blockquote a')).toHaveCount(1);
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('text=Multi-line link paragraph text. >> visible=true')).toHaveCount(1);
+  });
+
   test('It creates RTL block quotes', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#RTL_block_quotes');
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);

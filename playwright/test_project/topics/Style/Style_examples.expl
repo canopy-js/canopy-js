@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[code blocks]], [[block quotes]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]] and [[footnotes]].
 
@@ -28,6 +28,14 @@ This is regular text.
 > This is a block quote that has two lines
 > This is the second line
 More text.
+
+Block quotes with multi-line links:
+This is regular text.
+> This is a block quote with a [[multi-line
+> link]]
+More text.
+
+Multi-line link: Multi-line link paragraph text.
 
 RTL block quotes:
 This is regular text.
