@@ -54,7 +54,9 @@ function moveDownward() {
   }
 }
 
-function moveLeftward() {
+function moveLeftward(redirect) {
+  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveRightward(true);
+
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
     link.path,
@@ -62,7 +64,9 @@ function moveLeftward() {
   );
 }
 
-function moveRightward() {
+function moveRightward(redirect) {
+  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveLeftward(true);
+
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
@@ -165,6 +169,14 @@ function depthFirstSearch() {
   }
 }
 
+function browserBack() { // an undo for DFS
+  let oldPathname = window.location.pathname;
+  history.back();
+  if (oldPathname !== window.location.pathname) { // we aren't undoing a DFS
+    history.forward();
+  }
+}
+
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = currentLink.localPathSegmentWhenSelected;
@@ -196,5 +208,6 @@ export {
   depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,
-  duplicate
+  duplicate,
+  browserBack
 };
