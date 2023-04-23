@@ -54,7 +54,9 @@ function moveDownward() {
   }
 }
 
-function moveLeftward() {
+function moveLeftward(redirect) {
+  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveRightward(true);
+
   let link = Link.selection.previousSibling || Link.selection.lastSibling;
   return updateView(
     link.path,
@@ -62,7 +64,9 @@ function moveLeftward() {
   );
 }
 
-function moveRightward() {
+function moveRightward(redirect) {
+  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveLeftward(true);
+
   let link = Link.selection.nextSibling || Link.selection.firstSibling;
 
   return updateView(
