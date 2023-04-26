@@ -101,8 +101,6 @@ Install the CLI:
 npm install -g canopy-js
 ```
 
-Start a project:
-
 To start a Canopy project, first create a project directory and enter it:
 ```
 mkdir myProject
