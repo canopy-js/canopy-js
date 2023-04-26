@@ -118,7 +118,7 @@ A Canopy project is edited by creating new `.expl` files in the project's `topic
 
 ## Creating Content
 
-Now that you've initialized a Canopy project, it is time to start adding content.
+Now that you've initialized a Canopy project, it is time to start adding content. If you are using the "Web Editor Installation" mentioned above, then you will not be creating topic files manually but will rather be using the [bulk mode](https://github.com/canopy-js/canopy-js#using-bulk-mode) described below.
 
 ### Creating Topic Files
 
