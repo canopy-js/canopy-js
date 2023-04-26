@@ -163,7 +163,7 @@ Links or "references" are how it is possible to go from the original topic parag
 
 If paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
 
-Links are made using the `[[Link]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
+Links are made using the `[[Topic]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
 
 There are three types of references: local, global, and import.
 
