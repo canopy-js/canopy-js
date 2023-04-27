@@ -283,10 +283,9 @@ In certain rare cases, Canopy may not be able to determine which global link a g
 This is a [[Global Link]], and this is an explicit import reference: [[Global Link#Subtopic]].
 
 ```
+#### Advanced link syntax ####
 
-#### Additional link syntax ####
-
-If you want to make the link target and display text different, there are several syntaxes you can use:
+If you want to make the link target and display text different from one another, there are several syntaxes you can use:
 
 
 | Syntax name | If you write | Target name will be | Display text will be |
@@ -452,6 +451,7 @@ You can use a Canopy website using only the keyboard.
 | Ctrl / Command + Return | Open in new tab |
 | z | Zoom on current link |
 | Tab | Iterate through subtopics of a topic |
+| Shift-Tab | Iterate backwards through subtopics of a topic |
 | Escape | Deselect link |
 | d | Duplicate tab |
 | Shift + up | Select parent link of current topic |
