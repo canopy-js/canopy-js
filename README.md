@@ -177,7 +177,6 @@ One makes a local reference by referencing a named paragraph that exists in the 
 Topic 1: This is the root topic, and this is a link to [[Subtopic 1]].
 
 Subtopic 1: this is a subtopic defined in the same file as the reference.
-
 ```
 
 When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a new page, because a subtopic is something that requires the context of the given topic to be understood.
@@ -284,10 +283,9 @@ In certain rare cases, Canopy may not be able to determine which global link a g
 This is a [[Global Link]], and this is an explicit import reference: [[Global Link#Subtopic]].
 
 ```
+#### Advanced link syntax ####
 
-#### Additional link syntax ####
-
-If you want to make the link target and display text different, there are several syntaxes you can use:
+If you want to make the link target and display text different from one another, there are several syntaxes you can use:
 
 
 | Syntax name | If you write | Target name will be | Display text will be |
