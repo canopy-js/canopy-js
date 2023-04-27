@@ -451,7 +451,7 @@ You can use a Canopy website using only the keyboard.
 | Ctrl / Command + Return | Open in new tab |
 | z | Zoom on current link |
 | Tab | Iterate through subtopics of a topic |
-| Shift-Tab | Iterate backwards through subtopics of a topic |
+| Shift-Tab | Reverse through subtopics of a topic |
 | Escape | Deselect link |
 | d | Duplicate tab |
 | Shift + up | Select parent link of current topic |
