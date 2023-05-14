@@ -15,9 +15,7 @@
 <br>
 </div>
 
-## About Canopy JS
-
-### What Canopy does
+## What Canopy does
 
 Canopy takes a set of text files like this:
 
@@ -83,7 +81,7 @@ Here we use the CLI "bulk mode" to define several "topics" and then view them in
 <br>
 ## Demo
 
-Read this documentation written in Canopy as a demo **[here](http://canopyjs.org)**.
+Read a partial draft of this documentation written in Canopy as a demo **[here](http://canopyjs.org)**.
 
 ## Getting Started
 
@@ -118,30 +116,32 @@ A Canopy project is edited by creating new `.expl` files in the project's `topic
 
 ## Creating Content
 
-Now that you've initialized a Canopy project, it is time to start adding content. If you are using the "Web Editor Installation" mentioned above, then you will not be creating topic files manually but will rather be using the [bulk mode](https://github.com/canopy-js/canopy-js#using-bulk-mode) described below.
+Now that you've initialized a Canopy project, it is time to start adding content. (This section will explain the way content is created manually, but most people will find it easier to use the [bulk mode](https://github.com/canopy-js/canopy-js#using-bulk-mode) described afterwords. If you are using the [web editor installation method](https://github.com/canopy-js/canopy-js#web-editor-installation) mentioned above, then you will also be using bulk mode.)
 
 ### Creating Topic Files
 
 A Canopy website is composed of named paragraphs, some of which are called "topics," and some of which are called "subtopics."
 
-Topics are standalone "conversation-starters" which can be displayed as the root paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed after a certain path of prior paragraphs that are necessary for context.
+Topics are standalone "conversation-starters" which can be displayed as the first paragraph of a page, whereas subtopics are paragraphs that are part of a larger topic and should only be displayed after a certain path of prior paragraphs that are necessary for introduction. A Canopy project is composed of a flat set of topics, each of which can contain an internal tree of subtopics.
 
-Every topic in a Canopy project gets its own file with a `.expl` extension in the `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is helpful to put all topic files into one or more levels of "category" subdirectories within the `topics` directory.
+Every topic in a Canopy project has its own file with a `.expl` extension in the top-level `topics` directory. The name of the file and the directory structure within the `topics` folder do not affect site behavior, but it is helpful to put all topic files into one or more levels of "category" subdirectories within the `topics` directory, and to name topic files after the topic they contain.
 
 A topic file is composed of a series of "paragraph nodes" and notes.
 
-A paragraph node is a paragraph that begins with a "key," a colon or question-mark terminated text before the paragraph, indicating the "name" of the paragraph. A note is any other text, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
+A paragraph node is a paragraph that begins with a "key," a title for the paragraph that is terminated by a colon or question-mark and followed by the text of the paragraph. A note is a paragraph that lacks a key, and notes are ignored by the build process. Paragraph nodes and notes should be separated by two newlines. For example:
 
 ```
-Topic 1: This is the paragraph for Topic 1.
+Topic 1: This is the paragraph for Topic 1. The key of this paragraph is "Topic 1".
 
-Subtopic 1: This is a subtopic of Topic 1.
+Subtopic 1: This is a subtopic of Topic 1. The key for this paragraph is "Subtopic 1".
 
-This key is a question? And it is also a subtopic of Topic 1.
+This key is a question? And it is also a subtopic of Topic 1. The key for this paragraph is "This key is a question?"
 
-This is a note.
+This is a note. It has no key.
 
 ```
+
+Paragraphs that have keys are called "nodes" because they will be part of the tree of paragraphs displayed to the user, as opposed to notes which are not displayed to the user.
 
 The first paragraph node of the file represents the topic of that file, and all subsequent paragraph nodes are subtopics of that topic.
 
@@ -155,21 +155,23 @@ Subtopic 1: This is a new paragraph node for Subtopic 1.
 
 ```
 
-Subtopic paragraphs should have unique names within their enclosing topic file, and topics should have a unique name within the project at large.
+At present, single newlines within a paragraph node are ignored, and all lines are concatenated to produce the paragraph displayed to the user.
+
+Subtopic paragraphs should have names that are unique among the subtopics of their enclosing topic file, and topics should have a name that is unique among the topics of the project at large.
 
 ### Creating Links
 
 Links or "references" are how it is possible to go from the original topic paragraph to other paragraphs in the project.
 
-If paragraph A has a link to paragraph B, that means the user can select the link to B in order to add paragraph B to the page below paragraph A.
+If `paragraph A` has a link to `paragraph B`, that means the user can select the link to `B` in order to add `paragraph B` to the page below `paragraph A`.
 
-Links are made using the `[[Topic]]` syntax, and one can change the link text like so: `[[Real Topic|Link Text]].`
+Links are made using the `[[Topic]]` syntax, using the name of another topic or subtopic to specify the target of the link, and one can change the link text like so: `[[Real Topic|Link Text]].` Link targets are case-insensitive and ignore style characters, so eg `[[_topic_]]` would be a valid reference to a topic with the key `Topic:`.
 
 There are three types of references: local, global, and import.
 
 #### Local References
 
-A local reference connects a topic to one of its subtopics, or connects a subtopic to a subtopic of the same topic. Local references cannot reference subtopics of other topics.
+A local reference connects a topic to one of its subtopics, or connects a subtopic to another subtopic of the same topic. Local references cannot reference subtopics of other topics, or other topics of the project.
 
 One makes a local reference by referencing a named paragraph that exists in the same file as the reference:
 
@@ -179,9 +181,9 @@ Topic 1: This is the root topic, and this is a link to [[Subtopic 1]].
 Subtopic 1: this is a subtopic defined in the same file as the reference.
 ```
 
-When a local link is selected, the child paragraph is displayed below the parent, and there is no option to display it on its own as the root of a new page, because a subtopic is something that requires the context of the given topic to be understood.
+When a local link is selected, the child paragraph is displayed below the parent. There is no option to display it on its own as the root of a new page, because a subtopic is something that requires the context of the given topic to be understood.
 
-For example, the following `expl` file:
+For example, if one writes the following `expl` file:
 
 ```
 New Jersey: New Jersey is a mid-sized state in the Northeastern US. The capital of New Jersey is [[Trenton]].
@@ -191,17 +193,17 @@ Trenton: Trenton is the capital of New Jersey, and its legislature is housed in 
 New Jersey State House: The New Jersey State House was built in 1792.
 ```
 
-Produces the following website:
+It will produce the following website:
 
 ![Local references](./readme/local.gif)
 
-A root topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
+The topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
 
-If you want to have two references to a given subtopic from different subtopics of that topic, you should make the target subtopic a topic proper, or use the "import reference" functionality described below.
+(If you want to have two references to a given subtopic from different subtopics of that topic, you can make the target subtopic a topic proper, or use the "import reference" functionality described below.)
 
 #### Global References
 
-A global reference connects a topic or subtopic to an entirely different topic. A global reference can only refer to the "root" paragraph of a topic, and not one of the internal subtopics it contains.
+A global reference connects a topic or subtopic to an entirely different topic. A global reference can only refer to the "root" topic paragraph of a topic, and not to one of the internal subtopics it contains.
 
 To make a global link, we reference a topic defined in a different file:
 
@@ -212,7 +214,7 @@ We are going to reference [[Topic 2]], which is defined in a file called Topic_2
 
 ```
 Topic 2: This is a paragraph defined in a file called Topic_2.expl.
-When you click on the link above, this paragraph will be displayed.
+When you click on the link in the previous paragraph, this paragraph will be displayed below it.
 ```
 
 
@@ -237,17 +239,17 @@ Produce the following website:
 <br>
 <br>
 
-As pictured above, when a global link is selected, the user has the option of appending the new paragraph below the current one, separated by a small divider to indicate the change of topic, or, the user may press "return" or "alt/option-click" and redirect entirely to the new topic as the root paragraph of a new page.
+As pictured above, when a global link is selected, the user has the option of appending the new paragraph below the current one, or, the user may press "return" or "alt/option-click" and be redirected to a new page containing only the target topic paragraph, allowing one to start a new session.
 
-Unlike a subtopic which can only be referenced from within its topic, a topic can be referenced from any paragraph of any file in the project.
+Unlike a subtopic which can only be referenced from within a paragraph of its topic file, a topic can be referenced from any paragraph of any file in the project.
 
 #### Import references
 
 An import reference is for when you want to reference a subtopic of a given topic from a paragraph belonging to a different topic.
 
-An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming, so ideally the paragraph for Fremont would reference Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can define Teton itself.
+An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. Ideally, the paragraph for Fremont would reference the paragraph for Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can explain Teton itself.
 
-So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but in a way that preserves the context of Teton within Wyoming.
+So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but only in a way that preserves the context of Teton within the topic of Wyoming, as we will see.
 
 For example, the following `expl` files:
 
@@ -273,20 +275,22 @@ Would produce the following website:
 ![Import references](./readme/import.gif)
 <br>
 
-In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the referencing paragraph.
+In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the paragraph making the reference.
 
-When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context.
+When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context, first explaining Wyoming and its connection to Teton before explaining Teton itself.
 
-In certain rare cases, Canopy may not be able to determine which global link a given import reference belongs to, in a case where there are multiple global references that all have subtopics with the given name. In these cases, one can use an explicit syntax like this:
-
-```
-This is a [[Global Link]], and this is an explicit import reference: [[Global Link#Subtopic]].
+In certain cases, Canopy may not be able to determine which global link a given import reference belongs to. This happens when there are multiple global references that all have subtopics with the same name. In these cases, one can use an explicit syntax like this to clarify which topic an import reference belongs to:
 
 ```
+This is a [[Global Topic]], and this is an explicit import reference: [[Global Topic#Subtopic]].
+
+```
+
+Import references add complexity to a project, so before using one, consider whether it might be possible to convert the subtopic you wish to reference into a topic-proper.
+
 #### Advanced link syntax ####
 
 If you want to make the link target and display text different from one another, there are several syntaxes you can use:
-
 
 | Syntax name | If you write | Target name will be | Display text will be |
 |-------------|--------------|-------------------------|--------------------------|
@@ -298,7 +302,7 @@ If you want to make the link target and display text different from one another,
 
 If an exclusive syntax is used multiple times, the instances will be concatenated, as will interpolation syntax when combined with either syntax.
 
-You can remember the order of the interpolation syntax by thinking of every `{x|y}` unit as being a microcosm of a simple link eg `[[Target name|Display text]]` where the text before the pipe is the target and the text after is the display text.
+You can remember the order of the interpolation syntax by thinking of every `{x|y}` unit as being a microcosm of the simple link syntax ie `[[Target name|Display text]]` where the text before the pipe is the real target and the text after is the display text.
 
 Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`. If you write \[\[A#B]], Canopy knows to make the display text `B` and not the literal `A#B`, but if you use any custom syntax, you are responsible for making the target evaluate to `A#B` and the display text evaluate to the correct substring, because `#` characters in the display text will be interpreted literally and displayed.
 
@@ -370,7 +374,7 @@ By default images link to their sources.
 \[\!\[Alt text](path/to/asset.jpg "Optional title" "Optional caption")](\h\ttp://hyperlink-target.com)
 ```
 
-#### Style ####
+#### Style characters ####
 ````
 This text is *bold*, _italic_, `code snippet`, ~strike through~.
 ````
@@ -380,7 +384,7 @@ This is text with some <b> HTML </b> mixed in.
 ````
 ### Using Bulk Mode
 
-It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" that allows the user to edit a single text file representing part or all of their project files. A bulk file might look like this:
+It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" which allows the user to create and edit many topic files by editing a single "bulk file" representing part or all of their project files. A bulk file might look like this:
 
 ```
 [Category A]
@@ -401,13 +405,13 @@ These are notes.
 
 Text in square brackets defines a directory path, and text after a `*` character represents a new file, which will be named after the given topic key.
 
-This bulk file would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, it will create a "category notes" file named after the enclosing folder.)
+The bulk file shown above would represent the existence of a directory `topics/Category_A` that contained two files, `topics/Category_A/Topic_1.expl` and `topics/Category_A/Topic_2.expl`, and a second directory `topics/Category_A/Category_B` that contained the file `topics/Category_A/Category_B/Category_B.expl`. (If you create notes in bulk mode that don't belong to any particular file, they will be added to a "category notes" file named after the enclosing folder. Files that contain only notes have no topic and are ignored by the parser.)
 
 For example:
 
 ![Bulk mode](./readme/bulk.gif)
 
-You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `CANOPY_EDITOR='subl -w' canopy bulk` to temporarily set your editor, or, you can add `export CANOPY_EDITOR='subl -w'` eg to your shell config file. (In the absence of a `CANOPY_EDITOR` environment variable, Canopy will check for `VISUAL` and then `EDITOR`.) When you close the editor, your bulk file will be "processed," updating the file system to reflect the changes you made to the file.
+You can run `canopy bulk` to start a bulk session in your default editor. If you want to use a visual editor like Sublime Text, you can run `CANOPY_EDITOR='subl -w' canopy bulk` to temporarily set your editor, or, you can add `export CANOPY_EDITOR='subl -w'` to your shell config file. (In the absence of a `CANOPY_EDITOR` environment variable, Canopy will check for `VISUAL` and then `EDITOR`.) When you close the editor, your bulk file will be "processed," updating the topic files of the `topics` directory to reflect the changes you made in the bulk file.
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
@@ -417,7 +421,7 @@ For example:
 
 ![Bulk sync mode](./readme/sync.gif)
 
-To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, `canopy bulk --last` to start a session with the same files you did last time, or `canopy bulk --blank` to start with an empty file.
+To load only certain files or directories, use `canopy bulk -pd` for a directory picker, `canopy bulk -pf` for a file picker, and `canopy bulk -pr` to chose directories and all their contents recursively. You can also use `canopy bulk --search STRING` to include topic file paths matching a search string, `canopy bulk --git` to include all files changed relative to the last git commit, or `canopy bulk --blank` to start with an empty file.
 
 ### Building your project
 
