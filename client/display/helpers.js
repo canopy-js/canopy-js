@@ -57,7 +57,8 @@ const resetDom = () => {
 
 function scrollPage(linkToSelect, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let topOfNewLink = linkToSelect?.element.offsetTop || 0;
+  let topOfNewLink = (linkToSelect?.element.getBoundingClientRect().top +
+    linkToSelect?.element.ownerDocument.defaultView.pageYOffset) || 0;
   let heightOfLink = linkToSelect?.element.offsetHeight || 0;
   let idealPositionOfLinkOnViewport = window.innerHeight * .3; // align bottom of link with eye level, to make room for child paragraph
   let top = topOfNewLink + heightOfLink - idealPositionOfLinkOnViewport;
