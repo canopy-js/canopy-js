@@ -134,6 +134,11 @@
     font-size: 80%;
   }
 
+  li:not(:last-child) {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
   blockquote {
     padding: 0 .7em;
     color: #565e67;
