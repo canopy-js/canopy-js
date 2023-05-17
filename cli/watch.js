@@ -20,6 +20,7 @@ function watch(options) {
     console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     console.log(e.message);
     console.log(chalk.magenta(`If you correct the error and refresh your browser, the project should build and display properly.`));
+    if (options.error) console.error(e);
   }
 
   const watcher = chokidar.watch(['topics', 'assets', `${canopyLocation}/dist`, `${canopyLocation}/cli`], { persistent: true, ignoreInitial: true });
