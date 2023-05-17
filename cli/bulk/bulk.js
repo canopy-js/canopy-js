@@ -247,8 +247,8 @@ function debounceGenerator() {
 }
 
 function checkGitIgnoreForBulkFile(options) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: ${options.bulkFileName||defaultTopic.slug}`)));
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic.slug}`)));
   }
 }
 
