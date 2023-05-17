@@ -139,7 +139,7 @@ function terminalCategoryofPath(filePath) {
 }
 
 function parseLink(string, parserContext) {
-  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/s);
+  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)(?:\]\]|\[\[)).)+)\]\]/s);
   if (!linkMatch) return {};
   let linkContents = linkMatch[1];
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
