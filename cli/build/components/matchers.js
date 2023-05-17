@@ -185,6 +185,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
   if (linkFragment) return; // Any link with a # symbol is a global or import
   let targetSubtopic = new Topic(linkTarget);
   if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
+  if (targetSubtopic.caps === currentSubtopic.caps) return; // a paragraph can't link to itself, probably a global topic by same name
 
   if (parserContext.currentTopicHasSubtopic(targetSubtopic)) {
     if (parserContext.subtopicReferenceIsRedundant(targetSubtopic)) {
