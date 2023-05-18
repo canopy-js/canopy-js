@@ -60,7 +60,7 @@ function scrollPage(linkToSelect, displayOptions) {
   let topOfNewLink = (linkToSelect?.element.getBoundingClientRect().top +
     linkToSelect?.element.ownerDocument.defaultView.pageYOffset) || 0;
   let heightOfLink = linkToSelect?.element.offsetHeight || 0;
-  let idealPositionOfLinkOnViewport = window.innerHeight * .3; // align bottom of link with eye level, to make room for child paragraph
+  let idealPositionOfLinkOnViewport = window.innerHeight * .28; // align bottom of link with eye level, to make room for child paragraph
   let top = topOfNewLink + heightOfLink - idealPositionOfLinkOnViewport;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
