@@ -179,6 +179,7 @@
     border-collapse: collapse;
     border: 2px solid black;
     font-size: 18px;
+    min-width: 500px;
 
     &:not(:last-child) {
       margin-bottom: 21px;
@@ -187,7 +188,13 @@
     td, th {
       border: 2px solid black;
       text-align: center;
-      padding: 8px;
+      padding: 10px;
+
+      br {
+        display: block; // makes it have a width
+        content: ""; // clears default height
+        margin-bottom: 3px;
+      }
     }
   }
 
@@ -245,7 +252,14 @@
   }
 
   ol, ul {
-    margin: 15px 10px;
+    margin-top: 15px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 0px;
+
+    &:not(:last-child) {
+      margin-bottom: 15px;
+    }
 
     li:not(:last-child) {
       margin-bottom: 10px;
