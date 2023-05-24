@@ -166,6 +166,40 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
   });
 
+  test('It accepts table merge syntax', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_merge_syntax');
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(4)).toHaveText('2');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(5)).toHaveText('4');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
+    await expect(await page.locator('.canopy-selected-section table tr td').nth(6)).toHaveAttribute('colspan', '2');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(7)).toHaveText('This');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(8)).toHaveText('is');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(9)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(10)).toHaveText('table');
+    await expect(await page.locator('.canopy-selected-section table tr td').nth(10)).toHaveAttribute('rowspan', '2');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(12)).toHaveText('4');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(13)).toHaveText('6');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(14)).toHaveText('This');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(15)).toHaveText('is');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(16)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(17)).toHaveText('table');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(18)).toHaveText('2');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(19)).toHaveText('4');
+    await expect(await page.locator('.canopy-selected-section table tr td').nth(19)).toHaveAttribute('colspan', '3');
+  });
+
   test('It creates multi-line code blocks', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Code_blocks');
     await expect(page.locator('.canopy-selected-section code')).toHaveCount(1);
