@@ -1,4 +1,5 @@
 let parseParagraph = require('./parse_paragraph');
+let chalk = require('chalk');
 
 function ParserContextMock(priorContext) {
   let context = {

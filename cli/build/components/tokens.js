@@ -1,3 +1,6 @@
+let { splitOnPipes } = require('../../shared/helpers');
+let chalk = require('chalk');
+
 function parseText(options) {
   return require('./parse_text')(options); // avoid circular dependency
 }
@@ -182,29 +185,60 @@ function OutlineToken(text, parserContext) {
 function TableToken(text, parserContext) {
   this.type = 'table';
   this.rows = [];
+  const MERGE_DIRECTION = { 'v': {x: 0, y: 1}, '>': {x: 1, y: 0}, '<': {x: -1, y: 0}, '^': {x: 0, y: -1} };
+  let cellObjectList = [];
 
   text.split("\n")
     .filter(Boolean) // the trailing newline will create an empty row
     .forEach(line => {
-      if (line.match(/^\s*[=#\-|]+\s*$/)) {
-        return; // ignore horizontal row marker
-      }
+      if (line.match(/^\s*[=#\-|]+\s*$/)) return; // ignore horizontal row marker
 
-      let cellStrings = line.
-        replace(/\\\|/g, '__ESCAPED_PIPE__').
-        split('|').
-        map(string => string.replace(/__ESCAPED_PIPE__/g, '|')).
-        slice(1, -1);
-
-      let tokensByCell = cellStrings.map(
-        (cellString) => parseText({
-          text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
-          parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true })
-        })
+      let cellObjects = splitOnPipes(line).map(
+        (cellString) => {
+          if (cellString.match(/^\s*\\[v^<>]\s*$/)) return { tokens: [], merge: MERGE_DIRECTION[cellString.match(/[v^<>]/)[0]] }
+          return {
+            tokens: parseText({
+              text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+              parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true })
+            })
+          }
+        }
       );
-
-      this.rows.push(tokensByCell);
+      this.rows.push(cellObjects);
     });
+
+  this.rows.forEach((cellObjects, y, rows) => {
+    cellObjects.forEach((cellObject, x, columns) => {
+      if (cellObject.merge) {
+        let collection = cellObject.merge.x ? columns : rows;
+        let op = cellObject.merge;
+        let dir = op.x ? 'x' : 'y';
+        let attribute = cellObject.merge.x ? 'colspan' : 'rowspan';
+        let position = cellObject.merge.x ? y : x;
+        let limit = Math.max([op.x, op.y]) > 0 ? collection.length : -1;
+        let selection = {x: x + op.x, y: y + op.y};
+        if ((selection.x < 0 || selection.x > limit && limit > 0 && dir ==='x')
+          ||(selection.y < 0 || selection.y > limit && limit > 0 && dir ==='y')) {
+            throw new Error(chalk.red(`Invalid merge instructions in table: ${text}`));
+          }
+
+        while(selection[dir] !== limit) {
+          if (!rows[selection.y][selection.x].merge) {
+            rows[selection.y][selection.x][attribute] = (Number(rows[selection.y][selection.x][attribute]) || 1) + 1;
+            break;
+          } else {
+            if (rows[selection.y][selection.x].merge.x !== op.x || rows[selection.y][selection.x].merge.y !== op.y) {
+              throw new Error(chalk.red(`Invalid merge instructions in table: ${text}`)); // eg | \> | \^ |
+            }
+            selection[dir] += op[dir];
+          }
+        }
+        cellObjectList.push(cellObject); // we preserve the direction information for the above check until we are done will all the cells
+      }
+    });
+  })
+
+  cellObjectList.forEach(cellObject => cellObject.merge && (cellObject.merge = true));
 }
 
 function FootnoteLinesToken(text, parserContext, _, previousCharacter) {

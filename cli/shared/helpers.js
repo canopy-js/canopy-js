@@ -40,4 +40,28 @@ function tryDefaultTopic() {
   return defaultTopic;
 }
 
-module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic };
+function splitOnPipes(string) { // ignore pipes that are escaped or inside links eg [[a|b]]
+  let oneOpenBracket = false;
+  let oneCloseBracket = false;
+  let openLink = false;
+  let escape = false;
+  let result = [''];
+
+  for (let i = 0; i < string.length; i++) {
+    if (string[i] === '|' && !openLink && !escape) {
+      result.push('');
+    } else {
+      result[result.length - 1] += string[i];
+      if (string[i] === '\\' && !escape) { escape = true; } else { escape = false; }
+      if (string[i] === '[' && !oneOpenBracket) oneOpenBracket = true;
+      if (string[i] === '[' && oneOpenBracket) (openLink = true) && (oneOpenBracket = false);
+      if (string[i] === ']' && openLink && !oneCloseBracket) oneCloseBracket = true;
+      if (string[i] === ']' && openLink && oneCloseBracket) openLink = false;
+
+    }
+  }
+
+  return result.slice(1, -1);
+}
+
+module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes };
