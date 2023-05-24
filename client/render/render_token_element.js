@@ -327,20 +327,21 @@ function renderTable(token, renderContext) {
   tableElement.setAttribute('dir', 'auto');
 
   token.rows.forEach(
-    (tokensByCellOfRow) => {
+    (row) => {
       let tableRowElement = document.createElement('TR');
-      tokensByCellOfRow.forEach(
-        (tokensOfCell) => {
+      row.forEach(
+        (cellObject) => {
           let tableCellElement = document.createElement('TD');
-
-          tokensOfCell.forEach(
+          cellObject.tokens.forEach(
             (token) => {
               let tokenElement = renderTokenElement(token, renderContext);
+              cellObject.colspan && tableCellElement.setAttribute('colspan', cellObject.colspan);
+              cellObject.rowspan && tableCellElement.setAttribute('rowspan', cellObject.rowspan);
               tableCellElement.appendChild(tokenElement);
             }
           );
 
-          tableRowElement.appendChild(tableCellElement);
+          !cellObject.merge && tableRowElement.appendChild(tableCellElement);
         }
       )
       tableElement.appendChild(tableRowElement);
