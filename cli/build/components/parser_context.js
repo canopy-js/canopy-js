@@ -1,5 +1,5 @@
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString } = require('./helpers');
+let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString, parseLink } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
@@ -232,19 +232,24 @@ class ParserContext {
 
   findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext) {
     let linksOfParagraph = Array.from(
-      paragraphText.matchAll(/\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
-    ).map(match => match[1]);
+      paragraphText.matchAll(/\[\[(?:(?!(?<!\\)\]\]).)+\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
+    ).map(match => {
+      let linkData = parseLink(match[0]);
+      return !linkData.linkFragment && linkData.linkTarget; // only list global links
+    }).filter(Boolean);
 
     let targetTopicCandidates = linksOfParagraph.map(string => new Topic(string)).filter(topic => {
       return this.topicHasSubtopic(topic, targetSubtopic);
     });
 
-    if (targetTopicCandidates.length > 1) throw new Error(chalk.red(
-      `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
-      `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
-      `Please use explicit import syntax eg [[${targetTopicCandidates[0].slug}#${targetSubtopic.mixedCase}]]\n`
-      + `${parserContext.filePathAndLineNumber}`
-    ))
+    if (targetTopicCandidates.length > 1 && !targetTopicCandidates.every(t => t.mixedCase === targetTopicCandidates[0].mixedCase)) {
+      throw new Error(chalk.red( // multiple, different globals
+        `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
+        `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
+        `Please use explicit import syntax eg [[${targetTopicCandidates[0].slug}#${targetSubtopic.mixedCase}]]\n`
+        + `${parserContext.filePathAndLineNumber}`
+      ))
+    }
 
     return targetTopicCandidates[0];
   }
