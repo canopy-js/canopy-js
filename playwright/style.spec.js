@@ -166,6 +166,19 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
   });
 
+  test('It allows import references in tables', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_import_references');
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(1);
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
+
+    await expect(page.locator('.canopy-selected-section table a.canopy-global-link')).toHaveText('New York');
+    await expect(page.locator('.canopy-selected-section table a.canopy-import-link')).toHaveText('Southern border');
+  });
+
   test('It accepts table merge syntax', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_merge_syntax');
     await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
