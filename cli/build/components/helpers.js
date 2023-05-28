@@ -30,60 +30,6 @@ function topicKeyOfString(string) {
   return (new Paragraph(paragraphsWithKeys[0])).key;
 }
 
-/*
-
-When a link could be an import reference from one of two global references, we want to assign
-it to the closest candidate link. LinkProximityCalculator takes a string with links, and returns
-and object that can be used to retreive for a given link by index, a sorted list of other links
-by proximity to that link.
-
-*/
-class LinkProximityCalculator {
-  constructor(text) {
-    this.links = Array.from(
-      text.matchAll(/\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
-    ).map(match => ({
-      start: match.index,
-      end: match.index + match[0].length,
-      value: match[1]
-    }));
-
-    this.linksByIndex = this.links.reduce((linksByIndex, linkData) => {
-      linksByIndex[linkData.start] = linkData;
-      return linksByIndex;
-    }, {});
-  }
-
-  linksByProximity(linkIndex) {
-    let givenLinkData = this.linksByIndex[linkIndex];
-
-    function distance(linkData1, linkData2) {
-      if (linkData1.start < linkData2.start) {
-        return linkData2.start - linkData1.end;
-      } else {
-        return linkData1.start - linkData2.end;
-      }
-    }
-
-    function leastDistance(linkData1, linkData2) {
-      let distanceToLink1 = distance(givenLinkData, linkData1);
-      let distanceToLink2 = distance(givenLinkData, linkData2);
-
-      if (distanceToLink1 > distanceToLink2) {
-        return 1;
-      } else {
-        return -1;
-      }
-    }
-
-    return this
-      .links
-      .filter(link => link.start !== linkIndex)
-      .sort(leastDistance)
-      .map(l => l.value);
-  }
-}
-
 function updateFilesystem(directoriesToEnsure, filesToWrite, options) {
   directoriesToEnsure.forEach(directoryPath => {
     fs.ensureDirSync(directoryPath);
@@ -224,7 +170,6 @@ module.exports = {
   listExplFilesRecursive,
   updateFilesystem,
   getExplFileData,
-  LinkProximityCalculator,
   removeCircularListKeys,
   frontLoadImages,
   isCategoryNotesFile,

@@ -149,7 +149,7 @@ function createImportLinkElement(token, renderContext) {
     linkElement.appendChild(subtokenElement);
   });
 
-  linkElement.classList.add('canopy-global-link');
+  linkElement.classList.add('canopy-import-link');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'import';
 
