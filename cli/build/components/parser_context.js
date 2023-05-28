@@ -220,7 +220,7 @@ class ParserContext {
 
     this.provisionalLocalReferences[targetSubtopic.caps] = { // local references to convert to imports if found redundant
       token,
-      text: this.text,
+      paragraphText: this.paragraphText,
       index,
       enclosingTopic: this.currentTopic,
       enclosingSubtopic: this.currentSubtopic,
@@ -230,41 +230,49 @@ class ParserContext {
     };
   }
 
-  findImportReferenceTargetTopic(targetSubtopic, index, text) {
-    let calculator = new LinkProximityCalculator(text || this.currentText);
-    let linksByProximity = calculator.linksByProximity(index);
+  findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext) {
+    let linksOfParagraph = Array.from(
+      paragraphText.matchAll(/\[\[((?:(?!(?<!\\)\]\]).)+)\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
+    ).map(match => match[1]);
 
-    let targetTopic = linksByProximity.map(topicString => new Topic(topicString)).find(Topic => {
-      return this.topicHasSubtopic(Topic, targetSubtopic);
+    let targetTopicCandidates = linksOfParagraph.map(string => new Topic(string)).filter(topic => {
+      return this.topicHasSubtopic(topic, targetSubtopic);
     });
 
-    return targetTopic;
+    if (targetTopicCandidates.length > 1) throw new Error(chalk.red(
+      `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
+      `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
+      `Please use explicit import syntax eg [[${targetTopicCandidates[0].slug}#${targetSubtopic.mixedCase}]]\n`
+      + `${parserContext.filePathAndLineNumber}`
+    ))
+
+    return targetTopicCandidates[0];
   }
 
-  localReferenceCouldBeImport(targetSubtopic, index, text) {
-    return !!this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+  localReferenceCouldBeImport(targetSubtopic, parserContext) {
+    return !!this.findImportReferenceTargetTopic(targetSubtopic, parserContext.paragraphText, parserContext);
   }
 
-  priorLocalReferenceCouldBeImport(targetSubtopic) {
+  priorLocalReferenceCouldBeImport(targetSubtopic, parserContext) {
     let {
-      text,
+      paragraphText,
       index
     } = this.provisionalLocalReferences[targetSubtopic.caps];
 
-    return !!this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+    return !!this.findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext);
   }
 
-  convertPriorLocalReferenceToImport(targetSubtopic) {
+  convertPriorLocalReferenceToImport(targetSubtopic, parserContext) {
     let {
       token,
-      text,
+      paragraphText,
       index,
       enclosingTopic,
       enclosingSubtopic,
       linkText
     } = this.provisionalLocalReferences[targetSubtopic.caps];
 
-    let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+    let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext);
 
     token.type = 'import';
     token.targetTopic = targetTopic.mixedCase;
@@ -281,16 +289,16 @@ class ParserContext {
       enclosingSubtopic,
       targetTopic,
       targetSubtopic,
-      tokens: this.currentTokens,
+      paragraphReferences: this.paragraphReferences,
       filePath: this.filePath,
       lineNumber: this.lineNumber
     });
   }
 
   validateImportReferenceGlobalMatching() { // every import reference must have a global reference to the target subtopic's topic in the same paragraph
-    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, tokens, filePath, lineNumber}) => {
-      tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
-        let globalToken = tokens.find(
+    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, paragraphReferences, filePath, lineNumber}) => {
+      paragraphReferences.filter(t => t.type === 'import').forEach(importReferenceToken => {
+        let globalToken = paragraphReferences.find(
           token =>
             token.type === 'global' &&
             token.targetTopic === importReferenceToken.targetTopic &&

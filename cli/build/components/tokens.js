@@ -29,6 +29,7 @@ function LocalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this); // not necessary for import validation but included for consistency
 }
 
 function GlobalReferenceToken(
@@ -46,6 +47,7 @@ function GlobalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this);
 }
 
 function ImportReferenceToken(
@@ -63,6 +65,7 @@ function ImportReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this);
 }
 
 function UrlToken(url, text, parserContext) {

@@ -961,7 +961,7 @@ test('it matches implicit import references in any order within a sentence', () 
   );
 });
 
-test('it matches an implicit import reference to the closest candidate link', () => {
+test('it requires explicit syntax if import could match multiple globals', () => {
   let explFileData = {
     'topics/England/England.expl':
       dedent`England: England is a European country. The largest city in England is [[London]].
@@ -977,100 +977,12 @@ test('it matches an implicit import reference to the closest candidate link', ()
     'topics/Vacation/Vacation.expl':
       dedent`Vacation: I'd like to go to [[Columbus]], [[Ohio]], and [[London]], [[England]].` + '\n'
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/Vacation.json'])).toEqual(
-    {
-      "displayTopicName": "Vacation",
-      "topicTokens": [
-         {
-          "text": "Vacation",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Vacation": [
-          {
-            "text" : "I'd like to go to ",
-            "type":"text"
-          },
-          {
-            "text": "Columbus",
-            "type": "import",
-            "targetSubtopic": "Columbus",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation",
-            "tokens": [
-              {
-                 "text": "Columbus",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ", ",
-            "type":"text"
-          },
-          {
-            "text": "Ohio",
-            "type": "global",
-            "targetSubtopic": "Ohio",
-            "targetTopic": "Ohio",
-            "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation",
-            "tokens": [
-              {
-                 "text": "Ohio",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ", and ",
-            "type":"text"
-          },
-
-          {
-            "text": "London",
-            "type": "import",
-            "targetSubtopic": "London",
-            "targetTopic": "England",
-            "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation",
-            "tokens": [
-              {
-                 "text": "London",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ", ",
-            "type":"text"
-          },
-          {
-            "text": "England",
-            "type": "global",
-            "targetSubtopic": "England",
-            "targetTopic": "England",
-            "enclosingTopic": "Vacation",
-            "enclosingSubtopic" : "Vacation",
-            "tokens": [
-              {
-                 "text": "England",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      }
-    }
-  );
+  expect(() => jsonForProjectDirectory(explFileData, 'England', {})).toThrow(chalk.red(
+    `Import reference [London] could belong to multiple global references: [Ohio, England].\n` +
+    `Please use explicit import syntax eg [[Ohio#London]]\n` +
+    `topics/Vacation/Vacation.expl:1:57`
+  ));
 });
 
 test('it makes local references into import references if that resolves redundancy', () => {
