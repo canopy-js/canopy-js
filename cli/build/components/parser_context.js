@@ -1,5 +1,5 @@
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString } = require('./helpers');
+let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString, parseLink } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
 let Paragraph = require('../../shared/paragraph');
@@ -206,7 +206,7 @@ class ParserContext {
     return this.provisionalLocalReferences[targetSubtopic.caps];
   }
 
-  registerPotentialRedundantLocalReference(targetSubtopic) {
+  registerPotentialRedundantLocalReference(targetSubtopic) { // we won't know if these are really redundant until all conversions to import are done
     this.redundantLocalReferences.push([
       this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps],
       this.currentSubtopic,
@@ -220,7 +220,7 @@ class ParserContext {
 
     this.provisionalLocalReferences[targetSubtopic.caps] = { // local references to convert to imports if found redundant
       token,
-      text: this.text,
+      paragraphText: this.paragraphText,
       index,
       enclosingTopic: this.currentTopic,
       enclosingSubtopic: this.currentSubtopic,
@@ -230,41 +230,54 @@ class ParserContext {
     };
   }
 
-  findImportReferenceTargetTopic(targetSubtopic, index, text) {
-    let calculator = new LinkProximityCalculator(text || this.currentText);
-    let linksByProximity = calculator.linksByProximity(index);
+  findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext) {
+    let linksOfParagraph = Array.from(
+      paragraphText.matchAll(/\[\[(?:(?!(?<!\\)\]\]).)+\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
+    ).map(match => {
+      let linkData = parseLink(match[0]);
+      return !linkData.linkFragment && linkData.linkTarget; // only list global links
+    }).filter(Boolean);
 
-    let targetTopic = linksByProximity.map(topicString => new Topic(topicString)).find(Topic => {
-      return this.topicHasSubtopic(Topic, targetSubtopic);
+    let targetTopicCandidates = linksOfParagraph.map(string => new Topic(string)).filter(topic => {
+      return this.topicHasSubtopic(topic, targetSubtopic);
     });
 
-    return targetTopic;
+    if (targetTopicCandidates.length > 1 && !targetTopicCandidates.every(t => t.mixedCase === targetTopicCandidates[0].mixedCase)) {
+      throw new Error(chalk.red( // multiple, different globals
+        `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
+        `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
+        `Please use explicit import syntax eg [[${targetTopicCandidates[0].slug}#${targetSubtopic.mixedCase}]]\n`
+        + `${parserContext.filePathAndLineNumber}`
+      ))
+    }
+
+    return targetTopicCandidates[0];
   }
 
-  localReferenceCouldBeImport(targetSubtopic, index, text) {
-    return !!this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+  localReferenceCouldBeImport(targetSubtopic, parserContext) {
+    return !!this.findImportReferenceTargetTopic(targetSubtopic, parserContext.paragraphText, parserContext);
   }
 
-  priorLocalReferenceCouldBeImport(targetSubtopic) {
+  priorLocalReferenceCouldBeImport(targetSubtopic, parserContext) {
     let {
-      text,
+      paragraphText,
       index
     } = this.provisionalLocalReferences[targetSubtopic.caps];
 
-    return !!this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+    return !!this.findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext);
   }
 
-  convertPriorLocalReferenceToImport(targetSubtopic) {
+  convertPriorLocalReferenceToImport(targetSubtopic, parserContext) {
     let {
       token,
-      text,
+      paragraphText,
       index,
       enclosingTopic,
       enclosingSubtopic,
       linkText
     } = this.provisionalLocalReferences[targetSubtopic.caps];
 
-    let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, index, text);
+    let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, paragraphText, parserContext);
 
     token.type = 'import';
     token.targetTopic = targetTopic.mixedCase;
@@ -281,16 +294,16 @@ class ParserContext {
       enclosingSubtopic,
       targetTopic,
       targetSubtopic,
-      tokens: this.currentTokens,
+      paragraphReferences: this.paragraphReferences,
       filePath: this.filePath,
       lineNumber: this.lineNumber
     });
   }
 
   validateImportReferenceGlobalMatching() { // every import reference must have a global reference to the target subtopic's topic in the same paragraph
-    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, tokens, filePath, lineNumber}) => {
-      tokens.filter(t => t.type === 'import').forEach(importReferenceToken => {
-        let globalToken = tokens.find(
+    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, paragraphReferences, filePath, lineNumber}) => {
+      paragraphReferences.filter(t => t.type === 'import').forEach(importReferenceToken => {
+        let globalToken = paragraphReferences.find(
           token =>
             token.type === 'global' &&
             token.targetTopic === importReferenceToken.targetTopic &&
@@ -391,7 +404,7 @@ class ParserContext {
     });
   }
 
-  validateRedundantLocalReferences() { // can only be done after we've seen every local reference
+  validateRedundantLocalReferences() { // we need to wait for all local conversions to import to finish before erroring
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in separate real subsumed paragraphs?
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) {
         throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
