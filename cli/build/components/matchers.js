@@ -186,10 +186,10 @@ function localReferenceMatcher({ string, parserContext, index }) {
   if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
   if (targetSubtopic.caps === currentSubtopic.caps) return; // a paragraph can't link to itself, probably a global topic by same name
 
-  if (parserContext.currentTopicHasSubtopic(targetSubtopic)) {
-    if (parserContext.subtopicReferenceIsRedundant(targetSubtopic)) {
-      let currentLinkCouldBeImport = parserContext.localReferenceCouldBeImport(targetSubtopic, index);
-      let otherLinkCouldBeImport = parserContext.priorLocalReferenceCouldBeImport(targetSubtopic);
+  if (parserContext.currentTopicHasSubtopic(targetSubtopic, parserContext)) {
+    if (parserContext.subtopicReferenceIsRedundant(targetSubtopic, parserContext)) {
+      let currentLinkCouldBeImport = parserContext.localReferenceCouldBeImport(targetSubtopic, parserContext);
+      let otherLinkCouldBeImport = parserContext.priorLocalReferenceCouldBeImport(targetSubtopic, parserContext);
 
       if (currentLinkCouldBeImport && !otherLinkCouldBeImport) {
         return null; // allow text to be matched as import reference in importReferenceMatcher
@@ -247,8 +247,8 @@ function importReferenceMatcher({ string, parserContext, index }) {
   let { linkTarget, linkFragment, linkText, fullText, manualDisplayText } = parseLink(string, parserContext);
   if (!linkTarget) return; // not a well-formed link
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
-  if (!targetTopic) { // The user chose to just give the subtopic and imply the topic by proximity
-    targetTopic = parserContext.findImportReferenceTargetTopic(targetSubtopic, index);
+  if (!targetTopic) { // The user chose to just give the subtopic and imply the topic
+    targetTopic = parserContext.findImportReferenceTargetTopic(targetSubtopic, parserContext.paragraphText, parserContext);
   }
 
   if (!targetTopic) {

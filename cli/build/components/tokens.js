@@ -29,6 +29,7 @@ function LocalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this); // not necessary for import validation but included for consistency
 }
 
 function GlobalReferenceToken(
@@ -46,6 +47,7 @@ function GlobalReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this);
 }
 
 function ImportReferenceToken(
@@ -63,6 +65,7 @@ function ImportReferenceToken(
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
+  parserContext.paragraphReferences.push(this);
 }
 
 function UrlToken(url, text, parserContext) {
@@ -186,6 +189,7 @@ function TableToken(text, parserContext) {
   this.type = 'table';
   this.rows = [];
   const MERGE_DIRECTION = { 'v': {x: 0, y: 1}, '>': {x: 1, y: 0}, '<': {x: -1, y: 0}, '^': {x: 0, y: -1} };
+  let cellObjectList = [];
 
   text.split("\n")
     .filter(Boolean) // the trailing newline will create an empty row
@@ -226,14 +230,18 @@ function TableToken(text, parserContext) {
             rows[selection.y][selection.x][attribute] = (Number(rows[selection.y][selection.x][attribute]) || 1) + 1;
             break;
           } else {
+            if (rows[selection.y][selection.x].merge.x !== op.x || rows[selection.y][selection.x].merge.y !== op.y) {
+              throw new Error(chalk.red(`Invalid merge instructions in table: ${text}`)); // eg | \> | \^ |
+            }
             selection[dir] += op[dir];
           }
         }
-
-        cellObject.merge = true;
+        cellObjectList.push(cellObject); // we preserve the direction information for the above check until we are done will all the cells
       }
     });
   })
+
+  cellObjectList.forEach(cellObject => cellObject.merge && (cellObject.merge = true));
 }
 
 function FootnoteLinesToken(text, parserContext, _, previousCharacter) {

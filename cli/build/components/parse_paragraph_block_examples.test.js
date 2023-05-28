@@ -184,9 +184,18 @@ test('it parses a table block', () => {
   expect(tokens[0].rows[1][1].tokens[0].text).toEqual('data2');
 });
 
-test('it rejects invalid merge syntax', () => {
+test('it rejects invalid merge syntax that goes off table', () => {
   let text = '| Header | Second column |\n' +
     '| \\< | \\< |';
+
+  expect(() => parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }))).toThrow(
+    chalk.red(`Invalid merge instructions in table: ${text}`)
+  )
+});
+
+test('it rejects invalid merge syntax that goes in different directions', () => {
+  let text = '| Header | Second column |\n' +
+    '| \\^ | \\< |';
 
   expect(() => parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }))).toThrow(
     chalk.red(`Invalid merge instructions in table: ${text}`)
