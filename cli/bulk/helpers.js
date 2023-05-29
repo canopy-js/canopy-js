@@ -128,7 +128,7 @@ function logOrWriteError(func, options) {
       fs.writeFileSync(
         'build/index.html',
         `<h1 style="text-align: center;">Error building project</h1>
-        <p style="font-size: 24px; width: 800px; margin: auto;">${stripAnsi(e.message)}</p>`
+        <p style="font-size: 24px; width: 800px; margin: auto;">${stripAnsi(e.message).replace(/\n/g, '<br><br>')}</p>`
       );
     }
     if (options.logging) {

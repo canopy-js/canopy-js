@@ -24,6 +24,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
   });
 
   parserContext.validateRedundantLocalReferences();
+  parserContext.validateAmbiguousLocalReferences();
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,

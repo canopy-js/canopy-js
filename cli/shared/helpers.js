@@ -26,11 +26,11 @@ class DefaultTopic {
 
 let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
 
-function displaySegment(topicName, subtopicName) {
-  if (topicName === subtopicName) {
-    return `[${topicName}]`;
+function displaySegment(topic, subtopic) {
+  if (topic.mixedCase === subtopic.mixedCase) {
+    return `[${topic.mixedCase}]`;
   } else {
-    return `[${subtopicName} (${topicName})]`;
+    return `[${subtopic.mixedCase} (${topic.mixedCase})]`;
   }
 }
 
@@ -64,4 +64,26 @@ function splitOnPipes(string) { // ignore pipes that are escaped or inside links
   return result.slice(1, -1);
 }
 
-module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes };
+function wrapText(str, width) {
+  var paragraphs = str.split('\n');
+  return paragraphs.map(paragraph => {
+    let words = paragraph.split(' ');
+    var lines = [];
+    var line = '';
+    for (var i = 0; i < words.length; i++) {
+      // Check if the current word will fit on the current line.
+      if (line.length + ' '.length + words[i].length <= width) {
+        line += (line ? ' ': '') + words[i];
+      } else {
+        // The current word will not fit on the current line.
+        lines.push(line);
+        line = '  ' + words[i];
+      }
+    }
+    // Add the last line to the output.
+    lines.push(line);
+    return lines.join('\n');
+  }).join('\n').trim()
+};
+
+module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes, wrapText };
