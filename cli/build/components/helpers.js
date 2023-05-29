@@ -89,7 +89,7 @@ function parseLink(string, parserContext) {
   if (!linkMatch) return {};
   let linkContents = linkMatch[1];
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
-  let fullText = linkMatch[0];
+  let linkFullText = linkMatch[0];
   let manualDisplayText = false; // did the user set the display text, or is it inferred from the targetText?
   let exclusiveTargetSyntax = false;
   let exclusiveDisplaySyntax = false;
@@ -101,7 +101,7 @@ function parseLink(string, parserContext) {
         displayText += plainText;
         targetText += plainText;
       } else {
-        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${fullText}\n${parserContext.filePathAndLineNumber}`));
+        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${linkFullText}\n${parserContext.filePathAndLineNumber}`));
         manualDisplayText = true;
 
         if (openingBraces.length === 1) { // eg [[{ ... }]]
@@ -143,7 +143,7 @@ function parseLink(string, parserContext) {
     linkTarget: (match && match[1])?.replace(/\n/g, ' ') || null, // eg "France"
     linkFragment: (match && match[2])?.replace(/\n/g, ' ') || null, // eg "Paris"
     linkText: manualDisplayText ? displayText : (match && (match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
-    fullText,
+    linkFullText,
     manualDisplayText
   };
 }
