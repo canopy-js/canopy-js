@@ -25,11 +25,20 @@ test('it handles multiple groups of style characters', () => {
   expect(removeStyleCharacters(text)).toEqual('a b');
 });
 
-test('it ignores style characters that are not adacent to word characters', () => {
+test('it removes style characters that are not adjacent to word characters', () => { // now we permit this syntax
   let text = '*a b *';
-  expect(removeStyleCharacters(text)).toEqual('*a b *');
+  expect(removeStyleCharacters(text)).toEqual('a b ');
 });
 
+test('it removes style characters within a word', () => { // now we permit this syntax
+  let text = 'a*b*c';
+  expect(removeStyleCharacters(text)).toEqual('abc');
+});
+
+test('it does not remove style characters within different words', () => { // we don't permit this syntax
+  let text = 'a*b c*d';
+  expect(removeStyleCharacters(text)).toEqual('a*b c*d');
+});
 
 test('it ignores escaped style characters', () => {
   let text = "_\\*a\\*_ \\*b\\*";
