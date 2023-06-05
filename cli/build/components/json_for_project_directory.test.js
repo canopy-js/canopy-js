@@ -1896,6 +1896,37 @@ test('it handles character counting after token', () => {
     ));
 });
 
+test('it gives correct line and character number for errors in tables', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    | This | is | a | table |
+    | with | many | cells | like [[non-existent topic]] |` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:3:30`
+    ));
+});
+
+test('it gives correct line and character number for errors in lists', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    1. This is a list.
+    2. This is a bad link [[non-existent topic]]` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:3:23`
+    ));
+});
+
+
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.

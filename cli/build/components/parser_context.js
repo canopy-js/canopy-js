@@ -28,7 +28,8 @@ class ParserContext {
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
-      this.linePrefixSize = 0;
+      this.linePrefixSize = 0 // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
+
       this.buildNamespaceObject(explFileData);
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
@@ -152,22 +153,24 @@ class ParserContext {
   }
 
   incrementCharacterNumber(num) {
-    if (num === 0) return;
+    if (num === 0) return this;
     if (num) {
       this.characterNumber += num;
     } else {
       this.characterNumber++;
     }
+    return this;
   }
 
-  incrementLineNumber(num) {
-    if (num === 0) return;
+  incrementLineAndResetCharacterNumber(num) {
+    if (num === 0) return this;
     this.characterNumber = 1 + this.linePrefixSize;
     if (num) {
       this.lineNumber += num;
     } else {
       this.lineNumber++;
     }
+    return this;
   }
 
   get filePathAndLineNumber() {
