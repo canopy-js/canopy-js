@@ -365,38 +365,50 @@ function linkedImageMatcher({ string, parserContext }) {
 }
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^_((.*?[^\\]))_(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^_(.*?[^\\])_(.|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either _ is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or _ is within a word, and the italicized region may not contain spaces
+
+  if (matchExists) {
     return [
       new ItalicsToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^\*((.*?[^\\]))\*(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^\*(.*?[^\\])\*(.|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either * is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or * is within a word, and the bolded region may not contain spaces
+
+  if (matchExists) {
     return [
       new BoldToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^`((.*?[^\\]))`(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^`(.*?[^\\])`(?=.|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -410,16 +422,23 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 }
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^~((.*?[^\\]))~(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^~(.*?[^\\])\~(.|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either ~ is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or ~ is within a word, and the struck through region may not contain spaces
+
+
+  if (matchExists) {
     return [
       new StrikethroughToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }
