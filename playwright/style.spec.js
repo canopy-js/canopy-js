@@ -11,14 +11,20 @@ test.beforeEach(async ({ page }) => {
 test.describe('Text styles', () => {
   test('Underscores create italic text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Italic_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is text with italics.");
-    await expect(page.locator('.canopy-selected-section i')).toHaveText("italics");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is text with italics. This is multiple italicized words, and this is italics within a word, but th_is is no_thing.");
+    await expect(page.locator('.canopy-selected-section i')).toHaveCount(3);
   });
 
   test('Asterisks create bold text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Bold_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text.");
-    await expect(page.locator('.canopy-selected-section b')).toHaveText("bold");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text. This is a bold sentence which can contain spaces because the asterisks are on the edges of the words, whereas this is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.");
+    await expect(page.locator('.canopy-selected-section b')).toHaveCount(3);
+  });
+
+  test('Tildes create strike-through text', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Strike-through_text');
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is strike through text. So is this. And this. Bu~t not thi~s.");
+    await expect(page.locator('.canopy-selected-section s')).toHaveCount(3);
   });
 
   test('Underscores and asterisks creates bold italic text', async ({ page }) => {
