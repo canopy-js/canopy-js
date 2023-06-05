@@ -143,6 +143,12 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section sup')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-footnote-span')).toHaveText('1. This is that footnote.');
   });
+
+  test('Special link examples', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Special_links');
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York, and to new york, and to \"New\" \'York\', and to the city of New York, and to the city of dew cork, and to the city that is new, and the city of newest york.");
+    await expect(page.locator('.canopy-selected-section a')).toHaveCount(7);
+  });
 });
 
 test.describe('Block entities', () => {
