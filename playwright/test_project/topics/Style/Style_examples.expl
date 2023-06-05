@@ -2,9 +2,9 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
-Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]] and [[footnotes]].
+Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
 
-Style characters: There is [[italic text]], [[bold text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], and [[code snippets]].
+Style characters: There is [[italic text]], [[bold text]], [[strike-through text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 
 Special topic names: There are [[_italic_ topic names]], [[`code snippet` topic names]], [[\_topic names with literal underscores\_]], and [[\`topic names with literal backticks\`]], and [[topic names with \\ backslashes]], topics called [[_data]], and a [[topic with no child links]].
 
@@ -99,13 +99,15 @@ Lists:
     - unordered elements also.
 
 Italic text:
-This is text with _italics_.
+This is text with _italics_. This is _multiple italicized words_, and this is italics w_ithi_n a word, but th_is is no_thing.
 
 Bold text:
-This is *bold* text.
+This is *bold* text. This is *a bold sentence which can contain spaces because the asterisks are on the edges of the words*, whereas th*i*s is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.
 
 Italicized bolded text:
 This is *_italicized bolded text_*.
+
+Strike-through text: This is ~strike through text~. ~So is this~. A~n~d this. Bu~t not thi~s.
 
 Style characters in mismatched order:
 This is text with *_style tokens in the wrong order*_.
@@ -163,3 +165,5 @@ Inline HTML: Text. <b> This is a test.</b> Text.
 Footnotes:
 This is regular text with a footnote[^1].
 [^1]: This is that footnote.
+
+Special links: This is a link to [[(New) York]], and to [[new york]], and to [["New" 'York']], and to [[the city of {{New York}}]], and to the city of [[{new|dew} {york|cork}]], and to the city that is [[{new} York]], and the city of [[New York|newest york]].

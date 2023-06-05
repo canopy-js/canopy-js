@@ -83,7 +83,9 @@ function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext
   this.type = 'image';
   this.resourceUrl = resourceUrl;
   this.title = (title||'').split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
-  this.tokens = parseText({ text: caption || '', parserContext: parserContext.clone({ preserveNewlines: false, insideToken: true }) });
+  this.tokens = parseText({
+    text: caption || '',
+    parserContext: parserContext.clone({ preserveNewlines: false, insideToken: true }) });
   this.altText = alt || null;
   this.caption = caption;
   this.anchorUrl = anchorUrl || null;
@@ -112,7 +114,7 @@ function BlockQuoteToken(text, direction, parserContext) {
       preserveNewlines: true,
       insideToken: true,
       linePrefixSize: 2 // ie "> "
-    })
+    }).incrementCharacterNumber('> '.length)
   });
   this.direction = direction;
 }
@@ -121,15 +123,22 @@ function OutlineToken(text, parserContext) {
   this.topLevelNodes = [];
   this.type = 'outline';
 
-  text.split("\n").filter(Boolean).forEach((line) => { // filter handles terminal newline
+  text.split("\n").filter(Boolean).forEach((line, lineIndex) => { // filter handles terminal newline
     let initialWhitespace = line.match(/^(\s*)/)[1];
-    let orderedListMatch = line.match(/^\s*(\S+)\.\s?(.*$)/);
-    let unorderedListMatch = line.match(/^\s*([+*-])\s?(.*$)/);
+    let orderedListMatch = line.match(/^\s*(\S+)(\.\s?)(.*$)/);
+    let unorderedListMatch = line.match(/^\s*([+*-])(\s?)(.*$)/);
     let match = orderedListMatch || unorderedListMatch;
 
     let ordinal = match[1];
-    let lineContents = match[2];
-    let tokensOfLine = parseText({ text: lineContents, parserContext: parserContext.clone({ preserveNewlines: false, insideToken: true }) });
+    let postOrdinalCharacters = match[2];
+    let lineContents = match[3];
+    let tokensOfLine = parseText({
+      text: lineContents,
+      parserContext: parserContext.clone({
+        preserveNewlines: false,
+        insideToken: true
+      }).incrementLineAndResetCharacterNumber(lineIndex).incrementCharacterNumber(initialWhitespace.length + ordinal.length + postOrdinalCharacters.length)
+    });
 
     let newNode = {
       indentation: initialWhitespace.length,
@@ -193,16 +202,28 @@ function TableToken(text, parserContext) {
 
   text.split("\n")
     .filter(Boolean) // the trailing newline will create an empty row
-    .forEach(line => {
+    .forEach((line, lineNumber) => {
       if (line.match(/^\s*[=#\-|]+\s*$/)) return; // ignore horizontal row marker
 
       let cellObjects = splitOnPipes(line).map(
-        (cellString) => {
-          if (cellString.match(/^\s*\\[v^<>]\s*$/)) return { tokens: [], merge: MERGE_DIRECTION[cellString.match(/[v^<>]/)[0]] }
+        (cellString, cellIndex, cellsOfRow) => {
+          if (cellString.match(/^\s*\\[v^<>]\s*$/)) return { tokens: [], merge: MERGE_DIRECTION[cellString.match(/[v^<>]/)[0]] };
+
+          let earlierCharactersOnLine = ['|'] // first | on line
+            .concat(
+              cellsOfRow.slice(0, cellIndex).join('|'), // all the intermediary cell contents plus pipes
+              cellIndex > 0 ? '|' : '' // the pipe before the current cell
+            ).join('');
+
           return {
             tokens: parseText({
               text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
-              parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true })
+              parserContext: parserContext.clone({
+                preserveNewlines: null,
+                insideToken: true,
+              })
+              .incrementLineAndResetCharacterNumber(lineNumber) // we want error messages to know how far into the table we are
+              .incrementCharacterNumber(earlierCharactersOnLine.length + cellString.match(/^\s+/)?.[0].length) // count earlier chars and leading space
             })
           }
         }
@@ -253,7 +274,12 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
   matches.forEach(match => {
     let superscript = match[1];
     let text = match[2];
-    let footnoteTokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: null, insideToken: true }) });
+    let footnoteTokens = parseText({
+      text,
+      parserContext: parserContext.clone({
+        preserveNewlines: null,
+        insideToken: true }).incrementCharacterNumber('['+ superscript + ']:'.length)
+    });
 
     this.lines.push({
       superscript,
@@ -264,12 +290,18 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
 
 function ItalicsToken(text, parserContext, _, previousCharacter) {
   this.type = 'italics';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({ insideToken: true }).incrementCharacterNumber('_'.length)
+  });
 }
 
 function BoldToken(text, parserContext, _, previousCharacter) {
   this.type = 'bold';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({ insideToken: true }).incrementCharacterNumber('*'.length)
+  });
 }
 
 function InlineCodeSnippetToken(text, parserContext) {
@@ -279,7 +311,10 @@ function InlineCodeSnippetToken(text, parserContext) {
 
 function StrikethroughToken(text, parserContext, _, previousCharacter) {
   this.type = 'strikethrough';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({ insideToken: true }).incrementCharacterNumber('~'.length)
+  });
 }
 
 module.exports = {

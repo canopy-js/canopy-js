@@ -1,0 +1,44 @@
+Error: local/global reference ambiguity
+
+Two references exist in topic [England] to target [London] and it is unclear
+  which is the local reference, and which is a global reference.
+
+================================ First Reference ===============================
+
+It is ambiguous whether reference [[London]] in subtopic [England] of topic
+  [England] is a local reference, a global reference, or an import reference
+  anchored to topic [Arkansas].
+
+topics/England/England.expl:1:72
+
+If you intended this link to be a global reference, you can fix this error one
+  of two ways:
+
+1. You can change the name of the other subtopic to not match the name of the
+  global reference so that it is clear that is the local reference.
+2. You can use explicit global syntax to clarify this is a global reference, ie,
+  [[London#London]].
+
+If you intended this link to be an import reference, you can fix this error one
+  of two ways:
+
+1. You can change the name of one of the subtopics to not match the other so
+  that it is clear that the other is the local reference.
+2. You can use explicit import syntax to clarify this is an import reference,
+  ie, by writing [[Arkansas#London]] in a paragraph that has an anchoring global
+  reference like [[Arkansas]].
+
+=============================== Second Reference ==============================
+
+It is ambiguous whether reference [[London]] in subtopic [Essex] of topic
+  [England] is a local reference, or a global reference.
+
+topics/England/England.expl:3:65
+
+If you intended this link to be a global reference, you can fix this error one
+  of two ways:
+
+1. You can change the name of the other subtopic to not match the name of the
+  global reference so that it is clear that is the local reference.
+2. You can use explicit global syntax to clarify this is a global reference, ie,
+  [[London#London]].

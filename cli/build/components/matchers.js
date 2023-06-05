@@ -178,7 +178,7 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 
 function localReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string, parserContext);
+  let { linkTarget, linkFragment, linkText, linkFullText } = parseLink(string, parserContext);
 
   if (!linkTarget) return; // This is not a valid link
   if (linkFragment) return; // Any link with a # symbol is a global or import
@@ -186,15 +186,17 @@ function localReferenceMatcher({ string, parserContext, index }) {
   if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
   if (targetSubtopic.caps === currentSubtopic.caps) return; // a paragraph can't link to itself, probably a global topic by same name
 
-  if (parserContext.currentTopicHasSubtopic(targetSubtopic, parserContext)) {
-    if (parserContext.subtopicReferenceIsRedundant(targetSubtopic, parserContext)) {
-      let currentLinkCouldBeImport = parserContext.localReferenceCouldBeImport(targetSubtopic, parserContext);
-      let otherLinkCouldBeImport = parserContext.priorLocalReferenceCouldBeImport(targetSubtopic, parserContext);
+  if (parserContext.currentTopicHasSubtopic(targetSubtopic)) {
+    if (parserContext.subtopicReferenceIsRedundant(targetSubtopic)) {
+      let currentLinkCouldBeImportOrGlobal = parserContext.localReferenceCouldBeImportOrGlobal(targetSubtopic);
+      let otherLinkCouldBeImportOrGlobal = parserContext.priorLocalReferenceCouldBeImportOrGlobal(targetSubtopic);
 
-      if (currentLinkCouldBeImport && !otherLinkCouldBeImport) {
+      if (currentLinkCouldBeImportOrGlobal && !otherLinkCouldBeImportOrGlobal) {
         return null; // allow text to be matched as import reference in importReferenceMatcher
-      } else if (!currentLinkCouldBeImport && otherLinkCouldBeImport) {
-        parserContext.convertPriorLocalReferenceToImport(targetSubtopic);
+      } else if (!currentLinkCouldBeImportOrGlobal && otherLinkCouldBeImportOrGlobal) {
+        parserContext.convertPriorLocalReferenceToImportOrGlobal(targetSubtopic);
+      } else if (currentLinkCouldBeImportOrGlobal && otherLinkCouldBeImportOrGlobal) {
+        parserContext.registerPotentialAmiguousReference(targetSubtopic, linkFullText)
       } else {
         parserContext.registerPotentialRedundantLocalReference(targetSubtopic);
       }
@@ -202,16 +204,16 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
     let localReferenceToken = new LocalReferenceToken(
       currentTopic.mixedCase,
-      parserContext.getOriginalSubTopic(currentTopic, targetSubtopic).mixedCase,
+      parserContext.getOriginalSubtopic(currentTopic, targetSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
       linkText,
       parserContext
     );
 
-    parserContext.registerLocalReference(targetSubtopic, index, linkText, localReferenceToken);
+    parserContext.registerLocalReference(targetSubtopic, index, linkText, linkFullText, localReferenceToken);
 
-    return [localReferenceToken, fullText.length];
+    return [localReferenceToken, linkFullText.length];
   } else {
     return null;
   }
@@ -219,7 +221,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
 function globalReferenceMatcher({ string, parserContext }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText } = parseLink(string, parserContext);
+  let { linkTarget, linkFragment, linkText, linkFullText } = parseLink(string, parserContext);
   if (!linkTarget) return; // invalid link
   if (linkFragment && linkTarget !== linkFragment) return; // import reference
   let targetTopic = new Topic(linkTarget);
@@ -235,7 +237,7 @@ function globalReferenceMatcher({ string, parserContext }) {
         currentSubtopic.mixedCase,
         linkText,
         parserContext
-      ), fullText.length
+      ), linkFullText.length
     ];
   } else {
     return null;
@@ -244,7 +246,7 @@ function globalReferenceMatcher({ string, parserContext }) {
 
 function importReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, fullText, manualDisplayText } = parseLink(string, parserContext);
+  let { linkTarget, linkFragment, linkText, linkFullText, manualDisplayText } = parseLink(string, parserContext);
   if (!linkTarget) return; // not a well-formed link
   let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
   if (!targetTopic) { // The user chose to just give the subtopic and imply the topic
@@ -252,17 +254,17 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} in ${displaySegment(currentTopic.mixedCase, currentSubtopic.mixedCase)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
+    throw new Error(chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
       `${parserContext.filePathAndLineNumber}`));
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
+    throw new Error(chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
       `${parserContext.filePathAndLineNumber}`));
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw new Error(chalk.red(`Error: Reference ${fullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` +
+    throw new Error(chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` +
       `${parserContext.filePathAndLineNumber}`));
   }
 
@@ -271,12 +273,12 @@ function importReferenceMatcher({ string, parserContext, index }) {
   return [
     new ImportReferenceToken(
       parserContext.getOriginalTopic(targetTopic).mixedCase,
-      parserContext.getOriginalSubTopic(targetTopic, targetSubtopic).mixedCase,
+      parserContext.getOriginalSubtopic(targetTopic, targetSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
       linkText,
       parserContext
-    ), fullText.length
+    ), linkFullText.length
   ];
 }
 
@@ -363,38 +365,50 @@ function linkedImageMatcher({ string, parserContext }) {
 }
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^_((.*?[^\\]))_(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^_(.*?[^\\])_([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either _ is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or _ is within a word, and the italicized region may not contain spaces
+
+  if (matchExists) {
     return [
       new ItalicsToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^\*((.*?[^\\]))\*(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^\*(.*?[^\\])\*([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
+  let strictNextCharacter = match?.[2] && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either * is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or * is within a word, and the bolded region may not contain spaces
+
+  if (matchExists) {
     return [
       new BoldToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^`((.*?[^\\]))`(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let match = string.match(/^`(.*?[^\\])`(?=[\s.,?;:{*_`~"'{[(\]})\n]|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -408,16 +422,23 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 }
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^~((.*?[^\\]))~(?=[\s.,?;:{*_`~"'{[(\]})]|$)/s);
+  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let match = string.match(/^~(.*?[^\\])\~([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
+  let strictNextCharacter = match?.[2] && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let containsSpaces = match?.[0].match(/\s/s);
 
-  if (match && validPreviousCharacter) {
+  let matchExists = match &&
+    ((strictPreviousCharacter && strictNextCharacter) || // either ~ is at the edges of a word, in which case selected text can contain spaces
+      !containsSpaces); // or ~ is within a word, and the struck through region may not contain spaces
+
+
+  if (matchExists) {
     return [
       new StrikethroughToken(
         match[1],
         parserContext
       ),
-      match[0].length
+      match[0].length - match?.[2].length
     ];
   }
 }

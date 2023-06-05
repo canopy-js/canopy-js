@@ -180,6 +180,8 @@
     border: 2px solid black;
     font-size: 18px;
     min-width: 500px;
+    // table-layout: fixed;
+    // width: 100%;
 
     &:not(:last-child) {
       margin-bottom: 21px;
@@ -193,7 +195,7 @@
       br {
         display: block; // makes it have a width
         content: ""; // clears default height
-        margin-bottom: 3px;
+        padding-bottom: 4px;
       }
     }
   }

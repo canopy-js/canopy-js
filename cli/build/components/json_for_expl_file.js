@@ -15,8 +15,8 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
     parserContext.setTopicAndSubtopic(new Topic(rootParagraph.key), new Topic(paragraph.key));
     parserContext.setLineNumberToCurrentSubtopic();
-    if (!paragraph.newlineAfterDelimiter) parserContext.incrementCharacterNumber(paragraph.key.length + paragraph.charsAfterKey); // move cursor from last key char to first text char
-    if (paragraph.newlineAfterDelimiter) parserContext.incrementLineNumber();
+    if (!paragraph.newlineAfterDelimiter) parserContext.incrementCharacterNumber(paragraph.key.length + paragraph.charsAfterKey); // move cursor past key
+    if (paragraph.newlineAfterDelimiter) parserContext.incrementLineAndResetCharacterNumber();
 
     let tokensOfParagraph = parseParagraph(paragraph.text, parserContext);
 
@@ -24,6 +24,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
   });
 
   parserContext.validateRedundantLocalReferences();
+  parserContext.validateAmbiguousLocalReferences();
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,

@@ -980,7 +980,7 @@ test('it requires explicit syntax if import could match multiple globals', () =>
 
   expect(() => jsonForProjectDirectory(explFileData, 'England', {})).toThrow(chalk.red(
     `Import reference [London] could belong to multiple global references: [Ohio, England].\n` +
-    `Please use explicit import syntax eg [[Ohio#London]]\n` +
+    `Please indicate which global reference is the import anchor using explicit import syntax eg [[Ohio#London]]\n` +
     `topics/Vacation/Vacation.expl:1:57`
   ));
 });
@@ -1280,40 +1280,6 @@ test('it converts local references within lists to import references if later fo
   );
 });
 
-test('it throws error for redundant local references where both could be import references', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. The largest city in England is [[London]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]], which is also the name of a city in [[England]]
-
-      Columbus: Columbus is a large city in Ohio, which is similar in character to [[London]] [[England]].
-
-      London: London is a small city in Ohio.` + '\n',
-  };
-
-  let message = dedent`Error: Two local references exist in topic [Ohio] to subtopic [London]
-
-    - One reference is in [Ohio] - topics/Ohio/Ohio.expl:1
-    - One reference is in [Columbus (Ohio)] - topics/Ohio/Ohio.expl:3
-
-    Multiple local references to the same subtopic are not permitted.
-    Consider making one of these local references a self-import reference.
-    That would look like using [[Ohio#London]] in the same paragraph as
-    a reference to [[Ohio]].
-
-    (It is also possible you meant one of these as an import reference, however,
-    if both links could be either local or import references, you must clarify
-    which is the import reference using explicit import syntax ie [[Other Topic#London]])`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'England', {})
-  ).toThrow(chalk.red(message));
-});
-
 test('it matches import references with explicit syntax and lets you rename the link', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming#Yellowstone National Park|my favorite park]] in [[Wyoming]].\n`,
@@ -1569,22 +1535,242 @@ test('it throws error for regular redundant local references', () => {
 
   let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
-    - One reference is in [Idaho] - topics/Idaho/Idaho.expl:1
-    - One reference is in [Western Half (Idaho)] - topics/Idaho/Idaho.expl:3
+    One reference is in subtopic [Idaho]
+    topics/Idaho/Idaho.expl:1
+
+    One reference is in subtopic [Western Half (Idaho)]
+    topics/Idaho/Idaho.expl:3
 
     Multiple local references to the same subtopic are not permitted.
+
     Consider making one of these local references a self-import reference.
     That would look like using [[Idaho#Boise]] in the same paragraph as
-    a reference to [[Idaho]].
-
-    (It is also possible you meant one of these as an import reference, however,
-    if both links could be either local or import references, you must clarify
-    which is the import reference using explicit import syntax ie [[Other Topic#Boise]])
+    an anchor reference to global topic [[Idaho]].
     `;
 
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(message));
+});
+
+test('it only throws error for regular redundant local references in subsumed paragraphs', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. It contains [[Boise]].
+
+      Western Half: Idaho's western half contains its capital [[Boise]].
+
+      Boise: Boise is the capital of Idaho.` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).not.toThrow();
+});
+
+test('it throws error for redundant local references where both could be import references', () => {
+  let explFileData = {
+    'topics/England/England.expl':
+      dedent`England: England is a European country. The largest city in England is [[London]].
+
+      London: London is a large city in England.` + '\n',
+
+    'topics/Ohio/Ohio.expl':
+      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]], which is also the name of a city in [[England]].
+
+      Columbus: Columbus is a large city in Ohio, which is similar in character to [[London]] [[England]].
+
+      London: London is a small city in Ohio.` + '\n',
+  };
+
+  let message =
+    dedent`Error: local/import reference ambiguity
+
+      Two references exist in topic [Ohio] to target [London] and it is unclear which
+        is the local reference, and which is an import reference.
+
+      ================================ First Reference ===============================
+
+      It is ambiguous whether reference [[London]] in subtopic [Ohio] of topic [Ohio]
+        is a local reference, an or an import reference anchored to topic [England].
+
+      topics/Ohio/Ohio.expl:1:64
+
+      If you intended this link to be an import reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of one of the subtopics to not match the other so
+        that it is clear that the other is the local reference.
+      2. You can use explicit import syntax to clarify this is an import reference,
+        ie, by writing [[England#London]] in a paragraph that has an anchoring global
+        reference like [[England]].
+
+      =============================== Second Reference ==============================
+
+      It is ambiguous whether reference [[London]] in subtopic [Columbus] of topic
+        [Ohio] is a local reference, an or an import reference anchored to topic
+        [England].
+
+      topics/Ohio/Ohio.expl:3:78
+
+      If you intended this link to be an import reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of one of the subtopics to not match the other so
+        that it is clear that the other is the local reference.
+      2. You can use explicit import syntax to clarify this is an import reference,
+        ie, by writing [[England#London]] in a paragraph that has an anchoring global
+        reference like [[England]].`;
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'England', {})
+  ).toThrow(chalk.red(message));
+});
+
+test('it throws error for redundant local references where both could be global reference', () => {
+  let explFileData = {
+    'topics/England/England.expl':
+      dedent`England: England is a European country. The largest city in England is [[London]]. England contains [[Essex]].
+
+      Essex: Essex has been home to many individuals with the surname [[London]].
+
+      London: London is a large city in England.` + '\n',
+
+    'topics/England/London.expl': `London: London is a common family name.\n`
+  };
+
+  let message =
+    dedent`Error: local/global reference ambiguity
+
+      Two references exist in topic [England] to target [London] and it is unclear
+        which is the local reference, and which is a global reference.
+
+      ================================ First Reference ===============================
+
+      It is ambiguous whether reference [[London]] in subtopic [England] of topic
+        [England] is a local reference, or a global reference.
+
+      topics/England/England.expl:1:72
+
+      If you intended this link to be a global reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of the other subtopic to not match the name of the
+        global reference so that it is clear that is the local reference.
+      2. You can use explicit global syntax to clarify this is a global reference, ie,
+        [[London#London]].
+
+      =============================== Second Reference ==============================
+
+      It is ambiguous whether reference [[London]] in subtopic [Essex] of topic
+        [England] is a local reference, or a global reference.
+
+      topics/England/England.expl:3:65
+
+      If you intended this link to be a global reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of the other subtopic to not match the name of the
+        global reference so that it is clear that is the local reference.
+      2. You can use explicit global syntax to clarify this is a global reference, ie,
+        [[London#London]].`;
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'England', {})
+  ).toThrow(chalk.red(message));
+});
+
+test('it throws error for redundant local references where one could be global and one could be global or import', () => {
+  let explFileData = {
+    'topics/England/England.expl':
+      dedent`England: England is a European country. The largest city in England is [[London]]. England contains [[Essex]]. Randomly, a cool place to visit is [[Arkansas]].
+
+      Essex: Essex has been home to many individuals with the surname [[London]].
+
+      London: London is a large city in England.` + '\n',
+
+    'topics/Names/London.expl': `London: London is a common family name.\n`,
+
+    'topics/US/Arkansas.expl': dedent`Arkansas: Arkansas is a midsized American State containing the city of [[London]].
+
+    London: London is a small city in Arkansas state.`,
+  };
+
+  let message =
+    dedent`Error: local/global reference ambiguity
+
+      Two references exist in topic [England] to target [London] and it is unclear
+        which is the local reference, and which is a global reference.
+
+      ================================ First Reference ===============================
+
+      It is ambiguous whether reference [[London]] in subtopic [England] of topic
+        [England] is a local reference, a global reference, or an import reference
+        anchored to topic [Arkansas].
+
+      topics/England/England.expl:1:72
+
+      If you intended this link to be a global reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of the other subtopic to not match the name of the
+        global reference so that it is clear that is the local reference.
+      2. You can use explicit global syntax to clarify this is a global reference, ie,
+        [[London#London]].
+
+      If you intended this link to be an import reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of one of the subtopics to not match the other so
+        that it is clear that the other is the local reference.
+      2. You can use explicit import syntax to clarify this is an import reference,
+        ie, by writing [[Arkansas#London]] in a paragraph that has an anchoring global
+        reference like [[Arkansas]].
+
+      =============================== Second Reference ==============================
+
+      It is ambiguous whether reference [[London]] in subtopic [Essex] of topic
+        [England] is a local reference, or a global reference.
+
+      topics/England/England.expl:3:65
+
+      If you intended this link to be a global reference, you can fix this error one
+        of two ways:
+
+      1. You can change the name of the other subtopic to not match the name of the
+        global reference so that it is clear that is the local reference.
+      2. You can use explicit global syntax to clarify this is a global reference, ie,
+        [[London#London]].`;
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'England', {})
+  ).toThrow(chalk.red(message));
+});
+
+test('it only throws error for ambiguous local references in subsumed paragraphs', () => {
+  let explFileData = {
+    'topics/England/England.expl':
+      dedent`England: England is a European country. England contains [[Essex]].
+
+      Essex: Essex has been home to many individuals with the surname [[London]]. Randomly, a cool place to visit is [[Arkansas]].
+      London is a local reference, but it could be an import reference due to Arkansas. If the Leeds paragraph were subsumed, it
+      would be ambiguous which London was a local reference and which was an import reference, but it is not subsumed, so it is clear
+      this London is a local reference.
+
+      London: London is a large city in England.
+
+      Leeds: There is a big city called [[London]] nearby. Randomly, a cool place to visit is [[Arkansas]].` + '\n',
+
+    'topics/Names/London.expl': `London: London is a common family name.\n`,
+
+    'topics/US/Arkansas.expl': dedent`Arkansas: Arkansas is a midsized American State containing the city of [[London]].
+
+    London: London is a small city in Arkansas state.`,
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'England', {})
+  ).not.toThrow();
 });
 
 test('it throws error for redundantly defined topics', () => {
@@ -1710,6 +1896,37 @@ test('it handles character counting after token', () => {
     ));
 });
 
+test('it gives correct line and character number for errors in tables', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    | This | is | a | table |
+    | with | many | cells | like [[non-existent topic]] |` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:3:30`
+    ));
+});
+
+test('it gives correct line and character number for errors in lists', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    1. This is a list.
+    2. This is a bad link [[non-existent topic]]` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(
+    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
+    `topics/Idaho/Idaho.expl:3:23`
+    ));
+});
+
+
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
@@ -1796,7 +2013,23 @@ test('it throws error for topic name beginning with whitespace', () => {
     `topics/Idaho/_Idaho.expl`;
 
   expect(
-    () => console.log(jsonForProjectDirectory(explFileData, 'Idaho', {}))
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(message));
+});
+
+test('it throws error for subtopic name beginning with whitespace', () => {
+  let explFileData = {
+    'topics/Idaho/_Idaho.expl': `Idaho: Idaho is a midwestern state. [[Hello world]].
+
+      Hello world: abc.`
+  };
+
+  let message = dedent`Error: Subtopic name [      Hello world] in topic [Idaho] begins or ends with whitespace.
+
+    topics/Idaho/_Idaho.expl:3`;
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
