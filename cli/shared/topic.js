@@ -25,6 +25,8 @@ class Topic {
       .replace(/\?$/, '') // It should match whether or not both have trailing question marks
       .replace(/"/g, '') // We remove quotation marks so matches ignore them
       .replace(/'/g, '')
+      .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
+      .replace(/\)/g, '')
       .replace(/_/g, ' '); // We de-slugify the URL and turn it to caps to retreive the given topic from the response data, but if there were literal underscores originally
                            // this information is lost. Therefore, we remove all underscores to make sure we can use the URL topic name to find the given topic.
 
