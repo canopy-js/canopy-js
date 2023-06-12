@@ -74,7 +74,11 @@ Topic.convertUnderscoresToSpaces = function convertUnderscoresToSpaces(string) {
 }
 
 Topic.convertSpacesToUnderscores = function convertSpacesToUnderscores(string) {
-  return string.split('/').map(string => (new Topic(string)).fileName).join('/');
+  return string.split('/').map(string => Topic.for(string).fileName).join('/');
+}
+
+Topic.for = function topicFor(string) {
+  return new Topic(string);
 }
 
 function convertUnderscoresToSpaces(string) {

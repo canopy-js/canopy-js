@@ -55,11 +55,6 @@ class ParserContext {
       let currentTopic = new Topic(topicParargaph.key);
       let lineNumber = 1;
 
-      if (isCategoryNotesFile(filePath) && // disregard keys in category notes if the root topic doesn't match filename
-        topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) {
-        return;
-      }
-
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
         throw new Error(chalk.red(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
         - One file is: ${topicFilePaths[currentTopic.caps]}

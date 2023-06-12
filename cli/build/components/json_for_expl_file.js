@@ -13,7 +13,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
     let paragraph = new Paragraph(paragraphWithKey.trim());
     if (!paragraph.key) { return; }
 
-    parserContext.setTopicAndSubtopic(new Topic(rootParagraph.key), new Topic(paragraph.key));
+    parserContext.setTopicAndSubtopic(Topic.for(rootParagraph.key), Topic.for(paragraph.key));
     parserContext.setLineNumberToCurrentSubtopic();
     if (!paragraph.newlineAfterDelimiter) parserContext.incrementCharacterNumber(paragraph.key.length + paragraph.charsAfterKey); // move cursor past key
     if (paragraph.newlineAfterDelimiter) parserContext.incrementLineAndResetCharacterNumber();
