@@ -14,8 +14,6 @@ function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
 
   Object.keys(explFileData).forEach(function(filePath) {
     if (!topicKeyOfString(explFileData[filePath])) return;
-    if (isCategoryNotesFile(filePath) && // disregard keys in category notes if the root topic doesn't match filename
-      topicKeyOfString(explFileData[filePath]) !== Topic.convertUnderscoresToSpaces(terminalCategoryofPath(filePath))) return;
 
     let json = jsonForExplFile(filePath, explFileData, parserContext, options);
     let topic = new Topic(topicKeyOfString(explFileData[filePath]), true);

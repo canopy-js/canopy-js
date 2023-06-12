@@ -89,7 +89,7 @@ class FileSet {
 
 function terminalCategoryofFilePath(filePath) {
   let items = filePath.split('/');
-  return Topic.convertUnderscoresToSpaces(items[items.length - 2]);
+  return Topic.fromEncodedSlug(items[items.length - 2]).mixedCase;
 }
 
 function generateDisplayPath(directoryPath) {
