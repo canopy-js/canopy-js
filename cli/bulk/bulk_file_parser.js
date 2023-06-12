@@ -47,7 +47,7 @@ class BulkFileParser {
       section.files.forEach(file => {
         if (file.asterisk && file.key) {
           // Create topic file
-          let topicFilePath = `${section.diskDirectoryPath}/${(new Topic(file.key)).fileName}.expl`;
+          let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).fileName}.expl`;
           if (fileContentsByPath.hasOwnProperty(topicFilePath)) throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
           fileContentsByPath[topicFilePath] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
 
@@ -68,6 +68,11 @@ class BulkFileParser {
       if (categoryNotesBuffer) {
         let existingContents = fileContentsByPath[categoryNotesFilePath];
         fileContentsByPath[categoryNotesFilePath] = (existingContents ? existingContents + '\n' : '') + categoryNotesBuffer;
+
+        if (fileContentsByPath[categoryNotesFilePath].match(/^[^-][^:;.,?!]*[^\\]\?/)) { // note will be misrecognized as ? topic
+          fileContentsByPath[categoryNotesFilePath] =
+          fileContentsByPath[categoryNotesFilePath].replace(/\?/, '\\?');
+        }
       }
     });
 

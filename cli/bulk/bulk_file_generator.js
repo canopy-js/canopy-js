@@ -1,4 +1,5 @@
 let Paragraph = require('../shared/paragraph');
+let Topic = require('../shared/topic');
 
 class BulkFileGenerator {
   constructor(fileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath) {
@@ -27,7 +28,7 @@ class BulkFileGenerator {
   }
 
   generateInitialAsterisks(file) {
-    if ((file.categoryNotes && file.key === file.terminalCategory) || // if the initial key of a category notes file matches the category, it is a category topic
+    if ((file.categoryNotes && file.key && Topic.for(file.key).mixedCase === file.terminalCategory) || // if the initial key of a category notes file matches the category, it is a category topic
       (!file.categoryNotes && file.key)) { // if the file is not a category notes file and it has a key, it is a regular topic file
 
       if (file.path === this.defaultTopicFilePath) {
