@@ -366,7 +366,7 @@ function linkedImageMatcher({ string, parserContext }) {
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^_(.*?[^\\])_([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
+  let match = string.match(/^_(.*?[^\\])_(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
 
@@ -387,8 +387,8 @@ function italicsMatcher({ string, parserContext, previousCharacter }) {
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^\*(.*?[^\\])\*([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
-  let strictNextCharacter = match?.[2] && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let match = string.match(/^\*(.*?[^\\])\*(.|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
 
   let matchExists = match &&
@@ -408,7 +408,7 @@ function boldMatcher({ string, parserContext, previousCharacter }) {
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^`(.*?[^\\])`(?=[\s.,?;:{*_`~"'{[(\]})\n]|$)/s);
+  let match = string.match(/^`(.*?[^\\])`(?=.|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -423,8 +423,8 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
-  let match = string.match(/^~(.*?[^\\])\~([\s.,?;:{*_`~"'{[(\]})\nA-Za-z0-9]|$)/s);
-  let strictNextCharacter = match?.[2] && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
+  let match = string.match(/^~(.*?[^\\])\~(.|$)/s);
+  let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
 
   let matchExists = match &&

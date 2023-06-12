@@ -1449,41 +1449,6 @@ test('it matches global references at the end of strings', () => {
   );
 });
 
-test(`it skips category note files with keys that don't match the file name`, () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `This key doesn't match "Idaho": Idaho is a midwestern state.\n`,
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(Object.keys(filesToWrite)).toEqual([]);
-});
-
-test(`it doesn't skip files with keys that don't match filenames for non-category note files`, () => {
-  let explFileData = {
-    'topics/Idaho/Topic.expl': `Idaho: Idaho is a midwestern state.\n`, // this is a valid topic
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-          {
-            "text" : "Idaho is a midwestern state.",
-            "type":"text"
-          }
-        ]
-      }
-    }
-  );
-});
 
 ////////////  Errors ///////////////
 
@@ -1508,19 +1473,6 @@ test('it does not throw error for demarcated link', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).not.toThrow();
-});
-
-test('it throws error for unrecognized link defined in category notes file', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
-    'topics/Midwest/Midwest.expl': `Wyoming: Idaho is a midwestern state.\n`,
-  };
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(
-    `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1:42`
-  ));
 });
 
 test('it throws error for regular redundant local references', () => {

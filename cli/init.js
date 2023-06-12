@@ -15,7 +15,7 @@ function init() {
   (async () => {
     let defaultTopic = await requestDefaultTopic();
     if (!defaultTopic) throw new Error(chalk.red('No default topic name given.'));
-    let defaultTopicSlug = (new Topic(defaultTopic)).slug;
+    let defaultTopicSlug = Topic.for(defaultTopic).slug;
     fs.ensureDirSync(`topics/${defaultTopicSlug}`);
     let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
     fs.writeFileSync(defaultTopicFilePath,
