@@ -79,11 +79,11 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Images');
     await expect(page.locator('.canopy-selected-section p > span:has-text("This is a picture of jelly fish.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly Fish - W. Carter");
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly \"Fish\" - W. Carter");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
-      .toEqual('Jelly fish title');
+      .toEqual('Jelly \"fish\" title');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
     await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
@@ -93,11 +93,11 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
     await expect(page.locator('.canopy-selected-section p > span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Frog link - Rushenb");
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Frog \"link\" - Rushenb");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
       .toEqual('https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
-      .toEqual('Frog title');
+      .toEqual('Frog \"title\"');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
     await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href)).toEqual('http://google.com/');
   });

@@ -135,11 +135,11 @@ Code snippets that contain style characters and tokens:
 This is a `code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}`.
 
 Images:
-This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly fish title" "Jelly Fish - [W. Carter](https://en.wikipedia.org/wiki/File:Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg)")
+This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly \"fish\" title" "Jelly \"Fish\" - [W. Carter](https://en.wikipedia.org/wiki/File:Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg)")
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Linked images:
-This picture of a frog is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg "Frog title" "Frog link - [Rushenb](https://en.wikipedia.org/wiki/Wallace%27s_flying_frog#/media/File:Rhacophorus_nigropalmatus.jpg)")](http://google.com)
+This picture of a frog is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg "Frog \"title\"" "Frog \"link\" - [Rushenb](https://en.wikipedia.org/wiki/Wallace%27s_flying_frog#/media/File:Rhacophorus_nigropalmatus.jpg)")](http://google.com)
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 URLs:
