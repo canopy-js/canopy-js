@@ -301,9 +301,9 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test('a first note with question mark gets escaped', () => {
+  test('a first note with an escaped question mark does not get double escaped', () => {
     let bulkFileString = dedent`[A/B/C]
-    This is a note beginning with a question mark that will get misrecognized as a topic?` + '\n';
+    This is a note beginning with a question mark that will get misrecognized as a topic\\?` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
     let { newFileSet } = bulkFileParser.generateFileSet();
