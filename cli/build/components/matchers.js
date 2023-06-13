@@ -326,7 +326,8 @@ function urlMatcher({ string, parserContext }) {
 }
 
 function imageMatcher({ string, parserContext }) {
-  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["']((?:.(?!" "))+.)["'](?: ["']((?:.(?![^\\]"))*..)["'])?)?\)/);
+  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:["'“”]((?:.(?!" "|” “))+?.)["“”](?: ["“”]((?:.(?![^\\]["“”]))*..)["“”])?)?\)/);
+
   if (match) {
     return [
       new ImageToken(
@@ -344,7 +345,7 @@ function imageMatcher({ string, parserContext }) {
 }
 
 function linkedImageMatcher({ string, parserContext }) {
-  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*(?:["']((?:.(?!" "))+.)["'](?: ["']((?:.(?![^\\]"))*..)["'])?)?\)\]\(([^)]*)\)/);
+  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*(?:["'“”]((?:.(?!" "|” “))+?.)["“”](?: ["“”]((?:.(?![^\\]["“”]))*..)["“”])?)?\)\]\(([^)]*)\)/);
 
   if (match) {
     return [
