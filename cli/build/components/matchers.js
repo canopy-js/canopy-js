@@ -19,18 +19,19 @@ let {
 } = require('./tokens');
 
 const Matchers = [
+  escapedCharacterMatcher,
   fenceCodeBlockMatcher,
   prefixCodeBlockMatcher,
   blockQuoteMatcher,
   outlineMatcher,
   tableMatcher,
   htmlMatcher,
+  htmlEntityMatcher,
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
   importReferenceMatcher,
   linkedImageMatcher,
-  escapedCharacterMatcher,
   footnoteMarkerMatcher,
   imageMatcher,
   italicsMatcher,
@@ -163,6 +164,17 @@ function htmlMatcher({ string }) {
   });
 
   return result;
+}
+
+function htmlEntityMatcher({ string, parserContext }) {
+  let match = string.match(/^&.+;/s);
+
+  if (match) {
+    return [
+      new HtmlToken(match[0]),
+      match[0].length
+    ];
+  }
 }
 
 function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
@@ -366,7 +378,7 @@ function linkedImageMatcher({ string, parserContext }) {
 }
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
-  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^_(.*?[^\\])_(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
@@ -387,7 +399,7 @@ function italicsMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
-  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^\*(.*?[^\\])\*(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
@@ -408,7 +420,7 @@ function boldMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
-  let validPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let validPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^`(.*?[^\\])`(?=.|$)/s);
 
   if (match && validPreviousCharacter) {
@@ -423,7 +435,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 }
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
-  let strictPreviousCharacter = previousCharacter === undefined || previousCharacter.match(/[\s_*`~"'([{}\]\)]/);
+  let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^~(.*?[^\\])\~(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);

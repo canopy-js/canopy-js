@@ -180,8 +180,7 @@
     border: 2px solid black;
     font-size: 18px;
     min-width: 500px;
-    // table-layout: fixed;
-    // width: 100%;
+    table-layout: fixed;
 
     &:not(:last-child) {
       margin-bottom: 21px;
@@ -191,11 +190,12 @@
       border: 2px solid black;
       text-align: center;
       padding: 10px;
+      width: 0px; // combined with "table-layout: fixed;", this seems to make cells even without expanding table
 
       br {
         display: block; // makes it have a width
         content: ""; // clears default height
-        padding-bottom: 4px;
+        padding-bottom: 2px;
       }
     }
   }

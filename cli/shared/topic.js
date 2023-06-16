@@ -27,6 +27,7 @@ class Topic {
       .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces
+      .trim() // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
     this.fileName = this.slug. // This is the string that will be used for the file name on disk. Does not have to be reversable
       replace(/"/g, '%22').

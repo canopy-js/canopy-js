@@ -273,6 +273,11 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section a')).toHaveCount(1);
   });
 
+  test('It creates HTML entities', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#HTML_entities');
+    await expect(page.locator('.canopy-selected-section')).toHaveText("I like M&M's.");
+  });
+
   test('It creates run-on-tag html blocks', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Run-on_tag_HTML_blocks');
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);

@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
 
@@ -70,6 +70,8 @@ HTML blocks:
   </figure>
 </figure>
 <b></b>[[New York]]<b></b> These are two separate HTML tags
+
+HTML entities: I like M&amp;M's.
 
 Run-on tag HTML blocks:
 <img class="picture"
