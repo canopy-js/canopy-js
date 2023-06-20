@@ -266,18 +266,22 @@ function importReferenceMatcher({ string, parserContext, index }) {
   }
 
   if (!targetTopic) {
-    throw new Error(chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
-      `${parserContext.filePathAndLineNumber}`));
+    parserContext.registerSubsumptionConditionalError(
+      chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
+        `${parserContext.filePathAndLineNumber}`)
+    );
+    return null;
   }
 
   if (!parserContext.topicExists(targetTopic)) {
-    throw new Error(chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePathAndLineNumber}`));
+    parserContext.registerSubsumptionConditionalError((chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
+      `${parserContext.filePathAndLineNumber}`)));
+    return null;
   }
 
   if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    throw new Error(chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` +
-      `${parserContext.filePathAndLineNumber}`));
+    parserContext.registerSubsumptionConditionalError((chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` + `${parserContext.filePathAndLineNumber}`)));
+    return null;
   }
 
   parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);

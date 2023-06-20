@@ -4,7 +4,7 @@ const dedent = require('dedent-js');
 const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
-let { DefaultTopic, canopyLocation } = require('./shared/helpers');
+let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/helpers');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
@@ -46,8 +46,6 @@ function build(options) {
     + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
   ));
 
-  buildProject(defaultTopic.name, options);
-
   if (fs.existsSync(`assets`)) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
@@ -77,6 +75,8 @@ function build(options) {
   if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
     fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
   }
+
+  tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options);
 
   if (options.logging) console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
