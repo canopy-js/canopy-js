@@ -225,6 +225,20 @@ test.describe('Block entities', () => {
     await expect(await page.locator('.canopy-selected-section table tr td').nth(19)).toHaveAttribute('colspan', '3');
   });
 
+  test('It accepts table omit syntax', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
+    await expect(page.locator('.canopy-selected-section table td >> visible=true')).toHaveCount(7);
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
+
+    await expect(page.locator('.canopy-selected-section table tr td').nth(4)).toHaveText('2');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(5)).toHaveText('4');
+    await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
+  });
+
   test('It creates multi-line code blocks', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Code_blocks');
     await expect(page.locator('.canopy-selected-section code')).toHaveCount(1);

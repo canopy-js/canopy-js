@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[tables with omitted cells]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
 
@@ -29,6 +29,11 @@ Third table:
 | This | is | a | table |
 |---|---|---|-----------|
 | 2 | 4 | \< | \< |
+
+Tables with omitted cells:
+| This | is | a | table |
+|---|---|---|-----------|
+| 2 | 4 | 6 | \x |
 
 Tables with import references:
 | This | is | a | table |
