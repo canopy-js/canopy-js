@@ -20,6 +20,7 @@ class ParserContext {
       this.ambiguousLocalReferences = []; // a list of local references that are possibly global/import and possibly redundant
       this.provisionalLocalReferences = {}; // a list of local reference tokens for conversion to import if later found to be redundant
       this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
+      this.subsumptionConditionalErrors = []; // this is a catch-all for errors that should be thrown if an enclosing subtopic is subsumed
       this.defaultTopic = new Topic(defaultTopicString); // the default topic of the project, used to log orphan topics not connected to it
       this.topicConnections = {}; // by topic, an object of other topics that that topic has outgoing global references to
       this.topicFilePaths = {}; // by topic, the file path where that topic is defined
@@ -233,6 +234,22 @@ class ParserContext {
       lineNumber: this.lineNumber,
       characterNumber: this.characterNumber
     };
+  }
+
+  registerSubsumptionConditionalError(errorString) {
+    this.subsumptionConditionalErrors.push({ // this is an error that should be thrown if the enclosing paragraph is subsumed
+      enclosingTopic: this.currentTopic,
+      enclosingSubtopic: this.currentSubtopic,
+      errorString
+    });
+  }
+
+  throwSubsumptionConditionalErrors() {
+    this.subsumptionConditionalErrors.forEach(errorObject => {
+      if (this.hasConnection(errorObject.enclosingSubtopic, errorObject.enclosingTopic, {}, true)) {
+        throw new Error(errorObject.errorString);
+      }
+    });
   }
 
   findImportReferenceTargetTopic(targetSubtopic, paragraphText) {
