@@ -132,6 +132,13 @@
 
   .canopy-footnote-span {
     font-size: 80%;
+    display: block;
+    span { // text after number
+      margin-left: 2px;
+    }
+    &:not(:last-child) {
+      padding-bottom: 7px;
+    }
   }
 
   blockquote {
