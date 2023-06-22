@@ -332,6 +332,8 @@ function renderTable(token, renderContext) {
       row.forEach(
         (cellObject) => {
           let tableCellElement = document.createElement('TD');
+          if (cellObject.hidden) tableCellElement.classList.add('hidden');
+
           cellObject.tokens.forEach(
             (token) => {
               let tokenElement = renderTokenElement(token, renderContext);

@@ -132,6 +132,13 @@
 
   .canopy-footnote-span {
     font-size: 80%;
+    display: block;
+    span { // text after number
+      margin-left: 2px;
+    }
+    &:not(:last-child) {
+      padding-bottom: 7px;
+    }
   }
 
   blockquote {
@@ -177,7 +184,7 @@
     table-layout: auto;
     max-width: 90%;
     border-collapse: collapse;
-    border: 2px solid black;
+    border: none; // we put the border on the TDs to allow omitted table cells
     font-size: 18px;
     min-width: 500px;
     table-layout: fixed;
@@ -190,7 +197,12 @@
       border: 2px solid black;
       text-align: center;
       padding: 10px;
-      width: 0px; // combined with "table-layout: fixed;", this seems to make cells even without expanding table
+
+      // width: 0%; // this seems to make cells even without expanding table
+
+      &.hidden {
+        display: none;
+      }
 
       br {
         display: block; // makes it have a width
@@ -201,8 +213,6 @@
   }
 
   .canopy-image {
-    background-color: F1F1F1;
-
     &:not(:last-child) {
       margin-bottom: 15px;
     }
@@ -211,6 +221,8 @@
 
     a {
       margin: 0 auto;
+      display: block;
+      background-color: F1F1F1;
     }
 
     img {

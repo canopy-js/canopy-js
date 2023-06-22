@@ -209,6 +209,8 @@ function TableToken(text, parserContext) {
         (cellString, cellIndex, cellsOfRow) => {
           if (cellString.match(/^\s*\\[v^<>]\s*$/)) return { tokens: [], merge: MERGE_DIRECTION[cellString.match(/[v^<>]/)[0]] };
 
+          if (cellString.match(/^\s*\\x\s*$/)) return { tokens: [], hidden: true };
+
           let earlierCharactersOnLine = ['|'] // first | on line
             .concat(
               cellsOfRow.slice(0, cellIndex).join('|'), // all the intermediary cell contents plus pipes

@@ -4,7 +4,8 @@ let Paragraph = require('./paragraph');
 let { getRecursiveSubdirectoryFiles } = require('../bulk/helpers');
 let chalk = require('chalk');
 let path = require('path');
-let shell = require('shelljs')
+let shell = require('shelljs');
+var stripAnsi = require('strip-ansi');
 
 class DefaultTopic {
   constructor() {
@@ -86,4 +87,18 @@ function wrapText(str, width) {
   }).join('\n').trim()
 };
 
-module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes, wrapText };
+function tryAndWriteHtmlError(func, options) {
+  try {
+    func(options);
+  } catch(e) {
+    fs.writeFileSync(
+      'build/index.html',
+      `<h1 style="text-align: center;">Error building project</h1>
+      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${stripAnsi(e.message).replace(/\n+/g, '<br><br>')}</p>`
+    );
+
+    throw e; // rethrow the error so that the appropriate logging can be added
+  }
+}
+
+module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes, wrapText, tryAndWriteHtmlError };
