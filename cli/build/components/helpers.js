@@ -140,8 +140,8 @@ function parseLink(string, parserContext) {
   let match = targetText.match(/^((?:(?!(?<!\\)#).)+)(?:#((?:(?!(?<!\\)#).)+))?$/s); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
 
   return {
-    linkTarget: (match && match[1])?.replace(/\n/g, ' ').replace(/<br>/g, ' ') || null, // eg "France"
-    linkFragment: (match && match[2])?.replace(/\n/g, ' ').replace(/<br>/g, ' ') || null, // eg "Paris"
+    linkTarget: (match && match[1])?.replace(/\n/g, ' ').replace(/<[bB][rR]>/g, ' ') || null, // eg "France"
+    linkFragment: (match && match[2])?.replace(/\n/g, ' ').replace(/<[bB][rR]>/g, ' ') || null, // eg "Paris"
     linkText: manualDisplayText ? displayText : (match && (match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
     linkFullText,
     manualDisplayText
