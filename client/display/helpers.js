@@ -2,6 +2,7 @@ import { canopyContainer } from 'helpers/getters';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
+import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import renderTokenElement from 'render/render_token_element';
 
@@ -55,12 +56,12 @@ const resetDom = () => {
   deselectSectionElement();
 }
 
-function scrollPage(linkToSelect, displayOptions) {
+function scrollPage(displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
   let viewportSize = window.innerHeight;
-  let selectedParagraph = linkToSelect.targetParagraph?.paragraphElement || linkToSelect.enclosingParagraph;
-  let topOfParagraphInViewport = selectedParagraph.getBoundingClientRect().top;
-  let heightOfParagraph = selectedParagraph.getBoundingClientRect().height;
+  let selectedParagraphElement = Paragraph.current.paragraphElement;
+  let topOfParagraphInViewport = selectedParagraphElement.getBoundingClientRect().top;
+  let heightOfParagraph = selectedParagraphElement.getBoundingClientRect().height;
   let topOfViewport = window.scrollY;
   let scrollPosition = topOfViewport + topOfParagraphInViewport - (viewportSize - heightOfParagraph) * 2/3;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior

@@ -23,7 +23,7 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
 
   displayPathTo(pathToDisplay.paragraph);
   pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
-  scrollPage(linkToSelect, displayOptions);
+  scrollPage(displayOptions);
 };
 
 const displayPathTo = (paragraph) => {

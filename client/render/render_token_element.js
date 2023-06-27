@@ -241,7 +241,7 @@ function renderImage(token, renderContext) {
   imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
     imageElement.style.setProperty('height', null);
     imageElement.style.setProperty('opacity', '1');
-    scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+    scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
   });
 
   return divElement;
@@ -258,7 +258,7 @@ function renderHtmlElement(token) {
     imageElement.addEventListener('load', () => { // wait for them to load
       imageElement.style.setProperty('height', null);
       imageElement.style.setProperty('opacity', '1');
-      scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+      scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
     });
   });
   return divElement;
