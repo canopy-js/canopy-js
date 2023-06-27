@@ -38,18 +38,24 @@ class BulkFileParser {
     let fileContentsByPath = {};
     let defaultTopicPath;
     let defaultTopicKey;
+    let fileCountPerCategory = {};
 
     this.parseSections().forEach(section => {
       if (section.diskDirectoryPath === 'topics/') throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
       let categoryNotesFilePath = `${section.diskDirectoryPath}/${section.terminalCategory}.expl`;
       let categoryNotesBuffer = '';
+      fileCountPerCategory[section.diskDirectoryPath] ||= 0;
 
-      section.files.forEach(file => {
+      section.files.forEach((file, index, files) => {
         if (file.asterisk && file.key) {
           // Create topic file
-          let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).fileName}.expl`;
+          let paddingSize = String(files.length).length
+          let fileNumber = (fileCountPerCategory[section.diskDirectoryPath] || 0) + 1;
+          let leadingNumber = files.filter(f => f.asterisk && file.key).length > 1 ? (String(fileNumber).padStart(paddingSize, '0') + '-') : '';
+          let topicFilePath = `${section.diskDirectoryPath}/${leadingNumber}${Topic.for(file.key).fileName}.expl`;
           if (fileContentsByPath.hasOwnProperty(topicFilePath)) throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
           fileContentsByPath[topicFilePath] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
+          fileCountPerCategory[section.diskDirectoryPath]++;
 
           if (file.doubleAsterisk) {
             if (defaultTopicPath) {
