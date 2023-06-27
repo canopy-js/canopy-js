@@ -6,7 +6,8 @@ In order to remove multiple layers of wrapping, eg *_a_*, each call removes the 
 */
 
 function removeStyleCharacters(string) {
-  let newString = string.replace(/(^|(?:.?[^\S])+)([_`*~])((?:.*?\S))\2(\W+|$)/, '$1$3$4');
+  let newString = string.replace(/(.*?(?:^|[^\\]))([_`*~])(\S*?[^\\])\2(.*)/, '$1$3$4'); // style characters within words if no spaces
+  newString = newString.replace(/(.*?(?:^|[^\\]))([_`*~])(.*?[^\\])\2(?![A-Za-z0-9])(.*)/, '$1$3$4'); // style characters at edges regardless of content
   if (newString !== string) {
     return removeStyleCharacters(newString);
   } else {

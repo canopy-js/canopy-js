@@ -57,21 +57,20 @@ const resetDom = () => {
 
 function scrollPage(linkToSelect, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let topOfNewLink = (linkToSelect?.element.getBoundingClientRect().top +
-    linkToSelect?.element.ownerDocument.defaultView.pageYOffset) || 0;
-  let heightOfLink = linkToSelect?.element.offsetHeight || 0;
-  let idealPositionOfLinkOnViewport = window.innerHeight * .2; // align bottom of link with eye level, to make room for child paragraph
-  let top = topOfNewLink + heightOfLink - idealPositionOfLinkOnViewport;
+  let viewportSize = window.innerHeight;
+  let selectedParagraph = linkToSelect.targetParagraph?.paragraphElement || linkToSelect.enclosingParagraph;
+  let topOfParagraphInViewport = selectedParagraph.getBoundingClientRect().top;
+  let heightOfParagraph = selectedParagraph.getBoundingClientRect().height;
+  let topOfViewport = window.scrollY;
+  let scrollPosition = topOfViewport + topOfParagraphInViewport - (viewportSize - heightOfParagraph) * 2/3;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
-  if (Math.abs(window.scrollY - top) > 35) { // changing link selection by more than two lines of text should trigger scroll
-    window.scrollTo(
-      {
-        top,
-        behavior
-      }
-    );
-  }
+  setTimeout(() => window.scrollTo(
+    {
+      top: scrollPosition,
+      behavior
+    }
+  ))
 }
 
 function validatePathAndLink(pathToDisplay, linkToSelect) {

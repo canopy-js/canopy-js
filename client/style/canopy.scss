@@ -46,6 +46,14 @@
     font-family: Times, serif;
   }
 
+  .canopy-selected-section p {
+    padding-left: 85px;
+    padding-right: 85px;
+    border-left: 100px solid;
+    border-right: 100px solid;
+    border-color: #FBFBFB;
+  }
+
 ///////////// Link styles /////////////////
 
   a.canopy-selectable-link {

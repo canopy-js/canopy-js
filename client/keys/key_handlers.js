@@ -177,6 +177,10 @@ function browserBack() { // an undo for DFS
   }
 }
 
+function copyDecodedUrl() {
+  navigator.clipboard.writeText(decodeURIComponent(window.location));
+}
+
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = currentLink.localPathSegmentWhenSelected;
@@ -209,5 +213,6 @@ export {
   zoomOnLocalPath,
   removeSelection,
   duplicate,
-  browserBack
+  browserBack,
+  copyDecodedUrl
 };

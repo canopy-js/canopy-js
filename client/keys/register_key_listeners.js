@@ -9,7 +9,8 @@ import {
   zoomOnLocalPath,
   removeSelection,
   duplicate,
-  browserBack
+  browserBack,
+  copyDecodedUrl
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
 import Path from 'models/path';
@@ -62,6 +63,8 @@ const shortcutRelationships = {
   'shift-up': topicParentLink,
   'shift-k': topicParentLink,
 
+  'c': copyDecodedUrl,
+
   'enter': () => moveDownOrRedirect({}),
   'meta-enter': () => moveDownOrRedirect({ newTab: true }), // mac
   'ctrl-enter': () => moveDownOrRedirect({ newTab: true }), // windows & linux
@@ -87,6 +90,7 @@ const keyNames = {
   186: ';',
   90: 'z',
   68: 'd',
+  67: 'c',
 
   13: 'enter',
   9: 'tab',
