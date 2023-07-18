@@ -11,11 +11,14 @@ class BulkFileParser {
   parseSections() {
     return this.bulkFileString.split(/(?=^\[[^\[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
       .map(s => s.trim()).filter(Boolean).map((sectionString) => {
-        let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
+        let displayCategoryPath = sectionString.match(/\[\/?(.*?)(\/#)?\/?\]/)[1].replace(/\\/g, ''); // ignore terminal #
+        let orderedCategory = sectionString.match(/\[\/?(.*?)\/?\]/)[1].endsWith('/#'); //capture terminal #
+
         return {
           displayCategoryPath,
           diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
-          terminalCategory: new Topic(displayCategoryPath.split('/').slice(-1)[0]).fileName,
+          terminalCategory: displayCategoryPath.split('/').slice(-1)[0],
+          orderedCategory,
           files: sectionString
             .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
             .split(/(?=^\*\*? )/mg)
@@ -45,9 +48,9 @@ class BulkFileParser {
       fileCountPerCategory[section.diskDirectoryPath] ||= 0;
 
       section.files.forEach((file, index, files) => {
-        let paddingSize = String(files.length).length
+        let paddingSize = Math.max(String(files.length).length, 2);
         let fileNumber = (fileCountPerCategory[section.diskDirectoryPath] || 0) + 1;
-        let leadingNumber = files.length > 1 ? (String(fileNumber).padStart(paddingSize, '0') + '-') : '';
+        let leadingNumber = (section.orderedCategory && (fileCountPerCategory[section.diskDirectoryPath] || files.length > 1)) ? (String(fileNumber).padStart(paddingSize, '0') + '-') : '';
 
         if (file.asterisk && file.key) {
           // Create topic file
@@ -65,7 +68,9 @@ class BulkFileParser {
           }
         } else {
           let firstFourtyCharacters = file.text.match(/^(([^\n.?!]{0,40}(?![A-Za-z0-9]))|([^\n.?!]{0,40}))/)[0] || section.terminalCategory;
-          let noteFileName = `${section.diskDirectoryPath}/${leadingNumber}${Topic.for(firstFourtyCharacters).fileName}.expl`;
+          let fileName = Topic.for(firstFourtyCharacters).fileName;
+          let idSuffix = section.orderedCategory ? '' : generateIdSuffix(`${section.diskDirectoryPath}/${fileName}`, `.expl`, fileContentsByPath);
+          let noteFileName = `${section.diskDirectoryPath}/${leadingNumber}${Topic.for(firstFourtyCharacters).fileName}${idSuffix}.expl`;
           fileContentsByPath[noteFileName] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
         }
 
@@ -74,6 +79,16 @@ class BulkFileParser {
     });
 
     return { newFileSet: new FileSet(fileContentsByPath), defaultTopicPath, defaultTopicKey };
+  }
+}
+
+function generateIdSuffix(prefix, suffix, hash) {
+  if (hash.hasOwnProperty(prefix + suffix)) {
+    let i = 1;
+    while (hash.hasOwnProperty(`${prefix}-${i}${suffix}`)) { i++; }
+    return `-${i}`;
+  } else {
+    return '';
   }
 }
 

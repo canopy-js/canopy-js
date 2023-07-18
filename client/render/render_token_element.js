@@ -85,7 +85,7 @@ function createLocalLinkElement(token, renderContext) {
 
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}#${targetSubtopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
   return linkElement;
 }
 
@@ -122,7 +122,7 @@ function createGlobalLinkElement(token, renderContext) {
   linkElement.dataset.text = token.text;
 
   let targetTopic = Topic.fromMixedCase(token.targetTopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}`;
 
   linkElement.addEventListener(
     'click',
@@ -161,7 +161,7 @@ function createImportLinkElement(token, renderContext) {
 
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.slug}#${targetSubtopic.slug}`;
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
 
   linkElement.addEventListener(
     'click',

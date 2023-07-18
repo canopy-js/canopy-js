@@ -13,12 +13,24 @@ class Topic {
     this.escapedMixedCase = CSS.escape(this.mixedCase);
 
     this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
-      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a %
+      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a % which we're using for encodings
       .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
-      .replace(/#/g, '%23')
       .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
       .replace(/_/g, '%5C_') // Literal style characters are escaped so that when we parse the URL, we don't remove them with removeStyleCharacters
       .replace(/ /g, '_'); // This must be done after literal underscores have received encoded backslashes above to distinguish between them and these
+
+    this.url = this.slug
+      .replace(/#/g, '%23')
+
+    this.fileName = this.slug // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
+      .replace(/"/g, '%22')
+      .replace(/'/g, '%27')
+      .replace(/:/g, '%3A')
+      .replace(/</g, '%3C')
+      .replace(/>/g, '%3E')
+      .replace(/\|/g, '%7C')
+      .replace(/\*/g, '%2A')
+      .replace(/\?/g, '%3F');
 
     this.caps = this.mixedCase // This is the string that is used to find matches between links and topic names.
       .toUpperCase() // We want matches to be case-insensitive
@@ -28,16 +40,6 @@ class Topic {
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces
       .trim() // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
-
-    this.fileName = this.slug. // This is the string that will be used for the file name on disk. Does not have to be reversable
-      replace(/"/g, '%22').
-      replace(/'/g, '%27').
-      replace(/:/g, '%3A').
-      replace(/</g, '%3C').
-      replace(/>/g, '%3E').
-      replace(/\|/g, '%7C').
-      replace(/\*/g, '%2A').
-      replace(/\?/g, '%3F');
 
     this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
   }
@@ -59,7 +61,7 @@ class Topic {
 
     let topic = new Topic(string); // Encoded style characters decode to escaped style characters, so we can use the regular
                                    // "display -> mixed case" processing step, even though this isn't the display string
-    topic.display = null; // The encoded slug was formed from the mixed case, so that is the best we can reconstruct from it
+    topic.display = null; // The encoded slug was formed from the lossy mixed case version, so that is the best we can reconstruct from it
     return topic;
   }
 }

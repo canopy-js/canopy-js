@@ -272,7 +272,7 @@ class ParserContext {
       throw new Error(chalk.red( // multiple, different globals could be anchor
         `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
         `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
-        `Please indicate which global reference is the import anchor using explicit import syntax eg [[${targetTopicCandidates[0].slug}#${targetSubtopic.mixedCase}]]\n`
+        `Please indicate which global reference is the import anchor using explicit import syntax eg [[${targetTopicCandidates[0].mixedCase}#${targetSubtopic.mixedCase}]]\n`
         + `${this.filePathAndLineNumber}`
       ))
     }

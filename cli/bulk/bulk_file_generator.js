@@ -13,7 +13,8 @@ class BulkFileGenerator {
     return this.fileSet.directories.sort(this.directoryComparator)
       .filter(d => d.files.find(f => f.path.endsWith('.expl'))) // a directory must have at least one expl file to be rendered
       .map(directory => {
-        return `[${directory.displayPath}]\n\n` // two newlines after the category path header
+        let orderedCategory = !!directory.files.find(f => f.fileName.match(/^\d/) && f.fileNameWithoutExtension != Topic.for(f.key).fileName);
+        return `[${directory.displayPath}${orderedCategory ? '/#' : ''}]\n\n` // two newlines after the category path header
           + directory
               .files
               .sort(this.fileComparator)

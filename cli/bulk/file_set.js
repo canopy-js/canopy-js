@@ -14,11 +14,12 @@ class FileSet {
 
       let file = {
         path: filePath,
+        fileName: filePath.split('/').slice(-1)[0],
+        fileNameWithoutExtension: filePath.split('/').slice(-1)[0].match(/^(.*?)(\..*)?$/)[1],
         contents: fileContentsByPath[filePath],
         key: (new Paragraph(fileContentsByPath[filePath])).key,
-        directoryPath,
-        terminalCategory: terminalCategoryofFilePath(filePath),
-        categoryNotes: !!filePath.match(/([^\/]+)\/\1\.expl$/) // other extensions return null
+        directoryPath: directoryPath.replace(/\/#$/, '/\\#'),
+        terminalCategory: terminalCategoryofFilePath(filePath)
       };
 
       this.filesObject[filePath] = file;
