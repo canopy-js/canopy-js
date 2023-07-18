@@ -181,22 +181,6 @@ describe('BulkFileGenerator', function() {
 
   });
 
-  test("it does not put an asterisk for category notes with keys that don't match the category name", () => {
-    let originalSelectedFilesByContents = {
-      'topics/A/B/C/C.expl': `This key doesn't match the category name of "C": Hello world.\n`,
-    };
-
-    let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/C.expl');
-    let dataFile = bulkFileGenerator.generateBulkFile();
-
-    expect(dataFile).toEqual(
-      dedent`[A/B/C]
-
-      This key doesn't match the category name of "C": Hello world.` + '\n\n'); // no asterisk
-
-  });
-
   test("it normalizes extra spacing between subtopics", () => {
     let originalSelectedFilesByContents = {
       'topics/A/B/C/C.expl': dedent`C: Hello world.
@@ -219,6 +203,26 @@ describe('BulkFileGenerator', function() {
       Subtopic: XYZ.
       ` + '\n\n'
     )
+  });
+
+  test('it lets you use # as a category name', () => {
+    let originalSelectedFilesByContents = {
+      'topics/A/B/C/#/Topic.expl':
+        dedent`Topic: Hello world.
+
+        Subtopic: Hello.` + '\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/#/Topic.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[A/B/C/#]
+
+      ** Topic: Hello world.
+
+      Subtopic: Hello.` + '\n\n');
   });
 });
 
@@ -291,7 +295,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/C.expl': "Topic: Paragraph.\n"
+      'topics/A/B/C/Topic%3A_Paragraph.expl': "Topic: Paragraph.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -309,7 +313,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/C.expl': "This is a note beginning with a question mark that will get misrecognized as a topic\\?\n"
+      "topics/A/B/C/This_is_a_note_beginning_with_a_question.expl": "This is a note beginning with a question mark that will get misrecognized as a topic\\?\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -411,7 +415,7 @@ describe('BulkFileParser', function() {
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/C.expl': 'This one has no key.\n'
+      'topics/A/B/C/This_one_has_no_key.expl': "This one has no key.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -436,8 +440,9 @@ describe('BulkFileParser', function() {
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
+      'topics/A/B/C/This_one_has_no_key.expl': "This one has no key.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/C.expl': "This one has no key.\n\nThis one also has no key.\n"
+      'topics/A/B/C/This_one_also_has_no_key.expl': "This one also has no key.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -447,7 +452,7 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test('it concatinates category notes to category topic', () => {
+  test('it does not concatinate category notes to category topic', () => {
     let bulkFileString = dedent`[A/B/C]
     * C: Paragraph.
 
@@ -457,7 +462,8 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/C.expl': "C: Paragraph.\n\nThis one has no key.\n",
+      'topics/A/B/C/C.expl': "C: Paragraph.\n",
+      "topics/A/B/C/This_one_has_no_key.expl": "This one has no key.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -484,8 +490,10 @@ describe('BulkFileParser', function() {
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
+      'topics/A/B/C/Note_1.expl': "Note 1.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/C.expl': "Note 1.\n\nNote 2.\n"
+      'topics/A/B/C/Note_2.expl': "Note 2.\n",
+
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -582,8 +590,78 @@ describe('BulkFileParser', function() {
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1%3F.expl': 'Topic1? Paragraph.\n',
       'topics/A/B/C/Topic%3A_two.expl': 'Topic\\: two: Paragraph.\n',
-      'topics/A/B/C/Topic_%234.expl': 'Topic #4: Hello world.\n'
+      'topics/A/B/C/Topic_#4.expl': 'Topic #4: Hello world.\n'
     });
+  });
+
+  test('it adds id suffix for similar notes', () => {
+    let bulkFileString = dedent`[A/B/C]
+    * This is a note.
+
+    * This is a note.
+
+    * This is a unique note.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      "topics/A/B/C/This_is_a_note.expl": "This is a note.\n",
+      "topics/A/B/C/This_is_a_note-01.expl": "This is a note.\n",
+      "topics/A/B/C/This_is_a_unique_note.expl": "This is a unique note.\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+  test('it defaults to category name for empty note files', () => {
+    let bulkFileString = dedent`[A/B/C]
+    *
+
+    *
+
+    * This is a note.
+
+    * This is a unique note.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      "topics/A/B/C/This_is_a_note.expl": "This is a note.\n",
+      "topics/A/B/C/C.expl": "\n",
+      "topics/A/B/C/C-01.expl": "\n",
+      "topics/A/B/C/This_is_a_unique_note.expl": "This is a unique note.\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+  test('it lets you have # as a category name', () => {
+    let bulkFileString = dedent`[A/B/C/\\#]
+    * This is a note.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      "topics/A/B/C/#/This_is_a_note.expl": "This is a note.\n",
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C/#',
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
   });
 });
 
@@ -680,7 +758,7 @@ describe('FileSystemChangeCalculator', function() {
 
     let newBulkFileString = dedent`[A/B/C/#3]
 
-    * Choice #4: New data.` + '\n';
+    * 100% Juice: New data.` + '\n';
     let bulkFileParser = new BulkFileParser(newBulkFileString);
     let { newFileSet } = bulkFileParser.generateFileSet();
     let allDiskFileSet = new FileSet({});
@@ -691,11 +769,11 @@ describe('FileSystemChangeCalculator', function() {
     expect(fileSystemChange.fileDeletions).toEqual([]);
     expect(fileSystemChange.directoryDeletions).toEqual([]);
     expect(fileSystemChange.fileCreations).toEqual([[
-      'topics/A/B/C/%233/Choice_%234.expl',
-      'Choice #4: New data.\n'
+      'topics/A/B/C/#3/100%25_Juice.expl', // # we don't encode for files but % we do to avoid accidental collisions
+      '100% Juice: New data.\n'
     ]]);
     expect(fileSystemChange.directoryCreations).toEqual([
-      'topics/A/B/C/%233',
+      'topics/A/B/C/#3',
       'topics/A/B/C',
       'topics/A/B',
       'topics/A'
@@ -706,8 +784,8 @@ describe('FileSystemChangeCalculator', function() {
       chalk.green('Created directory: topics/A'),
       chalk.green('Created directory: topics/A/B'),
       chalk.green('Created directory: topics/A/B/C'),
-      chalk.green('Created directory: topics/A/B/C/%233'),
-      chalk.green('Created file: topics/A/B/C/%233/Choice_%234.expl'),
+      chalk.green('Created directory: topics/A/B/C/#3'),
+      chalk.green('Created file: topics/A/B/C/#3/100%25_Juice.expl'),
     ]);
   });
 

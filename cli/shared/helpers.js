@@ -21,7 +21,7 @@ class DefaultTopic {
     }
     let categoryPath = this.filePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
     this.categoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
-    this.slug = Topic.for(this.name).slug;
+    this.fileName = Topic.for(this.name).fileName;
   }
 }
 

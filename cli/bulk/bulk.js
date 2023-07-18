@@ -87,7 +87,7 @@ const bulk = async function(selectedFileList, options) {
     checkGitIgnoreForBulkFile(options);
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || defaultTopic.slug || 'canopy_bulk_file';
+    options.bulkFileName = options.bulkFileName || defaultTopic.fileName || 'canopy_bulk_file';
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     oldBulkFileString = bulkFileString;
@@ -247,8 +247,8 @@ function debounceGenerator() {
 }
 
 function checkGitIgnoreForBulkFile(options) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic.slug}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic.slug}`)));
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic.fileName}($|\n)`, 's'))) {
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic.fileName}`)));
   }
 }
 

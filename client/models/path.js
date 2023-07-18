@@ -214,9 +214,9 @@ class Path {
     if (hashUrls) pathString += '#/';
 
     pathString += pathArray.map(([topic, subtopic]) => {
-      let pathSegmentString = topic.slug;
-      if (subtopic && subtopic.slug !== topic.slug) {
-        pathSegmentString += "#" + subtopic.slug;
+      let pathSegmentString = topic.url;
+      if (subtopic && subtopic.url !== topic.url) {
+        pathSegmentString += "#" + subtopic.url;
       }
       return pathSegmentString;
     }).join('/');

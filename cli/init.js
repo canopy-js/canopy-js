@@ -15,9 +15,9 @@ function init() {
   (async () => {
     let defaultTopic = await requestDefaultTopic();
     if (!defaultTopic) throw new Error(chalk.red('No default topic name given.'));
-    let defaultTopicSlug = Topic.for(defaultTopic).slug;
-    fs.ensureDirSync(`topics/${defaultTopicSlug}`);
-    let defaultTopicFilePath = `topics/${defaultTopicSlug}/${defaultTopicSlug}.expl`;
+    let defaultTopicFileName = Topic.for(defaultTopic).fileName;
+    fs.ensureDirSync(`topics/${defaultTopicFileName}`);
+    let defaultTopicFilePath = `topics/${defaultTopicFileName}/${defaultTopicFileName}.expl`;
     fs.writeFileSync(defaultTopicFilePath,
       `${defaultTopic}: Text here. This is an example reference to a [[subtopic]].\n\n` +
       `Subtopic: This is a subtopic paragraph.`
@@ -32,7 +32,7 @@ function init() {
       **/.DS_Store
       .canopy_bulk_original_selection
       .canopy_bulk_backups/**
-      /${defaultTopicSlug}` + '\n';
+      /${defaultTopicFileName}` + '\n';
 
     fs.writeFileSync( '.gitignore', gitignore );
 
