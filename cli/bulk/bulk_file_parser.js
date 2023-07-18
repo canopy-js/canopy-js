@@ -11,17 +11,15 @@ class BulkFileParser {
   parseSections() {
     return this.bulkFileString.split(/(?=^\[[^\[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
       .map(s => s.trim()).filter(Boolean).map((sectionString) => {
-        let displayCategoryPath = sectionString.match(/\[\/?(.*?)(\/#)?\/?\]/)[1].replace(/\\/g, ''); // ignore terminal #
-        let orderedCategory = sectionString.match(/\[\/?(.*?)\/?\]/)[1].endsWith('/#'); //capture terminal #
+        let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
 
         return {
           displayCategoryPath,
           diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
           terminalCategory: displayCategoryPath.split('/').slice(-1)[0],
-          orderedCategory,
           files: sectionString
             .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
-            .split(/(?=^\*\*? )/mg)
+            .split(/(?=^\*\*?(?: |\n))/mg)
             .filter(Boolean)
             .map(string => {
               let blockString = string.match(/^\*?\*? ?(.*)/s)[1];
@@ -41,21 +39,20 @@ class BulkFileParser {
     let fileContentsByPath = {};
     let defaultTopicPath;
     let defaultTopicKey;
-    let fileCountPerCategory = {};
 
     this.parseSections().forEach(section => {
-      if (section.diskDirectoryPath === 'topics/') throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
-      fileCountPerCategory[section.diskDirectoryPath] ||= 0;
+      if (section.diskDirectoryPath === 'topics/') {
+        throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
+      }
 
       section.files.forEach((file, index, files) => {
-        let paddingSize = Math.max(String(files.length).length, 2);
-        let fileNumber = (fileCountPerCategory[section.diskDirectoryPath] || 0) + 1;
-        let leadingNumber = (section.orderedCategory && (fileCountPerCategory[section.diskDirectoryPath] || files.length > 1)) ? (String(fileNumber).padStart(paddingSize, '0') + '-') : '';
+        if (file.asterisk && file.key) { // Create topic file
+          let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).fileName}.expl`;
 
-        if (file.asterisk && file.key) {
-          // Create topic file
-          let topicFilePath = `${section.diskDirectoryPath}/${leadingNumber}${Topic.for(file.key).fileName}.expl`;
-          if (fileContentsByPath.hasOwnProperty(topicFilePath)) throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
+          if (fileContentsByPath.hasOwnProperty(topicFilePath)) {
+            throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
+          }
+
           fileContentsByPath[topicFilePath] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
 
           if (file.doubleAsterisk) {
@@ -66,15 +63,13 @@ class BulkFileParser {
               defaultTopicKey = file.key;
             }
           }
-        } else {
+        } else { // make note file
           let firstFourtyCharacters = file.text.match(/^(([^\n.?!]{0,40}(?![A-Za-z0-9]))|([^\n.?!]{0,40}))/)[0] || section.terminalCategory;
           let fileName = Topic.for(firstFourtyCharacters).fileName;
           let idSuffix = section.orderedCategory ? '' : generateIdSuffix(`${section.diskDirectoryPath}/${fileName}`, `.expl`, fileContentsByPath);
-          let noteFileName = `${section.diskDirectoryPath}/${leadingNumber}${Topic.for(firstFourtyCharacters).fileName}${idSuffix}.expl`;
+          let noteFileName = `${section.diskDirectoryPath}/${Topic.for(firstFourtyCharacters).fileName}${idSuffix}.expl`;
           fileContentsByPath[noteFileName] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
         }
-
-        fileCountPerCategory[section.diskDirectoryPath]++;
       });
     });
 
@@ -85,8 +80,8 @@ class BulkFileParser {
 function generateIdSuffix(prefix, suffix, hash) {
   if (hash.hasOwnProperty(prefix + suffix)) {
     let i = 1;
-    while (hash.hasOwnProperty(`${prefix}-${i}${suffix}`)) { i++; }
-    return `-${i}`;
+    while (hash.hasOwnProperty(`${prefix}-${String(i).padStart(2, '0')}${suffix}`)) { i++; }
+    return `-${String(i).padStart(2, '0')}`;
   } else {
     return '';
   }
