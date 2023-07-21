@@ -134,7 +134,7 @@ class Path {
   }
 
   static get default() {
-    let topic = Topic.fromMixedCase(defaultTopic);
+    let topic = Topic.for(defaultTopic);
     return new Path([[topic, topic]]);
   }
 
