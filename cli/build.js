@@ -19,13 +19,14 @@ function build(options) {
   if (!manualHtml) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
     let customCss = fs.existsSync(`assets/custom.css`);
-    let customStyleTag = fs.existsSync(`assets/custom_style_tag.css`) && fs.readFileSync(`assets/custom_style_tag.css`);
+    let customHtml = fs.existsSync(`assets/custom.html`) && fs.readFileSync(`assets/custom.html`)
 
     let html = dedent`
       <html>
       <head>
       ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
       <meta charset="utf-8">
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </head>
       <body>
       <div
@@ -35,9 +36,9 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      ${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}${customStyleTag ? `<style>${customStyleTag}</style>` : ''}
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
-      </body>
+      ${customHtml ? customHtml : ''}` +
+      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
+      `</body>
       </html>\n`;
 
     fs.writeFileSync('build/index.html', html);
