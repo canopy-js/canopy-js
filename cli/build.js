@@ -19,6 +19,7 @@ function build(options) {
   if (!manualHtml) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
     let customCss = fs.existsSync(`assets/custom.css`);
+    let customStyleTag = fs.existsSync(`assets/custom_style_tag.css`) && fs.readFileSync(`assets/custom_style_tag.css`);
 
     let html = dedent`
       <html>
@@ -34,7 +35,7 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      ${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}
+      ${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}${customStyleTag ? `<style>${customStyleTag}</style>` : ''}
       <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </body>
       </html>\n`;
