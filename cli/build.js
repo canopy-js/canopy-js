@@ -26,7 +26,6 @@ function build(options) {
       <head>
       ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
       <meta charset="utf-8">
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       </head>
       <body>
       <div
@@ -36,6 +35,7 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
       ${customHtml ? customHtml : ''}` +
       `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
       `</body>
