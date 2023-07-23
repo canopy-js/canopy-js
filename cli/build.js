@@ -5,6 +5,7 @@ const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/helpers');
+let Topic = require('./shared/topic');
 
 function build(options) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
@@ -29,6 +30,7 @@ function build(options) {
       <div
         id="_canopy"
         data-default-topic="${defaultTopic.name}"
+        data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
