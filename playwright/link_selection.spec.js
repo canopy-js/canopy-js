@@ -52,6 +52,17 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
   });
 
+  test('Link deselection persists over refresh', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await page.locator('body').press('Escape');
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
+  });
+
   test('Last link selections are preferred when going down', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
