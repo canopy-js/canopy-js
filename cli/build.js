@@ -35,11 +35,11 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      <link rel="preload" href="/_data/${defaultTopic.fileName}.json" as="fetch">
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
-      ${customHtml ? customHtml : ''}` +
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` +
+      `${customHtml ? customHtml : ''}` +
       `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
-      `</body>
+      `<link rel="preload" href="/_data/${defaultTopic.fileName}.json" as="fetch">
+      </body>
       </html>\n`;
 
     fs.writeFileSync('build/index.html', html);
