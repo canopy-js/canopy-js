@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 let chalk = require('chalk');
+const cors = require('cors');
 
 let buildPath =  process.cwd();
 if (!process.cwd().match(/build\/?$/)){
@@ -8,6 +9,8 @@ if (!process.cwd().match(/build\/?$/)){
 }
 
 let loggingFlag;
+
+app.use(cors());
 
 app.use(function(req, res, next) {
   res.on('finish', function() {

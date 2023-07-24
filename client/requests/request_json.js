@@ -9,11 +9,7 @@ const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
   let dataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.requestFileName + '.json';
 
-  if (topic.mixedCase === Topic.for(defaultTopic).mixedCase) {
-    return Promise.resolve(JSON.parse(decodeURIComponent(canopyContainer.dataset.defaultTopicJson)));
-  }
-
-  let promise = fetch(dataPath).
+  let promise = fetch(dataPath, { method: 'get', credentials: 'include', mode: 'no-cors' }). // to allow preloading JSON from HTML
     then(res => {
       return res.json().then((json) => {
         preloadImages(json);
