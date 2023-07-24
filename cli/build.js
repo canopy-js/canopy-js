@@ -16,34 +16,6 @@ function build(options) {
   fs.rmSync('build/_data', { recursive: true, force: true });
   fs.ensureDirSync('build');
 
-  if (!manualHtml) {
-    let favicon = fs.existsSync(`assets/favicon.ico`);
-    let customCss = fs.existsSync(`assets/custom.css`);
-    let customHtml = fs.existsSync(`assets/custom.html`) && fs.readFileSync(`assets/custom.html`)
-
-    let html = dedent`
-      <html>
-      <head>
-      ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
-      <meta charset="utf-8">
-      </head>
-      <body>
-      <div
-        id="_canopy"
-        data-default-topic="${defaultTopic.name}"
-        data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
-        data-project-path-prefix="${projectPathPrefix||''}"
-        data-hash-urls="${hashUrls || ''}">
-      </div>
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
-      ${customHtml ? customHtml : ''}` +
-      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
-      `</body>
-      </html>\n`;
-
-    fs.writeFileSync('build/index.html', html);
-  }
-
   if (options.logging) console.log(chalk.cyan(
     `Canopy build: Rebuilding JSON at ${''
     + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
@@ -81,6 +53,35 @@ function build(options) {
   }
 
   tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options);
+
+  if (!manualHtml) {
+    let favicon = fs.existsSync(`assets/favicon.ico`);
+    let customCss = fs.existsSync(`assets/custom.css`);
+    let customHtml = fs.existsSync(`assets/custom.html`) && fs.readFileSync(`assets/custom.html`);
+
+    let html = dedent`
+      <html>
+      <head>
+      ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
+      <meta charset="utf-8">
+      </head>
+      <body>
+      <div
+        id="_canopy"
+        data-default-topic="${defaultTopic.name}"
+        data-default-topic-json="${encodeURIComponent(fs.readFileSync(`build/_data/${defaultTopic.fileName}.json`))}"
+        data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
+        data-project-path-prefix="${projectPathPrefix||''}"
+        data-hash-urls="${hashUrls || ''}">
+      </div>
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>
+      ${customHtml ? customHtml : ''}` +
+      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
+      `</body>
+      </html>\n`;
+
+    fs.writeFileSync('build/index.html', html);
+  }
 
   if (options.logging) console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
