@@ -20,10 +20,10 @@ app.use(function(req, res, next) {
 });
 
 // static file serve
-app.use('*/_canopy.js', express.static(buildPath + '_canopy.js'));
-app.use('*/_canopy.js.map', express.static(buildPath + '_canopy.js.map'));
-app.use('*/_data', express.static(buildPath + '_data'));
-app.use('*/_assets', express.static(buildPath + '_assets'));
+app.use('^\/_canopy.js', express.static(buildPath + '_canopy.js'));
+app.use('^\/_canopy.js.map', express.static(buildPath + '_canopy.js.map'));
+app.use('^\/_data', express.static(buildPath + '_data'));
+app.use('^\/_assets', express.static(buildPath + '_assets'));
 
 // not found in static files, so default to index.html
 app.use((req, res) => res.sendFile(buildPath + 'index.html'));
