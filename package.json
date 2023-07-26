@@ -1,6 +1,6 @@
 {
   "name": "canopy-js",
-  "version": "0.3.72",
+  "version": "0.3.74",
   "description": "A library for creating and browsing explanation trees",
   "scripts": {
     "jest": "jest cli client",
@@ -51,6 +51,7 @@
     "chokidar": "^3.5.3",
     "cli-format": "^3.0.9",
     "commander": "^9.0.0",
+    "cors": "^2.8.5",
     "css.escape": "^1.5.1",
     "dedent-js": "^1.0.1",
     "dom-shims": "^0.1.4",
