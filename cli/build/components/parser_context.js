@@ -35,6 +35,8 @@ class ParserContext {
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
       this.insideToken = false; // are we parsing tokens inside another token? We use this to avoid recognizing multi-line tokens inside other tokens.
+
+      Object.assign(this, options); // add options if supplied at constructor time
     }
   }
 

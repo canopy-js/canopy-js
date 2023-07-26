@@ -38,7 +38,7 @@ function build(options) {
       <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` +
       `${customHtml ? customHtml : ''}` +
       `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
-      `<link rel="preload" href="/_data/${defaultTopic.fileName}.json" as="fetch">
+      `<link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch">
       </body>
       </html>\n`;
 

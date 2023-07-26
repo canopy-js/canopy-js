@@ -81,6 +81,10 @@ function UrlToken(url, text, parserContext) {
 
 function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext }) {
   this.type = 'image';
+  let { projectPathPrefix } = parserContext;
+  if (resourceUrl.startsWith('/') && projectPathPrefix && !resourceUrl.startsWith(`/${projectPathPrefix}`)) {
+    resourceUrl = `/${projectPathPrefix}${resourceUrl}`;
+  }
   this.resourceUrl = resourceUrl;
   this.title = (title||'').split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
   this.tokens = parseText({
