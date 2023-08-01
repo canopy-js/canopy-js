@@ -8,8 +8,7 @@ import { preloadImages } from 'requests/helpers';
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
   let dataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.requestFileName + '.json';
-
-  let promise = fetch(dataPath, { method: 'get', credentials: 'include', mode: 'no-cors' }). // to allow preloading JSON from HTML
+  let promise = fetch(dataPath, { method: 'get', mode: 'no-cors', credentials: 'same-origin'}). // to allow preloading JSON from HTML
     then(res => {
       return res.json().then((json) => {
         preloadImages(json);

@@ -35,10 +35,10 @@ function build(options) {
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` +
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` + "\n" +
       `${customHtml ? customHtml : ''}` +
-      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
-      `<link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch">
+      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` +
+      dedent`<link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous">
       </body>
       </html>\n`;
 
