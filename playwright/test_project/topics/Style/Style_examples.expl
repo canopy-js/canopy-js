@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[tables with omitted cells]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
-Inline text styles: There are [[style characters]], [[images]], [[local images]], [[manual project path prefix specification]], Specification [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
+Inline text styles: There are [[style characters]], [[images]], [[local images]], Specification [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
 
 Style characters: There is [[italic text]], [[bold text]], [[strike-through text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 

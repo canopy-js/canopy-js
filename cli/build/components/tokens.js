@@ -82,7 +82,7 @@ function UrlToken(url, text, parserContext) {
 function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext }) {
   this.type = 'image';
   let { projectPathPrefix } = parserContext;
-  if (resourceUrl.startsWith('/') && projectPathPrefix && !resourceUrl.startsWith(`/${projectPathPrefix}`)) {
+  if (resourceUrl.startsWith('/') && projectPathPrefix) {
     resourceUrl = `/${projectPathPrefix}${resourceUrl}`;
   }
   this.resourceUrl = resourceUrl;

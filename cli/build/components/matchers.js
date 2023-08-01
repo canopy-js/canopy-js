@@ -341,7 +341,7 @@ function urlMatcher({ string, parserContext }) {
   }
 }
 
-function imageMatcher({ string, parserContext, options }) {
+function imageMatcher({ string, parserContext }) {
   let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:(?<!\\)["'“”]((?:.(?!" "|” “))+?.)(?<!\\)["“”](?: (?<!\\)["“”]((?:.(?!(?<!\\)["“”]))*..)(?<!\\)["“”])?)?\)/);
 
   if (match) {

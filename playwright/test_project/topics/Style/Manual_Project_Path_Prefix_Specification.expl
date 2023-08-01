@@ -1,2 +1,0 @@
-Manual Project Path Prefix Specification: This image is only going to work using project path prefix option. It is stored in a separate topic so that the image is only preloaded in tests where the server is running with project path prefix option, otherwise it will trigger 404.
-![Icon](/test/_assets/USA.svg "Manual URL" “URL where the user put the project path prefix on manually”)

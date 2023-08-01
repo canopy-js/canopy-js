@@ -45,13 +45,6 @@ test.describe('Special paths', () => {
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
     await page.screenshot({ path: workerInfo.project.name + 'relative-1.png' });
-
-    // Even if the user puts the project path prefix in manually it should still work and not get added twice
-    await page.goto('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await page.waitForSelector('img[title="Manual URL"]', { state: 'visible' });
-    await expect(page.locator('img[title="Manual URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'manual-1.png' });
   });
 
   test('Hash URLs option creates hash prefix', async ({ page, context }) => {
@@ -115,13 +108,6 @@ test.describe('Special paths', () => {
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
     await page.screenshot({ path: workerInfo.project.name + 'relative-2.png' });
-
-    // Even if the user puts the project path prefix in manually it should still work and not get added twice
-    await page.goto('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await page.waitForSelector('img[title="Manual URL"]', { state: 'visible' });
-    await expect(page.locator('img[title="Manual URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'manual-2.png' });
   });
 
   test('Hash URLs option works with static assets server', async ({ page, context }) => {
@@ -197,12 +183,5 @@ test.describe('Special paths', () => {
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
     await page.screenshot({ path: workerInfo.project.name + 'relative-3.png' });
-
-    // Even if the user puts the project path prefix in manually it should still work and not get added twice
-    await page.goto('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Inline_text_styles/Manual_Project_Path_Prefix_Specification');
-    await page.waitForSelector('img[title="Manual URL"]', { state: 'visible' });
-    await expect(page.locator('img[title="Manual URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'manual-3.png' });
   });
 });
