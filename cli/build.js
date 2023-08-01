@@ -19,27 +19,31 @@ function build(options) {
   if (!manualHtml) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
     let customCss = fs.existsSync(`assets/custom.css`);
-    let customHtml = fs.existsSync(`assets/custom.html`) && fs.readFileSync(`assets/custom.html`);
+    let customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
+    let customHtmlBody = fs.existsSync(`assets/body.html`) && fs.readFileSync(`assets/body.html`);
+    let customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
 
     let html = dedent`
       <html>
       <head>
       ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
       <meta charset="utf-8">
-      </head>
-      <body>
-      <div
+      <link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous">` +
+      dedent`${customHtmlHead ? customHtmlHead : ''}` +
+      dedent`</head>
+      <body>` +
+      dedent`${customHtmlBody ? customHtmlBody : ''}` +
+      dedent`<div
         id="_canopy"
         data-default-topic="${defaultTopic.name}"
         data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
       </div>
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` +
-      `${customHtml ? customHtml : ''}` +
-      `${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">` : ''}` +
-      `<link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch">
-      </body>
+      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` + "\n" +
+      dedent`${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` +
+      dedent`${customHtmlFooter ? customHtmlFooter : ''}` +
+      dedent`</body>
       </html>\n`;
 
     fs.writeFileSync('build/index.html', html);
