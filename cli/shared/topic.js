@@ -17,7 +17,8 @@ class Topic {
       .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
       .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
       .replace(/_/g, '%5C_') // Literal style characters are escaped so that when we parse the URL, we don't remove them with removeStyleCharacters
-      .replace(/ /g, '_'); // This must be done after literal underscores have received encoded backslashes above to distinguish between them and these
+      .replace(/ /g, '_') // This must be done after literal underscores have received encoded backslashes above to distinguish between them and these
+      .replace(/([.,])(?=["'')}\]]+$)/g, ''); // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
 
     this.url = this.slug
       .replace(/#/g, '%23')
