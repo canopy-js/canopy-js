@@ -181,6 +181,13 @@ function copyDecodedUrl() {
   navigator.clipboard.writeText(decodeURIComponent(window.location));
 }
 
+function goToDefaultTopic() {
+  return updateView(
+    Path.default,
+    null
+  );
+}
+
 function zoomOnLocalPath() {
   let currentLink = Link.selection;
   let newPath = currentLink.localPathSegmentWhenSelected;
@@ -214,5 +221,6 @@ export {
   removeSelection,
   duplicate,
   browserBack,
-  copyDecodedUrl
+  copyDecodedUrl,
+  goToDefaultTopic
 };
