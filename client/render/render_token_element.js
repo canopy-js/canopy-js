@@ -253,11 +253,16 @@ function renderHtmlElement(token) {
   divElement.appendChild(fragment);
   divElement.classList.add('canopy-raw-html');
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
+    let imageContainer = document.createElement('div');
+    let originalHeight = imageElement.style.height;
+    let originalWidth = imageElement.style.width;
+    let originalOpacity = imageElement.style.opacity;
     imageElement.style.setProperty('height', '700px');
     imageElement.style.setProperty('opacity', '0');
     imageElement.addEventListener('load', () => { // wait for them to load
-      imageElement.style.setProperty('height', null);
-      imageElement.style.setProperty('opacity', '1');
+      imageElement.style.setProperty('height', originalHeight);
+      imageElement.style.setProperty('width', originalWidth);
+      imageElement.style.setProperty('opacity', originalOpacity);
       scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
     });
   });
