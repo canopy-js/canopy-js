@@ -1,6 +1,7 @@
 import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
+import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import { scrollPage, imagesLoaded } from 'display/helpers';
@@ -263,7 +264,7 @@ function renderHtmlElement(token) {
       imageElement.style.setProperty('height', originalHeight);
       imageElement.style.setProperty('width', originalWidth);
       imageElement.style.setProperty('opacity', originalOpacity);
-      scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+      if (Paragraph.current) scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
     });
   });
   return divElement;
