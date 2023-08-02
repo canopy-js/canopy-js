@@ -636,4 +636,13 @@ test.describe('Navigation', () => {
       expect(await page.locator('#_canopy').count()).toEqual(0);
     }
   });
+
+  test('Escape on root paragraph navigates to default topic', async ({ page, context }) => {
+    await page.goto('/New_York');
+    await expect(page).toHaveURL('New_York');
+
+    await page.locator('body').press('Escape');
+
+    await expect(page).toHaveURL('United_States');
+  });
 });

@@ -44,7 +44,6 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'relative-1.png' });
   });
 
   test('Hash URLs option creates hash prefix', async ({ page, context }) => {
@@ -107,7 +106,6 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'relative-2.png' });
   });
 
   test('Hash URLs option works with static assets server', async ({ page, context }) => {
@@ -182,6 +180,5 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
     await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
-    await page.screenshot({ path: workerInfo.project.name + 'relative-3.png' });
   });
 });

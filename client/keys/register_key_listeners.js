@@ -10,7 +10,8 @@ import {
   removeSelection,
   duplicate,
   browserBack,
-  copyDecodedUrl
+  copyDecodedUrl,
+  goToDefaultTopic
 } from 'keys/key_handlers';
 import updateView from 'display/update_view';
 import Path from 'models/path';
@@ -33,6 +34,10 @@ const registerKeyListeners = () => {
       if (!((e.metaKey || e.ctrlKey) && ['left', 'right'].includes(keyName))) { // unless browser back
         e.preventDefault();
       }
+    }
+
+    if (keyName === 'escape' && !Link.selection) {
+      return goToDefaultTopic();
     }
 
     if (Link.selection) {
