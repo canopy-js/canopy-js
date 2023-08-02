@@ -24,6 +24,7 @@ function build(options) {
     let customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
 
     let html = dedent`
+      <!DOCTYPE html>
       <html>
       <head>
       ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
