@@ -27,12 +27,14 @@ function build(options) {
       <!DOCTYPE html>
       <html>
       <head>
-      ${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">` : ''}
-      <meta charset="utf-8">
-      <link rel="preload" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous">` +
+      <meta charset="utf-8">` +
+      dedent`${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` + // async loading
+      dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js" defer></script>` + "\n" +
+      dedent`${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">\n` : ''}` +
+      dedent`<link rel="prefetch" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous" fetchpriority="low">` + '\n' +
       dedent`${customHtmlHead ? customHtmlHead : ''}` +
       dedent`</head>
-      <body>` +
+      <body>\n` +
       dedent`${customHtmlBody ? customHtmlBody : ''}` +
       dedent`<div
         id="_canopy"
@@ -40,9 +42,7 @@ function build(options) {
         data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
         data-project-path-prefix="${projectPathPrefix||''}"
         data-hash-urls="${hashUrls || ''}">
-      </div>
-      <script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js"></script>` + "\n" +
-      dedent`${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` +
+      </div>\n` +
       dedent`${customHtmlFooter ? customHtmlFooter : ''}` +
       dedent`</body>
       </html>\n`;

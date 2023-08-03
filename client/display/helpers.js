@@ -5,6 +5,7 @@ import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import renderTokenElement from 'render/render_token_element';
+import fetchAndRenderPath from 'render/fetch_and_render_path';
 
 function setHeader(topic) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);

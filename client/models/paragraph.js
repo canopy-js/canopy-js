@@ -192,7 +192,12 @@ class Paragraph {
   }
 
   static get current() {
-    return new Paragraph(document.querySelector('.canopy-selected-section'));
+    let sectionElement = document.querySelector('.canopy-selected-section');
+    if (sectionElement) {
+      return new Paragraph(sectionElement);
+    } else {
+      return null;
+    }
   }
 
   select() {
