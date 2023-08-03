@@ -258,11 +258,8 @@ function renderHtmlElement(token) {
     let originalHeight = imageElement.style.height;
     let originalWidth = imageElement.style.width;
     let originalOpacity = imageElement.style.opacity;
-    imageElement.style.setProperty('height', '700px');
     imageElement.style.setProperty('opacity', '0');
     imageElement.addEventListener('load', () => { // wait for them to load
-      imageElement.style.setProperty('height', originalHeight);
-      imageElement.style.setProperty('width', originalWidth);
       imageElement.style.setProperty('opacity', originalOpacity);
       if (Paragraph.current) scrollPage({ scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
     });

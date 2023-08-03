@@ -80,15 +80,10 @@ function validatePathAndLink(pathToDisplay, linkToSelect) {
   if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
 }
 
-function preloadDefaultTopic() { // this makes the later render slightly faster and avoids warnings from unused preloads
-  fetchAndRenderPath(Path.default, canopyContainer).catch(e => console.error(e));
-}
-
 export {
   setHeader,
   resetDom,
   tryPathPrefix,
   scrollPage,
-  validatePathAndLink,
-  preloadDefaultTopic
+  validatePathAndLink
 };
