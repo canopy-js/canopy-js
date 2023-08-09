@@ -50,6 +50,16 @@ function build(options) {
     fs.writeFileSync('build/index.html', html);
   }
 
+  let html404 = dedent`
+  <html>
+  <head>
+  <meta http-equiv="refresh" content="0; URL=/index.html" />
+  </head>
+  </html>`;
+
+  fs.writeFileSync('build/404.html', html404);
+  fs.writeFileSync('build/.nojekyll', '');
+
   if (options.logging) console.log(chalk.cyan(
     `Canopy build: Rebuilding JSON at ${''
     + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
