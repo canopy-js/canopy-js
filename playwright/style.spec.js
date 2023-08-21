@@ -241,8 +241,8 @@ test.describe('Block entities', () => {
 
   test('It allows table lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
-    await expect(page.locator('.canopy-selected-section div.canopy-table-list')).toHaveCount(3);
-    await expect(page.locator('.canopy-selected-section div.canopy-table-list div.canopy-table-list-cell >> visible=true')).toHaveCount(5 + 17 + 4);
+    await expect(page.locator('.canopy-selected-section div.canopy-table-list')).toHaveCount(4);
+    await expect(page.locator('.canopy-selected-section div.canopy-table-list div.canopy-table-list-cell >> visible=true')).toHaveCount(5 + 17 + 4 + 6);
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(0)).toHaveText('1234');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(1)).toHaveText('5');
@@ -253,6 +253,10 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(5)).toHaveText('1617');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(6)).toHaveText('1. A2. B3. C4. D');
+
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('DCBA');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('FE');
+
   });
 
   test('It creates multi-line code blocks', async ({ page }) => {

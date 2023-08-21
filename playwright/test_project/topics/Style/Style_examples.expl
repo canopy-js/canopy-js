@@ -76,6 +76,15 @@ This is a numbered list:
 3. C
 4. D
 ===
+This list goes backwards:
+<<<
+- A
+- B
+- C
+- D
+- E
+- F
+<<<
 
 Code blocks:
 ```

@@ -283,6 +283,7 @@ function TableListToken(text, parserContext) {
 
   for (let i = 0; i < numberOfRows; i++) {
     const row = listItems.slice(i * width, (i + 1) * width);
+    if (text.startsWith('<')) row.reverse();
     rows.push(row);
   }
 
