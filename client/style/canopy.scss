@@ -293,6 +293,7 @@
         display: flex;
         justify-content: center;
         overflow: scroll;
+        overflow: hidden;
       }
 
       .canopy-table-list-content-container * {
