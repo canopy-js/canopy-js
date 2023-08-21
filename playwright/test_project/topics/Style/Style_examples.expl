@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[tables with omitted cells]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], Specification [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], and [[special links]].
 
@@ -39,6 +39,43 @@ Tables with import references:
 | This | is | a | table |
 |---|---|---|-----------|
 | 2 | 4 | [[New York]] | [[Southern border]] |
+
+Table lists:
+Until 16 elements we use a width of 4:
+===
+- 1
+- 2
+- 3
+- 4
+- 5
+===
+After that we use a width of 5:
+===
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 12
+- 13
+- 14
+- 15
+- 16
+- 17
+===
+This is a numbered list:
+===
+1. A
+2. B
+3. C
+4. D
+===
 
 Code blocks:
 ```

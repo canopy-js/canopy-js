@@ -31,6 +31,8 @@ function renderTokenElement(token, renderContext) {
     return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
     return renderTable(token, renderContext)
+  } else if (token.type === 'table_list') {
+    return renderTableList(token, renderContext)
   } else if (token.type === 'footnote_lines') {
     return renderFootnoteLines(token, renderContext);
   } else if (token.type === 'bold') {
@@ -42,7 +44,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'inline_code') {
     return renderInlineCodeText(token, renderContext);
   } else {
-    throw `Unhandled token type: ${token.type}`
+    throw `Unhandled token type: ${token.type} ${token.type === 'table_list'}`
   }
 }
 
@@ -76,10 +78,14 @@ function createLocalLinkElement(token, renderContext) {
     linkElement.appendChild(subtokenElement);
   });
 
+  let callback = onLocalLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement));
+
   linkElement.addEventListener(
     'click',
-    onLocalLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement))
+    callback
   );
+
+  linkElement._CanopyClickHandler = callback
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
@@ -125,9 +131,13 @@ function createGlobalLinkElement(token, renderContext) {
   let targetTopic = Topic.fromMixedCase(token.targetTopic);
   linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}`;
 
+  let callback = onGlobalAndImportLinkClick(new Link(linkElement))
+
+  linkElement._CanopyClickHandler = callback;
+
   linkElement.addEventListener(
     'click',
-    onGlobalAndImportLinkClick(new Link(linkElement))
+    callback
   );
   return linkElement
 }
@@ -340,19 +350,84 @@ function renderTable(token, renderContext) {
           cellObject.tokens.forEach(
             (token) => {
               let tokenElement = renderTokenElement(token, renderContext);
-              cellObject.colspan && tableCellElement.setAttribute('colspan', cellObject.colspan);
-              cellObject.rowspan && tableCellElement.setAttribute('rowspan', cellObject.rowspan);
+
+              if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
+              if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
+
+              if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+                tableCellElement.classList.add('canopy-table-link-cell');
+                tokenElement.classList.add('canopy-table-link');
+                tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
+                tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
+              }
+
               tableCellElement.appendChild(tokenElement);
             }
           );
 
-          !cellObject.merge && tableRowElement.appendChild(tableCellElement);
+          if (!cellObject.merge) {
+            tableRowElement.appendChild(tableCellElement);
+          }
         }
       )
       tableElement.appendChild(tableRowElement);
     }
   );
   return tableElement;
+}
+
+function renderTableList(token, renderContext) {
+  let totalNumberOfCells = token.rows.reduce((sum, row) => sum + row.length, 0);
+
+  let containerElement = document.createElement('DIV');
+  containerElement.classList.add('canopy-table-list-container');
+
+  let tableListElement = document.createElement('DIV');
+  tableListElement.classList.add('canopy-table-list');
+  containerElement.appendChild(tableListElement);
+
+  token.rows.forEach(row => {
+    let tableRowElement = document.createElement('DIV');
+    tableRowElement.classList.add('canopy-table-list-row');
+    tableListElement.appendChild(tableRowElement);
+
+    row.forEach(cellObject => {
+      let tableCellElement = document.createElement('DIV');
+      tableCellElement.classList.add('canopy-table-list-cell');
+      tableRowElement.appendChild(tableCellElement);
+
+      let contentContainer = document.createElement('DIV');
+      contentContainer.classList.add('canopy-table-list-content-container');
+      tableCellElement.appendChild(contentContainer);
+
+      cellObject.tokens.forEach(token => {
+        let tokenElement = renderTokenElement(token, renderContext);
+        if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+          tableCellElement.classList.add('canopy-table-list-link-cell');
+          tokenElement.classList.add('canopy-table-list-link');
+          tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
+          tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
+        }
+        contentContainer.appendChild(tokenElement);
+      });
+
+      if (tableCellElement.innerText.length > 10) {
+        tableCellElement.setAttribute(
+          'style',
+          'font-size: ' + getFontSize(tableCellElement.innerText.length) + 'px'
+        );
+      }
+    });
+  });
+
+  return containerElement;
+}
+
+function getFontSize(characterCount) {
+    const m = -4/43;
+    const c = 17 + (m * 18);
+    const originalSize = m * characterCount + c;
+    return originalSize * 1.4;
 }
 
 function renderHtmlBlock(token) {

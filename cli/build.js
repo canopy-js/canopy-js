@@ -20,7 +20,7 @@ function build(options) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
     let customCss = fs.existsSync(`assets/custom.css`);
     let customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
-    let customHtmlBody = fs.existsSync(`assets/body.html`) && fs.readFileSync(`assets/body.html`);
+    let customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
     let customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
 
     let html = dedent`
@@ -35,7 +35,7 @@ function build(options) {
       dedent`${customHtmlHead ? customHtmlHead : ''}` +
       dedent`</head>
       <body>\n` +
-      dedent`${customHtmlBody ? customHtmlBody : ''}` +
+      dedent`${customHtmlNav ? customHtmlNav : ''}` +
       dedent`<div
         id="_canopy"
         data-default-topic="${defaultTopic.name}"
@@ -49,6 +49,16 @@ function build(options) {
 
     fs.writeFileSync('build/index.html', html);
   }
+
+  let html404 = dedent`
+  <html>
+  <head>
+  <meta http-equiv="refresh" content="0; URL=/index.html" />
+  </head>
+  </html>`;
+
+  fs.writeFileSync('build/404.html', html404);
+  fs.writeFileSync('build/.nojekyll', '');
 
   if (options.logging) console.log(chalk.cyan(
     `Canopy build: Rebuilding JSON at ${''

@@ -11,6 +11,7 @@ let {
   BlockQuoteToken,
   OutlineToken,
   TableToken,
+  TableListToken,
   FootnoteLinesToken,
   ItalicsToken,
   BoldToken,
@@ -25,6 +26,7 @@ const Matchers = [
   blockQuoteMatcher,
   outlineMatcher,
   tableMatcher,
+  tableListMatcher,
   htmlMatcher,
   htmlEntityMatcher,
   footnoteLinesMatcher,
@@ -121,6 +123,18 @@ function tableMatcher({ string, parserContext, startOfLine }) {
     return [
       new TableToken(tableMatch, parserContext),
       tableMatch.length
+    ];
+  }
+}
+
+function tableListMatcher({ string, parserContext, startOfLine }) {
+  let match = string.match(/^[=-]+\n((-\s[^\n]+\n)+|([\w\d]+\.\s[^\n]+\n)+)[=-]+(\n|$)/);
+  if (!match) return null;
+
+  if (match && startOfLine) {
+    return [
+      new TableListToken(match[0], parserContext),
+      match[0].length
     ];
   }
 }

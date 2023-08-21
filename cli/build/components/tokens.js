@@ -271,6 +271,38 @@ function TableToken(text, parserContext) {
   cellObjectList.forEach(cellObject => cellObject.merge && (cellObject.merge = true));
 }
 
+function TableListToken(text, parserContext) {
+  this.type = 'table_list';
+
+  let listItems = [...text.matchAll(/(?:(?<=- )([^\n]+)|([\w\d]{1,4}\.\s[^\n]+))\n/g)].map(m => m[1] || m[2]);
+
+  let width = Math.max(4, Math.min(Math.ceil(Math.sqrt(listItems.length)), 8));
+  this.width = width;
+  const numberOfRows = Math.ceil(listItems.length / width);
+  const rows = [];
+
+  for (let i = 0; i < numberOfRows; i++) {
+    const row = listItems.slice(i * width, (i + 1) * width);
+    rows.push(row);
+  }
+
+  this.rows = rows.map(row => {
+    return row.map((cellString, lineNumber) => {
+      return {
+        tokens: parseText({
+          text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+          parserContext: parserContext.clone({
+            preserveNewlines: null,
+            insideToken: true,
+          })
+          .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the table list are we, line number plus initial delimiter
+          .incrementCharacterNumber('- '.length) // count earlier chars and leading space
+        })
+      }
+    });
+  });
+}
+
 function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
   this.type = 'footnote_lines';
   this.lines = [];
@@ -336,6 +368,7 @@ module.exports = {
   BlockQuoteToken,
   OutlineToken,
   TableToken,
+  TableListToken,
   FootnoteLinesToken,
   ItalicsToken,
   BoldToken,
