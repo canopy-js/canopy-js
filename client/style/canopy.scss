@@ -23,27 +23,30 @@
     border: 0;
     border-top: 5px solid #ccc;
     margin: 0px auto;
-    padding-bottom: 24px; // 35 minus thickness of bar
   }
 
   section.canopy-topic-section {
-    padding-top: 35px
+    padding-top: 25px;
   }
 
   section {
-    padding-top: 30px;
+    padding-top: 15px;
   }
 
   p {
     overflow: visible; // In case external link icon is at end of line
     font-size: 21px;
-    max-width: 700px;
+    max-width: 750px;
     margin: auto;
 
     line-height: 1.3;
     letter-spacing: -.003em;
     font-weight: 400;
     font-family: Times, serif;
+  }
+
+  .canopy-topic-section hr + p {
+    padding-top: 20px;
   }
 
 ///////////// Link styles /////////////////
@@ -58,8 +61,9 @@
     }
 
     &.canopy-open-link {
-      text-shadow: .8px 0px 0px #000000;
+      // text-shadow: .8px 0px 0px #000000;
       text-decoration: underline;
+      background-color: #F3F3F3;
     }
 
     &:hover {
@@ -116,7 +120,7 @@
   }
 
   hr.canopy-footnote-rule {
-    width: 700px;
+    width: 750px;
     display: block;
     height: 1px;
     border: 0;
@@ -194,7 +198,7 @@
     }
 
     td, th {
-      border: 2px solid black;
+      border: 1px solid black;
       text-align: center;
       padding: 10px;
 
@@ -208,6 +212,125 @@
         display: block; // makes it have a width
         content: ""; // clears default height
         padding-bottom: 2px;
+      }
+    }
+
+    td.canopy-table-link-cell {
+      cursor: pointer;
+
+      a.canopy-selectable-link {
+        text-decoration: none;
+        text-shadow: none;
+      }
+
+      &:has(.canopy-selected-link) {
+        background-color: #edeefc;
+      }
+
+      &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+        background-color: #F3F3F3;
+      }
+
+      &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
+      &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+        background-color: #f5f6fe;
+
+        .canopy-selected-link {
+            background-color: #f5f6fe;
+        }
+      }
+    }
+  }
+
+  .canopy-table-list-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 96vw;
+    width: 96vw;
+    margin-left: calc((-96vw / 2) + (750px / 2));
+
+    &:not(:first-child) {
+      margin-top: 20px;
+    }
+
+    .canopy-table-list {
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+
+      .canopy-table-list-row {
+        display: flex;
+        max-width: 96vw;
+      }
+
+      .canopy-table-list-cell {
+        display: flex;
+        width: calc(115px + 3vw);
+        max-width: 11vw;
+        height: 23vw;
+        max-height: 95px;
+        margin: 5px;
+        border: 1.5px solid black;
+        border-radius: 5px;
+        padding: 8px 12px;
+        text-align: center;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+
+      @media screen and (max-width: 1000px) {
+        .canopy-table-list-cell {
+          max-width: 10vw;
+        }
+
+        .canopy-table-list-content-container * {
+          max-width: 6vw;
+        }
+      }
+
+      .canopy-table-list-content-container {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        overflow: scroll;
+        overflow: hidden;
+      }
+
+      .canopy-table-list-content-container * {
+        align-items: center;
+        justify-content: center;
+        max-height: 70px;
+        max-width: 140px;
+        text-wrap: balance;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+
+      .canopy-table-list-link-cell {
+        cursor: pointer;
+
+        a.canopy-selectable-link {
+          text-decoration: none;
+          text-shadow: none;
+        }
+
+        &:has(.canopy-selected-link) {
+          background-color: #edeefc;
+        }
+
+        &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+          background-color: #F3F3F3;
+        }
+
+        &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
+        &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+          background-color: #f5f6fe;
+
+          .canopy-selected-link {
+              background-color: #f5f6fe;
+          }
+        }
       }
     }
   }
@@ -285,8 +408,4 @@
   div.canopy-raw-html {
     display: inline;
   }
-}
-
-#_canopy > section.canopy-topic-section {
-  padding-top: 30px;
 }

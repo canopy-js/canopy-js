@@ -67,7 +67,7 @@ function scrollPage(displayOptions) {
   let scrollPosition = topOfViewport + topOfParagraphInViewport - (viewportSize - heightOfParagraph) * 2/3;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
-  if (Math.abs(scrollPosition - window.scrollY) > 25) {
+  if (Math.abs(scrollPosition - window.scrollY) > 100) {
     setTimeout(() => window.scrollTo(
       {
         top: scrollPosition,
