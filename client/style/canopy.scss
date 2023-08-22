@@ -43,6 +43,8 @@
     letter-spacing: -.003em;
     font-weight: 400;
     font-family: Times, serif;
+
+    position: relative; // to allow absolute children
   }
 
   .canopy-topic-section hr + p {
