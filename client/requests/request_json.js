@@ -9,15 +9,21 @@ const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
   let dataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.requestFileName + '.json';
 
+  let jsonHandler = res => {
+    return res.json().then((json) => {
+      preloadImages(json);
+      return json;
+    });
+  }
+
   let promise = fetch(dataPath). // to allow preloading JSON from HTML
-    then(res => {
-      return res.json().then((json) => {
-        preloadImages(json);
-        return json;
-      });
-    }).catch(() => {
-      REQUEST_CACHE[topic.mixedCase] = undefined; // in case error is connectivity related & will work again later
-      return Promise.reject(new Error(`Unable to find topic file: "${topic.requestFileName}"`));
+    then(jsonHandler).catch(() => {
+      let altDataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.fileName + '.json';
+      return fetch(altDataPath). // some servers decode request URLS and some don't
+        then(jsonHandler).catch(() => {
+          REQUEST_CACHE[topic.mixedCase] = undefined; // in case error is connectivity related & will work again later
+          return Promise.reject(new Error(`Unable to find topic file: "${topic.requestFileName}"`));
+        })
     });
 
   REQUEST_CACHE[topic.mixedCase] = promise;

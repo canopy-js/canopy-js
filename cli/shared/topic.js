@@ -13,7 +13,7 @@ class Topic {
     this.escapedMixedCase = CSS.escape(this.mixedCase);
 
     this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
-      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a % which we're using for encodings
+      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a % which we're using for encodings - this must come first or you'll double encode all the other characters!
       .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
       .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
       .replace(/_/g, '%5C_') // Literal style characters are escaped so that when we parse the URL, we don't remove them with removeStyleCharacters
