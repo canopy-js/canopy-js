@@ -18,6 +18,7 @@ class Topic {
       .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
       .replace(/_/g, '%5C_') // Literal style characters are escaped so that when we parse the URL, we don't remove them with removeStyleCharacters
       .replace(/ /g, '_') // This must be done after literal underscores have received encoded backslashes above to distinguish between them and these
+      .replace(/\//g, '%2F')
       .replace(/([.,])(?=["'')}\]]+$)/g, ''); // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
 
     this.url = this.slug
@@ -26,6 +27,7 @@ class Topic {
     this.fileName = this.slug // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
       .replace(/"/g, '%22')
       .replace(/'/g, '%27')
+      .replace(/,/g, '%2C')
       .replace(/:/g, '%3A')
       .replace(/</g, '%3C')
       .replace(/>/g, '%3E')
