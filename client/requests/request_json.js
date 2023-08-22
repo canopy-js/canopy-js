@@ -7,7 +7,7 @@ import { preloadImages } from 'requests/helpers';
 
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
-  let dataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.requestFileName + '.json';
+  let dataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.fileName + '.json';
 
   let jsonHandler = res => {
     return res.json().then((json) => {
@@ -18,7 +18,7 @@ const requestJson = (topic) => {
 
   let promise = fetch(dataPath). // to allow preloading JSON from HTML
     then(jsonHandler).catch(() => {
-      let altDataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.fileName + '.json';
+      let altDataPath = (projectPathPrefix ? '/' + projectPathPrefix : '') + '/_data/' + topic.requestFileName + '.json';
       return fetch(altDataPath). // some servers decode request URLS and some don't
         then(jsonHandler).catch(() => {
           REQUEST_CACHE[topic.mixedCase] = undefined; // in case error is connectivity related & will work again later

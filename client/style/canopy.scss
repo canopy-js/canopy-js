@@ -25,12 +25,16 @@
     margin: 0px auto;
   }
 
+  h1 + section.canopy-topic-section {
+    padding-top: 20px;
+  }
+
   section.canopy-topic-section {
     padding-top: 25px;
   }
 
   section {
-    padding-top: 15px;
+    padding-top: 25px;
   }
 
   p {
@@ -48,7 +52,7 @@
   }
 
   .canopy-topic-section hr + p {
-    padding-top: 20px;
+    padding-top: 24px; // 25px minus 1px bar thickness
   }
 
 ///////////// Link styles /////////////////
