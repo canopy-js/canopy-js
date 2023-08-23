@@ -412,9 +412,13 @@ function renderTableList(token, renderContext) {
       });
 
       if (tableCellElement.innerText.length > 10) {
+        let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
+        let fontSizeBasedOnTextSize = getFontSizeBasedOnTextSize(tableCellElement.innerText.length);
+        let fontSizeBasedOnLongestWord = getFontSizeBasedOnLongestWord(longestWord.length);
+
         tableCellElement.setAttribute(
           'style',
-          'font-size: ' + getFontSize(tableCellElement.innerText.length) + 'px'
+          'font-size: ' + Math.min(fontSizeBasedOnTextSize, fontSizeBasedOnLongestWord) + 'px'
         );
       }
     });
@@ -423,11 +427,17 @@ function renderTableList(token, renderContext) {
   return containerElement;
 }
 
-function getFontSize(characterCount) {
+function getFontSizeBasedOnTextSize(characterCount) {
     const m = -4/43;
     const c = 17 + (m * 18);
     const originalSize = m * characterCount + c;
-    return originalSize * 1.4;
+    return originalSize * 1.5;
+}
+
+function getFontSizeBasedOnLongestWord(longestWordLength) {
+  const beta = -0.6;
+  const alpha = 26.2;
+  return alpha + beta * longestWordLength;
 }
 
 function renderHtmlBlock(token) {

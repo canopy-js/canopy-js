@@ -276,7 +276,7 @@
         height: 23vw;
         max-height: 95px;
         margin: 5px;
-        border: 1.5px solid black;
+        border: 1.5px solid #828282;
         border-radius: 5px;
         padding: 8px 12px;
         text-align: center;
@@ -308,13 +308,14 @@
         max-height: 70px;
         max-width: 140px;
         text-wrap: balance;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+        word-wrap: normal;
+        overflow-wrap: normal;
         hyphens: auto;
       }
 
       .canopy-table-list-link-cell {
         cursor: pointer;
+        border: 1.5px solid black;
 
         a.canopy-selectable-link {
           text-decoration: none;
