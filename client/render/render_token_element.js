@@ -431,7 +431,7 @@ function getFontSizeBasedOnTextSize(characterCount) {
     const m = -4/43;
     const c = 17 + (m * 18);
     const originalSize = m * characterCount + c;
-    return originalSize * 1.5;
+    return originalSize * 1.46;
 }
 
 function getFontSizeBasedOnLongestWord(longestWordLength) {
