@@ -7,9 +7,14 @@ import updateView from 'display/update_view';
 import renderTokenElement from 'render/render_token_element';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 
-function setHeader(topic) {
+function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);
   headerDomElement.style.display = 'block';
+  headerDomElement.style.opacity = '0%';
+  if (displayOptions.scrollStyle !== 'auto') {
+    headerDomElement.style.opacity = '100%'; // the page is scrolled to the right position so there wont be a jump
+  }
+  return { show: () => { headerDomElement.style.opacity = '100%' } };
 }
 
 function hideAllSectionElements() {
