@@ -282,6 +282,7 @@
         text-align: center;
         justify-content: center;
         box-sizing: border-box;
+        background-color: white;
       }
 
       @media screen and (max-width: 1000px) {
@@ -316,6 +317,10 @@
       .canopy-table-list-link-cell {
         cursor: pointer;
         border: 1.5px solid black;
+
+        .canopy-url-link *, .canopy-url-link *:hover {
+          text-decoration: none;
+        }
 
         a.canopy-selectable-link {
           text-decoration: none;

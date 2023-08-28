@@ -418,7 +418,7 @@ function renderTableList(token, renderContext) {
 
         tableCellElement.setAttribute(
           'style',
-          'font-size: ' + Math.min(fontSizeBasedOnTextSize, fontSizeBasedOnLongestWord) + 'px'
+          'font-size: ' + Math.max(Math.min(fontSizeBasedOnTextSize, fontSizeBasedOnLongestWord), 9) + 'px'
         );
       }
     });
