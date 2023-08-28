@@ -346,7 +346,7 @@ function hyperlinkMatcher({ string, parserContext }) {
 }
 
 function urlMatcher({ string, parserContext }) {
-  let match = string.match(/^([^/\s]+:\/\/\S+[^.,;!\s])/);
+  let match = string.match(/^([A-Za-z0-9+\-.]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
       new UrlToken(match[1]),
