@@ -12,7 +12,7 @@ class Link {
     // 3. You can provide a callback that returns the link
     //   (This is helpful for selecting links that are not yet rendered)
 
-    if (argument.tagName === 'A') {
+    if (argument?.tagName === 'A') {
       this.element = argument;
     } else if (argument instanceof Link) {
       throw new Error("Cannot instantiate link from link");
@@ -354,12 +354,11 @@ class Link {
   }
 
   static select(linkToSelect) {
-    if (linkToSelect) {
-      linkToSelect.element.classList.add('canopy-selected-link');
-    }
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
     Link.persistLastSelectionData(linkToSelect);
+    document.querySelector('a.canopy-selected-link')?.classList.remove('canopy-selected-link');
+    if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
   }
 
   static selectionPresentInEvent(e) {

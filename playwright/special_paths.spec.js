@@ -29,7 +29,7 @@ test.describe('Special paths', () => {
     await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
     // For a local link
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
@@ -57,7 +57,7 @@ test.describe('Special paths', () => {
     await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
     // For a local link
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3002/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
@@ -76,8 +76,8 @@ test.describe('Special paths', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('Style examples');
-    await expect(newPage).toHaveURL('http://localhost:3002/#/Style_examples');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(newPage).toHaveURL('http://localhost:3002/#/United_States/New_York/Style_examples');
   });
 
   test('Project path prefix option is compatible with hash option', async ({ page }, workerInfo) => {
@@ -91,7 +91,7 @@ test.describe('Special paths', () => {
     await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
     // For a local link
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
@@ -119,7 +119,7 @@ test.describe('Special paths', () => {
     await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
     // For a local link
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3004/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
@@ -138,8 +138,8 @@ test.describe('Special paths', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('Style examples');
-    await expect(newPage).toHaveURL('http://localhost:3004/#/Style_examples');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(newPage).toHaveURL('http://localhost:3004/#/United_States/New_York/Style_examples');
   });
 
   test('Hash URLs and project path option work with static assets server', async ({ page, context }, workerInfo) => {
@@ -153,7 +153,7 @@ test.describe('Special paths', () => {
     await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
 
     // For a local link
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3005/test/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
@@ -172,8 +172,8 @@ test.describe('Special paths', () => {
     ]);
     await newPage.waitForLoadState();
 
-    await expect(newPage.locator('h1:visible')).toHaveText('Style examples');
-    await expect(newPage).toHaveURL('http://localhost:3005/test/#/Style_examples');
+    await expect(newPage.locator('h1:visible')).toHaveText('United States');
+    await expect(newPage).toHaveURL('http://localhost:3005/test/#/United_States/New_York/Style_examples');
 
     // Project path prefix gets added to image tokens
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');

@@ -67,7 +67,7 @@ function globalLinkSubtreeCallback(sectionElement, renderContext) {
 
 function createSectionElement(renderContext) {
   let {
-    topic, subtopic, displayTopicName, pathDepth
+    topic, subtopic, displayTopicName, pathDepth, paragraphsBySubtopic
   } = renderContext;
 
   let sectionElement = document.createElement('section');
@@ -80,9 +80,10 @@ function createSectionElement(renderContext) {
   sectionElement.dataset.topicName = topic.mixedCase;
   sectionElement.dataset.subtopicName = subtopic.mixedCase;
   sectionElement.dataset.pathDepth = pathDepth;
+  let tokens = paragraphsBySubtopic[topic.mixedCase];
 
   if (topic.mixedCase === subtopic.mixedCase) {
-    if (pathDepth > 0) sectionElement.prepend(document.createElement('hr'));
+    if (pathDepth > 0 && tokens.length > 0) sectionElement.prepend(document.createElement('hr'));
     sectionElement.classList.add('canopy-topic-section');
   }
 
