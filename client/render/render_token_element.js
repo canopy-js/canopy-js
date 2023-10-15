@@ -218,6 +218,7 @@ function renderImage(token, renderContext) {
 
   let imageElement = document.createElement('IMG');
   imageElement.setAttribute('src', token.resourceUrl);
+  imageElement.setAttribute('decoding', 'async'); // don't wait for image decode to update selected link on change
 
   let anchorElement = document.createElement('A');
   anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
