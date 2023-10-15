@@ -101,4 +101,16 @@ function tryAndWriteHtmlError(func, options) {
   }
 }
 
-module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes, wrapText, tryAndWriteHtmlError };
+function detectTextDirection(text) {
+  // Regular expression patterns for different character ranges
+  const rtlChars = '\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC';
+  const ltrChars = 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u0300-\u0590\u0800-\u1FFF' +
+                   '\u2C00-\uFB1C\uFDFE-\uFE6F\uFEFD-\uFFFF';
+  const rtlDirCheck = new RegExp(`^[^${ltrChars}]*[${rtlChars}]`);
+
+  // Check if the text is RTL
+  return rtlDirCheck.test(text) ? 'rtl' : 'ltr';
+}
+
+
+module.exports = { DefaultTopic, canopyLocation, displaySegment, tryDefaultTopic, splitOnPipes, wrapText, tryAndWriteHtmlError, detectTextDirection };

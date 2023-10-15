@@ -62,23 +62,77 @@ const resetDom = () => {
   deselectSectionElement();
 }
 
-function scrollPage(displayOptions) {
+function scrollPage(link, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
-  let viewportSize = window.innerHeight;
-  let selectedParagraphElement = Paragraph.current.paragraphElement;
-  let topOfParagraphInViewport = selectedParagraphElement.getBoundingClientRect().top;
-  let heightOfParagraph = selectedParagraphElement.getBoundingClientRect().height;
-  let topOfViewport = window.scrollY;
-  let scrollPosition = topOfViewport + topOfParagraphInViewport - (viewportSize - heightOfParagraph) * 2/3;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
+  if (!Link.selection) return window.scrollTo({ top: 0, behavior })
+  let maxScrollRatio = behavior === 'auto' || displayOptions.scrollTo === 'child' ? Infinity : 0.75; // no limit on initial load and click
 
-  if (Math.abs(scrollPosition - window.scrollY) > 100) {
-    setTimeout(() => window.scrollTo(
-      {
-        top: scrollPosition,
-        behavior
-      }
-    ))
+  if (displayOptions.scrollTo === 'child') {
+    let sectionElement = link.targetParagraph.sectionElement;
+    scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
+  } else {
+    const linkElement = link?.element;
+    if (linkElement) {
+      scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
+    } else {
+      scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
+    }
+  }
+}
+
+function scrollElementToPosition(element, options) {
+  let { targetRatio, maxScrollRatio, minDiff, direction, behavior, side } = options;
+  const rect = element.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const currentScroll = window.pageYOffset;
+
+  let idealTargetPosition = viewportHeight * targetRatio;
+
+  let pointToPutAtTarget;
+  if (side === 'bottom') {
+    pointToPutAtTarget = rect.bottom;
+  } else if (side === 'top') {
+    pointToPutAtTarget = rect.top;
+  } else {
+    side = 'middle';
+    pointToPutAtTarget = rect.top + (rect.bottom - rect.top) / 2;
+  }
+
+  // Handling large A tags
+  if (element.tagName === 'A' && (side === 'middle' || side === 'bottom')) {
+    const topOffScreen = (side === 'bottom' ? 1 : .5) * (rect.bottom - rect.top) > idealTargetPosition;
+    if (topOffScreen) {
+      targetRatio = 0.05;
+      idealTargetPosition = viewportHeight * targetRatio;
+      pointToPutAtTarget = rect.top;
+    }
+  }
+
+  const idealScrollY = pointToPutAtTarget + currentScroll - idealTargetPosition;
+
+  const maxScrollDistance = viewportHeight * maxScrollRatio;
+  let actualScrollY;
+
+  if (idealScrollY > currentScroll) {
+    actualScrollY = Math.min(idealScrollY, currentScroll + maxScrollDistance);
+  } else {
+    actualScrollY = Math.max(idealScrollY, currentScroll - maxScrollDistance);
+  }
+
+  const diff = Math.abs(currentScroll - actualScrollY);
+  let shouldScroll = diff > minDiff;
+
+  if (direction === 'up') {
+    shouldScroll = shouldScroll && actualScrollY < currentScroll;
+  }
+
+  if (direction === 'down') {
+    shouldScroll = shouldScroll && actualScrollY > currentScroll;
+  }
+
+  if (shouldScroll) {
+    window.scrollTo({ top: actualScrollY, behavior });
   }
 }
 
@@ -92,5 +146,6 @@ export {
   resetDom,
   tryPathPrefix,
   scrollPage,
-  validatePathAndLink
+  validatePathAndLink,
+  scrollElementToPosition
 };
