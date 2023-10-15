@@ -1,5 +1,5 @@
 #_canopy {
-  padding-top: 15px;
+  margin-top: 15px;
   overflow-anchor: none; // Prevent browser from trying to maintain position when page contents change, which might interfere with window.scrollTo
 
   /* Removing DOM elements from the bottom of the screen can force the page to scroll upward to the existing elements
@@ -26,15 +26,15 @@
   }
 
   h1 + section.canopy-topic-section {
-    padding-top: 20px;
+    margin-top: 20px;
   }
 
   section.canopy-topic-section {
-    padding-top: 25px;
+    margin-top: 25px;
   }
 
   section {
-    padding-top: 25px;
+    margin-top: 25px;
   }
 
   p {
@@ -52,7 +52,7 @@
   }
 
   .canopy-topic-section hr + p {
-    padding-top: 24px; // 25px minus 1px bar thickness
+    margin-top: 24px; // 25px minus 1px bar thickness
   }
 
 ///////////// Link styles /////////////////
@@ -277,10 +277,11 @@
         max-height: 95px;
         margin: 5px;
         border: 1px solid black;
-        border-radius: 5px;
+        border-radius: 0px;
         padding: 8px 12px;
         text-align: center;
         justify-content: center;
+        align-items: center;
         box-sizing: border-box;
         background-color: white;
       }
@@ -296,47 +297,33 @@
       }
 
       .canopy-table-list-content-container {
-        align-items: center;
-        display: flex;
-        justify-content: center;
         overflow: scroll;
-        overflow: hidden;
-      }
-
-      .canopy-table-list-content-container * {
-        align-items: center;
-        justify-content: center;
-        max-height: 70px;
-        max-width: 140px;
-        text-wrap: balance;
-        word-wrap: normal;
-        overflow-wrap: normal;
-        hyphens: auto;
       }
 
       .canopy-table-list-link-cell {
         cursor: pointer;
         border: 1.5px solid black;
+        border-radius: 5px;
 
-        .canopy-url-link *, .canopy-url-link *:hover {
+        &.canopy-url-link *, &.canopy-url-link *:hover {
           text-decoration: none;
         }
 
-        a.canopy-selectable-link {
+        &.canopy-selectable-link {
           text-decoration: none;
           text-shadow: none;
         }
 
-        &:has(.canopy-selected-link) {
+        &.canopy-selected-link {
           background-color: #edeefc;
         }
 
-        &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+        &.canopy-open-link:not(.canopy-selected-link) {
           background-color: #F3F3F3;
         }
 
-        &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
-        &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+        &:hover:not(.canopy-selected-link), // selected link style overrides hover
+        &:hover.canopy-open-link:not(.canopy-selected-link) {
           background-color: #f5f6fe;
 
           .canopy-selected-link {

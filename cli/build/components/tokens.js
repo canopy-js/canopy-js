@@ -1,4 +1,4 @@
-let { splitOnPipes } = require('../../shared/helpers');
+let { splitOnPipes, detectTextDirection } = require('../../shared/helpers');
 let chalk = require('chalk');
 
 function parseText(options) {
@@ -237,6 +237,8 @@ function TableToken(text, parserContext) {
       this.rows.push(cellObjects);
     });
 
+  if (detectTextDirection(text) === 'rtl') this.dir = 'rtl';
+
   this.rows.forEach((cellObjects, y, rows) => {
     cellObjects.forEach((cellObject, x, columns) => {
       if (cellObject.merge) {
@@ -283,9 +285,10 @@ function TableListToken(text, parserContext) {
 
   for (let i = 0; i < numberOfRows; i++) {
     const row = listItems.slice(i * width, (i + 1) * width);
-    if (text.startsWith('<')) row.reverse();
     rows.push(row);
   }
+
+  if (text.startsWith('<') || detectTextDirection(text) === 'rtl') this.rtl = true;
 
   this.rows = rows.map(row => {
     return row.map((cellString, lineNumber) => {

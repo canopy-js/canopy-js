@@ -339,10 +339,13 @@ function renderList(listNodeObjects, renderContext) {
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
   tableElement.setAttribute('dir', 'auto');
+  if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
     (row) => {
       let tableRowElement = document.createElement('TR');
+      if (token.rtl) tableRowElement.setAttribute('dir', 'rtl');
+
       row.forEach(
         (cellObject) => {
           let tableCellElement = document.createElement('TD');
@@ -385,32 +388,39 @@ function renderTableList(token, renderContext) {
 
   let tableListElement = document.createElement('DIV');
   tableListElement.classList.add('canopy-table-list');
+  if (token.rtl) tableListElement.dir = 'rtl';
   containerElement.appendChild(tableListElement);
 
   token.rows.forEach(row => {
     let tableRowElement = document.createElement('DIV');
     tableRowElement.classList.add('canopy-table-list-row');
+    if (token.rtl) tableRowElement.dir = 'rtl';
     tableListElement.appendChild(tableRowElement);
 
     row.forEach(cellObject => {
       let tableCellElement = document.createElement('DIV');
       tableCellElement.classList.add('canopy-table-list-cell');
-      tableRowElement.appendChild(tableCellElement);
 
       let contentContainer = document.createElement('DIV');
       contentContainer.classList.add('canopy-table-list-content-container');
-      tableCellElement.appendChild(contentContainer);
 
-      cellObject.tokens.forEach(token => {
-        let tokenElement = renderTokenElement(token, renderContext);
-        if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
-          tableCellElement.classList.add('canopy-table-list-link-cell');
-          tokenElement.classList.add('canopy-table-list-link');
-          tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
-          tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
-        }
-        contentContainer.appendChild(tokenElement);
-      });
+      let tokenElement = renderTokenElement(cellObject.tokens[0], renderContext);
+      if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+        tokenElement.classList.add('canopy-table-list-cell');
+        tokenElement.classList.add('canopy-table-list-link-cell');
+        tableCellElement = tokenElement;
+        while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
+        tokenElement.appendChild(contentContainer);
+      } else {
+        tableCellElement.appendChild(contentContainer);
+        cellObject.tokens.forEach(token => {
+          tokenElement = renderTokenElement(token, renderContext);
+          contentContainer.appendChild(tokenElement);
+          tableCellElement.appendChild(contentContainer);
+        });
+      }
+
+      tableRowElement.appendChild(tableCellElement);
 
       if (tableCellElement.innerText.length > 10) {
         let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
