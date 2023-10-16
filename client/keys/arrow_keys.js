@@ -22,13 +22,11 @@ function moveInDirection(direction) {
     let lowestHigherRect = candidateRectContainers
       .reduce((lowestHigherRect, newRect) => {
         console.error(lowestHigherRect.element.innerText, newRect.element.innerText)
-        console.error(1)
         if (Link.selection.parentLink?.element === lowestHigherRect.element) { // lowestHigherRect is the parent link
           if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // newRect is in p of parent
             return lowestHigherRect; // prefer parent over closer sibling
           }
         }
-        console.error(2)
 
         if (Link.selection.parentLink?.element === newRect.element) { // newRect is the parent link
           if (newRect.element.closest('p.canopy-paragraph') === newRect.element.closest('p.canopy-paragraph')) { // newRect is in p of parent
@@ -36,33 +34,23 @@ function moveInDirection(direction) {
           }
         }
 
-        console.error(3)
 
         if (isLower(lowestHigherRect, newRect)) return lowestHigherRect;
-        console.error(4)
 
         if (isLower(newRect, lowestHigherRect)) return newRect;
-        console.error(5)
 
         if (lowestHigherRect.bottom === newRect.bottom) {
           if (isHorizontallyWithin(currentSelectionHigherRect, lowestHigherRect)) return lowestHigherRect;
-          console.error(6)
           if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
-          console.error(7)
           if (isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return lowestHigherRect;
-          console.error(8)
           if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect)) return newRect;
-          console.error(9)
           if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return lowestHigherRect;
-          console.error(10)
           if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect)) return newRect;
-          console.error(11)
           if (lowestHigherRect.element.closest('p.canopy-paragraph') === Link.selection.parentLink.enclosingParagraph.paragraphElement) { // going up to new paragraph
             let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionHigherRect, lowestHigherRect, 'right');
             let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionHigherRect, newRect, 'right');
             return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : lowestHigherRect;
           } else { // going up in same paragraph
-            console.error(12)
             let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionLowerRect, lowestHigherRect, 'right');
             let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionLowerRect, newRect, 'right');
             return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : lowestHigherRect;

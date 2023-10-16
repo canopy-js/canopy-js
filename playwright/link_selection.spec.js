@@ -66,7 +66,7 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
   });
 
-  test.only('Last link selections are preferred when going down', async ({ page, browserName }) => {
+  test('Last link selections are preferred when going down', async ({ page, browserName }) => {
     if (browserName !== 'firefox') return;
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
