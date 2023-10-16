@@ -439,11 +439,9 @@ class Link {
       lastSelectionsOfParagraph[link.enclosingParagraph.path] = link.metadata;
       sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
     }
-    console.error('saved: ' + sessionStorage.getItem('lastSelectionsOfParagraph'))
   }
 
   static lastSelectionOfParagraph(paragraph) {
-    console.error('looking to see: ' + sessionStorage.getItem('lastSelectionsOfParagraph'))
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
     if (lastSelectionsOfParagraph[paragraph.path]) {
       let link = new Link(lastSelectionsOfParagraph[paragraph.path]);

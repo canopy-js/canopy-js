@@ -67,16 +67,13 @@ test.describe('Link Selection', () => {
   });
 
   test('Last link selections are preferred when going down', async ({ page, browserName }) => {
-    if (browserName !== 'firefox') return;
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowRight');
-    // make sure the entire displayPath render is done before advancing
-    await expect(page.locator('.canopy-selected-section')).toContainText("Martha's Vineyard is a an Island in Massachusetts.");
+    await expect(page.locator('.canopy-selected-section')).toContainText("Martha's Vineyard is a an Island in Massachusetts."); // make sure the entire displayPath render is done before advancing
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await page.screenshot({ path: 'before-up.png' });
     await page.locator('body').press('ArrowUp');
     await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
     await page.locator('body').press('Enter');

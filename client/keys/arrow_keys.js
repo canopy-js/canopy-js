@@ -34,9 +34,7 @@ function moveInDirection(direction) {
           }
         }
 
-
         if (isLower(lowestHigherRect, newRect)) return lowestHigherRect;
-
         if (isLower(newRect, lowestHigherRect)) return newRect;
 
         if (lowestHigherRect.bottom === newRect.bottom) {
@@ -64,13 +62,10 @@ function moveInDirection(direction) {
 
     const amountOfLinkThatMustBeVisibleToSelect = 15;
     if (lowestHigherRect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
-      console.error('scrolling')
       return scrollUp();
     }
 
     const link = new Link(lowestHigherRect.element);
-
-    console.error('Selecting link: ' + lowestHigherRect.element.innerText)
 
     if (!link && Link.selection.enclosingParagraph.equals(Paragraph.pageRoot)) {
       return updateView(link.enclosingParagraph.path); // deselect link
