@@ -3,17 +3,41 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 
-function moveUpward() {
+function moveToParent() {
   let link = Link.selection;
 
   if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
     return updateView(link.enclosingParagraph.path); // deselect link
   }
 
-  return updateView(
-    link.parentLink.path,
-    new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
-  );
+  let nextLink = Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink;
+  let linkElement = nextLink.element;
+
+  // Use the isVisible function to check visibility.
+  if (!isVisible(nextLink)) {
+    // Calculate how much scrolling is needed to place the link at 2/3 of the viewport.
+    let rect = linkElement.getBoundingClientRect();
+    let windowHeight = window.innerHeight;
+    let targetPosition = windowHeight * 2 / 3;
+    let scrollAmount = rect.top - targetPosition;
+
+    // Limit the scroll to 1/3 of the viewport if it requires more.
+    let maxScroll = windowHeight * 0.7;
+    if (Math.abs(scrollAmount) > maxScroll) {
+      scrollAmount = maxScroll * (scrollAmount < 0 ? -1 : 1);
+    }
+
+    // Perform the smooth scroll.
+    window.scrollTo({
+      top: window.scrollY + scrollAmount,
+      behavior: 'smooth'
+    });
+  } else {
+    return updateView(
+      link.parentLink.path,
+      new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
+    );
+  }
 }
 
 function topicParentLink() {
@@ -27,7 +51,7 @@ function topicParentLink() {
   );
 }
 
-function moveDownward() {
+function moveToChild() {
   let oldLink = Link.selection;
 
   if (oldLink.isImport) {
@@ -54,72 +78,102 @@ function moveDownward() {
   }
 }
 
-function moveLeftward(redirect) {
-  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveRightward(true);
-
-  let link = Link.selection.previousSibling || Link.selection.lastSibling;
-  return updateView(
-    link.path,
-    link
-  );
-}
-
-function moveRightward(redirect) {
-  if (Link.selection?.element.closest && Link.selection.element.closest('blockquote')?.getAttribute('dir') === 'rtl' && !redirect) return moveLeftward(true);
-
-  let link = Link.selection.nextSibling || Link.selection.firstSibling;
-
-  return updateView(
-    link.path,
-    link
-  );
-}
-
 function moveDownOrRedirect({ newTab, altKey }) {
+  let link, path;
+  debugger;
+
   if (Link.selection.isLocal) {
-    let link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
-    let path = link.path;
+    link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
+    path = link.path;
 
     if (newTab) {
-      return window.open(location.origin + Link.selection.targetPath.lastSegment, '_blank'); // zoom
-    } else {
+      return window.open(location.origin + path, '_blank'); // zoom
+    } else if (isVisible(link)) {
       return updateView(path, link); // no zoom
     }
   }
 
   if (Link.selection.isGlobal) {
-    if (newTab) { // open link at new path in new tab
-      let path = Link.selection.targetPath.lastSegment;
-      return window.open(location.origin + path.string, '_blank');
+    if (!altKey) {
+      link =
+        Link.lastSelectionOfParagraph(Link.selection.targetParagraph) ||
+        Link.selection.targetParagraph?.firstLink;
+      path = link.path;
+    } else {
+      path = Link.selection.targetPath.lastSegment;
     }
 
-    if (!newTab) {
-      let path = Link.selection.targetPath.lastSegment;
+    if (newTab) {
+      return window.open(location.origin + path.string, '_blank');
+    } else if (altKey) {
       return updateView(
         path,
         null,
         { scrollStyle: 'auto' }
       )
+    } else if (isVisible(link)) {
+      return updateView(path, link);
     }
   }
 
-  if (Link.selection.isImport) { // redirect
-    let path = Link.selection.targetPath.lastSegment;
+  if (Link.selection.isImport) {
+    if (!altKey) {
+      link = Link.selection.targetParagraph?.parentLink;
+      path = link.path;
+    } else {
+      path = Link.selection.targetPath.lastSegment;
+    }
 
     if (newTab) {
       return window.open(location.origin + path.string, '_blank');
-    } else {
+    } else if (altKey) {
       return updateView(
         path,
         Link.selection.parentLink.atNewPath(path),
         { scrollStyle: 'auto' }
       )
+    } else if (isVisible(link)) {
+      return updateView(path);
     }
   }
 
   if (Link.selection.type === 'url') {
     return window.open(Link.selection.element.href, '_blank');
   }
+
+  // If child link not visible, scroll downwards
+  let sectionElement = Link.selection.targetParagraph.sectionElement;
+  const sectionRect = sectionElement.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const threeQuartersViewport = viewportHeight * 0.75;
+  const distanceToThreeQuarters = sectionRect.bottom - threeQuartersViewport;
+  const quarterViewport = viewportHeight * 0.7;
+  const minDistance = Math.min(Math.abs(distanceToThreeQuarters), quarterViewport) * Math.sign(distanceToThreeQuarters);
+  if (minDistance > 0) {
+    window.scrollBy({
+      top: minDistance,
+      behavior: 'smooth'
+    });
+  }
+}
+
+function isVisible(link) {
+  if (!link) return false;
+  let linkElement = link.element;
+  let rect = linkElement.getBoundingClientRect();
+  let windowHeight = window.innerHeight;
+  let windowWidth = window.innerWidth;
+
+  // Calculate the area of the element that is visible in the viewport
+  let visibleWidth = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
+  let visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+
+  // Calculate the total area of the element and the area that is visible
+  let totalArea = (rect.bottom - rect.top) * (rect.right - rect.left);
+  let visibleArea = visibleHeight * visibleWidth;
+
+  // Check if at least 50% of the element is visible
+  return (visibleArea / totalArea) >= 0.5;
 }
 
 function depthFirstSearch() {
@@ -202,7 +256,7 @@ function zoomOnLocalPath() {
 }
 
 function removeSelection() {
-  return updateView(Path.current.rootTopicPath);
+  return updateView(Path.current.rootTopicPath, null, { scrollStyle: 'auto' });
 }
 
 function duplicate() {
@@ -210,12 +264,10 @@ function duplicate() {
 }
 
 export {
-  moveUpward,
-  topicParentLink,
-  moveDownward,
-  moveLeftward,
-  moveRightward,
+  moveToParent,
+  moveToChild,
   moveDownOrRedirect,
+  topicParentLink,
   depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,

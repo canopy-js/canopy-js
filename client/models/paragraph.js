@@ -26,8 +26,14 @@ class Paragraph {
     return this.sectionElement === otherParagraph.sectionElement;
   }
 
+  allocateSpace() {
+    this.sectionElement.style.display = 'block';
+    this.sectionElement.style.opacity = '0%';
+  }
+
   display() {
     this.sectionElement.style.display = 'block';
+    this.sectionElement.style.opacity = '100%';
   }
 
   get element() {

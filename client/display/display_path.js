@@ -17,21 +17,27 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
 
   resetDom();
   Path.setPath(linkToSelect?.path || pathToDisplay); // must be done before link.select because selection cache is by current URL
-  setHeader(pathToDisplay.rootTopicPath.topic);
+  let header = setHeader(pathToDisplay.rootTopicPath.topic, displayOptions);
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
   Link.select(linkToSelect); // if null, persists deselect
 
-  displayPathTo(pathToDisplay.paragraph);
+  let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], displayOptions);
   pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
   scrollPage(displayOptions);
+  setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
 };
 
-const displayPathTo = (paragraph) => {
-  paragraph.display();
-  if (paragraph.isPageRoot) return;
+const displayPathTo = (paragraph, visibleParagraphs, displayOptions) => {
+  if (displayOptions.scrollStyle === 'auto') {
+    paragraph.allocateSpace();
+  } else {
+    paragraph.display();
+  }
+  visibleParagraphs.push(paragraph);
+  if (paragraph.isPageRoot) return visibleParagraphs;
   paragraph.parentLink && paragraph.parentLinks.forEach(link => link.open());
   paragraph.ancestorImportReferences.forEach(link => link.open());
-  displayPathTo(paragraph.parentParagraph);
+  return displayPathTo(paragraph.parentParagraph, visibleParagraphs, displayOptions);
 }
 
 export default displayPath;

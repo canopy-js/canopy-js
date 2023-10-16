@@ -254,8 +254,9 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(6)).toHaveText('1. A2. B3. C4. D');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('DCBA');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('FE');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list').nth(3)).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('ABCD');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('EF');
 
   });
 
@@ -282,7 +283,7 @@ test.describe('Block entities', () => {
   test('It creates block quotes with multi-line links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Block_quotes_with_multi-line_links');
     await expect(page.locator('.canopy-selected-section blockquote a')).toHaveCount(1);
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('Enter');
     await expect(page.locator('text=Multi-line link paragraph text. >> visible=true')).toHaveCount(1);
   });
 

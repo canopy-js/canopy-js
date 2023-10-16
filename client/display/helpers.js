@@ -7,9 +7,14 @@ import updateView from 'display/update_view';
 import renderTokenElement from 'render/render_token_element';
 import fetchAndRenderPath from 'render/fetch_and_render_path';
 
-function setHeader(topic) {
+function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);
   headerDomElement.style.display = 'block';
+  headerDomElement.style.opacity = '0%';
+  if (displayOptions.scrollStyle !== 'auto') {
+    headerDomElement.style.opacity = '100%'; // the page is scrolled to the right position so there wont be a jump
+  }
+  return { show: () => { headerDomElement.style.opacity = '100%' } };
 }
 
 function hideAllSectionElements() {
@@ -58,22 +63,38 @@ const resetDom = () => {
 }
 
 function scrollPage(displayOptions) {
+  if (!Link.selection) return;
+  // Behavior of scroll (smooth or instant)
   let behavior = displayOptions.scrollStyle || 'smooth';
+
+  // Get the height of the viewport
   let viewportSize = window.innerHeight;
-  let selectedParagraphElement = Paragraph.current.paragraphElement;
-  let topOfParagraphInViewport = selectedParagraphElement.getBoundingClientRect().top;
-  let heightOfParagraph = selectedParagraphElement.getBoundingClientRect().height;
-  let topOfViewport = window.scrollY;
-  let scrollPosition = topOfViewport + topOfParagraphInViewport - (viewportSize - heightOfParagraph) * 2/3;
+
+  // Get the current link element and its bounding rectangle
+  let selectedLinkElement = Link.selection.element;
+  let rect = selectedLinkElement.getBoundingClientRect();
+
+  // Get the top position of the link relative to the viewport
+  let topOfLinkInViewport = rect.top;
+
+  // Desired position from the top of the viewport for the link to be 33% down
+  let desiredTopPosition = viewportSize * 0.33;
+
+  // Calculate the amount to scroll
+  let scrollPosition = window.scrollY + topOfLinkInViewport - desiredTopPosition;
+
+  // Custom behavior for image load, if applicable
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
+  // Only scroll if the difference in scroll position is greater than 100 to avoid small, unnecessary movements
   if (Math.abs(scrollPosition - window.scrollY) > 100) {
-    setTimeout(() => window.scrollTo(
-      {
+    // Use setTimeout to give the browser a moment to complete any other tasks
+    setTimeout(() => {
+      window.scrollTo({
         top: scrollPosition,
-        behavior
-      }
-    ))
+        behavior: behavior
+      });
+    }, 0);
   }
 }
 

@@ -128,7 +128,7 @@ function tableMatcher({ string, parserContext, startOfLine }) {
 }
 
 function tableListMatcher({ string, parserContext, startOfLine }) {
-  let match = string.match(/^[=\-<]+\n((-\s[^\n]+\n)+|([\w\d]+\.\s[^\n]+\n)+)[=\-<]+(\n|$)/);
+  let match = string.match(/^[=\-<]+\n((- ?[^\n]*\n)+|([\w\d]+\.\s[^\n]+\n)+)[=\-<]+(\n|$)/);
   if (!match) return null;
 
   if (match && startOfLine) {
@@ -346,7 +346,7 @@ function hyperlinkMatcher({ string, parserContext }) {
 }
 
 function urlMatcher({ string, parserContext }) {
-  let match = string.match(/^([^/\s]+:\/\/\S+[^.,;!\s])/);
+  let match = string.match(/^([A-Za-z0-9+\-.]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
       new UrlToken(match[1]),

@@ -1,9 +1,7 @@
 import {
-  moveUpward,
   topicParentLink,
-  moveDownward,
-  moveLeftward,
-  moveRightward,
+  moveToParent,
+  moveToChild,
   moveDownOrRedirect,
   depthFirstSearch,
   zoomOnLocalPath,
@@ -13,6 +11,7 @@ import {
   copyDecodedUrl,
   goToDefaultTopic
 } from 'keys/key_handlers';
+import { moveInDirection } from 'keys/arrow_keys';
 import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
@@ -29,7 +28,6 @@ const registerKeyListeners = () => {
 
     let keyName = keyNames[e.keyCode];
     let shortcutName = modifiers + keyName;
-
     if (['tab', 'down', 'up', 'left', 'right'].includes(keyName)) {
       if (!((e.metaKey || e.ctrlKey) && ['left', 'right'].includes(keyName))) { // unless browser back
         e.preventDefault();
@@ -52,15 +50,23 @@ const registerKeyListeners = () => {
 }
 
 const shortcutRelationships = {
-  'left': moveLeftward,
-  'up': moveUpward,
-  'down': moveDownward,
-  'right': moveRightward,
+  'left': moveInDirection.bind(null, 'left'),
+  'up': moveInDirection.bind(null, 'up'),
+  'down': moveInDirection.bind(null, 'down'),
+  'right': moveInDirection.bind(null, 'right'),
 
-  'h': moveLeftward,
-  'j': moveDownward,
-  'k': moveUpward,
-  'l': moveRightward,
+  'h': moveInDirection.bind(null, 'left'),
+  'k': moveInDirection.bind(null, 'up'),
+  'j': moveInDirection.bind(null, 'down'),
+  'l': moveInDirection.bind(null, 'right'),
+
+  'u': moveToParent,
+  'i': moveToParent,
+  'shift-enter': moveToParent,
+  'space': moveToParent,
+
+  'n': moveToChild,
+  'm': moveToChild,
 
   'escape': removeSelection,
   'z': zoomOnLocalPath,
@@ -97,9 +103,15 @@ const keyNames = {
   68: 'd',
   67: 'c',
 
+  85: 'u',
+  73: 'i',
+  78: 'n',
+  77: 'm',
+
   13: 'enter',
   9: 'tab',
   27: 'escape',
+  32: 'space',
 
   192: '`',
 
@@ -108,7 +120,6 @@ const keyNames = {
   51: '3',
   52: '4',
   53: '5',
-
 }
 
 export default registerKeyListeners;

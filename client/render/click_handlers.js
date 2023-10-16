@@ -55,12 +55,12 @@ function onGlobalAndImportLinkClick (link) {
       return updateView(path, null, { scrollStyle: 'auto' });
     }
 
-    if (newTab && !e.altKey) { // zoom
+    if (newTab && e.altKey) { // zoom
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
       return window.open(location.origin + path.string, '_blank');
     }
 
-    if (newTab && e.altKey) { // inline
+    if (newTab && !e.altKey) { // inline
       path = link.path; // open the link in new tab
       return window.open(location.origin + path.string, '_blank');
     }
