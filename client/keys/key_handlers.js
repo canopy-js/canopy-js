@@ -81,7 +81,7 @@ function moveToChild() {
 function moveDownOrRedirect({ newTab, altKey }) {
   let link, path;
 
-  if (Link.selection.isLocal) {
+  if (Link.selection.isLocal && (Link.selection.targetParagraph.hasLinks || altKey)) {
     link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
     path = link.path;
 
@@ -92,7 +92,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
     }
   }
 
-  if (Link.selection.isGlobal) {
+  if (Link.selection.isGlobal && (Link.selection.targetParagraph.hasLinks || altKey)) {
     if (!altKey) {
       link =
         Link.lastSelectionOfParagraph(Link.selection.targetParagraph) ||
@@ -115,7 +115,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
     }
   }
 
-  if (Link.selection.isImport) {
+  if (Link.selection.isImport && (Link.selection.targetParagraph.hasLinks || altKey)) {
     if (!altKey) {
       link = Link.selection.targetParagraph?.parentLink;
       path = link.path;
@@ -140,7 +140,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
     return window.open(Link.selection.element.href, '_blank');
   }
 
-  // If child link not visible, scroll downwards
+  // If no child link or child link is not visible, scroll downwards
   let sectionElement = Link.selection.targetParagraph.sectionElement;
   const sectionRect = sectionElement.getBoundingClientRect();
   const viewportHeight = window.innerHeight;

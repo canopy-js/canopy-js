@@ -68,7 +68,6 @@ function scrollPage(displayOptions) {
   if (!Link.selection) return window.scrollTo({ top: 0, behavior })
 
   if (displayOptions.scrollTo === 'child') {
-    console.log('child')
     const sectionElement = Link.selection.targetParagraph.sectionElement;
     const rect = sectionElement.getBoundingClientRect();
     const targetPosition = window.innerHeight * .3;
@@ -81,7 +80,6 @@ function scrollPage(displayOptions) {
       });
     }
   } else {
-    console.log('link')
     const linkElement = Link.selection.element;
     const rect = linkElement.getBoundingClientRect();
     const targetPosition = window.innerHeight * (0.25);

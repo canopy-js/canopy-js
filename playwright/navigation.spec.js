@@ -118,6 +118,7 @@ test.describe('Arrow keys', () => {
   });
 
   test('Table list links', async ({ page }) => {
+    page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/United_States/New_York/Style_examples#Table_list_links');
     await expect(page.locator('.canopy-selected-section')).toContainText("Table list cell 01");
     await page.locator('body').press('Enter');
@@ -139,12 +140,9 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 12');
     await page.locator('body').press('ArrowRight');
+    await page.waitForSelector('text=table list links', { state: 'visible' });
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
     await page.locator('body').press('ArrowUp');
-    let selectedLinkText = await page.locator('.canopy-selected-link').textContent();
-    if (selectedLinkText !== 'table list links') {
-      await page.locator('body').press('ArrowUp');
-    }
     await expect(page.locator('.canopy-selected-link')).toHaveText('table list links');
   });
 });
