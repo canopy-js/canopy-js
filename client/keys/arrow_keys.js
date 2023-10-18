@@ -16,8 +16,6 @@ function moveInDirection(direction) {
       .filter(rectObject => isHigher(rectObject, currentSelectionLowerRect) && !isVerticallyOverlapping(rectObject, currentSelectionLowerRect))
       .filter(rect => rect.element !== currentLinkElement);
 
-    console.log(candidateRectContainers.map(r => r.element));
-
     if (candidateRectContainers.length === 0) {
       return updateView(Paragraph.pageRoot.path);
     }

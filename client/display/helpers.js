@@ -63,39 +63,36 @@ const resetDom = () => {
 }
 
 function scrollPage(displayOptions) {
-  // Behavior of scroll (smooth or instant)
+  let sectionElementRect = Paragraph.current.sectionElement.getBoundingClientRect();
   let behavior = displayOptions.scrollStyle || 'smooth';
-
   if (!Link.selection) return window.scrollTo({ top: 0, behavior })
 
-  // Get the height of the viewport
-  let viewportSize = window.innerHeight;
-
-  // Get the current link element and its bounding rectangle
-  let selectedLinkElement = Link.selection.element;
-  let rect = selectedLinkElement.getBoundingClientRect();
-
-  // Get the top position of the link relative to the viewport
-  let topOfLinkInViewport = rect.top;
-
-  // Desired position from the top of the viewport for the link to be 33% down
-  let desiredTopPosition = viewportSize * 0.33;
-
-  // Calculate the amount to scroll
-  let scrollPosition = Link.selection ? window.scrollY + topOfLinkInViewport - desiredTopPosition : 0;
-
-  // Custom behavior for image load, if applicable
-  canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-
-  // Only scroll if the difference in scroll position is greater than 100 to avoid small, unnecessary movements
-  if (Math.abs(scrollPosition - window.scrollY) > 100) {
-    // Use setTimeout to give the browser a moment to complete any other tasks
-    setTimeout(() => {
+  if (displayOptions.scrollTo === 'child') {
+    console.log('child')
+    const sectionElement = Link.selection.targetParagraph.sectionElement;
+    const rect = sectionElement.getBoundingClientRect();
+    const targetPosition = window.innerHeight * .3;
+    const scrollY = rect.top + window.pageYOffset - targetPosition;
+    const diff = Math.abs(window.pageYOffset - scrollY);
+    if (diff > 40) {
       window.scrollTo({
-        top: scrollPosition,
-        behavior: behavior
+        top: scrollY,
+        behavior
       });
-    }, 0);
+    }
+  } else {
+    console.log('link')
+    const linkElement = Link.selection.element;
+    const rect = linkElement.getBoundingClientRect();
+    const targetPosition = window.innerHeight * (0.25);
+    const scrollY = rect.top + window.pageYOffset - targetPosition;
+    const diff = Math.abs(window.pageYOffset - scrollY);
+    if (diff > 40) {
+      window.scrollTo({
+        top: scrollY,
+        behavior
+      });
+    }
   }
 }
 
