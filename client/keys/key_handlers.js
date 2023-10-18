@@ -2,6 +2,7 @@ import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
+import { scrollElementToPosition } from 'display/helpers';
 
 function moveToParent() {
   let link = Link.selection;
@@ -15,23 +16,12 @@ function moveToParent() {
 
   // Use the isVisible function to check visibility.
   if (!isVisible(nextLink)) {
-    // Calculate how much scrolling is needed to place the link at 2/3 of the viewport.
-    let rect = linkElement.getBoundingClientRect();
-    let windowHeight = window.innerHeight;
-    let targetPosition = windowHeight * 2 / 3;
-    let scrollAmount = rect.top - targetPosition;
-
-    // Limit the scroll to 1/3 of the viewport if it requires more.
-    let maxScroll = windowHeight * 0.7;
-    if (Math.abs(scrollAmount) > maxScroll) {
-      scrollAmount = maxScroll * (scrollAmount < 0 ? -1 : 1);
+    if (nextLink) {
+      scrollElementToPosition(nextLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
+    } else {
+      let sectionElement = Link.selection.targetParagraph.sectionElement;
+      scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 0, direction: 'up', behavior: 'smooth'});
     }
-
-    // Perform the smooth scroll.
-    window.scrollTo({
-      top: window.scrollY + scrollAmount,
-      behavior: 'smooth'
-    });
   } else {
     return updateView(
       link.parentLink.path,
@@ -141,18 +131,13 @@ function moveDownOrRedirect({ newTab, altKey }) {
   }
 
   // If no child link or child link is not visible, scroll downwards
-  let sectionElement = Link.selection.targetParagraph.sectionElement;
-  const sectionRect = sectionElement.getBoundingClientRect();
-  const viewportHeight = window.innerHeight;
-  const threeQuartersViewport = viewportHeight * 0.75;
-  const distanceToThreeQuarters = sectionRect.bottom - threeQuartersViewport;
-  const quarterViewport = viewportHeight * 0.7;
-  const minDistance = Math.min(Math.abs(distanceToThreeQuarters), quarterViewport) * Math.sign(distanceToThreeQuarters);
-  if (minDistance > 0) {
-    window.scrollBy({
-      top: minDistance,
-      behavior: 'smooth'
-    });
+  if (link) {
+    let linkElement = link.element;
+    scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
+  } else {
+    console.log(123)
+    let sectionElement = Link.selection.targetParagraph.sectionElement;
+    scrollElementToPosition(sectionElement, {targetRatio: 0.5, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
   }
 }
 

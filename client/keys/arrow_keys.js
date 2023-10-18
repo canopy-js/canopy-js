@@ -2,6 +2,7 @@ import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
+import { scrollElementToPosition } from 'display/helpers';
 
 function moveInDirection(direction) {
   const currentLinkElement = Link.selection.element;
@@ -67,7 +68,7 @@ function moveInDirection(direction) {
 
     const amountOfLinkThatMustBeVisibleToSelect = 15;
     if (lowestHigherRect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
-      return scrollUp();
+      return scrollElementToPosition(lowestHigherRect.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
     } else {
       const link = new Link(lowestHigherRect.element);
       return updateView(link.path, link);
@@ -84,20 +85,8 @@ function moveInDirection(direction) {
       .filter(rect => rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
-      let sectionElementRect = Paragraph.current.sectionElement.getBoundingClientRect();
-
-      // If child paragraph is not visible, and there are no child links, scroll down
-      let sectionElement = Link.selection.targetParagraph.sectionElement;
-      const sectionRect = sectionElement.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const idealPosition = viewportHeight * 0.75;
-      const distanceToPutSectionAtIdealPosition = sectionRect.bottom - idealPosition;
-      const maximumScroll = viewportHeight * 0.7;
-      const minDistance = Math.min(Math.abs(distanceToPutSectionAtIdealPosition), maximumScroll) * Math.sign(distanceToPutSectionAtIdealPosition);
-      return window.scrollBy({
-        top: minDistance,
-        behavior: 'smooth'
-      });
+      let sectionElement = Paragraph.current.sectionElement;
+      return scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
     }
 
     let highestLowerRect = candidateRectContainers
@@ -128,7 +117,7 @@ function moveInDirection(direction) {
 
     const amountOfLinkThatMustBeVisibleToSelect = 15;
     if (highestLowerRect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
-      return scrollDown(highestLowerRect);
+      return scrollElementToPosition(highestLowerRect.element, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
     } else {
       let link = new Link(highestLowerRect.element); // if visually 'down' link is in new paragraph that has previous selection, use previous selection
       if (!Link.selection.enclosingParagraph.equals(link.enclosingParagraph) && Link.lastSelectionOfParagraph(link.enclosingParagraph)) {
@@ -370,37 +359,12 @@ function horizontallyCloserRect(rect1, rect2, targetRect) {
   }
 }
 
-function scrollDown(rect) {
-  const viewportHeight = window.innerHeight;
-  const distanceToPutLinkAtIdealPosition = rect ? rect.top - (0.9 * viewportHeight) : Infinity;
-  const maxiumumScroll = 0.4 * viewportHeight;
-  const scrollAmount = Math.min(distanceToPutLinkAtIdealPosition, maxiumumScroll);
-
-  return window.scrollBy({
-    top: scrollAmount,
-    behavior: 'smooth'
-  });
-}
-
-function scrollUp(rect) {
-  const viewportHeight = window.innerHeight;
-  const distanceToPutLinkAtIdealPosition = rect ? (0.9 * viewportHeight) - rect.bottom : Infinity;
-  const maxiumumScroll = 0.4 * viewportHeight;
-  const scrollAmount = Math.min(distanceToPutLinkAtIdealPosition, maxiumumScroll);
-
-  // If the parentLink is not visible or is in the top 10% of the page, scroll smoothly
-  return window.scrollBy({
-    top: -scrollAmount,  // Negative since we're scrolling upwards
-    behavior: 'smooth'
-  });
-}
-
 function scrollOrSelect(rect) {
   const amountOfLinkThatMustBeVisibleToSelect = 15;
   if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollDown(rect);
+    return scrollElementToPosition(rect.element, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
   } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollUp(rect);
+    return scrollElementToPosition(rect.element, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
   } else {
     const link = new Link(rect.element);
     return updateView(link.path, link);
