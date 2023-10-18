@@ -80,7 +80,6 @@ function moveToChild() {
 
 function moveDownOrRedirect({ newTab, altKey }) {
   let link, path;
-  debugger;
 
   if (Link.selection.isLocal) {
     link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;

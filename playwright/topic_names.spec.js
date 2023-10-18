@@ -316,7 +316,7 @@ test.describe('Topic names', () => {
     ]);
 
     await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/Phone%5C_book");
-    await expect(newPage.locator('h1:visible')).toHaveText("United States");
+    await expect(newPage.locator('h1:has-text("United States")')).toBeVisible();
     await expect(newPage.locator('.canopy-selected-link')).toHaveText("Phone_book");
     await expect(newPage.locator('text=This is a book of businesses. >> visible=true')).toHaveCount(1);
   });

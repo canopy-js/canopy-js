@@ -63,9 +63,10 @@ const resetDom = () => {
 }
 
 function scrollPage(displayOptions) {
-  if (!Link.selection) return;
   // Behavior of scroll (smooth or instant)
   let behavior = displayOptions.scrollStyle || 'smooth';
+
+  if (!Link.selection) return window.scrollTo({ top: 0, behavior })
 
   // Get the height of the viewport
   let viewportSize = window.innerHeight;
@@ -81,7 +82,7 @@ function scrollPage(displayOptions) {
   let desiredTopPosition = viewportSize * 0.33;
 
   // Calculate the amount to scroll
-  let scrollPosition = window.scrollY + topOfLinkInViewport - desiredTopPosition;
+  let scrollPosition = Link.selection ? window.scrollY + topOfLinkInViewport - desiredTopPosition : 0;
 
   // Custom behavior for image load, if applicable
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior

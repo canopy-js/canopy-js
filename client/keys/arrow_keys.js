@@ -5,154 +5,154 @@ import Paragraph from 'models/paragraph';
 
 function moveInDirection(direction) {
   const currentLinkElement = Link.selection.element;
-  if (!currentLinkElement) return null;
 
   if (direction === 'up') {
-    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link'));
-    let currentSelectionHigherRect = getDirectionBoundingRect(currentLinkElement, 'up');
-    let currentSelectionLowerRect = getDirectionBoundingRect(currentLinkElement, 'down');
-    let rectContainers = getRectsOfElements(candidateLinks);
+    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
+    let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
+    let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers
-      .filter(rectObject => isHigher(rectObject, currentSelectionLowerRect))
+      .filter(rectObject => isHigher(rectObject, currentSelectionLowerRect) && !isVerticallyOverlapping(rectObject, currentSelectionLowerRect))
       .filter(rect => rect.element !== currentLinkElement);
 
-    if (candidateRectContainers.length === 0) return null;
+    console.log(candidateRectContainers.map(r => r.element));
+
+    if (candidateRectContainers.length === 0) {
+      return updateView(Paragraph.pageRoot.path);
+    }
 
     let lowestHigherRect = candidateRectContainers
       .reduce((lowestHigherRect, newRect) => {
-        console.error(lowestHigherRect.element.innerText, newRect.element.innerText)
-        if (Link.selection.parentLink?.element === lowestHigherRect.element) { // lowestHigherRect is the parent link
-          if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // newRect is in p of parent
+        if (Link.selection.parentLink?.element === lowestHigherRect.element) { // lowestHigherRect is the parent link of current paragraph
+          if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // newRect is also in p of parent link
             return lowestHigherRect; // prefer parent over closer sibling
           }
         }
 
-        if (Link.selection.parentLink?.element === newRect.element) { // newRect is the parent link
-          if (newRect.element.closest('p.canopy-paragraph') === newRect.element.closest('p.canopy-paragraph')) { // newRect is in p of parent
+        if (Link.selection.parentLink?.element === newRect.element) { // newRect is the parent link of current paragraph
+          if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // lowestHigherRect is also in p of parent link
             return newRect; // prefer parent over closer sibling
           }
         }
 
-        if (isLower(lowestHigherRect, newRect)) return lowestHigherRect;
-        if (isLower(newRect, lowestHigherRect)) return newRect;
+        if (isLower(lowestHigherRect, newRect) &&
+          !isVerticallyOverlapping(lowestHigherRect, newRect) &&
+          !isVerticallyOverlapping(lowestHigherRect, currentSelectionLowerRect)) return lowestHigherRect; // of those links that are higher than current selection, prefer lower if noticeable
 
-        if (lowestHigherRect.bottom === newRect.bottom) {
-          if (isHorizontallyWithin(currentSelectionHigherRect, lowestHigherRect)) return lowestHigherRect;
-          if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
-          if (isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return lowestHigherRect;
-          if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect)) return newRect;
-          if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return lowestHigherRect;
-          if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect)) return newRect;
-          if (lowestHigherRect.element.closest('p.canopy-paragraph') === Link.selection.parentLink.enclosingParagraph.paragraphElement) { // going up to new paragraph
-            let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionHigherRect, lowestHigherRect, 'right');
-            let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionHigherRect, newRect, 'right');
-            return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : lowestHigherRect;
-          } else { // going up in same paragraph
-            let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionLowerRect, lowestHigherRect, 'right');
-            let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionLowerRect, newRect, 'right');
-            return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : lowestHigherRect;
+        if (isLower(newRect, lowestHigherRect) &&
+          !isVerticallyOverlapping(lowestHigherRect, newRect) &&
+          !isVerticallyOverlapping(newRect, currentSelectionLowerRect)) return newRect;
+
+        if (isHorizontallyWithin(currentSelectionHigherRect, lowestHigherRect)) return lowestHigherRect;
+        if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
+        if (isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return lowestHigherRect;
+        if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(lowestHigherRect, currentSelectionHigherRect)) return newRect;
+
+        if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return lowestHigherRect;
+        if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect)) return newRect;
+
+        if (lowestHigherRect.element.closest('p.canopy-paragraph') === Link.selection.parentLink.enclosingParagraph.paragraphElement) { // going up to new paragraph
+          if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) {
+            return greaterHorizontalOverlap(currentSelectionHigherRect, lowestHigherRect, newRect);
+          } else {
+            return horizontallyCloserRect(lowestHigherRect, newRect, currentSelectionHigherRect);
+          }
+        } else { // going up in same paragraph
+          if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionLowerRect) && isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) {
+            return greaterHorizontalOverlap(currentSelectionLowerRect, lowestHigherRect, newRect);
+          } else {
+            return horizontallyCloserRect(lowestHigherRect, newRect, currentSelectionLowerRect);
           }
         }
       });
 
-    if (!lowestHigherRect) { // no upwards link available, do nothing
-      return null;
-    }
-
     const amountOfLinkThatMustBeVisibleToSelect = 15;
     if (lowestHigherRect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
       return scrollUp();
+    } else {
+      const link = new Link(lowestHigherRect.element);
+      return updateView(link.path, link);
     }
-
-    const link = new Link(lowestHigherRect.element);
-
-    if (!link && Link.selection.enclosingParagraph.equals(Paragraph.pageRoot)) {
-      return updateView(link.enclosingParagraph.path); // deselect link
-    }
-
-    return updateView(link.path, link);
 
   } else if (direction === 'down') {
-    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link'));
-    let currentSelectionHigherRect = getDirectionBoundingRect(currentLinkElement, 'up');
-    let currentSelectionLowerRect = getDirectionBoundingRect(currentLinkElement, 'down');
-    let rectContainers = getRectsOfElements(candidateLinks);
+    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
+    let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
+    let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers
-      .filter(rectObject => rectObject.top > currentSelectionHigherRect.top)
+      .filter(rectObject => isLower(rectObject, currentSelectionHigherRect) && !isVerticallyOverlapping(rectObject, currentSelectionHigherRect))
       .filter(rect => rect.element !== currentLinkElement);
 
-    let highestLowerRect;
-    if (candidateRectContainers.length > 0) {
-      highestLowerRect = candidateRectContainers
-        .reduce((highestLowerRect, newRect) => {
-          if (isHigher(highestLowerRect, newRect)) return highestLowerRect;
-          if (isHigher(newRect, highestLowerRect)) return newRect;
-          if (highestLowerRect.top === newRect.top) {
-            if (isHorizontallyWithin(currentSelectionHigherRect, highestLowerRect)) return highestLowerRect;
-            if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
-            if (isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return highestLowerRect;
-            if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect)) return newRect;
-            if (highestLowerRect.element.closest('p.canopy-paragraph') === Link.selection.targetParagraph.paragraphElement) { // going down into new paragraph
-              if (isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) return highestLowerRect;
-              if (isHorizontallyOverlapping(newRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect)) return newRect;
-              let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionLowerRect, highestLowerRect, 'right');
-              let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionLowerRect, newRect, 'right');
-              return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : highestLowerRect;
-            } else { // going down in same paragraph
-              if (isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return highestLowerRect;
-              if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect)) return newRect;
-              let xDistanceFromCurrentToBest = distanceComparingSide(currentSelectionHigherRect, highestLowerRect, 'right');
-              let xDistanceFromCurrentToNew = distanceComparingSide(currentSelectionHigherRect, newRect, 'right');
-              return xDistanceFromCurrentToBest > xDistanceFromCurrentToNew ? newRect : highestLowerRect;
-            }
-          }
-        });
-      }
+    if (candidateRectContainers.length === 0) {
+      let sectionElementRect = Paragraph.current.sectionElement.getBoundingClientRect();
 
-    if (highestLowerRect) {
-      const amountOfLinkThatMustBeVisibleToSelect = 15;
-      if (highestLowerRect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
-        return scrollDown(highestLowerRect);
-      }
+      // If child paragraph is not visible, and there are no child links, scroll down
+      let sectionElement = Link.selection.targetParagraph.sectionElement;
+      const sectionRect = sectionElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const idealPosition = viewportHeight * 0.75;
+      const distanceToPutSectionAtIdealPosition = sectionRect.bottom - idealPosition;
+      const maximumScroll = viewportHeight * 0.7;
+      const minDistance = Math.min(Math.abs(distanceToPutSectionAtIdealPosition), maximumScroll) * Math.sign(distanceToPutSectionAtIdealPosition);
+      return window.scrollBy({
+        top: minDistance,
+        behavior: 'smooth'
+      });
+    }
 
+    let highestLowerRect = candidateRectContainers
+      .reduce((highestLowerRect, newRect) => {
+        if (isHigher(highestLowerRect, newRect) &&
+          !isVerticallyOverlapping(highestLowerRect, newRect) &&
+          !isVerticallyOverlapping(highestLowerRect, currentSelectionHigherRect)) return highestLowerRect; // prefer the higher element if noticeably higher
+
+        if (isHigher(newRect, highestLowerRect) &&
+          !isVerticallyOverlapping(highestLowerRect, newRect) &&
+          !isVerticallyOverlapping(newRect, currentSelectionHigherRect)) return newRect;
+
+        if (isHorizontallyWithin(currentSelectionHigherRect, highestLowerRect)) return highestLowerRect;
+        if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
+        if (isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return highestLowerRect;
+        if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect)) return newRect;
+
+        if (highestLowerRect.element.closest('p.canopy-paragraph') === Link.selection.targetParagraph.paragraphElement) { // going down into new paragraph
+          if (isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) return highestLowerRect;
+          if (isHorizontallyOverlapping(newRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect)) return newRect;
+          return greaterHorizontalOverlap(currentSelectionHigherRect, highestLowerRect, newRect);
+        } else { // going down in same paragraph
+          if (isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return highestLowerRect;
+          if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect)) return newRect;
+          return greaterHorizontalOverlap(currentSelectionLowerRect, highestLowerRect, newRect);
+        }
+      });
+
+    const amountOfLinkThatMustBeVisibleToSelect = 15;
+    if (highestLowerRect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
+      return scrollDown(highestLowerRect);
+    } else {
       let link = new Link(highestLowerRect.element); // if visually 'down' link is in new paragraph that has previous selection, use previous selection
       if (!Link.selection.enclosingParagraph.equals(link.enclosingParagraph) && Link.lastSelectionOfParagraph(link.enclosingParagraph)) {
         link = Link.lastSelectionOfParagraph(link.enclosingParagraph);
       }
       return updateView(link.path, link);
-    } else {
-      let sectionElementRect = Paragraph.current.sectionElement.getBoundingClientRect();
-
-      // If child link not visible, scroll downwards
-      let sectionElement = Link.selection.targetParagraph.sectionElement;
-      const sectionRect = sectionElement.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const threeQuartersViewport = viewportHeight * 0.75;
-      const distanceToThreeQuarters = sectionRect.bottom - threeQuartersViewport;
-      const quarterViewport = viewportHeight * 0.7;
-      const minDistance = Math.min(Math.abs(distanceToThreeQuarters), quarterViewport) * Math.sign(distanceToThreeQuarters);
-      if (minDistance > 0) {
-        window.scrollBy({
-          top: minDistance,
-          behavior: 'smooth'
-        });
-      }
     }
+
   } else if (direction === 'left') {
-    let candidateLinks = Link.selection.element.closest('p.canopy-paragraph')
-      .querySelectorAll('.canopy-selectable-link');
-    let currentSelectionRect = getDirectionBoundingRect(currentLinkElement, 'right');
-    let rectContainers = getRectsOfElements(candidateLinks);
+    let candidateLinks = Link.selection.element.closest('p.canopy-paragraph').querySelectorAll('.canopy-selectable-link');
+    let currentSelectionRect = getBoundingRectInDirection(currentLinkElement, 'right');
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers.filter(rectObject => rectObject.right < currentSelectionRect.right);
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.bottom === currentSelectionRect.bottom); // first try to find direct left
+    candidateRectContainers = candidateRectContainers.filter(rectObject => isVerticallyOverlapping(rectObject, currentSelectionRect));
     candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let rightmostLeftRect = candidateRectContainers
         .reduce((rightmostLeftRect, newRect) => {
+          if (rightmostLeftRect.bottom === currentSelectionRect.bottom && newRect.bottom !== currentSelectionRect.bottom) return rightmostLeftRect; // prefer direct left
+          if (newRect.bottom === currentSelectionRect.bottom && rightmostLeftRect.bottom !== currentSelectionRect.bottom) return newRect;
           if (rightmostLeftRect.right > newRect.right) return rightmostLeftRect;
           if (rightmostLeftRect.right < newRect.right) return newRect;
           if (rightmostLeftRect.right === newRect.right) {
@@ -171,23 +171,20 @@ function moveInDirection(direction) {
     let verticalDirectionOfWrap = verticalDirectionToWrapAfterLeftmostLink(currentLinkElement);
     let horizontalDirectionOfWrap = horizontalDirectionToWrapAfterLink(currentLinkElement, verticalDirectionOfWrap);
     let verticalSideToCompare = verticalDirectionOfWrap === 'up' ? 'bottom' : 'top';
-    let isVerticallyCloser = verticalDirectionOfWrap === 'up' ? isLower : isHigher;
-    let isInCorrectVerticalDirection = verticalDirectionOfWrap === 'up' ? isHigher : isLower;
-    let isHorizontalExtreme = horizontalDirectionOfWrap === 'left' ? isLeftward : isRightward;
+    let isInCorrectVerticalDirection = verticalDirectionOfWrap === 'up' ? isHigher : isLower; // has to be eg upward in general
+    let isInBetterVerticalDirection = verticalDirectionOfWrap === 'up' ? isLower : isHigher; // but of the upward links, eg, lower is better
+    let closerToCorrectEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
     candidateRectContainers = rectContainers.filter(rectObject => isInCorrectVerticalDirection(rectObject, currentSelectionRect));
+    candidateRectContainers = candidateRectContainers.filter(rectObject => !isVerticallyOverlapping(rectObject, currentSelectionRect)); // if left and right accept overlap wrap must not
     candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let rightmostUpwardRect = candidateRectContainers // name reflects LTR text
         .reduce((rightmostUpwardRect, newRect) => {
-          if (isVerticallyCloser(rightmostUpwardRect, newRect)) return rightmostUpwardRect;
-          if (isVerticallyCloser(newRect, rightmostUpwardRect)) return newRect;
-          if (rightmostUpwardRect[verticalSideToCompare] === newRect[verticalSideToCompare]) {
-            if(isHorizontalExtreme(rightmostUpwardRect, newRect)) return rightmostUpwardRect;
-            if(isHorizontalExtreme(newRect, rightmostUpwardRect)) return newRect;
-            return yDistanceFromCurrentToBest > yDistanceFromCurrentToNew ? newRect : rightmostUpwardRect;
-          }
+          if (isInBetterVerticalDirection(rightmostUpwardRect, newRect) && !isVerticallyOverlapping(rightmostUpwardRect, newRect)) return rightmostUpwardRect;
+          if (isInBetterVerticalDirection(newRect, rightmostUpwardRect) && !isVerticallyOverlapping(rightmostUpwardRect, newRect)) return newRect;
+          return closerToCorrectEdge(rightmostUpwardRect, newRect);
         });
 
       if (rightmostUpwardRect) {
@@ -198,19 +195,17 @@ function moveInDirection(direction) {
     // Wrap to rightmost bottom (or leftmost top for RTL)
     let verticalDirectionOfExtremeWrap = verticalDirectionToWrapAfterFinalLeftmostLink(currentLinkElement);
     let horizontalDirectionOfExtremeWrap = horizontalDirectionToWrapAfterExtremeLink(currentLinkElement, verticalDirectionOfExtremeWrap);
-    let extremeHorizontalPosition = horizontalDirectionOfExtremeWrap === 'left' ? 0 : window.innerWidth;
-    let verticalSideToCompareExtremeWrap = verticalDirectionOfExtremeWrap === 'down' ? 'bottom' : 'top';
+    let verticalSideToCompareExtremeWrap = verticalDirectionOfExtremeWrap === 'down' ? 'top' : 'bottom';
     let horizontalSideToCompareExtremeWrap = horizontalDirectionOfExtremeWrap;
     let isVerticallyFarther = verticalDirectionOfExtremeWrap === 'up' ? isHigher : isLower;
+    let closerToCorrectHorizontalEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
     let rightBottomMostRect = rectContainers // Name reflects LTR text
       .reduce((rightBottomMostRect, newRect) => {
         if (isVerticallyFarther(rightBottomMostRect, newRect)) return rightBottomMostRect;
         if (isVerticallyFarther(newRect, rightBottomMostRect)) return newRect;
         if (rightBottomMostRect[verticalSideToCompareExtremeWrap] === newRect[verticalSideToCompareExtremeWrap]) {
-          let yDistanceFromCurrentToBest = distanceComparingSide(extremeHorizontalPosition, rightBottomMostRect, horizontalSideToCompareExtremeWrap); // generally 'right'
-          let yDistanceFromCurrentToNew = distanceComparingSide(extremeHorizontalPosition, newRect, horizontalSideToCompareExtremeWrap);
-          return yDistanceFromCurrentToBest > yDistanceFromCurrentToNew ? newRect : rightBottomMostRect; // pick closest to new edge
+          return closerToCorrectHorizontalEdge(rightBottomMostRect, newRect);
         }
       });
 
@@ -220,22 +215,22 @@ function moveInDirection(direction) {
 
   } else if (direction === 'right') {
     let candidateLinks = Link.selection.element.closest('p.canopy-paragraph').querySelectorAll('.canopy-selectable-link');
-    let currentSelectionRect = getDirectionBoundingRect(currentLinkElement, 'left');
-    let rectContainers = getRectsOfElements(candidateLinks);
+    let currentSelectionRect = getBoundingRectInDirection(currentLinkElement, 'left');
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers.filter(rectObject => rectObject.left > currentSelectionRect.left);
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.bottom === currentSelectionRect.bottom); // try to find direct right
+    candidateRectContainers = candidateRectContainers.filter(rectObject => isVerticallyOverlapping(rectObject, currentSelectionRect));
     candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let leftmostRightRect = candidateRectContainers
         .reduce((leftmostRightRect, newRect) => {
+          if (leftmostRightRect.bottom === currentSelectionRect.bottom && newRect.bottom !== currentSelectionRect.bottom) return leftmostRightRect; // prefer direct right
+          if (newRect.bottom === currentSelectionRect.bottom && leftmostRightRect.bottom !== currentSelectionRect.bottom) return newRect;
           if (leftmostRightRect.left < newRect.left) return leftmostRightRect;
           if (leftmostRightRect.left > newRect.left) return newRect;
           if (leftmostRightRect.left === newRect.left) {
-            let yDistanceFromCurrentToBest = distanceComparingSide(currentSelectionRect, leftmostRightRect, 'top');
-            let yDistanceFromCurrentToNew = distanceComparingSide(currentSelectionRect, newRect, 'top');
-            return yDistanceFromCurrentToBest > yDistanceFromCurrentToNew ? newRect : leftmostRightRect; // return closest of the rightward
+            return topMostRect(leftmostRightRect, newRect);
           }
         });
 
@@ -247,23 +242,23 @@ function moveInDirection(direction) {
     // Wrap to downward far-left (or upward far-right for RTL text)
     let verticalDirectionOfWrap = verticalDirectionToWrapAfterRightmostLink(currentLinkElement);
     let horizontalDirectionOfWrap = horizontalDirectionToWrapAfterLink(currentLinkElement, verticalDirectionOfWrap);
-    let verticalSideToCompare = verticalDirectionOfWrap === 'up' ? 'bottom' : 'top';
+    let verticalSideToCompare = verticalDirectionOfWrap === 'up' ? 'top' : 'bottom';
     let horizontalSideToCompare = horizontalDirectionOfWrap;
-    let isVerticallyCloser = verticalDirectionOfWrap === 'up' ? isLower : isHigher;
     let isInCorrectVerticalDirection = verticalDirectionOfWrap === 'up' ? isHigher : isLower;
+    let isInBetterVerticalDirection = verticalDirectionOfWrap === 'up' ? isLower : isHigher;
     let isHorizontalExtreme = horizontalDirectionOfWrap === 'left' ? isLeftward : isRightward;
 
     candidateRectContainers = rectContainers.filter(rectObject => isInCorrectVerticalDirection(rectObject, currentSelectionRect));
+    candidateRectContainers = candidateRectContainers.filter(rectObject => !isVerticallyOverlapping(rectObject, currentSelectionRect)); // if left and right accept overlap wrap must not
     candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
+
     if (candidateRectContainers.length > 0) {
       let leftmostDownwardRect = candidateRectContainers // Name reflects LTR text
         .reduce((leftmostDownwardRect, newRect) => {
-          if (isVerticallyCloser(leftmostDownwardRect, newRect)) return leftmostDownwardRect;
-          if (isVerticallyCloser(newRect, leftmostDownwardRect)) return newRect;
-          if (leftmostDownwardRect[verticalSideToCompare] === newRect[verticalSideToCompare]) {
-            if(isHorizontalExtreme(leftmostDownwardRect, newRect)) return leftmostDownwardRect;
-            if(isHorizontalExtreme(newRect, leftmostDownwardRect)) return newRect;
-          }
+          if (isInBetterVerticalDirection(leftmostDownwardRect, newRect) && !isVerticallyOverlapping(leftmostDownwardRect, newRect)) return leftmostDownwardRect;
+          if (isInBetterVerticalDirection(newRect, leftmostDownwardRect) && !isVerticallyOverlapping(newRect, leftmostDownwardRect)) return newRect;
+          if(isHorizontalExtreme(leftmostDownwardRect, newRect)) return leftmostDownwardRect;
+          if(isHorizontalExtreme(newRect, leftmostDownwardRect)) return newRect;
         });
 
       if (leftmostDownwardRect) {
@@ -278,15 +273,14 @@ function moveInDirection(direction) {
     let verticalSideToCompareExtremeWrap = verticalDirectionOfExtremeWrap === 'up' ? 'top' : 'bottom';
     let horizontalSideToCompareExtremeWrap = horizontalDirectionOfExtremeWrap;
     let isVerticallyFarther = verticalDirectionOfExtremeWrap === 'up' ? isHigher : isLower;
+    let closerToCorrectHorizontalEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
     let leftmostTopRect = rectContainers
       .reduce((leftmostTopRect, newRect) => {
         if (isVerticallyFarther(leftmostTopRect, newRect)) return leftmostTopRect;
         if (isVerticallyFarther(newRect, leftmostTopRect)) return newRect;
         if (leftmostTopRect[verticalSideToCompareExtremeWrap] === newRect[verticalSideToCompareExtremeWrap]) {
-          let yDistanceFromCurrentToBest = distanceComparingSide(extremeHorizontalPosition, leftmostTopRect, horizontalDirectionOfExtremeWrap); // generally 'left'
-          let yDistanceFromCurrentToNew = distanceComparingSide(extremeHorizontalPosition, newRect, horizontalDirectionOfExtremeWrap);
-          return yDistanceFromCurrentToBest > yDistanceFromCurrentToNew ? newRect : leftmostTopRect; // closest to new edge
+          return closerToCorrectHorizontalEdge(leftmostTopRect, newRect);
         }
       });
 
@@ -302,8 +296,22 @@ function isHigher(rect1, rect2) {
 }
 
 function isLower(rect1, rect2) {
-  console.error('rect1 top: ' + rect1.top, 'rect1 text: ' + rect1.element.innerText, 'rect2 top: ', rect2.top, 'rect2 text: ' + rect2.element.innerText)
   if (rect1.top > rect2.top) return true;
+  return false;
+}
+
+function bottomsAreEven(rect1, rect2) {
+  if (rect1.bottom === rect2.bottom) return true;
+  return false;
+}
+
+function topsAreEven(rect1, rect2) {
+  if (rect1.top === rect2.top) return true;
+  return false;
+}
+
+function isHorizontallyEvenWith(rect1, rect2) {
+  if (Math.abs(rect1.top - rect2.top) < 30) return true;
   return false;
 }
 
@@ -317,33 +325,58 @@ function isLeftward(rect1, rect2) {
   return false;
 }
 
+function rightMostRect(rect1, rect2) {
+  return rect1.right > rect2.right ? rect1 : rect2;
+}
+
+function leftMostRect(rect1, rect2) {
+  return rect1.left < rect2.left ? rect1 : rect2;
+}
+
+function topMostRect(rect1, rect2) {
+  return rect1.top < rect2.top ? rect1 : rect2;
+}
+
+function bottomMostRect(rect1, rect2) {
+  return rect1.bottom > rect2.bottom ? rect1 : rect2;
+}
+
 function isHorizontallyWithin(rect1, rect2) {
   if (rect1.left > rect2.left && rect1.right < rect2.right) return true;
   return false;
 }
 
 function isHorizontallyOverlapping(rect1, rect2) {
-  if (rect1.left < rect2.left && rect2.left < rect1.right && rect2.right > rect1.right) return true;
-  if (rect2.left < rect1.left && rect1.left < rect2.right && rect1.right > rect2.right) return true;
-  return false;
+  return (rect1.left < rect2.right && rect2.left < rect1.right);
 }
 
-function scrollDown(arg) {
-  let rect;
+function isVerticallyOverlapping(rect1, rect2) {
+  return (
+    (rect1.top <= rect2.bottom && rect1.bottom >= rect2.top) ||
+    (rect2.top <= rect1.bottom && rect2.bottom >= rect1.top)
+  );
+}
 
-  // Check if the argument is a rect or an element
-  if (arg.top) {
-    rect = arg;
-  } else if (arg instanceof Element) {
-    rect = arg.getBoundingClientRect();
+function horizontallyCloserRect(rect1, rect2, targetRect) {
+  const midpointRect1 = (rect1.left + rect1.right) / 2;
+  const midpointRect2 = (rect2.left + rect2.right) / 2;
+  const midpointTarget = (targetRect.left + targetRect.right) / 2;
+
+  const distanceToRect1 = Math.abs(midpointRect1 - midpointTarget);
+  const distanceToRect2 = Math.abs(midpointRect2 - midpointTarget);
+
+  if (distanceToRect1 < distanceToRect2) {
+    return rect1;
   } else {
-    throw new Error("Invalid argument: Must be a DOMRect or an Element.");
+    return rect2;
   }
+}
 
+function scrollDown(rect) {
   const viewportHeight = window.innerHeight;
-  const scrollAmountTo90Percent = rect ? rect.top - (0.9 * viewportHeight) : Infinity;
-  const halfViewportHeight = 0.4 * viewportHeight;
-  const scrollAmount = Math.min(scrollAmountTo90Percent, halfViewportHeight);
+  const distanceToPutLinkAtIdealPosition = rect ? rect.top - (0.9 * viewportHeight) : Infinity;
+  const maxiumumScroll = 0.4 * viewportHeight;
+  const scrollAmount = Math.min(distanceToPutLinkAtIdealPosition, maxiumumScroll);
 
   return window.scrollBy({
     top: scrollAmount,
@@ -353,9 +386,9 @@ function scrollDown(arg) {
 
 function scrollUp(rect) {
   const viewportHeight = window.innerHeight;
-  const scrollAmountTo90Percent = rect ? (0.9 * viewportHeight) - rect.bottom : Infinity;
-  const halfViewportHeight = 0.4 * viewportHeight;
-  const scrollAmount = Math.min(scrollAmountTo90Percent, halfViewportHeight);
+  const distanceToPutLinkAtIdealPosition = rect ? (0.9 * viewportHeight) - rect.bottom : Infinity;
+  const maxiumumScroll = 0.4 * viewportHeight;
+  const scrollAmount = Math.min(distanceToPutLinkAtIdealPosition, maxiumumScroll);
 
   // If the parentLink is not visible or is in the top 10% of the page, scroll smoothly
   return window.scrollBy({
@@ -373,6 +406,21 @@ function scrollOrSelect(rect) {
   } else {
     const link = new Link(rect.element);
     return updateView(link.path, link);
+  }
+}
+
+function greaterHorizontalOverlap(selectedRect, candidateRect1, candidateRect2) {
+  function calculateHorizontalOverlap(rect1, rect2) {
+    return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
+  }
+
+  const overlap1 = calculateHorizontalOverlap(selectedRect, candidateRect1);
+  const overlap2 = calculateHorizontalOverlap(selectedRect, candidateRect2);
+
+  if (overlap1 > overlap2) {
+    return candidateRect1;
+  } else {
+    return candidateRect2;
   }
 }
 
@@ -397,57 +445,79 @@ function distanceComparingSide(rect1, rect2, side) {
   }
 }
 
-function getRectsOfElements(elementArray) {
+function getRectsOfElements(elementArray, currentLinkElement) {
   const result = [];
 
   for (const element of elementArray) {
-    const rects = element.getClientRects();
-    for (let i = 0; i < rects.length; i++) { // treat multiple rects of same link as separate candidates
-      const rect = rects[i];
-      result.push({
-        x: rect.x,
-        y: rect.y,
-        width: rect.width,
-        height: rect.height,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        left: rect.left,
-        element: element
-      });
+    let elementForRect = element;
+    if (element.parentNode.tagName === 'TD' && element.parentNode.childNodes.length === 1) elementForRect = element.parentNode; // a link in TD should use the TD's borders
+
+    const subRects = Array.from(elementForRect.getClientRects());
+    let singleRect = { element, text: element.innerText, ...JSON.parse(JSON.stringify(elementForRect.getBoundingClientRect()))};
+
+    if (commonAncestorIsContainer(element, currentLinkElement)) { // a link in a DIV is one rect unlike links in wrapping text
+      result.push(singleRect);
+    } else {
+      for (let i = 0; i < subRects.length; i++) { // treat multiple rects of same link as separate candidates
+        const rect = subRects[i];
+        result.push({
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
+          element: element,
+          text: element.innerText
+        });
+      }
     }
   }
 
   return result;
 }
 
-function getDirectionBoundingRect(element, direction) {
+function commonAncestorIsContainer(element, currentLinkElement) {
+  let ancestor1 = element;
+  let ancestor2 = currentLinkElement;
+
+  while (ancestor1 !== null) {
+    let tempAncestor2 = ancestor2;
+    while (tempAncestor2 !== null) {
+      if (ancestor1 === tempAncestor2) {
+        return ['DIV', 'TABLE', 'TR'].includes(ancestor1.tagName); // these containers imply links are not in free-form wrapped text
+      }
+      tempAncestor2 = tempAncestor2.parentElement;
+    }
+    ancestor1 = ancestor1.parentElement;
+  }
+  return false;
+}
+
+function getBoundingRectInDirection(element, direction) {
   let singleRect = JSON.parse(JSON.stringify(element.getBoundingClientRect()));
-  let textNode = element;
-  while (textNode.firstChild) textNode = textNode.firstChild;
+  let multipleRects = mergeRectsWithSameTop(getTextNodesRects(element));
 
-  const range = document.createRange();
-  range.selectNodeContents(textNode);
-  const rects = Array.from(range.getClientRects()).map(rect => JSON.parse(JSON.stringify(rect)));
-
-  if (rects.length === 1 || linkTextIsOneUnit(element)) return { element, ...singleRect};
-  if (rects.length === 0) return null;
+  if (multipleRects.length === 1 || linkTextIsOneUnit(element)) return { element, ...singleRect};
+  if (multipleRects.length === 0) return null;
 
   switch(direction) {
     case 'left':
-      return { element, ...rects.reduce((leftmostRect, currentRect) => {
+      return { element, ...multipleRects.reduce((leftmostRect, currentRect) => {
         return currentRect.right > leftmostRect.right ? leftmostRect : currentRect;
       })};
     case 'right':
-      return { element, ...rects.reduce((rightmostRect, currentRect) => {
+      return { element, ...multipleRects.reduce((rightmostRect, currentRect) => {
         return currentRect.left < rightmostRect.left ?  rightmostRect : currentRect;
       })};
     case 'up':
-      return { element, ...rects.reduce((uppermostRect, currentRect) => {
+      return { element, ...multipleRects.reduce((uppermostRect, currentRect) => {
         return currentRect.bottom < uppermostRect.bottom ? currentRect : uppermostRect;
       })};
     case 'down':
-      return { element, ...rects.reduce((lowestRect, currentRect) => {
+      return { element, ...multipleRects.reduce((lowestRect, currentRect) => {
         return currentRect.top > lowestRect.top ? currentRect : lowestRect;
       })};
     default:
@@ -455,8 +525,61 @@ function getDirectionBoundingRect(element, direction) {
   }
 
   function linkTextIsOneUnit(linkElement) { // is wrapped text new unit for proximity calculations or is container one unit?
-    return linkElement.closest('p.canopy-paragraph > div'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
+    return linkElement.closest('p.canopy-paragraph > div') || linkElement.closest('p.canopy-paragraph > table'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
   }
+}
+
+function getTextNodesRects(element) {
+  const textNodesRects = [];
+
+  function traverse(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rects = range.getClientRects();
+      for (let i = 0; i < rects.length; i++) {
+        textNodesRects.push(rects[i]);
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      for (const childNode of node.childNodes) {
+        traverse(childNode);
+      }
+    }
+  }
+
+  traverse(element);
+  return textNodesRects.map(rect => JSON.parse(JSON.stringify(rect)));
+}
+
+function mergeRectsWithSameTop(rectangles) {
+  const mergedRectangles = [];
+
+  // Sort the rectangles by their top value
+  rectangles.sort((rect1, rect2) => rect1.top - rect2.top);
+
+  let currentRect = rectangles[0];
+
+  for (let i = 1; i < rectangles.length; i++) {
+    const nextRect = rectangles[i];
+
+    // Check if the top values are the same
+    if (currentRect.top === nextRect.top) {
+      // Merge the rectangles horizontally
+      currentRect.left = Math.min(currentRect.left, nextRect.left);
+      currentRect.right = Math.max(currentRect.right, nextRect.right);
+    } else {
+      // Add the current merged rectangle to the result
+      mergedRectangles.push(currentRect);
+
+      // Set the current rectangle to the next one
+      currentRect = nextRect;
+    }
+  }
+
+  // Add the last merged rectangle to the result
+  mergedRectangles.push(currentRect);
+
+  return mergedRectangles;
 }
 
 // ** Direction wrap handling **

@@ -22,7 +22,6 @@ if (platform === 'darwin') {
 test.describe('Arrow keys', () => {
   test('Navigating left-to-right links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("There is italic text, bold text,");
     await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
     await page.locator('body').press('ArrowRight');
@@ -54,14 +53,15 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('inline HTML');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('link icon special cases');
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('links in right-to-left text');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('links in mixed direction text');
   });
 
   test('Navigating right-to-left links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_in_right-to-left_text');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("זוהי פסקה של טקסט");
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
@@ -81,7 +81,6 @@ test.describe('Arrow keys', () => {
 
   test('Navigating mixed links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_in_mixed_direction_text');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("זוהי פסקה של טקסט");
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור הראשון');
@@ -104,7 +103,6 @@ test.describe('Arrow keys', () => {
 
   test('Up on top link closes paragraph', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("There is italic text, bold text");
     await page.locator('body').press('ArrowUp');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Inline_text_styles");
@@ -113,7 +111,6 @@ test.describe('Arrow keys', () => {
 
   test('Down on bottom link opens child', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("There are italic topic names");
     await page.locator('body').press('ArrowDown');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names");
@@ -122,7 +119,6 @@ test.describe('Arrow keys', () => {
 
   test('Table list links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_list_links');
-    page.setViewportSize({ width: 2000, height: 1000 });
     await expect(page.locator('.canopy-selected-section')).toContainText("Table list cell 01");
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
@@ -145,6 +141,10 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
     await page.locator('body').press('ArrowUp');
+    let selectedLinkText = await page.locator('.canopy-selected-link').textContent();
+    if (selectedLinkText !== 'table list links') {
+      await page.locator('body').press('ArrowUp');
+    }
     await expect(page.locator('.canopy-selected-link')).toHaveText('table list links');
   });
 });

@@ -21,7 +21,6 @@ if (platform === 'darwin') {
 
 test.describe('Link Selection', () => {
   test('Link selection is remembered with browser history', async ({ page, browserName }) => {
-    console.log("Link selection is remembered with browser history: " + browserName)
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
@@ -45,7 +44,6 @@ test.describe('Link Selection', () => {
   });
 
   test('Link selection persists over refresh', async ({ page, browserName }) => {
-    console.log("Link selection persists over refresh: " + browserName)
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
@@ -55,7 +53,6 @@ test.describe('Link Selection', () => {
   });
 
   test('Link deselection persists over refresh', async ({ page, browserName }) => {
-    console.log("Link deselection persists over refresh: " + browserName)
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await page.locator('body').press('ArrowRight');
