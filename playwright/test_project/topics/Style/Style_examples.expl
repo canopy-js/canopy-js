@@ -41,7 +41,7 @@ Tables with import references:
 | 2 | 4 | [[New York]] | [[Southern border]] |
 
 Table lists:
-Until 16 elements we use a width of 4:
+For small elements we use a width of 4:
 ===
 - 1
 - 2
@@ -49,25 +49,18 @@ Until 16 elements we use a width of 4:
 - 4
 - 5
 ===
-After that we use a width of 5:
+For bigger ones we use a width of 3:
 ===
-- 1
+- This is a larger amount of text
 - 2
 - 3
 - 4
-- 5
-- 6
-- 7
-- 8
-- 9
-- 10
-- 11
-- 12
-- 13
-- 14
-- 15
-- 16
-- 17
+===
+For bigger ones we use a width of 2:
+===
+- This is an even larger amount of text than we had before
+- 2
+- 3
 ===
 This is a numbered list:
 ===

@@ -241,20 +241,21 @@ test.describe('Block entities', () => {
 
   test('It allows table lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
-    await expect(page.locator('.canopy-selected-section div.canopy-table-list')).toHaveCount(4);
-    await expect(page.locator('.canopy-selected-section div.canopy-table-list div.canopy-table-list-cell >> visible=true')).toHaveCount(5 + 17 + 4 + 6);
+    await expect(page.locator('.canopy-selected-section div.canopy-table-list')).toHaveCount(5);
+    await expect(page.locator('.canopy-selected-section div.canopy-table-list div.canopy-table-list-cell >> visible=true')).toHaveCount(5 + 4 + 3 + 4 + 6);
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(0)).toHaveText('1234');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(1)).toHaveText('5');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(2)).toHaveText('12345');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(3)).toHaveText('678910');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(4)).toHaveText('1112131415');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(5)).toHaveText('1617');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(2)).toHaveText('This is a larger amount of text23');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(3)).toHaveText('4');
+
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(4)).toHaveText('This is an even larger amount of text than we had before2');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(5)).toHaveText('3');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(6)).toHaveText('1. A2. B3. C4. D');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list').nth(3)).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list').nth(4)).toHaveAttribute('dir', 'rtl');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('ABCD');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('EF');
 
