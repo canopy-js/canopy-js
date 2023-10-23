@@ -386,74 +386,146 @@ function renderTable(token, renderContext) {
 }
 
 function renderTableList(token, renderContext) {
-  let totalNumberOfCells = token.rows.reduce((sum, row) => sum + row.length, 0);
-
   let containerElement = document.createElement('DIV');
   containerElement.classList.add('canopy-table-list-container');
-
   let tableListElement = document.createElement('DIV');
+
   tableListElement.classList.add('canopy-table-list');
   if (token.rtl) tableListElement.dir = 'rtl';
   containerElement.appendChild(tableListElement);
 
-  token.rows.forEach(row => {
-    let tableRowElement = document.createElement('DIV');
-    tableRowElement.classList.add('canopy-table-list-row');
-    if (token.rtl) tableRowElement.dir = 'rtl';
-    tableListElement.appendChild(tableRowElement);
+  let SizesByWidth = ['quarter', 'third', 'half'];
+  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
 
-    row.forEach(cellObject => {
-      let tableCellElement = document.createElement('DIV');
-      tableCellElement.classList.add('canopy-table-list-cell');
+  let tableCellSize;
+  let minimumCellArea = 'quarter-pill';
+  let minimumCellWidth = 'quarter';
+  if (token.items.length === 2) tableCellSize = 'third-pill'; // even if content doesn't justify size, we expand if there aren't so many
+  if (token.items.length === 3) tableCellSize = 'third-pill';
 
-      let contentContainer = document.createElement('DIV');
-      contentContainer.classList.add('canopy-table-list-content-container');
+  let cellElements = token.items.map(cellObject => {
+    let tableCellElement = document.createElement('DIV');
+    tableCellElement.classList.add('canopy-table-list-cell');
 
-      let tokenElement = renderTokenElement(cellObject.tokens[0], renderContext);
-      if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
-        tokenElement.classList.add('canopy-table-list-cell');
-        tokenElement.classList.add('canopy-table-list-link-cell');
-        tableCellElement = tokenElement;
-        while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
-        tokenElement.appendChild(contentContainer);
-      } else {
+    let contentContainer = document.createElement('DIV');
+    contentContainer.classList.add('canopy-table-list-content-container');
+    let tokenElement = renderTokenElement(cellObject.tokens[0], renderContext);
+    if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+      tokenElement.classList.add('canopy-table-list-cell');
+      tokenElement.classList.add('canopy-table-list-link-cell');
+      tableCellElement = tokenElement;
+      while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
+      tokenElement.appendChild(contentContainer);
+    } else {
+      tableCellElement.appendChild(contentContainer);
+      cellObject.tokens.forEach(token => {
+        tokenElement = renderTokenElement(token, renderContext);
+        contentContainer.appendChild(tokenElement);
         tableCellElement.appendChild(contentContainer);
-        cellObject.tokens.forEach(token => {
-          tokenElement = renderTokenElement(token, renderContext);
-          contentContainer.appendChild(tokenElement);
-          tableCellElement.appendChild(contentContainer);
-        });
-      }
+      });
+    }
 
-      tableRowElement.appendChild(tableCellElement);
+    if (cellObject.list) {
+      let ordinalElement = document.createElement('SPAN');
+      ordinalElement.classList.add('canopy-table-list-ordinal');
+      ordinalElement.innerHTML = cellObject.ordinal + '.&nbsp;';
+      contentContainer.prepend(ordinalElement);
+      contentContainer.classList.add('canopy-align-left');
+    }
 
-      if (tableCellElement.innerText.length > 10) {
-        let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
-        let fontSizeBasedOnTextSize = getFontSizeBasedOnTextSize(tableCellElement.innerText.length);
-        let fontSizeBasedOnLongestWord = getFontSizeBasedOnLongestWord(longestWord.length);
+    // determine cell size
+    let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
+    let longestWordLength = longestWord.length;
+    let totalLength = tableCellElement.innerText.length;
 
-        tableCellElement.setAttribute(
-          'style',
-          'font-size: ' + Math.max(Math.min(fontSizeBasedOnTextSize, fontSizeBasedOnLongestWord), 9) + 'px'
-        );
-      }
+    let sizeOptionsBasedOnLargestWordLength;
+    if (longestWordLength < 16) { // 0 - 10 eg "Acknowledgements"
+      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('quarter')) minimumCellWidth = 'quarter';
+    } else if (longestWordLength < 21) { // 10-30
+      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('third')) minimumCellWidth = 'third';
+    } else {
+      minimumCellWidth = 'half';
+    }
+
+    if (totalLength < 17) {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-pill')) minimumCellArea = 'quarter-pill';
+    } else if (totalLength < 22) {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
+    } else if (totalLength < 34 && token.items.length <= 2) {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
+    } else if (totalLength < 34) {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
+    } else if (totalLength < 51) {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';
+    } else {
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-card')) minimumCellArea = 'half-card';
+    }
+
+    tableCellSize = SizesByArea.find((newSize, index) => {
+      if (SizesByWidth.indexOf(minimumCellWidth) > SizesByWidth.indexOf(newSize.match(/^[a-z]+/)[0])) return false;
+      if (SizesByArea.indexOf(minimumCellArea) > SizesByArea.indexOf(newSize)) return false;
+      return true; // otherwise update tableCellSize
     });
+
+    return tableCellElement;
   });
 
+  let id = setInterval(() => { // once elements are in DOM and have height, make heights consistent
+    if (setLargestHeightToAll(cellElements)) clearInterval(id);
+  }, 0)
+
+  containerElement.classList.add(`canopy-${tableCellSize}`);
+
+  // Function to create a new row
+  function createNewRow() {
+    let newRow = document.createElement('DIV');
+    newRow.classList.add('canopy-table-list-row');
+    if (token.rtl) newRow.dir = 'rtl';
+    tableListElement.appendChild(newRow);
+    return newRow;
+  }
+
+  let rowSize;
+  if (tableCellSize.includes('half')) rowSize = 2;
+  if (tableCellSize.includes('third')) rowSize = 3;
+  if (tableCellSize.includes('quarter')) rowSize = 4;
+
+  // Create the first row
+  let tableRowElement = createNewRow();
+
+  // Assuming cellElements is your array of cells
+  for (let i = 0; i < cellElements.length; i++) {
+    // Append cell to current row
+    tableRowElement.appendChild(cellElements[i]);
+
+    // If row is full and there are more cells to add, create a new row
+    if ((i + 1) % rowSize === 0 && (i + 1) !== cellElements.length) {
+      tableRowElement = createNewRow();
+    }
+  }
+
   return containerElement;
-}
 
-function getFontSizeBasedOnTextSize(characterCount) {
-    const m = -4/43;
-    const c = 17 + (m * 18);
-    const originalSize = m * characterCount + c;
-    return originalSize * 1.46;
-}
+  function getLargestHeight(elements) {
+    let largestHeight = 0;
+    elements.forEach(element => {
+      let computedHeight = window.getComputedStyle(element).height;
+      let height = parseFloat(computedHeight);
+      if (height > largestHeight) {
+        largestHeight = height;
+      }
+    });
+    return largestHeight;
+  }
 
-function getFontSizeBasedOnLongestWord(longestWordLength) {
-  const beta = -0.6;
-  const alpha = 26.2;
-  return alpha + beta * longestWordLength;
+  function setLargestHeightToAll(elements) {
+    let largestHeight = getLargestHeight(elements);
+    if (largestHeight === 0) return false;
+    elements.forEach(element => {
+      element.style.height = largestHeight + 'px';
+    });
+    if (largestHeight > 0) return true;
+  }
 }
 
 function renderHtmlBlock(token) {

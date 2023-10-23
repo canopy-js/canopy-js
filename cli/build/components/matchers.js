@@ -279,6 +279,14 @@ function importReferenceMatcher({ string, parserContext, index }) {
     targetTopic = parserContext.findImportReferenceTargetTopic(targetSubtopic, parserContext.paragraphText, parserContext);
   }
 
+  if (!targetTopic && targetSubtopic.caps === currentSubtopic.caps) {
+    parserContext.registerSubsumptionConditionalError(
+      chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}is a local self-reference with no global target.\n` +
+        `${parserContext.filePathAndLineNumber}`)
+    );
+    return null;
+  }
+
   if (!targetTopic) {
     parserContext.registerSubsumptionConditionalError(
       chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
