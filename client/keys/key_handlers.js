@@ -7,26 +7,26 @@ import { scrollElementToPosition } from 'display/helpers';
 function moveToParent() {
   let link = Link.selection;
 
-  if (link.enclosingParagraph.equals(Paragraph.pageRoot)) {
-    return updateView(link.enclosingParagraph.path); // deselect link
-  }
-
-  let nextLink = Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink;
-  let linkElement = nextLink.element;
+  let parentLink = link && link.parentLink && Link.lastSelectionOfParagraph(link.parentLink?.enclosingParagraph) || link.parentLink;
 
   // Use the isVisible function to check visibility.
-  if (!isVisible(nextLink)) {
-    if (nextLink) {
-      scrollElementToPosition(nextLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
-    } else {
-      let sectionElement = Link.selection.targetParagraph.sectionElement;
+  if (!parentLink) { // eg link in root paragraph
+    if (!isVisible(link)) {
+      let sectionElement = Link.selection.enclosingParagraph.sectionElement;
       scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 0, direction: 'up', behavior: 'smooth'});
+    } else {
+      if (!link.enclosingParagraph.equals(Paragraph.pageRoot)) throw 'this should never happen';
+      return updateView(link.enclosingParagraph.path); // deselect link
     }
-  } else {
-    return updateView(
-      link.parentLink.path,
-      new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
-    );
+  } else { // there is a parent link
+    if (!isVisible(parentLink)) {
+      scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
+    } else {
+      return updateView(
+        link.parentLink.path,
+        new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
+      );
+    }
   }
 }
 
@@ -133,11 +133,10 @@ function moveDownOrRedirect({ newTab, altKey }) {
   // If no child link or child link is not visible, scroll downwards
   if (link) {
     let linkElement = link.element;
-    scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
+    scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   } else {
-    console.log(123)
     let sectionElement = Link.selection.targetParagraph.sectionElement;
-    scrollElementToPosition(sectionElement, {targetRatio: 0.5, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
+    scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
 }
 

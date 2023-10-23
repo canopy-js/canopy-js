@@ -41,7 +41,7 @@ function onGlobalAndImportLinkClick (link) {
 
     if (!newTab && !e.altKey && link.isSelected) { // close global child
       path = link.enclosingParagraph.path;
-      return updateView(path, null, { scrollTo: 'child' });
+      return updateView(path);
     }
 
     if (!newTab && !e.altKey && !link.isSelected) { // open global child

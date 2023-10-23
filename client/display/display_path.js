@@ -23,7 +23,7 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
 
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], displayOptions);
   pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
-  scrollPage(displayOptions);
+  scrollPage(linkToSelect, displayOptions);
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
 };
 

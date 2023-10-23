@@ -76,6 +76,7 @@ function createSectionElement(renderContext) {
   paragraphElement.classList.add('canopy-paragraph');
   sectionElement.appendChild(paragraphElement);
   sectionElement.style.display = 'none';
+  sectionElement.style.opacity = '0';
   sectionElement.dataset.displayTopicName = displayTopicName;
   sectionElement.dataset.topicName = topic.mixedCase;
   sectionElement.dataset.subtopicName = subtopic.mixedCase;
