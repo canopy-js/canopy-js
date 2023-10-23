@@ -59,6 +59,7 @@ program.command('watch')
     try {
       watch(options);
     } catch (e) {
+      if (options.error) throw e;
       console.error(e.message);
       process.exit(1)
     }
@@ -80,6 +81,7 @@ program.command('dev')
       options.port = options.port || Number(portArgument) || null;
       dev(options);
     } catch (e) {
+      if (options.error) throw e;
       console.error(e.message);
       process.exit(1)
     }
@@ -96,6 +98,7 @@ program.command('serve')
     try {
       serve(options);
     } catch (e) {
+      if (options.error) throw e;
       console.error(e.message);
       process.exit(1)
     }
@@ -137,6 +140,7 @@ program.command('sketch')
     try {
       sketch();
     } catch (e) {
+      if (options.error) throw e;
       console.error(e.message);
       process.exit(1)
     }
