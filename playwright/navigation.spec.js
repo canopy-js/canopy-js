@@ -124,6 +124,8 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
     await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 04');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 05');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 06');

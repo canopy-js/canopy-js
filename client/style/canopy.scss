@@ -254,9 +254,50 @@
     max-width: 96vw;
     width: 96vw;
     margin-left: calc((-96vw / 2) + (750px / 2));
+    text-wrap: balance;
+
+    &.canopy-quarter-pill .canopy-table-list-cell {
+      width: 175px;
+      padding: 9px;
+      max-height: 50px;
+    }
+
+    &.canopy-third-pill .canopy-table-list-cell {
+      width: 220px;
+      padding: 9px;
+      max-height: 50px;
+    }
+
+    &.canopy-half-pill .canopy-table-list-cell {
+      width: 270px;
+      padding: 9px;
+      max-height: 50px;
+    }
+
+    &.canopy-quarter-card .canopy-table-list-cell {
+      width: 175px;
+      height: 95px;
+      padding: 15px;
+    }
+
+    &.canopy-third-card .canopy-table-list-cell {
+      width: 215px;
+      height: 120px;
+      padding: 15px;
+    }
+
+    &.canopy-half-card .canopy-table-list-cell {
+      width: 285px;
+      min-height: 160px;
+      padding: 30px;
+    }
 
     &:not(:first-child) {
-      margin-top: 20px;
+      margin-top: 15px;
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 15px;
     }
 
     .canopy-table-list {
@@ -266,24 +307,33 @@
 
       .canopy-table-list-row {
         display: flex;
-        max-width: 96vw;
       }
 
       .canopy-table-list-cell {
         display: flex;
-        width: calc(115px + 3vw);
-        max-width: 11vw;
-        height: 23vw;
-        max-height: 95px;
         margin: 5px;
         border: 1px solid black;
         border-radius: 0px;
-        padding: 8px 12px;
         text-align: center;
         justify-content: center;
         align-items: center;
         box-sizing: border-box;
         background-color: white;
+
+        br {
+          display: block; // makes it have a width
+          content: ""; // clears default height
+          padding-bottom: 2px;
+        }
+
+        .canopy-table-list-ordinal {
+        }
+
+        .canopy-table-list-content-container {
+          &.canopy-align-left {
+            //text-align: left;
+          }
+        }
       }
 
       @media screen and (max-width: 1000px) {
@@ -297,7 +347,7 @@
       }
 
       .canopy-table-list-content-container {
-        overflow: scroll;
+        //overflow: scroll;
       }
 
       .canopy-table-list-link-cell {
