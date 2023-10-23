@@ -276,34 +276,30 @@ function TableToken(text, parserContext) {
 function TableListToken(text, parserContext) {
   this.type = 'table_list';
 
-  let listItems = [...text.matchAll(/(?:(?<=- )([^\n]+)|([\w\d]{1,4}\.\s[^\n]+))\n/g)].map(m => m[1] || m[2]);
+  let items = [...text.matchAll(/(?:(?<=- )([^\n]+)|(([\w\d]{1,4})\.\s([^\n]+)))\n/g)];
 
-  let width = Math.max(4, Math.min(Math.ceil(Math.sqrt(listItems.length)), 8));
-  this.width = width;
-  const numberOfRows = Math.ceil(listItems.length / width);
-  const rows = [];
-
-  for (let i = 0; i < numberOfRows; i++) {
-    const row = listItems.slice(i * width, (i + 1) * width);
-    rows.push(row);
+  if (items.every(item => item[2])) {
+    items = items.map(item => ({ list: true, ordinal: item[3], text: item[4]}));
+  } else {
+    items = items.map(item => ({ list: false, text: item[0]}));
   }
 
   if (text.startsWith('<') || detectTextDirection(text) === 'rtl') this.rtl = true;
 
-  this.rows = rows.map(row => {
-    return row.map((cellString, lineNumber) => {
-      return {
-        tokens: parseText({
-          text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
-          parserContext: parserContext.clone({
-            preserveNewlines: null,
-            insideToken: true,
-          })
-          .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the table list are we, line number plus initial delimiter
-          .incrementCharacterNumber('- '.length) // count earlier chars and leading space
+  this.items = items.map((item, lineNumber) => {
+    return {
+      list: item.list,
+      ordinal: item.ordinal,
+      tokens: parseText({
+        text: item.text.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+        parserContext: parserContext.clone({
+          preserveNewlines: null,
+          insideToken: true,
         })
-      }
-    });
+        .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the table list are we, line number plus initial delimiter
+        .incrementCharacterNumber('- '.length) // count earlier chars and leading space
+      })
+    }
   });
 }
 
