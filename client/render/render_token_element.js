@@ -394,9 +394,15 @@ function renderTableList(token, renderContext) {
   if (token.rtl) tableListElement.dir = 'rtl';
   containerElement.appendChild(tableListElement);
 
-  let tableCellSize; // even if content doesn't justify size, we expand if there aren't so many
-  if (token.items.length === 2) tableCellSize = 'third-pill';
+  let SizesByWidth = ['quarter', 'third', 'half'];
+  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+
+  let tableCellSize;
+  let minimumCellArea = 'quarter-pill';
+  let minimumCellWidth = 'quarter';
+  if (token.items.length === 2) tableCellSize = 'third-pill'; // even if content doesn't justify size, we expand if there aren't so many
   if (token.items.length === 3) tableCellSize = 'third-pill';
+
   let cellElements = token.items.map(cellObject => {
     let tableCellElement = document.createElement('DIV');
     tableCellElement.classList.add('canopy-table-list-cell');
@@ -428,45 +434,36 @@ function renderTableList(token, renderContext) {
     }
 
     // determine cell size
-    let longestWordLength = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0].length;
+    let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
+    let longestWordLength = longestWord.length;
     let totalLength = tableCellElement.innerText.length;
 
     let sizeOptionsBasedOnLargestWordLength;
-    if (longestWordLength < 17) { // 0 - 10
-      sizeOptionsBasedOnLargestWordLength = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+    if (longestWordLength < 16) { // 0 - 10 eg "Acknowledgements"
+      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('quarter')) minimumCellWidth = 'quarter';
     } else if (longestWordLength < 21) { // 10-30
-      sizeOptionsBasedOnLargestWordLength = ['third-pill', 'half-pill', 'third-card', 'half-card'];
+      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('third')) minimumCellWidth = 'third';
     } else {
-      sizeOptionsBasedOnLargestWordLength = ['half-pill', 'half-card'];
+      minimumCellWidth = 'half';
     }
 
-    let sizeOptionsBasedOnTotalLength;
     if (totalLength < 17) {
-      sizeOptionsBasedOnTotalLength = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-pill')) minimumCellArea = 'quarter-pill';
     } else if (totalLength < 22) {
-      sizeOptionsBasedOnTotalLength = ['third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
     } else if (totalLength < 34 && token.items.length <= 2) {
-      sizeOptionsBasedOnTotalLength = ['half-pill', 'quarter-card', 'third-card', 'half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
     } else if (totalLength < 34) {
-      sizeOptionsBasedOnTotalLength = ['quarter-card', 'third-card', 'half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
     } else if (totalLength < 51) {
-      sizeOptionsBasedOnTotalLength = ['third-card', 'half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';
     } else {
-      sizeOptionsBasedOnTotalLength = ['half-card'];
+      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-card')) minimumCellArea = 'half-card';
     }
 
-    tableCellSize = sizeOptionsBasedOnTotalLength.find((newSize, index) => {
-      if (!sizeOptionsBasedOnLargestWordLength.includes(newSize)) return false;
-
-      // Given that newSize is acceptable both based on total size and largest word length, if existing tableCellSize is also, take the bigger
-      if (sizeOptionsBasedOnTotalLength.includes(tableCellSize)) {
-        if (sizeOptionsBasedOnLargestWordLength.includes(tableCellSize)) {
-          if (sizeOptionsBasedOnTotalLength.indexOf(tableCellSize) > sizeOptionsBasedOnTotalLength.indexOf(newSize)) { // if existing value is bigger
-            return false; // keep the existing tableCellSize
-          }
-        }
-      }
-
+    tableCellSize = SizesByArea.find((newSize, index) => {
+      if (SizesByWidth.indexOf(minimumCellWidth) > SizesByWidth.indexOf(newSize.match(/^[a-z]+/)[0])) return false;
+      if (SizesByArea.indexOf(minimumCellArea) > SizesByArea.indexOf(newSize)) return false;
       return true; // otherwise update tableCellSize
     });
 

@@ -242,10 +242,10 @@ test.describe('Block entities', () => {
   test('It allows table lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(0)).toHaveText('This is 1/4 pill ?23');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(1)).toHaveText('45');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(0)).toHaveText('This is 1/4 pill234');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(1)).toHaveText('5');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(2)).toHaveText('This is 1/3 pill ??23');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(2)).toHaveText('This is 1/3 pill?23');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(3)).toHaveText('4');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(4)).toHaveText('This is 1/3 pill ????23');
@@ -273,7 +273,7 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(16)).toHaveText('ABCD');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(17)).toHaveText('EF');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(18)).toHaveText('Thisisalongword?ABC');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(18)).toHaveText('ThisisalongwordABC');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(19)).toHaveText('Thisisalongword??AB');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(20)).toHaveText('C');

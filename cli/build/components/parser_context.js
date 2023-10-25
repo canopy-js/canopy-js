@@ -46,7 +46,6 @@ class ParserContext {
 
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseParagraph
-
   buildNamespaceObject(explFileData) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
 

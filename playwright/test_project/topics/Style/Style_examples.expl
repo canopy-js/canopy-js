@@ -43,15 +43,15 @@ Tables with import references:
 Table lists:
 For small elements we use a width of 4:
 ===
-- This is 1/4 pill ?
+- This is 1/4 pill
 - 2
 - 3
 - 4
 - 5
 ===
-For bigger ones we use a width of 3:
+This is the smallest text that gets a width of 3:
 ===
-- This is 1/3 pill ??
+- This is 1/3 pill?
 - 2
 - 3
 - 4
@@ -121,7 +121,7 @@ This list goes backwards:
 <<<
 This is the largest word that gets a quarter width:
 ===
-- Thisisalongword?
+- Thisisalongword
 - A
 - B
 - C
