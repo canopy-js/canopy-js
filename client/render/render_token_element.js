@@ -431,45 +431,51 @@ function renderTableList(token, renderContext) {
     let longestWordLength = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0].length;
     let totalLength = tableCellElement.innerText.length;
 
-    let sizeOptionsBasedOnWordLength;
-    if (longestWordLength < 12) { // 0 - 10
-      sizeOptionsBasedOnWordLength = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
-    } else if (longestWordLength < 30) { // 10-30
-      sizeOptionsBasedOnWordLength = ['third-pill', 'half-pill', 'third-card', 'half-card'];
-    } else { // 30+
-      sizeOptionsBasedOnWordLength = ['half-card'];
+    let sizeOptionsBasedOnLargestWordLength;
+    if (longestWordLength < 17) { // 0 - 10
+      sizeOptionsBasedOnLargestWordLength = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+    } else if (longestWordLength < 21) { // 10-30
+      sizeOptionsBasedOnLargestWordLength = ['third-pill', 'half-pill', 'third-card', 'half-card'];
+    } else {
+      sizeOptionsBasedOnLargestWordLength = ['half-pill', 'half-card'];
     }
 
     let sizeOptionsBasedOnTotalLength;
-    if (totalLength < 10) {
+    if (totalLength < 17) {
       sizeOptionsBasedOnTotalLength = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
-    } else if (totalLength < 15) {
+    } else if (totalLength < 22) {
       sizeOptionsBasedOnTotalLength = ['third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
-    } else if (totalLength < 26) {
+    } else if (totalLength < 34 && token.items.length <= 2) {
+      sizeOptionsBasedOnTotalLength = ['half-pill', 'quarter-card', 'third-card', 'half-card'];
+    } else if (totalLength < 34) {
       sizeOptionsBasedOnTotalLength = ['quarter-card', 'third-card', 'half-card'];
-    } else if (totalLength < 43) {
+    } else if (totalLength < 51) {
       sizeOptionsBasedOnTotalLength = ['third-card', 'half-card'];
     } else {
       sizeOptionsBasedOnTotalLength = ['half-card'];
     }
 
     tableCellSize = sizeOptionsBasedOnTotalLength.find((newSize, index) => {
-      // find the smallest size that is in sizeOptionsBasedOnWordLength and is larger or equal to tableCellSize if tableCellSize is in sizeOptionsBasedOnTotalLength
+      if (!sizeOptionsBasedOnLargestWordLength.includes(newSize)) return false;
+
+      // Given that newSize is acceptable both based on total size and largest word length, if existing tableCellSize is also, take the bigger
       if (sizeOptionsBasedOnTotalLength.includes(tableCellSize)) {
-        if (sizeOptionsBasedOnTotalLength.indexOf(tableCellSize) > sizeOptionsBasedOnTotalLength.indexOf(newSize)) {
-          return false;
+        if (sizeOptionsBasedOnLargestWordLength.includes(tableCellSize)) {
+          if (sizeOptionsBasedOnTotalLength.indexOf(tableCellSize) > sizeOptionsBasedOnTotalLength.indexOf(newSize)) { // if existing value is bigger
+            return false; // keep the existing tableCellSize
+          }
         }
       }
 
-      if (!sizeOptionsBasedOnWordLength.includes(newSize)) return false;
-
-      return true;
+      return true; // otherwise update tableCellSize
     });
 
     return tableCellElement;
   });
 
-  if (tableCellSize === 'half-card' && token.items.length > 4) tableCellSize = 'half-card-overflow';
+  let id = setInterval(() => { // once elements are in DOM and have height, make heights consistent
+    if (setLargestHeightToAll(cellElements)) clearInterval(id);
+  }, 0)
 
   containerElement.classList.add(`canopy-${tableCellSize}`);
 
@@ -484,7 +490,6 @@ function renderTableList(token, renderContext) {
 
   let rowSize;
   if (tableCellSize.includes('half')) rowSize = 2;
-  if (tableCellSize.includes('half-card') && token.items.length > 4) rowSize = 3;
   if (tableCellSize.includes('third')) rowSize = 3;
   if (tableCellSize.includes('quarter')) rowSize = 4;
 
@@ -503,6 +508,27 @@ function renderTableList(token, renderContext) {
   }
 
   return containerElement;
+
+  function getLargestHeight(elements) {
+    let largestHeight = 0;
+    elements.forEach(element => {
+      let computedHeight = window.getComputedStyle(element).height;
+      let height = parseFloat(computedHeight);
+      if (height > largestHeight) {
+        largestHeight = height;
+      }
+    });
+    return largestHeight;
+  }
+
+  function setLargestHeightToAll(elements) {
+    let largestHeight = getLargestHeight(elements);
+    if (largestHeight === 0) return false;
+    elements.forEach(element => {
+      element.style.height = largestHeight + 'px';
+    });
+    if (largestHeight > 0) return true;
+  }
 }
 
 function renderHtmlBlock(token) {

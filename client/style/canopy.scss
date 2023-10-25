@@ -281,21 +281,15 @@
     }
 
     &.canopy-third-card .canopy-table-list-cell {
-      width: 225px;
+      width: 215px;
       height: 120px;
       padding: 15px;
     }
 
     &.canopy-half-card .canopy-table-list-cell {
-      width: 300px;
-      min-height: 130px;
+      width: 285px;
+      min-height: 160px;
       padding: 30px;
-    }
-
-    &.canopy-half-card-overflow .canopy-table-list-cell {
-      width: 250px;
-      min-height: 150px;
-      padding: 20px;
     }
 
     &:not(:first-child) {
