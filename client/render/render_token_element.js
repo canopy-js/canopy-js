@@ -451,9 +451,9 @@ function renderTableList(token, renderContext) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-pill')) minimumCellArea = 'quarter-pill';
     } else if (totalLength < 22) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
-    } else if (totalLength < 34 && token.items.length <= 2) {
+    } else if (totalLength < 29 && token.items.length <= 2) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
-    } else if (totalLength < 34) {
+    } else if (totalLength < 29) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
     } else if (totalLength < 51) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';

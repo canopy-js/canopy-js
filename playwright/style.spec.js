@@ -255,9 +255,9 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('This is 1/4 card ?????234');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('This is 1/4 card ??? ??? ??? ????234');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('This is 1/4 card ??? ??? ???234');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(9)).toHaveText('This is 1/3 card ??? ??? ??? ??? ?23');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(9)).toHaveText('This is 1/3 card ??? ??? ????23');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(10)).toHaveText('4');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(11)).toHaveText('This is 1/3 card ??? ??? ??? ??? ??? ??? ??? ??? ?23');
