@@ -161,10 +161,12 @@
 
     &[dir="rtl"] {
       border-right: 0.25em solid lightgray;
+      margin-right: 10px;
     }
 
     &[dir="ltr"] {
       border-left: 0.25em solid lightgray;
+      margin-left: 10px;
     }
 
     margin-block-start: .5em;
@@ -248,13 +250,103 @@
     }
   }
 
-  .canopy-table-list-container {
+  .canopy-table-list {
     display: flex;
     flex-direction: column;
-    max-width: 96vw;
-    width: 96vw;
-    margin-left: calc((-96vw / 2) + (750px / 2));
-    text-wrap: balance;
+    align-items: center; /* This centers the rows within the container */
+    margin: 0 auto;
+
+    .canopy-table-list-row {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    &.align-right {
+      width: 90%;
+      align-items: flex-end;
+      .canopy-table-list-row {
+        justify-content: flex-end;
+      }
+    }
+
+    &.align-left {
+      width: 90%;
+      align-items: flex-start;
+    }
+
+    .canopy-table-list-cell {
+      display: flex;
+      flex-direction: row; /* Arrange items horizontally */
+      flex-wrap: wrap; /* Allow items to wrap within the cell */
+      justify-content: center; /* Center content horizontally */
+      align-items: center; /* Center content vertically */
+      margin: 5px;
+      border: 1px solid black;
+      border-radius: 0px;
+      box-sizing: border-box;
+      background-color: white;
+      padding: 10px; /* Add some padding inside cells */
+      text-align: center; /* This will center the text inside the flex items */
+      align-self: stretch; /* Stretch the child items to fill the cell's width */
+      white-space: normal; /* Allow the text to wrap */
+
+      .canopy-table-list-content-container {
+        display: inline;
+      }
+
+      &.canopy-table-list-ordinal-cell .canopy-table-list-content-container {
+        //width: 80%; // to keep the numbers in a similar location in each cell
+      }
+
+      br {
+        display: block; // makes it have a width
+        content: ""; // clears default height
+        padding-bottom: 2px;
+      }
+    }
+
+    .canopy-table-list-link-cell.canopy-table-list-cell {
+      cursor: pointer;
+      border: 1.5px solid black;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center; /* Center content horizontally */
+      align-items: center; /* Center content vertically */
+
+      .canopy-table-list-content-container {
+        display: inline;
+      }
+
+      &.canopy-url-link {
+        margin: 5px; // cancel negative margin
+      }
+
+      &.canopy-url-link.canopy-selectable-link * {
+        text-decoration: none;
+      }
+
+      &.canopy-selectable-link {
+        text-decoration: none;
+        text-shadow: none;
+      }
+
+      &.canopy-selected-link {
+        background-color: #edeefc;
+      }
+
+      &.canopy-open-link:not(.canopy-selected-link) {
+        background-color: #F3F3F3;
+      }
+
+      &:hover:not(.canopy-selected-link), // selected link style overrides hover
+      &:hover.canopy-open-link:not(.canopy-selected-link) {
+        background-color: #f5f6fe;
+
+        .canopy-selected-link {
+            background-color: #f5f6fe;
+        }
+      }
+    }
 
     &.canopy-quarter-pill .canopy-table-list-cell {
       width: 175px;
@@ -298,89 +390,6 @@
 
     &:not(:last-child) {
       margin-bottom: 15px;
-    }
-
-    .canopy-table-list {
-      display: flex;
-      flex-direction: column;
-      margin: 0 auto;
-
-      .canopy-table-list-row {
-        display: flex;
-      }
-
-      .canopy-table-list-cell {
-        display: flex;
-        margin: 5px;
-        border: 1px solid black;
-        border-radius: 0px;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        background-color: white;
-
-        br {
-          display: block; // makes it have a width
-          content: ""; // clears default height
-          padding-bottom: 2px;
-        }
-
-        .canopy-table-list-ordinal {
-        }
-
-        .canopy-table-list-content-container {
-          &.canopy-align-left {
-            //text-align: left;
-          }
-        }
-      }
-
-      @media screen and (max-width: 1000px) {
-        .canopy-table-list-cell {
-          max-width: 10vw;
-        }
-
-        .canopy-table-list-content-container * {
-          max-width: 6vw;
-        }
-      }
-
-      .canopy-table-list-content-container {
-        //overflow: scroll;
-      }
-
-      .canopy-table-list-link-cell {
-        cursor: pointer;
-        border: 1.5px solid black;
-        border-radius: 5px;
-
-        &.canopy-url-link *, &.canopy-url-link *:hover {
-          text-decoration: none;
-        }
-
-        &.canopy-selectable-link {
-          text-decoration: none;
-          text-shadow: none;
-        }
-
-        &.canopy-selected-link {
-          background-color: #edeefc;
-        }
-
-        &.canopy-open-link:not(.canopy-selected-link) {
-          background-color: #F3F3F3;
-        }
-
-        &:hover:not(.canopy-selected-link), // selected link style overrides hover
-        &:hover.canopy-open-link:not(.canopy-selected-link) {
-          background-color: #f5f6fe;
-
-          .canopy-selected-link {
-              background-color: #f5f6fe;
-          }
-        }
-      }
     }
   }
 

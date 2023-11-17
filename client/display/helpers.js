@@ -65,6 +65,8 @@ const resetDom = () => {
 function scrollPage(link, displayOptions) {
   let behavior = displayOptions.scrollStyle || 'smooth';
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
+  canopyContainer.dataset.initialLoad = displayOptions.initialLoad;
+
   if (!Link.selection) return window.scrollTo({ top: 0, behavior })
   let maxScrollRatio = behavior === 'auto' || displayOptions.scrollTo === 'child' ? Infinity : 0.75; // no limit on initial load and click
 

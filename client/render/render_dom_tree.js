@@ -96,7 +96,7 @@ function createSectionElement(renderContext) {
 
 function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
   let subtopicOfPathContainingOpenGlobalReference = path.firstSubtopic;
-  let openGlobalLinkExists = path.secondTopic;
+  let openGlobalLinkExists = path.secondTopic; // there is a further path segment so some global link is open
 
   let openGlobalLinkTargetTopic = path.secondTopic;
   let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
@@ -106,7 +106,7 @@ function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
     link.targetTopic.mixedCase === openGlobalLinkTargetTopic?.mixedCase &&
     link.targetSubtopic.mixedCase === openGlobalLinkTargetSubtopic?.mixedCase;
 
-  // Is this global link in the currently visible lowest subtopic of the given
+  // Is this global link in the currently visible lowest subtopic of the given topic?
   let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.mixedCase ===
     subtopicOfPathContainingOpenGlobalReference.mixedCase;
 

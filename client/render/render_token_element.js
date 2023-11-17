@@ -16,7 +16,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
   } else if (token.type === 'url') {
-    return renderLinkLiteral(token, renderContext);
+    return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
     return renderImage(token, renderContext);
   } else if (token.type === 'html_element') {
@@ -182,7 +182,7 @@ function createImportLinkElement(token, renderContext) {
   return linkElement
 }
 
-function renderLinkLiteral(token, renderContext) {
+function renderExternalLink(token, renderContext) {
   let linkElement = document.createElement('A');
   linkElement.classList.add('canopy-url-link');
   linkElement.classList.add('canopy-selectable-link');
@@ -191,9 +191,13 @@ function renderLinkLiteral(token, renderContext) {
   linkElement.setAttribute('href', token.url);
   linkElement.setAttribute('target', '_blank');
 
+  let externalLinkContainer = document.createElement('SPAN');
+  externalLinkContainer.classList.add('canopy-url-link-container');
+  linkElement.appendChild(externalLinkContainer);
+
   let tokensContainer = document.createElement('SPAN');
   tokensContainer.classList.add('canopy-url-link-tokens-container');
-  linkElement.appendChild(tokensContainer);
+  externalLinkContainer.appendChild(tokensContainer);
 
   token.tokens.forEach(subtoken => {
     let subtokenElement = renderTokenElement(subtoken, renderContext);
@@ -205,9 +209,9 @@ function renderLinkLiteral(token, renderContext) {
   let svgContainer = document.createElement('SPAN');
   svgContainer.classList.add('canopy-url-link-svg-container');
   svgContainer.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
-  linkElement.appendChild(svgContainer);
+  externalLinkContainer.appendChild(svgContainer);
 
-  linkElement.innerHTML += '<span class="canopy-url-link-svg-spacing">&nbsp;</span>'; // we don't want this to
+  externalLinkContainer.innerHTML += '<span class="canopy-url-link-svg-spacing">&nbsp;</span>';
 
   return linkElement;
 }
@@ -386,13 +390,13 @@ function renderTable(token, renderContext) {
 }
 
 function renderTableList(token, renderContext) {
-  let containerElement = document.createElement('DIV');
-  containerElement.classList.add('canopy-table-list-container');
   let tableListElement = document.createElement('DIV');
-
   tableListElement.classList.add('canopy-table-list');
+
   if (token.rtl) tableListElement.dir = 'rtl';
-  containerElement.appendChild(tableListElement);
+
+  if (token.items.every(item => item.alignment === 'right')) tableListElement.classList.add('align-right');
+  if (token.items.every(item => item.alignment === 'left')) tableListElement.classList.add('align-left');
 
   let SizesByWidth = ['quarter', 'third', 'half'];
   let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
@@ -405,23 +409,25 @@ function renderTableList(token, renderContext) {
   let cellElements = token.items.map(cellObject => {
     let tableCellElement = document.createElement('DIV');
     tableCellElement.classList.add('canopy-table-list-cell');
-
     let contentContainer = document.createElement('DIV');
     contentContainer.classList.add('canopy-table-list-content-container');
+
+    if (cellObject.hidden) tableCellElement.style.opacity = '0';
+
     let tokenElement = renderTokenElement(cellObject.tokens[0], renderContext);
+
     if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
       tokenElement.classList.add('canopy-table-list-cell');
       tokenElement.classList.add('canopy-table-list-link-cell');
-      tableCellElement = tokenElement;
       while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
-      tokenElement.appendChild(contentContainer);
-    } else {
+      tableCellElement = tokenElement;
       tableCellElement.appendChild(contentContainer);
+    } else {
       cellObject.tokens.forEach(token => {
         tokenElement = renderTokenElement(token, renderContext);
         contentContainer.appendChild(tokenElement);
-        tableCellElement.appendChild(contentContainer);
       });
+      tableCellElement.appendChild(contentContainer);
     }
 
     if (cellObject.list) {
@@ -429,7 +435,7 @@ function renderTableList(token, renderContext) {
       ordinalElement.classList.add('canopy-table-list-ordinal');
       ordinalElement.innerHTML = cellObject.ordinal + '.&nbsp;';
       contentContainer.prepend(ordinalElement);
-      contentContainer.classList.add('canopy-align-left');
+      tableCellElement.classList.add('canopy-table-list-ordinal-cell');
     }
 
     // determine cell size
@@ -452,7 +458,7 @@ function renderTableList(token, renderContext) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
     } else if (totalLength < 29 && token.items.length <= 2) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
-    } else if (totalLength < 29) {
+    } else if (totalLength < 26) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
     } else if (totalLength < 51) {
       if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';
@@ -473,7 +479,7 @@ function renderTableList(token, renderContext) {
     if (setLargestHeightToAll(cellElements)) clearInterval(id);
   }, 0)
 
-  containerElement.classList.add(`canopy-${tableCellSize}`);
+  tableListElement.classList.add(`canopy-${tableCellSize}`);
 
   // Function to create a new row
   function createNewRow() {
@@ -503,7 +509,18 @@ function renderTableList(token, renderContext) {
     }
   }
 
-  return containerElement;
+  if (tableListElement.childNodes.length > 1) { // if there is more than one row
+    const remainingCells = cellElements.length % rowSize;
+    const cellsToAdd = remainingCells > 0 ? rowSize - remainingCells : 0;
+    for (let i = 0; i < cellsToAdd; i++) {
+      let paddingElement = document.createElement('DIV');
+      paddingElement.classList.add('canopy-table-list-cell');
+      paddingElement.style.opacity = '0';
+      tableRowElement.appendChild(paddingElement);
+    }
+  }
+
+  return tableListElement;
 
   function getLargestHeight(elements) {
     let largestHeight = 0;
