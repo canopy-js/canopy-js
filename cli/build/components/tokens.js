@@ -276,19 +276,25 @@ function TableToken(text, parserContext) {
 function TableListToken(text, parserContext) {
   this.type = 'table_list';
 
-  let items = [...text.matchAll(/(?:(?<=- )([^\n]+)|(([\w\d]{1,4})\.\s([^\n]+)))\n/g)];
+  let items = [...text.matchAll(/(?:(?<=[-] )|(([\w\d]{1,4})\.\s)|([<>]) )([^\n]+)\n/g)];
 
-  if (items.every(item => item[2])) {
-    items = items.map(item => ({ list: true, ordinal: item[3], text: item[4]}));
-  } else {
-    items = items.map(item => ({ list: false, text: item[0]}));
-  }
+  items = items.map(item => {
+    if (item[2]) { // It has an ordinal, so it's some sort of list.
+     return { list: true, ordinal: item[2], text: item[4] };
+    } else if (item[3]) { // It starts with '>' or '<', so it's a left or right aligned list item.
+     return { list: false, text: item[4], alignment: item[3] === '>' ? 'right' : 'left' };
+    } else { // It's not an ordinal item.
+     return { list: false, text: item[4] };
+    }
+  });
 
   if (text.startsWith('<') || detectTextDirection(text) === 'rtl') this.rtl = true;
 
   this.items = items.map((item, lineNumber) => {
     return {
       list: item.list,
+      hidden: item.text.includes('\\x'),
+      alignment: item.alignment || 'center',
       ordinal: item.ordinal,
       tokens: parseText({
         text: item.text.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells

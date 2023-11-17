@@ -71,6 +71,7 @@ class Paragraph {
   }
 
   get path() {
+    if (!this.isInDom) throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
     let pathArray = [];
     let currentElement = this.sectionElement;
     let currentParagraph = this;
@@ -195,6 +196,10 @@ class Paragraph {
 
   get isTopicRoot() {
     return this.topicName === this.subtopicName;
+  }
+
+  get isInDom() {
+    return this.sectionElement.closest('div#_canopy');
   }
 
   static get current() {

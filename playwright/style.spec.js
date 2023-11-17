@@ -126,7 +126,7 @@ test.describe('Inline entities', () => {
     let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
       element => element.getBoundingClientRect().bottom);
     let nextTokenBottom = await page.evaluate(() =>
-      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').closest('a').nextSibling.getBoundingClientRect().bottom);
     expect(nextTokenBottom - svgBottom).toBeLessThan(5);
   });
 
