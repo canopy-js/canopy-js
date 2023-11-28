@@ -128,7 +128,8 @@ function tableMatcher({ string, parserContext, startOfLine }) {
 }
 
 function tableListMatcher({ string, parserContext, startOfLine }) {
-  let match = string.match(/^[=\-<]+\n(([-<>] ?[^\n]*\n)+|([\w\d]+\.\s[^\n]+\n)+)[=\-<]+(\n|$)/);
+  if (!string.match(/\n[-=<]+(\n|$)/)) return; // check the end first to avoid catastrophic backtracking
+  let match = string.match(/^[=\-<]+\n(([-<>] ?[^\n]*\n)+|([\w\d]+\.\s[^\n]+\n)+)[=\-<]+\n?/);
   if (!match) return null;
 
   if (match && startOfLine) {
