@@ -137,7 +137,12 @@ const bulk = async function(selectedFileList, options) {
   }
 
   if (options.sync) {
-    setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
+    if (fs.existsSync(options.bulkFileName)) { // if the user has a bulk file from a previous session
+      log(chalk.magenta(`Canopy bulk sync: Reconstructing topic files from prior bulk file ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+      handleFinish({ deleteBulkFile: false });
+    } else {
+      setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
+    }
 
     if (!process.env['CANOPY_EDITOR']) console.log(chalk.bgYellow(chalk.black('Try setting your CANOPY_EDITOR environment variable so that Canopy knows which editor to use for bulk sync')));
 
