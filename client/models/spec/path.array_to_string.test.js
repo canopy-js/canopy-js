@@ -1,5 +1,5 @@
-import Path from 'models/path';
 import Topic from '../../../cli/shared/topic';
+import Path from 'models/path';
 
 jest.mock('../../helpers/getters', () => ({
   __esModule: true,

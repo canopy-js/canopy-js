@@ -67,6 +67,7 @@ function build(options) {
   ));
 
   if (fs.existsSync(`assets`)) {
+    fs.rmSync('build/_assets', { recursive: true, force: true });
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
 

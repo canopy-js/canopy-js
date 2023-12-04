@@ -21,6 +21,10 @@ class Paragraph {
     this.transferDataset();
   }
 
+  static from(sectionElement) {
+    return new this(sectionElement);
+  }
+
   equals(otherParagraph) {
     if (!otherParagraph) return false;
     return this.sectionElement === otherParagraph.sectionElement;
@@ -71,6 +75,7 @@ class Paragraph {
   }
 
   get path() {
+    if (!this.isInDom) throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
     let pathArray = [];
     let currentElement = this.sectionElement;
     let currentParagraph = this;
@@ -197,6 +202,10 @@ class Paragraph {
     return this.topicName === this.subtopicName;
   }
 
+  get isInDom() {
+    return this.sectionElement.closest('div#_canopy');
+  }
+
   static get current() {
     let sectionElement = document.querySelector('.canopy-selected-section');
     if (sectionElement) {
@@ -210,6 +219,10 @@ class Paragraph {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 
+  scrollComplete() {
+    this.sectionElement.classList.add('canopy-scroll-complete');
+  }
+
   static get pageRoot() {
     let path = Path.current.rootTopicPath;
     return path.paragraph;
@@ -221,6 +234,9 @@ class Paragraph {
     return new Paragraph(sectionElement);
   }
 
+  static get contentLoaded() {
+    return !!document.querySelector('h1'); // this is a proxy for whether the first render has occured yet
+  }
 }
 
 export default Paragraph;

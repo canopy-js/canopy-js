@@ -4,12 +4,14 @@ import registerKeyListeners from 'keys/register_key_listeners';
 import registerPopStateListener from 'history/register_pop_state_listener';
 import Path from 'models/path';
 import Link from 'models/link';
+import BackButton from 'render/back_button';
 
+BackButton.init();
 registerKeyListeners();
 registerPopStateListener();
 
 updateView(
   Path.currentOrDefault,
   Link.priorSelection,
-  { scrollStyle: 'auto' }
+  { scrollStyle: 'instant', initialLoad: true }
 );

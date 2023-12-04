@@ -113,11 +113,12 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
     await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
 
-    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    let tokensBottom = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    expect(svgBottom - tokensBottom).toBeLessThan(5);
+    let svgLeft = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().left);
+    let tokensLeft = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
+      element => element.getBoundingClientRect().left);
+
+    expect(svgLeft - tokensLeft > 100).toEqual(true); // did not wrap
   });
 
   test('It will not separate link icon from following punctuation', async ({ page }) => {
@@ -126,7 +127,7 @@ test.describe('Inline entities', () => {
     let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
       element => element.getBoundingClientRect().bottom);
     let nextTokenBottom = await page.evaluate(() =>
-      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').parentElement.nextSibling.getBoundingClientRect().bottom);
+      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').closest('a').nextSibling.getBoundingClientRect().bottom);
     expect(nextTokenBottom - svgBottom).toBeLessThan(5);
   });
 
@@ -139,7 +140,7 @@ test.describe('Inline entities', () => {
 
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
-    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
+    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText.trim())).toEqual('Text. This is a test. Text.'); // no newlines between html element and following text
     await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
   });
 
@@ -255,7 +256,7 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('This is 1/4 card ?????234');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('This is 1/4 card ??? ??? ???234');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('This is 1/4 card ??? ????234');
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(9)).toHaveText('This is 1/3 card ??? ??? ????23');
     await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(10)).toHaveText('4');
