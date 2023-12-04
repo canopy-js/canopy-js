@@ -36,6 +36,12 @@ function deselectSectionElement() {
   });
 }
 
+function removeScrollCompleteClass() {
+  Array.from(document.querySelectorAll('.canopy-scroll-complete')).forEach((sectionElement) => {
+    sectionElement.classList.remove('canopy-scroll-complete');
+  });
+}
+
 function hideHeaders() {
   Array.from(document.querySelectorAll('#_canopy h1')).forEach(header => {
     header.style.display = 'none';
@@ -46,10 +52,10 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'auto'});
+    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'smooth'});
   } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'auto' });
+    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'smooth' });
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
@@ -60,6 +66,7 @@ const resetDom = () => {
   deselectAllLinks();
   hideAllSectionElements();
   deselectSectionElement();
+  removeScrollCompleteClass();
 }
 
 function scrollPage(link, displayOptions) {
@@ -67,28 +74,29 @@ function scrollPage(link, displayOptions) {
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   canopyContainer.dataset.initialLoad = displayOptions.initialLoad;
 
-  if (!Link.selection) return window.scrollTo({ top: 0, behavior })
-  let maxScrollRatio = behavior === 'auto' || displayOptions.scrollTo === 'child' ? Infinity : 0.75; // no limit on initial load and click
+  if (!Link.selection) return window.scrollTo({ top: 0, behavior }) || Promise.resolve();
+  let maxScrollRatio = behavior === 'instant' || displayOptions.scrollTo === 'paragraph' ? Infinity : 0.75; // no limit on initial load and click
 
-  if (displayOptions.scrollTo === 'child') {
+  if (displayOptions.scrollTo === 'paragraph') {
     let sectionElement = link.targetParagraph.sectionElement;
-    scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
-  } else {
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
+  } else { // scroll to link
     const linkElement = link?.element;
     if (linkElement) {
-      scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
+      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
     } else {
-      scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
+      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
     }
   }
 }
 
 function scrollElementToPosition(element, options) {
+  if (!(element instanceof Element)) throw 'Argument to scrollElementToPosition must be DOM element';
   let { targetRatio, maxScrollRatio, minDiff, direction, behavior, side } = options;
   const rect = element.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const currentScroll = window.pageYOffset;
-
+  const documentHeight = document.documentElement.scrollHeight;
   let idealTargetPosition = viewportHeight * targetRatio;
 
   let pointToPutAtTarget;
@@ -111,20 +119,30 @@ function scrollElementToPosition(element, options) {
     }
   }
 
-  const idealScrollY = pointToPutAtTarget + currentScroll - idealTargetPosition;
+  // Determine the correct Y coordinate given the location of the target,
+  let idealScrollY = pointToPutAtTarget + currentScroll - idealTargetPosition;
 
-  const maxScrollDistance = viewportHeight * maxScrollRatio;
+  // Adjust idealScrollY to the closest possible scroll position
+  idealScrollY = Math.max(0, Math.min(idealScrollY, documentHeight - viewportHeight));
+
+  // Use the calculated scroll or max scroll if it is too big
+  const maxScrollDistance = maxScrollRatio ? viewportHeight * maxScrollRatio : Infinity;
   let actualScrollY;
-
   if (idealScrollY > currentScroll) {
     actualScrollY = Math.min(idealScrollY, currentScroll + maxScrollDistance);
   } else {
     actualScrollY = Math.max(idealScrollY, currentScroll - maxScrollDistance);
   }
 
-  const diff = Math.abs(currentScroll - actualScrollY);
-  let shouldScroll = diff > minDiff;
+  let shouldScroll = idealScrollY !== 0;
 
+  // Check that the scroll is larger than the minimum we would initiate a scroll for
+  if (minDiff) {
+    const diff = Math.abs(currentScroll - actualScrollY);
+    shouldScroll = minDiff && diff > minDiff;
+  }
+
+  // If the caller has constrained the scroll in a single direction, check we're going that way
   if (direction === 'up') {
     shouldScroll = shouldScroll && actualScrollY < currentScroll;
   }
@@ -134,7 +152,49 @@ function scrollElementToPosition(element, options) {
   }
 
   if (shouldScroll) {
-    window.scrollTo({ top: actualScrollY, behavior });
+    return scrollToWithPromise({ top: actualScrollY, behavior, ...options });
+  } else {
+    return Promise.resolve(true);
+  }
+}
+
+async function  scrollToWithPromise(options) {
+  return new Promise(async function(resolve, reject) {
+    await scrollUpIfAtBottom(options); // avoid bug that occurs if page is at bottom
+    window.scrollTo(options);
+    let startTime = Date.now();  // Record the start time
+    let lastY = window.scrollY;
+    let inactivityStart = null;
+    let checks = 0;
+
+    const checkScroll = () => {
+      if (lastY === window.scrollY && !inactivityStart) inactivityStart = Date.now();
+      if (lastY !== window.scrollY) inactivityStart = null;
+      if (lastY === window.scrollY && checks < 1) { window.scrollTo(options); } // kick start to fix aforementioned bug
+      lastY = window.scrollY;
+      checks++;
+
+      if (inactivityStart && (Date.now() - inactivityStart > 1000)) {
+        return resolve(false); // the user prevented the scroll from completing, so we don't complete the action
+      }
+
+      if (Math.abs(window.scrollY - options.top) < 10) {
+        resolve(true); // Resolve the promise when the scroll position is close enough to the target
+      } else {
+        setTimeout(checkScroll, 50); // Recheck after 50 milliseconds
+      }
+    };
+
+    setTimeout(checkScroll, 50); // Start checking after 50 milliseconds
+  });
+
+  function scrollUpIfAtBottom(options) {
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight && !options.bottomAdjusted) {
+      return scrollElementToPosition( // this handles bug where scroll doesn't occur if page is at bottom of screen
+        Paragraph.current.paragraphElement, // scroll as high as you can without seeing content so not at bottom
+        {targetRatio: 0, side: 'bottom', behavior: 'instant', bottomAdjusted: true }
+      );
+    }
   }
 }
 

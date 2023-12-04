@@ -24,6 +24,20 @@ class Path {
     return this.string === otherPath.string;
   }
 
+  isIn(otherPath) { // is otherPath a subpath of this
+    if (this.equals(otherPath)) return true;
+    if (otherPath.isTopic) return false;
+    return this.isIn(otherPath.paragraph.parentParagraph.path);
+  }
+
+  includes(otherPath) {
+    return otherPath.isIn(this);
+  }
+
+  get parentPath() {
+    return this.paragraph.parentParagraph.path;
+  }
+
   forEach(callback) {
     this.pathArray.forEach(callback);
   }
@@ -107,6 +121,10 @@ class Path {
 
   get withoutLastSegment() {
     return new Path(this.pathArray.slice(0, -1));
+  }
+
+  get isTopic() {
+    return this.pathArray.length === 1 && this.pathArray[0][0].mixedCase === this.pathArray[0][1].mixedCase;
   }
 
   get length() {

@@ -2,9 +2,11 @@ import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handl
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
+import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import { scrollPage, imagesLoaded } from 'display/helpers';
+import BackButton from 'render/back_button';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -20,7 +22,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'image') {
     return renderImage(token, renderContext);
   } else if (token.type === 'html_element') {
-    return renderHtmlElement(token);
+    return renderHtmlElement(token, renderContext);
   } else if (token.type === 'footnote_marker') {
     return renderFootnoteSymbol(token);
   } else if (token.type === 'code_block') {
@@ -262,13 +264,18 @@ function renderImage(token, renderContext) {
   imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
     imageElement.style.setProperty('height', null);
     imageElement.style.setProperty('opacity', '1');
-    if (isVisible(imageElement)) scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+    // let pathOfImage = renderContext.paragraph.path;
+    // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
+      // This is breaking browser tests that involve scrolling
+      // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+      // BackButton.updateVisibilityState();
+    // }
   });
 
   return divElement;
 }
 
-function renderHtmlElement(token) {
+function renderHtmlElement(token, renderContext) {
   let divElement = document.createElement('DIV');
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);
@@ -281,7 +288,12 @@ function renderHtmlElement(token) {
     imageElement.style.setProperty('opacity', '0');
     imageElement.addEventListener('load', () => { // wait for them to load
       imageElement.style.setProperty('opacity', originalOpacity);
-      if (isVisible(imageElement)) scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+      // let pathOfImage = renderContext.paragraph.path;
+      // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
+        // This is breaking browser tests that involve scrolling
+        // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
+        // BackButton.updateVisibilityState();
+      // }
     });
   });
   return divElement;

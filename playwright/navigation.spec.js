@@ -761,4 +761,51 @@ test.describe('Navigation', () => {
 
     await expect(page).toHaveURL('United_States');
   });
+
+  test('Back button behavior', async ({ page, context }) => {
+    await page.goto('/United_States/New_York/Style_examples#Table_lists');
+
+    // In the middle of paragraph, button should hide
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Table_lists');
+    await expect(page.locator('h1')).toBeVisible();
+    await page.waitForFunction(() => window.getComputedStyle(document.getElementById('canopy-back-button')).opacity === '0');
+
+    // Scroll to bottom, button should show
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, scrollBehavior: 'smooth' }));
+    await page.waitForFunction(() => window.getComputedStyle(document.getElementById('canopy-back-button')).opacity === '1');
+    await page.waitForFunction(() => window.innerHeight + window.scrollY >= document.body.scrollHeight - 1);
+
+    // Scroll to top, button should hide
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    await page.waitForFunction(() => window.getComputedStyle(document.getElementById('canopy-back-button')).opacity === '0');
+    await page.waitForFunction(() => window.scrollY < 1);
+
+    // Scroll to bottom, button should show
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, scrollBehavior: 'smooth' }));
+    await page.waitForFunction(() => window.getComputedStyle(document.getElementById('canopy-back-button')).opacity === '1');
+    await page.waitForFunction(() => window.innerHeight + window.scrollY >= document.body.scrollHeight - 1);
+
+    // Click button, path should regress
+    await page.click('#canopy-back-button');
+    await expect(page.locator('a:has-text("style examples")')).toBeVisible();
+    await expect(page).toHaveURL('United_States/New_York');
+
+    // Go back
+    await page.goto('/United_States/New_York/Style_examples#Table_lists');
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Table_lists');
+    await expect(page.locator('h1')).toBeVisible();
+
+    // Scroll to bottom, button should show
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, scrollBehavior: 'smooth' }));
+    await page.waitForFunction(() => window.getComputedStyle(document.getElementById('canopy-back-button')).opacity === '1');
+
+    // Press down, button should select
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveId('canopy-back-button');
+
+    // Press Enter, path should regress
+    await page.locator('body').press('Enter');
+    await expect(page.locator('a:has-text("style examples")')).toBeVisible();
+    await expect(page).toHaveURL('United_States/New_York');
+  });
 });

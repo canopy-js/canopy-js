@@ -3,6 +3,7 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
+import BackButton from 'render/back_button';
 
 function moveInDirection(direction) {
   const currentLinkElement = Link.selection.element;
@@ -79,7 +80,7 @@ function moveInDirection(direction) {
     let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers
-      .filter(rectObject => isLower(rectObject, currentSelectionHigherRect) && !isVerticallyOverlapping(rectObject, currentSelectionHigherRect))
+      .filter(rectObject => isLower(rectObject, currentSelectionHigherRect) && !isVerticallyOverlapping(rectObject, currentSelectionHigherRect) && isInViewportVertically(rectObject))
       .filter(rect => rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
@@ -333,6 +334,16 @@ function isVerticallyOverlapping(rect1, rect2) {
   );
 }
 
+function isInViewportVertically(rectObject) {
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  // Check if the top or the bottom of the rectangle is within the viewport
+  return (
+    (rectObject.top >= 0 && rectObject.top <= viewportHeight) ||
+    (rectObject.bottom >= 0 && rectObject.bottom <= viewportHeight)
+  );
+}
+
 function horizontallyCloserRect(rect1, rect2, targetRect) {
   const midpointRect1 = (rect1.left + rect1.right) / 2;
   const midpointRect2 = (rect2.left + rect2.right) / 2;
@@ -350,11 +361,18 @@ function horizontallyCloserRect(rect1, rect2, targetRect) {
 
 function scrollOrSelect(rect) {
   const amountOfLinkThatMustBeVisibleToSelect = 15;
-  if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
+  const backButton = document.getElementById('canopy-back-button');
+
+  if (rect.element === BackButton.element && BackButton.canBecomeSelected) {
+    BackButton.select();
+  } else if (rect.element === backButton && ! BackButton.canBecomeSelected) {
+    let sectionElement = Paragraph.current.sectionElement;
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+  } else if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
   } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
-  } else {
+  } else if (rect.element !== backButton) {
     const link = new Link(rect.element);
     return updateView(link.path, link);
   }

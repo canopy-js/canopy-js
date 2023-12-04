@@ -64,7 +64,6 @@ const shortcutRelationships = {
   'u': moveToParent,
   'i': moveToParent,
   'shift-enter': moveToParent,
-  'space': moveToParent,
 
   'n': moveToChild,
   'm': moveToChild,

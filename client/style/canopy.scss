@@ -7,7 +7,7 @@
   removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
   the scroll upwards can be animated using the window.scrollTo method. */
 
-  padding-bottom: calc(80vh);
+  padding-bottom: calc(120vh);
 
   font-family: "Times New Roman", Times, serif;
 
@@ -465,5 +465,37 @@
 
   div.canopy-raw-html {
     display: inline;
+  }
+
+  #canopy-back-button-container {
+    position: fixed;  // Fixed position on the screen
+    bottom: 60px;        // Align to the bottom of the screen
+    width: 100%;
+    display: flex;
+    justify-content: center; // Center button horizontally
+
+    #canopy-back-button {
+      cursor: pointer;
+      background-color: white;
+      border: 1.5px solid black;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center; // Center content horizontally
+      align-items: center; // Center content vertically
+      padding: 18px 33px; // Example padding, adjust as needed
+      text-decoration: none; // Removes text decoration
+      text-shadow: none; // Removes text shadow
+      font-size: 18px;
+      color: black;
+      user-select: none;
+
+      &:hover {
+        background-color: #f5f6fe; // Hover background color
+      }
+
+      &.canopy-selected-link {
+        background-color: #edeefc; // Selected state background color
+      }
+    }
   }
 }

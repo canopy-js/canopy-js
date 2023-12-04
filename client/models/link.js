@@ -1,7 +1,7 @@
-import { getAncestorElement } from 'helpers/getters';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
+import BackButton from 'render/back_button';
 
 class Link {
   constructor(argument) {
@@ -103,7 +103,7 @@ class Link {
   }
 
   get enclosingSectionElement() {
-    return getAncestorElement(this.element, 'canopy-section');
+    return this.element.parentNode.closest('.canopy-section');
   }
 
   get sectionElement() {
@@ -111,7 +111,7 @@ class Link {
   }
 
   get enclosingParagraphElement() {
-    return getAncestorElement(this.element, 'canopy-paragraph');
+    return this.element.parentNode.closest('.canopy-paragraph');
   }
 
   get parentParagraphElement() {
@@ -298,6 +298,7 @@ class Link {
   }
 
   get parentLink() {
+    if (this.element === BackButton.element) return Paragraph.current.parentLink;
     return this.enclosingParagraph.parentLink;
   }
 
@@ -306,11 +307,15 @@ class Link {
   }
 
   get topicParagraph() {
-    return getAncestorElement(this.element, 'canopy-topic-section');
+    return new Paragraph(this.element.parentNode.closest('.canopy-topic-section'));
   }
 
   get selected() {
     return this.element.classList.includes('canopy-selected-link');
+  }
+
+  get enclosingPath() {
+    return this.enclosingParagraph.path;
   }
 
   open() {
@@ -353,10 +358,36 @@ class Link {
     return this.targetParagraph.hasLinks;
   }
 
+  get isBackButton() {
+    return this.element === BackButton.element;
+  }
+
+  get isVisible() {
+    const rect = this.element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    return (
+      (rect.top >= 0 && rect.top <= viewportHeight) ||
+      (rect.bottom >= 0 && rect.bottom <= viewportHeight)
+    );
+  }
+
+  select() {
+    Link.select(this);
+  }
+
+  static deselect() {
+    Array.from(document.getElementsByTagName("a")).forEach((linkElement) => {
+      linkElement.classList.remove('canopy-selected-link');
+    });
+  }
+
   static select(linkToSelect) {
-    Link.persistInHistory(linkToSelect);
-    Link.persistInSession(linkToSelect);
-    Link.persistLastSelectionData(linkToSelect);
+    if (!linkToSelect?.isBackButton && !Link.selection?.isBackButton) { // this prevents overcalling
+      Link.persistInHistory(linkToSelect);
+      Link.persistInSession(linkToSelect);
+      Link.persistLastSelectionData(linkToSelect);
+    }
     document.querySelector('a.canopy-selected-link')?.classList.remove('canopy-selected-link');
     if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
   }

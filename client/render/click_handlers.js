@@ -28,7 +28,7 @@ function onLocalLinkClick(targetTopic, targetSubtopic, link) {
     if (!newTab && !e.altKey && !link.isSelected) { // select link
       path = link.path;
       linkToSelect = link;
-      return updateView(path, linkToSelect, { scrollTo: 'child' });
+      return updateView(path, linkToSelect, { scrollTo: 'paragraph' });
     }
   };
 }
@@ -47,12 +47,12 @@ function onGlobalAndImportLinkClick (link) {
     if (!newTab && !e.altKey && !link.isSelected) { // open global child
       path = link.path;
       linkToSelect = link;
-      return updateView(path, linkToSelect, { scrollTo: 'child' });
+      return updateView(path, linkToSelect, { scrollTo: 'paragraph' });
     }
 
     if (!newTab && e.altKey) { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return updateView(path, null, { scrollStyle: 'auto', scrollTo: 'child' });
+      return updateView(path, null, { scrollStyle: 'smooth', scrollTo: 'paragraph' });
     }
 
     if (newTab && e.altKey) { // zoom

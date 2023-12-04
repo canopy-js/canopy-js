@@ -1,7 +1,6 @@
 import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
-import { getAncestorElement } from 'helpers/getters';
 import Topic from '../../cli/shared/topic';
 
 class Paragraph {
@@ -19,6 +18,10 @@ class Paragraph {
     if (!sectionElement.classList.contains('canopy-section')) throw new Error("Paragraph class requires Canopy section element");
     this.sectionElement = sectionElement;
     this.transferDataset();
+  }
+
+  static from(sectionElement) {
+    return new this(sectionElement);
   }
 
   equals(otherParagraph) {
@@ -179,7 +182,7 @@ class Paragraph {
 
   get parentParagraph() {
     if (this.sectionElement) {
-      let parentElement = getAncestorElement(this.sectionElement, 'canopy-section');
+      let parentElement = this.sectionElement.parentNode.closest('.canopy-section');
       return parentElement ? new Paragraph(parentElement) : null;
     } else {
       return null;
@@ -190,7 +193,7 @@ class Paragraph {
     if (this.isTopic) {
       return this;
     } else {
-      return new Paragraph(getAncestorElement(this.sectionElement, 'canopy-topic-section'));
+      return new Paragraph(this.sectionElement.parentNode.closest('.canopy-topic-section'));
     }
   }
 
@@ -215,6 +218,10 @@ class Paragraph {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 
+  scrollComplete() {
+    this.sectionElement.classList.add('canopy-scroll-complete');
+  }
+
   static get pageRoot() {
     let path = Path.current.rootTopicPath;
     return path.paragraph;
@@ -222,10 +229,13 @@ class Paragraph {
 
   static containingLink(link) {
     if (!(link instanceof Link)) throw new Error("Must provide link instance argument");
-    let sectionElement = getAncestorElement(link.element, 'canopy-section');
+    let sectionElement = link.element.parentNode.closest('.canopy-section');
     return new Paragraph(sectionElement);
   }
 
+  static get contentLoaded() {
+    return !!document.querySelector('h1'); // this is a proxy for whether the first render has occured yet
+  }
 }
 
 export default Paragraph;

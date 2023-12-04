@@ -10,19 +10,9 @@ const projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPath
 
 const hashUrls = canopyContainer && canopyContainer.dataset.hashUrls;
 
-function getAncestorElement(currentElement, className) {
-  let parentElement = currentElement.parentElement;
-  while (parentElement.classList && !parentElement.classList.contains(className)) {
-    if (parentElement === canopyContainer) return null;
-    parentElement = parentElement.parentNode;
-  }
-  return parentElement;
-}
-
 export {
   canopyContainer,
   defaultTopic,
   projectPathPrefix,
-  hashUrls,
-  getAncestorElement
+  hashUrls
 };
