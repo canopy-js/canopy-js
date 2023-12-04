@@ -36,6 +36,12 @@ function deselectSectionElement() {
   });
 }
 
+function removeScrollCompleteClass() {
+  Array.from(document.querySelectorAll('.canopy-scroll-complete')).forEach((sectionElement) => {
+    sectionElement.classList.remove('canopy-scroll-complete');
+  });
+}
+
 function hideHeaders() {
   Array.from(document.querySelectorAll('#_canopy h1')).forEach(header => {
     header.style.display = 'none';
@@ -46,10 +52,10 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'auto'});
+    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'smooth'});
   } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'auto' });
+    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'smooth' });
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
@@ -60,6 +66,7 @@ const resetDom = () => {
   deselectAllLinks();
   hideAllSectionElements();
   deselectSectionElement();
+  removeScrollCompleteClass();
 }
 
 function scrollPage(link, displayOptions) {
@@ -68,17 +75,17 @@ function scrollPage(link, displayOptions) {
   canopyContainer.dataset.initialLoad = displayOptions.initialLoad;
 
   if (!Link.selection) return window.scrollTo({ top: 0, behavior })
-  let maxScrollRatio = behavior === 'auto' || displayOptions.scrollTo === 'child' ? Infinity : 0.75; // no limit on initial load and click
+  let maxScrollRatio = behavior === 'instant' || displayOptions.scrollTo === 'child' ? Infinity : 0.75; // no limit on initial load and click
 
   if (displayOptions.scrollTo === 'child') {
     let sectionElement = link.targetParagraph.sectionElement;
-    scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
   } else {
     const linkElement = link?.element;
     if (linkElement) {
-      scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
+      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
     } else {
-      scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
+      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
     }
   }
 }
@@ -113,7 +120,7 @@ function scrollElementToPosition(element, options) {
 
   const idealScrollY = pointToPutAtTarget + currentScroll - idealTargetPosition;
 
-  const maxScrollDistance = viewportHeight * maxScrollRatio;
+  const maxScrollDistance = maxScrollRatio ? viewportHeight * maxScrollRatio : Infinity;
   let actualScrollY;
 
   if (idealScrollY > currentScroll) {
@@ -134,7 +141,7 @@ function scrollElementToPosition(element, options) {
   }
 
   if (shouldScroll) {
-    window.scrollTo({ top: actualScrollY, behavior });
+    return window.scrollTo({ top: actualScrollY, behavior });
   }
 }
 

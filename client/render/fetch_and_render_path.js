@@ -39,7 +39,11 @@ const fetchAndRenderPath = (pathToDisplay, parentElement) => {
 
   return uponRender.then(([ sectionElement, headerElement ]) => {
     headerElement && canopyContainer.prepend(headerElement);
-    parentElement.appendChild(sectionElement);
+    if (parentElement !== canopyContainer) {
+      parentElement.appendChild(sectionElement);
+    } else {
+      parentElement.insertBefore(sectionElement, null); // make sure section is before back button container
+    }
   });
 }
 

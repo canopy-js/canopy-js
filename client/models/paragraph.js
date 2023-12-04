@@ -21,6 +21,10 @@ class Paragraph {
     this.transferDataset();
   }
 
+  static from(sectionElement) {
+    return new this(sectionElement);
+  }
+
   equals(otherParagraph) {
     if (!otherParagraph) return false;
     return this.sectionElement === otherParagraph.sectionElement;
@@ -215,6 +219,10 @@ class Paragraph {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 
+  scrollComplete() {
+    this.sectionElement.classList.add('canopy-scroll-complete');
+  }
+
   static get pageRoot() {
     let path = Path.current.rootTopicPath;
     return path.paragraph;
@@ -226,6 +234,9 @@ class Paragraph {
     return new Paragraph(sectionElement);
   }
 
+  static get contentLoaded() {
+    return !!document.querySelector('h1'); // this is a proxy for whether the first render has occured yet
+  }
 }
 
 export default Paragraph;

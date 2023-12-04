@@ -3,6 +3,7 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
+import BackButton from 'render/back_button';
 
 function moveToParent() {
   let link = Link.selection;
@@ -20,6 +21,7 @@ function moveToParent() {
     }
   } else { // there is a parent link
     if (!isVisible(parentLink)) {
+      if (link.isBackButton) BackButton.deselect() || BackButton.disableForSecond();
       scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
     } else {
       return updateView(
@@ -44,14 +46,14 @@ function topicParentLink() {
 function moveToChild() {
   let oldLink = Link.selection;
 
-  if (oldLink.isImport) {
+  if (oldLink.isImport && oldLink.isVisible) {
     updateView(
       oldLink.path,
       oldLink.targetParagraph.parentLink
     );
   }
 
-  if (oldLink.isGlobal || oldLink.isLocal) {
+  if ((oldLink.isGlobal || oldLink.isLocal) && oldLink.isVisible) {
     let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph?.parentLink;
 
     updateView(
@@ -60,16 +62,26 @@ function moveToChild() {
     );
   }
 
-  if (!oldLink.isParent) {
+  if (!oldLink.isParent && !oldLink.isBackButton && oldLink.isVisible) {
     updateView(
       oldLink.path,
       oldLink
     );
   }
+
+  if (BackButton.canBecomeSelected) {
+    BackButton.select();
+  }
 }
 
 function moveDownOrRedirect({ newTab, altKey }) {
   let link, path;
+
+  if (Link.selection.isBackButton) {
+    BackButton.disableForSecond();
+    BackButton.execute();
+    return;
+  }
 
   if (Link.selection.isLocal && (Link.selection.targetParagraph.hasLinks || altKey)) {
     link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
@@ -98,7 +110,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
       return updateView(
         path,
         null,
-        { scrollStyle: 'auto' }
+        { scrollStyle: 'instant' }
       )
     } else if (isVisible(link)) {
       return updateView(path, link);
@@ -119,7 +131,7 @@ function moveDownOrRedirect({ newTab, altKey }) {
       return updateView(
         path,
         Link.selection.parentLink.atNewPath(path),
-        { scrollStyle: 'auto' }
+        { scrollStyle: 'instant' }
       )
     } else if (isVisible(link)) {
       return updateView(path);
@@ -128,6 +140,10 @@ function moveDownOrRedirect({ newTab, altKey }) {
 
   if (Link.selection.type === 'url') {
     return window.open(Link.selection.element.href, '_blank');
+  }
+
+  if (BackButton.canBecomeSelected) {
+    return BackButton.select();
   }
 
   // If no child link or child link is not visible, scroll downwards
@@ -234,12 +250,12 @@ function zoomOnLocalPath() {
   return updateView(
     newPath,
     newLink,
-    { scrollStyle: 'auto' }
+    { scrollStyle: 'instant' }
   );
 }
 
 function removeSelection() {
-  return updateView(Path.current.rootTopicPath, null, { scrollStyle: 'auto' });
+  return updateView(Path.current.rootTopicPath, null, { scrollStyle: 'instant' });
 }
 
 function duplicate() {

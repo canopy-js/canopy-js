@@ -7,6 +7,8 @@ import {
   resetDom,
   scrollPage,
 } from 'display/helpers';
+import BackButton from 'render/back_button';
+import { canopyContainer } from 'helpers/getters';
 
 function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   displayOptions = displayOptions || {};
@@ -16,15 +18,16 @@ function displayPath (pathToDisplay, linkToSelect, displayOptions) {
   if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.path, linkToSelect, displayOptions);
 
   resetDom();
-  Path.setPath(linkToSelect?.path || pathToDisplay); // must be done before link.select because selection cache is by current URL
   let header = setHeader(pathToDisplay.rootTopicPath.topic, displayOptions);
   document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
+  Path.setPath(linkToSelect?.path || pathToDisplay); // must be done before link.select because selection cache is by current URL
   Link.select(linkToSelect); // if null, persists deselect
 
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], displayOptions);
-  pathToDisplay.paragraph.select(); // putting this last gives browser tests a DOM change to wait on
+  pathToDisplay.paragraph.select();
   scrollPage(linkToSelect, displayOptions);
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
+  BackButton.handlePathChange(displayOptions.initialLoad);
 };
 
 const displayPathTo = (paragraph, visibleParagraphs, displayOptions) => {

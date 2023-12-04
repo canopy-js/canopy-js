@@ -52,7 +52,7 @@ function onGlobalAndImportLinkClick (link) {
 
     if (!newTab && e.altKey) { // Redirect to global child
       path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return updateView(path, null, { scrollStyle: 'auto', scrollTo: 'child' });
+      return updateView(path, null, { scrollStyle: 'smooth', scrollTo: 'child' });
     }
 
     if (newTab && e.altKey) { // zoom
