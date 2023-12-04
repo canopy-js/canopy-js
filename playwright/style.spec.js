@@ -113,11 +113,12 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
     await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
 
-    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    let tokensBottom = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    expect(svgBottom - tokensBottom).toBeLessThan(5);
+    let svgLeft = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
+      element => element.getBoundingClientRect().left);
+    let tokensLeft = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
+      element => element.getBoundingClientRect().left);
+
+    expect(svgLeft - tokensLeft > 100).toEqual(true); // did not wrap
   });
 
   test('It will not separate link icon from following punctuation', async ({ page }) => {
@@ -139,7 +140,7 @@ test.describe('Inline entities', () => {
 
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
-    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText)).toEqual('Text. This is a test. Text.'); // no newlines
+    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText.trim())).toEqual('Text. This is a test. Text.'); // no newlines between html element and following text
     await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
   });
 
