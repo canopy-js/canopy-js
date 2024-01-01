@@ -31,11 +31,11 @@
   }
 
   section.canopy-topic-section {
-    margin-top: 25px;
+    margin-top: 35px;
   }
 
   section {
-    margin-top: 25px;
+    margin-top: 35px;
   }
 
   p {
@@ -82,41 +82,44 @@
       text-decoration: none;
     }
 
-    &.canopy-url-link {
-      text-decoration: none; // we want the selection background to extend beyond the icon but the underlining only until the end of the icon's bottom
+    &.canopy-external-link {
       display: inline;
       overflow-wrap: break-word;
       white-space: normal;
-      margin-right: -2px; // we want the text after the icon to hug the icon, eg if it is a period
 
-      .canopy-url-link-tokens-container {
-        text-decoration: underline #DDDDDD;
-
-        &:hover {
-          text-decoration: underline #000000; // hover underline should be black
-        }
+      &:not(.canopy-table-list-link-cell) *:last-child::after {
+        content: ' ';
+        font-size: 3px;
+        white-space: nowrap;
       }
 
-      .canopy-url-link-svg-container {
-        padding-right: 3px; // this is the spacing after the icon that extends the selected-link-selection bg but not the underlining
-        margin-left: -8px; // We add 3 non-breaking spaces, then move the svg over them so the last word always wraps with svg
-        margin-right: -8px; // If character after is punctuation and we move it within the spacing, it will also wrap with the svg
+      &:not(.canopy-table-list-link-cell)::after {
+        content: '➹';
+        font-size: 9px;
+        white-space: nowrap; /* Prevents the icon from wrapping */
+        position: relative; /* Set position to relative */
+        top: 1px; /* Nudge text down by 2px; adjust as needed */
+      }
+    }
+
+    &.canopy-cycle-link {
+      display: inline-block; /* Ensures the link behaves as a single unit */
+
+      &:not(.canopy-table-list-link-cell) *:last-child::after {
+        content: ' ';
+        font-size: 4px;
+        white-space: nowrap;
       }
 
-      .canopy-url-link-tokens-spacing { // this is the spacing before the icon that creates space for the icon's negative margin
-        font-size: 18px;                // we use spaces and not padding because spaces can get text-decoration
+      &:not(.canopy-table-list-link-cell):not(.canopy-open-link)::after {
+        content: '↩';
+        font-size: 10px;
+        position: relative; /* Allows for position adjustment */
+        top: 2px;
+        left: 0px;
+        white-space: nowrap; /* Prevents the icon from wrapping */
       }
-
-      span {
-        display: inline;
-      }
-
-      svg {
-        height: 15px;
-        width: 12px;
-        vertical-align: -4px; // move the icon in-line with the text
-      }
-     }
+    }
   }
 
 /////////////////////////////////////////////
@@ -292,6 +295,8 @@
 
       .canopy-table-list-content-container {
         display: inline;
+        max-width: 100%;
+        max-height: 100%;
       }
 
       &.canopy-table-list-ordinal-cell .canopy-table-list-content-container {
@@ -313,16 +318,32 @@
       justify-content: center; /* Center content horizontally */
       align-items: center; /* Center content vertically */
 
-      .canopy-table-list-content-container {
-        display: inline;
-      }
-
-      &.canopy-url-link {
+      &.canopy-external-link {
         margin: 5px; // cancel negative margin
+
+        &.canopy-selectable-link * {
+          text-decoration: none;
+        }
+
+        .canopy-table-list-content-container::after {
+          content: ' ➹';
+          font-size: 11px;
+          margin-left: -5px; /* Negative margin to pull the icon closer to the last word */
+          position: relative; /* Allows for position adjustment */
+          top: 2px; /* Move the icon up (- value) or down (+ value) */
+          left: 5px;
+          white-space: nowrap; /* Prevents the icon from wrapping */
+        }
       }
 
-      &.canopy-url-link.canopy-selectable-link * {
-        text-decoration: none;
+      &.canopy-cycle-link .canopy-table-list-content-container::after {
+        content: ' ↩';
+        font-size: 11px;
+        margin-left: -5px; /* Negative margin to pull the icon closer to the last word */
+        position: relative; /* Allows for position adjustment */
+        top: 2px; /* Move the icon up (- value) or down (+ value) */
+        left: 5px;
+        white-space: nowrap; /* Prevents the icon from wrapping */
       }
 
       &.canopy-selectable-link {
@@ -351,19 +372,19 @@
     &.canopy-quarter-pill .canopy-table-list-cell {
       width: 175px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-third-pill .canopy-table-list-cell {
       width: 220px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-half-pill .canopy-table-list-cell {
       width: 270px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-quarter-card .canopy-table-list-cell {
@@ -380,6 +401,7 @@
 
     &.canopy-half-card .canopy-table-list-cell {
       width: 285px;
+      height: 265px;
       min-height: 160px;
       padding: 30px;
     }
@@ -394,6 +416,10 @@
   }
 
   .canopy-image {
+    background-color: #E5E5E5; // light gray
+    display: block;
+    object-fit: cover;
+
     &:not(:last-child) {
       margin-bottom: 15px;
     }
@@ -415,13 +441,13 @@
     span.canopy-image-caption {
       margin: 0px auto;
       width: 100%;
-      padding: 6px 0;
+      padding: 6px 6px;
       text-align: left;
       display: block;
       font-size: 16px;
-      margin-top: 4px;
       line-height: 18px;
       color: #595959;
+      background-color: white;
 
       a {
         color: #595959;

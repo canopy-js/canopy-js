@@ -3,48 +3,50 @@ import requestJson from 'requests/request_json';
 import Path from 'models/path';
 import { canopyContainer } from 'helpers/getters';
 import { generateHeader } from 'render/helpers';
+import BackButton from 'render/back_button';
 
-const fetchAndRenderPath = (pathToDisplay, parentElement) => {
-  if (pathToDisplay.length === 0) {
-    return Promise.resolve(null);
+const fetchAndRenderPath = (fullPath, remainingPath, parentElementOrPromise) => {
+  if (remainingPath.length === 0) {
+    return Promise.resolve();
   }
 
-  pathToDisplay.slice(1).forEach(([topic]) => { requestJson(topic) }); // preload later path segments
-
-  let preexistingElement = Path.elementAtRelativePath(pathToDisplay.firstSegment, parentElement);
-  if (preexistingElement) {
-    if (!Path.connectingLinkValid(parentElement, pathToDisplay)) return Promise.resolve();
-    return fetchAndRenderPath(pathToDisplay.withoutFirstSegment, preexistingElement);
+  if (parentElementOrPromise instanceof HTMLElement) {
+    let preexistingElement = Path.elementAtRelativePath(remainingPath.firstSegment, parentElementOrPromise);
+    if (preexistingElement) return fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, preexistingElement);
+    parentElementOrPromise = Promise.resolve(parentElementOrPromise);
   }
 
-  let uponResponsePromise = requestJson(pathToDisplay.firstTopic);
+  let sectionElementPromise = requestJson(remainingPath.firstTopic)
+    .then(({ paragraphsBySubtopic, displayTopicName, topicTokens }) => {
+      if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader(topicTokens, displayTopicName));
 
-  let uponRender = uponResponsePromise.then(({ paragraphsBySubtopic, displayTopicName, topicTokens }) => {
-    let headerElement = parentElement === canopyContainer ? // generate header if paragraph is root
-      Promise.resolve(generateHeader(topicTokens, displayTopicName)) : null;
+      return renderDomTree(
+        remainingPath.firstTopic,
+        remainingPath.firstTopic,
+        {
+          remainingPath,
+          displayTopicName,
+          paragraphsBySubtopic,
+          fullPath,
+          pathDepth: fullPath.length - remainingPath.length
+        },
+      );
+    });
 
-    let sectionElement = renderDomTree(
-      {
-        topic: pathToDisplay.firstTopic,
-        subtopic: pathToDisplay.firstTopic,
-        pathToDisplay,
-        displayTopicName,
-        paragraphsBySubtopic,
-        pathDepth: Number(parentElement.dataset.pathDepth) + 1 || 0
-      },
-    );
-
-    return Promise.all([sectionElement, headerElement]);
+  let appendingPromise = Promise.all([parentElementOrPromise, sectionElementPromise]).then(([parentSectionElement, sectionElement]) => {
+    if (!Path.connectingLinkValid(parentSectionElement, remainingPath)) return Promise.resolve(); // fail silently, error on tryPrefix
+    parentSectionElement.appendChild(sectionElement);
+    canopyContainer.appendChild(BackButton.container); // move to last
   });
 
-  return uponRender.then(([ sectionElement, headerElement ]) => {
-    headerElement && canopyContainer.prepend(headerElement);
-    if (parentElement !== canopyContainer) {
-      parentElement.appendChild(sectionElement);
-    } else {
-      parentElement.insertBefore(sectionElement, null); // make sure section is before back button container
-    }
+  let subtopicElementPromise = sectionElementPromise.then(sectionElement => {
+    return sectionElement.querySelector(`section[data-subtopic-name="${remainingPath.firstSubtopic.escapedMixedCase}"]`) || sectionElement;
   });
+
+  let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicElementPromise);
+
+  return Promise.all([sectionElementPromise, parentElementOrPromise, childSectionElementPromise, appendingPromise])
+    .then(([sectionElement]) => sectionElement);
 }
 
 export default fetchAndRenderPath;

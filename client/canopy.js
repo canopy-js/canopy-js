@@ -11,7 +11,7 @@ registerKeyListeners();
 registerPopStateListener();
 
 updateView(
-  Path.currentOrDefault,
+  Path.initial,
   Link.priorSelection,
   { scrollStyle: 'instant', initialLoad: true }
 );

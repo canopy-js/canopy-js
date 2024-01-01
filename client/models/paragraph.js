@@ -2,6 +2,7 @@ import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 import Topic from '../../cli/shared/topic';
+import updateView from 'display/update_view';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not
@@ -116,7 +117,7 @@ class Paragraph {
     return this.sectionElement.parentNode === canopyContainer
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.topic.caps === this.subtopic.caps;
   }
 
@@ -197,12 +198,16 @@ class Paragraph {
     }
   }
 
-  get isTopicRoot() {
-    return this.topicName === this.subtopicName;
+  get isTopic() {
+    return this.topic.mixedCase === this.subtopic.mixedCase;
   }
 
   get isInDom() {
     return this.sectionElement.closest('div#_canopy');
+  }
+
+  static get selection() {
+    return Paragraph.current;
   }
 
   static get current() {
@@ -214,7 +219,12 @@ class Paragraph {
     }
   }
 
-  select() {
+  select(options) {
+    if (options?.newTab) return window.open(location.origin + this.path.string, '_blank');
+    return updateView(this.path, this.parentLink, options);
+  }
+
+  addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 

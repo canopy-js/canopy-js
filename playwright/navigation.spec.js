@@ -625,7 +625,7 @@ test.describe('Navigation', () => {
     await expect(newPage).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
   });
 
-  test('it allows self-import references', async ({ page, context }) => {
+  test('it path-reduces self-import references', async ({ page, context }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
@@ -639,9 +639,10 @@ test.describe('Navigation', () => {
 
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await expect(page.locator("text=Martha's Vineyard is a an Island in Massachusetts >> visible=true")).toHaveCount(2);
+    await expect(page.locator("text=Martha's Vineyard is a an Island in Massachusetts >> visible=true")).toHaveCount(1); // we path reduced
 
-    await page.locator('body').press('ArrowRight');
+    await page.locator('body').press('Enter');
+    await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await expect(page.locator('text=There is nice food >> visible=true')).toHaveCount(1);
 
@@ -807,5 +808,18 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
     await expect(page.locator('a:has-text("style examples")')).toBeVisible();
     await expect(page).toHaveURL('United_States/New_York');
+  });
+
+  test('Path reduction', async ({ page, context }) => {
+    await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await expect(page.locator('h1')).toBeVisible();
+
+    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border');
+
+    // we also want it to scroll to New_York#Southern_border, not to New_York, ie it should identify when nodes after the cycle occur
+    // after the cycle start, because we should scroll to the lowest common ancestor before changing the selection, not the cycle starting point
+    await expect(page.evaluate(() => window.scrollY)).not.toEqual(0);
   });
 });

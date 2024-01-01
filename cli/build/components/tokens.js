@@ -68,8 +68,8 @@ function ImportReferenceToken(
   parserContext.paragraphReferences.push(this);
 }
 
-function UrlToken(url, text, parserContext) {
-  this.type = 'url';
+function ExternalLinkToken(url, text, parserContext) {
+  this.type = 'external';
   this.url = url || text;
   this.text = text || url;
   if (!text) {
@@ -366,7 +366,7 @@ module.exports = {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  UrlToken,
+  ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
   HtmlToken,

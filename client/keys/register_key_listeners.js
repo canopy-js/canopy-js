@@ -3,6 +3,7 @@ import {
   moveToParent,
   moveToChild,
   moveDownOrRedirect,
+  inlineCycleLink,
   depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,
@@ -39,13 +40,10 @@ const registerKeyListeners = () => {
       return goToDefaultTopic();
     }
 
-    if (Link.selection) {
+    if (Link.selection || universalShortcutRelationships.hasOwnProperty(shortcutName)) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
-      updateView(
-        Path.current,
-        Link.lastSelectionOfParagraph(Paragraph.pageRoot) || Link.selectALink()
-      );
+      (Link.lastSelectionOfParagraph(Paragraph.pageRoot) || Link.selectALink()).select();
     }
   });
 }
@@ -54,11 +52,15 @@ const shortcutRelationships = {
   'left': moveInDirection.bind(null, 'left'),
   'up': moveInDirection.bind(null, 'up'),
   'down': moveInDirection.bind(null, 'down'),
+  'shift-down': inlineCycleLink,
+  'alt-down': inlineCycleLink,
   'right': moveInDirection.bind(null, 'right'),
 
   'h': moveInDirection.bind(null, 'left'),
   'k': moveInDirection.bind(null, 'up'),
   'j': moveInDirection.bind(null, 'down'),
+  'shift-j': inlineCycleLink,
+  'alt-j': inlineCycleLink,
   'l': moveInDirection.bind(null, 'right'),
 
   'u': moveToParent,
@@ -83,9 +85,20 @@ const shortcutRelationships = {
   'meta-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // mac
   'ctrl-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // windows & linux
 
+  'enter-shift': () => moveDownOrRedirect({}),
+  'meta-shift-enter': () => moveDownOrRedirect({ newTab: true, shiftKey: true }), // mac
+  'ctrl-shift-enter': () => moveDownOrRedirect({ newTab: true, shiftKey: true }), // windows & linux
+  'alt-shift-enter': () => moveDownOrRedirect({ newTab: false, altKey: true, shiftKey: true }),
+  'meta-alt-shift-enter': () => moveDownOrRedirect({ newTab: true, altKey: true, shiftKey: true }), // mac
+  'ctrl-alt-shift-enter': () => moveDownOrRedirect({ newTab: true, altKey: true, shiftKey: true }), // windows & linux
+
   'tab': depthFirstSearch,
   'shift-tab': browserBack
 }
+
+const universalShortcutRelationships = [ // shortcuts that always work, even if there isn't an already selected link
+  'c'
+];
 
 const keyNames = {
   37: 'left',

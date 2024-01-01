@@ -2,6 +2,7 @@ import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import BackButton from 'render/back_button';
+import updateView from 'display/update_view';
 
 class Link {
   constructor(argument) {
@@ -37,9 +38,9 @@ class Link {
       this.relativeLinkNumber === otherLink.relativeLinkNumber;
   }
 
-  contradicts(path) {
-    if (!(path instanceof Path)) throw new Error('Invalid path argument to Link#contradicts');
-    return this.path.string !== path.string;
+  contradicts(otherPath) {
+    if (!(otherPath instanceof Path)) throw new Error('Invalid path argument to Link#contradicts');
+    return this.targetPath.string !== otherPath.string;
   }
 
   get element () {
@@ -122,6 +123,11 @@ class Link {
     return new Paragraph(this.enclosingSectionElement);
   }
 
+  get enclosingPath() {
+    if (this.metadataObject && !Paragraph.contentLoaded) return new Path(this.metadataObject.enclosingPathString);
+    return this.enclosingParagraph.path;
+  }
+
   get targetParagraph() {
     if (!this.isParent) return null;
 
@@ -135,6 +141,7 @@ class Link {
       );
 
     if (!sectionElement) {
+      if (this.cycle) return null; // the paragraph doesn't exist because we didn't preview it
       throw new Error(`Did not find paragraph child element matching link [${this.targetTopic.mixedCase}, ${this.targetSubtopic.mixedCase}]`);
     }
 
@@ -178,9 +185,9 @@ class Link {
     return this.storedRelativeLinkNumber;
   }
 
-  /* eslint getter-return: "off" */
   get metadata() {
     if (this.metadataObject) {
+      if (this?.linkElement) return Link.collectMetadata(this.linkElement); // rewrite in case format changed
       return this.metadataObject;
     } else if(this.linkElement) {
       let metadata = Link.collectMetadata(this.linkElement);
@@ -194,26 +201,9 @@ class Link {
     }
   }
 
-  get targetPath() {
-    if (this.isGlobalOrImport) {
-      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
-    } else if (this.isLocal) {
-      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
-    } else {
-      return null; // eg URL link
-    }
-  }
-
-  get pathToDisplay() {
-    throw new Error("Depreciated in favor of #path");
-  }
-
-  // Previously there were multiple path concepts related to links, eg the path to the paragraph containing the link,
-  // or the path to the target of the link (if it is local, global, or import), and thirdly the path of paragraphs
-  // to display when the given link is selected. When previously a selected import reference previewed the target
-  // path but used the URL of the enclosing paragraph, these three concepts could vary, but now they always coincide.
-
   get path() {
+    console.error('Calls to Link#path must be replaced with #inlinePath or #previewPath or #literalPath')
+
     if (this.isGlobalOrImport) {
       return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
     } else if (this.isLocal) {
@@ -223,8 +213,15 @@ class Link {
     }
   }
 
-  get urlPathWhenSelected() {
-    throw new Error("Depreciated in favor of #path"); // no longer different from path of displayed paragraph
+  get targetPath() { // links are assumed to be inlined unless the user redirects explicitly
+    console.error('#targetPath is deprecated in favor of #inlinePath or #literalPath');
+
+    return this.path;
+  }
+
+  get literalPath() {
+    if (!this.isGlobalOrImport) return null;
+    return Path.forSegment(this.targetTopic, this.targetSubtopic); // this will have to change for path links which can have multiple segments
   }
 
   static collectMetadata(linkElement) {
@@ -233,9 +230,10 @@ class Link {
 
     // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
     return {
-      pathString: paragraph.path.string, // initial page load with session/history link selection requires this
+      enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
-      relativeLinkNumber: link.relativeLinkNumber
+      relativeLinkNumber: link.relativeLinkNumber,
+      previewPathString: link.previewPath.string // on initial page load we need the paragraph path to call updateView before we have a link to use
     };
   }
 
@@ -244,10 +242,10 @@ class Link {
   }
 
   static elementFromMetadata(object) {
-    let path = new Path(object.pathString);
-    let paragraph = path.paragraph;
-    if (!paragraph) throw new Error("Link selection data refers to non-existant link");
-    let link = paragraph.linkBySelector(
+    let enclosingPath = new Path(object.enclosingPathString);
+    let enclosingParagraph = enclosingPath.paragraph;
+    if (!enclosingParagraph) throw new Error("Link selection data refers to non-existant link");
+    let link = enclosingParagraph.linkBySelector(
       (link, i) => link.element.dataset.text === object.text &&
         i === object.relativeLinkNumber
     );
@@ -314,10 +312,6 @@ class Link {
     return this.element.classList.includes('canopy-selected-link');
   }
 
-  get enclosingPath() {
-    return this.enclosingParagraph.path;
-  }
-
   open() {
     this.element.classList.add('canopy-open-link');
   }
@@ -342,6 +336,10 @@ class Link {
     return this.type === 'import';
   }
 
+  get isExternal() {
+    return this.type === 'external';
+  }
+
   get isGlobalOrImport() {
     return this.type === 'global' || this.type === 'import';
   }
@@ -350,12 +348,20 @@ class Link {
     return this.type === 'local';
   }
 
+  get isCycle() {
+    return this.introducesNewCycle;
+  }
+
   get isParent() {
     return this.isGlobal || this.isLocal || this.isImport;
   }
 
   get hasChildren() {
-    return this.targetParagraph.hasLinks;
+    return this.targetParagraph?.hasLinks;
+  }
+
+  get firstChild() {
+    return this.targetParagraph?.firstLink;
   }
 
   get isBackButton() {
@@ -372,24 +378,116 @@ class Link {
     );
   }
 
-  select() {
-    Link.select(this);
+  get cycle() {
+    return this.introducesNewCycle;
   }
 
-  static deselect() {
+  get introducesNewCycle() {
+    if (!this.isGlobalOrImport) return false;
+    return Link.introducesNewCycle(this.enclosingPath, this.literalPath);
+  }
+
+  static introducesNewCycle(enclosingPath, literalPath) {
+    let enclosingPathTopicStrings = enclosingPath.topicArray.map(t => t.mixedCase);
+    let targetPathTopicStrings = literalPath.topicArray.map(t => t.mixedCase);
+    return enclosingPathTopicStrings.some((enclosingTopicString, enclosingTopicIndex) => {
+      return targetPathTopicStrings.some((targetTopicString, targetTopicIndex) => {
+        return enclosingTopicString === targetTopicString &&
+          !(enclosingPath.equals(enclosingPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
+      });
+    });
+  }
+
+  get inlinePath() { // ie if the user would inline the link's target at the link's enclosing path
+    if (this.isGlobalOrImport) {
+      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
+    } else if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    } else {
+      return this.enclosingParagraph.path;
+    }
+  }
+
+  get previewPath() {
+    if (this.metadataObject && !Paragraph.contentLoaded) { // for initial page load before links exist
+      return new Path(this.metadataObject.previewPathString);
+    }
+
+    if (this.isExternal) { // select the link and display enclosing path
+      return this.enclosingPath;
+    } else if (this.isGlobalOrImport && this.introducesNewCycle) { // select the link and display enclosing path
+      return this.enclosingPath;
+    } else if (this.isGlobalOrImport) { // select link and advance the path
+      return this.inlinePath;
+    } else if (this.isLocal) { // select link and advance the path
+      return this.inlinePath;
+    } else if (this.isBackButton) { // select back button
+      return Path.current;
+    }
+  }
+
+  select(options) {
+    if (this.isBackButton) return BackButton.select();
+    if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.string, '_blank');
+    return updateView(this.previewPath, this, options);
+  }
+
+  execute(options) {
+    options = { scrollDirect: true, ...options };
+
+    if (this.isExternal) {
+      return window.open(location.origin + this.inlinePath.string, '_blank'); // external links must open in new tab
+    } else if (this.isBackButton) {
+      return BackButton.execute();
+    } else if (options.redirect) { // all handling is the same for redirection
+      return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
+    } else if (this.isGlobalOrImport && this.introducesNewCycle && !options.inlineCycles) {
+      return this.inlinePath.reduce().display(options);
+    } else { // inlined cycles, globals, and locals advance
+      return this.inlinePath.display({
+        selectALink: options.selectALink !== false,
+        noAnimate: true, // a direct execution that isn't a cycle shouldn't animate
+        ...options
+      });
+    }
+  }
+
+  static removeSelectionClass() {
     Array.from(document.getElementsByTagName("a")).forEach((linkElement) => {
       linkElement.classList.remove('canopy-selected-link');
     });
   }
 
-  static select(linkToSelect) {
-    if (!linkToSelect?.isBackButton && !Link.selection?.isBackButton) { // this prevents overcalling
-      Link.persistInHistory(linkToSelect);
-      Link.persistInSession(linkToSelect);
-      Link.persistLastSelectionData(linkToSelect);
-    }
+  addSelectionClass() {
+    Link.updateSelectionClass(this);
+  }
+
+  get onCurrentPage() {
+    const style = window.getComputedStyle(this.element);
+
+    return (
+      this.element.offsetWidth > 0 &&
+      this.element.offsetHeight > 0 &&
+      style.display !== 'none' &&
+      style.visibility !== 'hidden'
+    );
+  }
+
+  static deselect(newLink) {
+    Link.updateSelectionClass(newLink || null);
+  }
+
+  static updateSelectionClass(linkToSelect) {
     document.querySelector('a.canopy-selected-link')?.classList.remove('canopy-selected-link');
     if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
+  }
+
+  static persistSelection(linkToSelect) {
+    if (linkToSelect?.isBackButton || Link.selection?.isBackButton) return; // this prevents overcalling DOM APIs
+
+    Link.persistInHistory(linkToSelect);
+    Link.persistInSession(linkToSelect);
+    Link.persistLastSelectionData(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -397,7 +495,9 @@ class Link {
   }
 
   static get sessionSelection() {
-    let sessionData = sessionStorage.getItem(Path.current.string);
+    if (Path.url.empty) return null; // initial '/' load will never recall link selection
+
+    let sessionData = sessionStorage.getItem(Path.url.string);
     if (sessionData && sessionData !== 'null') {
       let link = new Link(JSON.parse(sessionData));
       return link;
@@ -407,6 +507,8 @@ class Link {
   }
 
   static get historySelection() {
+    if (Path.url.empty) return null; // initial '/' load will never recall link selection
+
     if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
       let link = new Link(history.state);
       return link;

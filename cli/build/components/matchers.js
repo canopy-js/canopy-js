@@ -3,7 +3,7 @@ let {
   GlobalReferenceToken,
   ImportReferenceToken,
   TextToken,
-  UrlToken,
+  ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
   HtmlToken,
@@ -348,7 +348,7 @@ function hyperlinkMatcher({ string, parserContext }) {
   if (match) {
     let [_, text, url] = match;
     return [
-      new UrlToken(url, text, parserContext),
+      new ExternalLinkToken(url, text, parserContext),
       match[0].length
     ];
   }
@@ -358,7 +358,7 @@ function urlMatcher({ string, parserContext }) {
   let match = string.match(/^([A-Za-z0-9+\-.]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
-      new UrlToken(match[1]),
+      new ExternalLinkToken(match[1]),
       match[0].length
     ];
   }

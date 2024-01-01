@@ -7,10 +7,8 @@ import BackButton from 'render/back_button';
 
 function moveToParent() {
   let link = Link.selection;
-
   let parentLink = link && link.parentLink && Link.lastSelectionOfParagraph(link.parentLink?.enclosingParagraph) || link.parentLink;
 
-  // Use the isVisible function to check visibility.
   if (!parentLink) { // eg link in root paragraph
     if (!isVisible(link)) {
       let sectionElement = Link.selection.enclosingParagraph.sectionElement;
@@ -25,7 +23,7 @@ function moveToParent() {
       scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
     } else {
       return updateView(
-        link.parentLink.path,
+        link.parentLink.previewPath,
         new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
       );
     }
@@ -37,10 +35,7 @@ function topicParentLink() {
   let newLink = Link.lastSelectionOfParagraph(link.enclosingParagraph.topicParagraph.parentParagraph) ||
     link.enclosingParagraph.topicParagraph.parentLink;
 
-  return updateView(
-    newLink?.path || Path.current,
-    newLink || link
-  );
+  return newLink?.select() || Link.deselect();
 }
 
 function moveToChild() {
@@ -74,86 +69,25 @@ function moveToChild() {
   }
 }
 
-function moveDownOrRedirect({ newTab, altKey }) {
-  let link, path;
-
-  if (Link.selection.isBackButton) {
-    BackButton.disableForSecond();
-    BackButton.execute();
-    return;
-  }
-
-  if (Link.selection.isLocal && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
-    path = link.path;
-
-    if (newTab) {
-      return window.open(location.origin + path, '_blank'); // zoom
-    } else if (isVisible(link)) {
-      return updateView(path, link); // no zoom
-    }
-  }
-
-  if (Link.selection.isGlobal && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    if (!altKey) {
-      link =
-        Link.lastSelectionOfParagraph(Link.selection.targetParagraph) ||
-        Link.selection.targetParagraph?.firstLink;
-      path = link.path;
-    } else {
-      path = Link.selection.targetPath.lastSegment;
-    }
-
-    if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
-    } else if (altKey) {
-      return updateView(
-        path,
-        null,
-        { scrollStyle: 'instant' }
-      )
-    } else if (isVisible(link)) {
-      return updateView(path, link);
-    }
-  }
-
-  if (Link.selection.isImport && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    if (!altKey) {
-      link = Link.selection.targetParagraph?.parentLink;
-      path = link.path;
-    } else {
-      path = Link.selection.targetPath.lastSegment;
-    }
-
-    if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
-    } else if (altKey) {
-      return updateView(
-        path,
-        Link.selection.parentLink.atNewPath(path),
-        { scrollStyle: 'instant' }
-      )
-    } else if (isVisible(link)) {
-      return updateView(path);
-    }
-  }
-
-  if (Link.selection.type === 'url') {
-    return window.open(Link.selection.element.href, '_blank');
-  }
-
-  if (BackButton.canBecomeSelected) {
-    return BackButton.select();
-  }
-
-  // If no child link or child link is not visible, scroll downwards
-  if (link) {
-    let linkElement = link.element;
+function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
+  if (Link.selection.firstChild && isBelowViewport(Link.selection.firstChild.element)) {
+    let linkElement = Link.selection.firstChild.element;
     scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
-  } else {
+  } else if (Link.selection.firstChild && isAboveViewport(Link.selection.firstChild.element)) {
+    let linkElement = Link.selection.firstChild.element;
+    scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth', side: 'bottom'});
+  } else if (Link.selection.isParent && !Link.selection.hasChildren && !Link.selection.cycle) {
+    if (BackButton.canBecomeSelected) return BackButton.select();
     let sectionElement = Link.selection.targetParagraph.sectionElement;
     scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+  } else {
+    return Link.selection.execute({ newTab, redirect: altKey, inlineCycles: shiftKey })
   }
+}
+
+function inlineCycleLink() {
+  if (!Link.selection.isCycle) return moveInDirection('down');
+  return Link.selection.execute({ inlineCycles: true });
 }
 
 function isVisible(link) {
@@ -173,6 +107,25 @@ function isVisible(link) {
 
   // Check if at least 50% of the element is visible
   return (visibleArea / totalArea) >= 0.5;
+}
+
+function isAboveViewport(linkElement) {
+  if (!linkElement || !linkElement.getBoundingClientRect) {
+    return false; // Ensures that the provided element is valid and has getBoundingClientRect method
+  }
+
+  const rect = linkElement.getBoundingClientRect();
+  return rect.top < 0; // Returns true only if the top of the element is above the top of the viewport
+}
+
+function isBelowViewport(linkElement) {
+  if (!linkElement || !linkElement.getBoundingClientRect) {
+    return false; // Ensures that the provided element is valid and has getBoundingClientRect method
+  }
+
+  const rect = linkElement.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  return rect.bottom > viewportHeight; // Returns true only if the bottom of the element is below the bottom of the viewport
 }
 
 function depthFirstSearch() {
@@ -242,16 +195,7 @@ function goToDefaultTopic() {
 }
 
 function zoomOnLocalPath() {
-  let currentLink = Link.selection;
-  let newPath = currentLink.localPathSegmentWhenSelected;
-
-  let newLink = currentLink.atNewPath(newPath);
-
-  return updateView(
-    newPath,
-    newLink,
-    { scrollStyle: 'instant' }
-  );
+  return Path.rendered.lastSegment.display({scrollStyle: 'instant'});
 }
 
 function removeSelection() {
@@ -266,6 +210,7 @@ export {
   moveToParent,
   moveToChild,
   moveDownOrRedirect,
+  inlineCycleLink,
   topicParentLink,
   depthFirstSearch,
   zoomOnLocalPath,

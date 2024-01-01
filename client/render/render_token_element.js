@@ -1,4 +1,4 @@
-import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
+import { onLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
@@ -17,7 +17,7 @@ function renderTokenElement(token, renderContext) {
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
-  } else if (token.type === 'url') {
+  } else if (token.type === 'external') {
     return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
     return renderImage(token, renderContext);
@@ -61,7 +61,6 @@ function renderLocalLink(token, renderContext) {
   let {
     localLinkSubtreeCallback
   } = renderContext;
-
   localLinkSubtreeCallback(token);
   return createLocalLinkElement(token, renderContext)
 }
@@ -70,7 +69,9 @@ function createLocalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // helpful to have in debugger
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
@@ -80,14 +81,14 @@ function createLocalLinkElement(token, renderContext) {
     linkElement.appendChild(subtokenElement);
   });
 
-  let callback = onLocalLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement));
+  let callback = onLinkClick(new Link(linkElement));
 
   linkElement.addEventListener(
     'click',
     callback
   );
 
-  linkElement._CanopyClickHandler = callback
+  linkElement._CanopyClickHandler = callback;
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
@@ -106,12 +107,12 @@ function renderGlobalLink(token, renderContext) {
 
   let linkElement = createGlobalLinkElement(token, renderContext);
 
-  globalLinkSubtreeCallback(token, linkElement);
-
   return linkElement;
 }
 
 function createGlobalLinkElement(token, renderContext) {
+  let { fullPath, remainingPath } = renderContext;
+
   let linkElement = document.createElement('a');
 
   token.tokens.forEach(subtoken => {
@@ -124,7 +125,9 @@ function createGlobalLinkElement(token, renderContext) {
   linkElement.dataset.type = 'global';
 
   linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // helpful to have in debugger
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
 
@@ -133,14 +136,18 @@ function createGlobalLinkElement(token, renderContext) {
   let targetTopic = Topic.fromMixedCase(token.targetTopic);
   linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}`;
 
-  let callback = onGlobalAndImportLinkClick(new Link(linkElement))
-
-  linkElement._CanopyClickHandler = callback;
+  let link = new Link(linkElement);
 
   linkElement.addEventListener(
     'click',
-    callback
+    onLinkClick(link)
   );
+
+  let pathToEnclosingParagraph = renderContext.fullPath.slice(0, fullPath.length - remainingPath.length + 1);
+  if (Link.introducesNewCycle(pathToEnclosingParagraph, link.literalPath)) {
+    linkElement.classList.add('canopy-cycle-link');
+  }
+
   return linkElement
 }
 
@@ -178,7 +185,7 @@ function createImportLinkElement(token, renderContext) {
 
   linkElement.addEventListener(
     'click',
-    onGlobalAndImportLinkClick(new Link(linkElement))
+    onLinkClick(new Link(linkElement))
   );
 
   return linkElement
@@ -186,41 +193,19 @@ function createImportLinkElement(token, renderContext) {
 
 function renderExternalLink(token, renderContext) {
   let linkElement = document.createElement('A');
-  linkElement.classList.add('canopy-url-link');
+  linkElement.classList.add('canopy-external-link');
   linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.type = 'url';
+  linkElement.dataset.type = 'external';
   linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url);
+  linkElement.setAttribute('href', token.url.startsWith('http://') ? token.url : 'http://' + token.url);
   linkElement.setAttribute('target', '_blank');
-
-  let externalLinkContainer = document.createElement('SPAN');
-  externalLinkContainer.classList.add('canopy-url-link-container');
-  linkElement.appendChild(externalLinkContainer);
-
-  let tokensContainer = document.createElement('SPAN');
-  tokensContainer.classList.add('canopy-url-link-tokens-container');
-  externalLinkContainer.appendChild(tokensContainer);
 
   token.tokens.forEach(subtoken => {
     let subtokenElement = renderTokenElement(subtoken, renderContext);
-    tokensContainer.appendChild(subtokenElement);
+    linkElement.appendChild(subtokenElement);
   });
 
-  tokensContainer.innerHTML += '<span class="canopy-url-link-tokens-spacing">&nbsp;&nbsp;</span>';
-
-  let svgContainer = document.createElement('SPAN');
-  svgContainer.classList.add('canopy-url-link-svg-container');
-  svgContainer.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
-  externalLinkContainer.appendChild(svgContainer);
-
-  externalLinkContainer.innerHTML += '<span class="canopy-url-link-svg-spacing">&nbsp;</span>';
-
   return linkElement;
-}
-
-function isVisible(element) {
-  const style = window.getComputedStyle(element);
-  return style.display !== 'none' && style.visibility !== 'hidden';
 }
 
 function renderImage(token, renderContext) {
@@ -359,7 +344,7 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
-  tableElement.setAttribute('dir', 'auto');
+  tableElement.setAttribute('dir', 'instant');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
@@ -410,13 +395,9 @@ function renderTableList(token, renderContext) {
   if (token.items.every(item => item.alignment === 'right')) tableListElement.classList.add('align-right');
   if (token.items.every(item => item.alignment === 'left')) tableListElement.classList.add('align-left');
 
-  let SizesByWidth = ['quarter', 'third', 'half'];
   let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
-
-  let tableCellSize;
-  let minimumCellArea = 'quarter-pill';
-  let minimumCellWidth = 'quarter';
-  if (token.items.length < 3) minimumCellArea = 'third-pill'; // even if content doesn't justify size, we expand if there aren't so many
+  let sizeIndex = 0;
+  if (token.items.length < 3 && !tableListElement.classList.contains('align-right') && !tableListElement.classList.contains('align-left')) sizeIndex = 1; // even if content doesn't justify size, we expand if there aren't so many
 
   let cellElements = token.items.map(cellObject => {
     let tableCellElement = document.createElement('DIV');
@@ -450,54 +431,39 @@ function renderTableList(token, renderContext) {
       tableCellElement.classList.add('canopy-table-list-ordinal-cell');
     }
 
-    // determine cell size
-    let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
-    let longestWordLength = longestWord.length;
-    let totalLength = tableCellElement.innerText.length;
+    // try fitting text into boxes and find the minimum cell size that fits
+    let tempRowElement = createNewRow();
+    let tempParagraphElement = document.createElement('p');
+    tempParagraphElement.classList.add('canopy-paragraph');
+    canopyContainer.appendChild(tempParagraphElement);
+    tempParagraphElement.appendChild(tableListElement);
+    tableListElement.appendChild(tempRowElement);
+    tempRowElement.appendChild(tableCellElement);
+    tableCellElement.style.overflow = 'scroll';
+    tableListElement.appendChild(tableCellElement)
+    tableListElement.classList.add(`canopy-${SizesByArea[sizeIndex]}`);
+    let availableWidth, availableHeight, scrollWidth, scrollHeight;
 
-    let sizeOptionsBasedOnLargestWordLength;
-    if (longestWordLength < 16) { // 0 - 10 eg "Acknowledgements"
-      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('quarter')) minimumCellWidth = 'quarter';
-    } else if (longestWordLength < 21) { // 10-30
-      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('third')) minimumCellWidth = 'third';
-    } else {
-      minimumCellWidth = 'half';
+    while(1) {
+      availableWidth = tableCellElement.clientWidth - parseFloat(window.getComputedStyle(tableCellElement).paddingLeft) - parseFloat(window.getComputedStyle(tableCellElement).paddingRight);
+      availableHeight = tableCellElement.clientHeight - parseFloat(window.getComputedStyle(tableCellElement).paddingTop) - parseFloat(window.getComputedStyle(tableCellElement).paddingBottom);
+      scrollWidth = tableCellElement.firstChild.scrollWidth - parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+      scrollHeight = tableCellElement.firstChild.scrollHeight - parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+
+      if (scrollWidth <= availableWidth && scrollHeight <= availableHeight) break;
+      if (sizeIndex === SizesByArea.length - 1) break;
+
+      tableListElement.classList.remove(`canopy-${SizesByArea[sizeIndex]}`);
+      sizeIndex++;
+      tableListElement.classList.add(`canopy-${SizesByArea[sizeIndex]}`);
     }
 
-    if (totalLength < 17) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-pill')) minimumCellArea = 'quarter-pill';
-    } else if (totalLength < 22) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
-    } else if (totalLength < 29 && token.items.length <= 2) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
-    } else if (totalLength < 26) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
-    } else if (totalLength < 51) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';
-    } else {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-card')) minimumCellArea = 'half-card';
-    }
-
-    tableCellSize = SizesByArea.find((newSize, index) => {
-      if (SizesByWidth.indexOf(minimumCellWidth) > SizesByWidth.indexOf(newSize.match(/^[a-z]+/)[0])) return false;
-      if (SizesByArea.indexOf(minimumCellArea) > SizesByArea.indexOf(newSize)) return false;
-      return true; // otherwise update tableCellSize
-    });
+    tempParagraphElement.remove()
+    tempRowElement.remove();
 
     return tableCellElement;
   });
 
-  tableListElement.style.opacity = '0';
-  let id = setInterval(() => { // once elements are in DOM and have height, make heights consistent
-    if (setLargestHeightToAll(cellElements)) {
-      clearInterval(id);
-      tableListElement.style.opacity = '1'; //once resizing has occurred to avoid flashing
-    }
-  }, 0)
-
-  tableListElement.classList.add(`canopy-${tableCellSize}`);
-
-  // Function to create a new row
   function createNewRow() {
     let newRow = document.createElement('DIV');
     newRow.classList.add('canopy-table-list-row');
@@ -507,9 +473,9 @@ function renderTableList(token, renderContext) {
   }
 
   let rowSize;
-  if (tableCellSize.includes('half')) rowSize = 2;
-  if (tableCellSize.includes('third')) rowSize = 3;
-  if (tableCellSize.includes('quarter')) rowSize = 4;
+  if (SizesByArea[sizeIndex].includes('half')) rowSize = 2;
+  if (SizesByArea[sizeIndex].includes('third')) rowSize = 3;
+  if (SizesByArea[sizeIndex].includes('quarter')) rowSize = 4;
 
   // Create the first row
   let tableRowElement = createNewRow();
@@ -537,27 +503,6 @@ function renderTableList(token, renderContext) {
   }
 
   return tableListElement;
-
-  function getLargestHeight(elements) {
-    let largestHeight = 0;
-    elements.forEach(element => {
-      let computedHeight = window.getComputedStyle(element).height;
-      let height = parseFloat(computedHeight);
-      if (height > largestHeight) {
-        largestHeight = height;
-      }
-    });
-    return largestHeight;
-  }
-
-  function setLargestHeightToAll(elements) {
-    let largestHeight = getLargestHeight(elements);
-    if (largestHeight === 0) return false;
-    elements.forEach(element => {
-      element.style.height = largestHeight + 'px';
-    });
-    if (largestHeight > 0) return true;
-  }
 }
 
 function renderHtmlBlock(token) {

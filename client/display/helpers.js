@@ -11,7 +11,7 @@ function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);
   headerDomElement.style.display = 'block';
   headerDomElement.style.opacity = '0%';
-  if (displayOptions.scrollStyle !== 'auto') {
+  if (displayOptions.scrollStyle !== 'instant') {
     headerDomElement.style.opacity = '100%'; // the page is scrolled to the right position so there wont be a jump
   }
   return { show: () => { headerDomElement.style.opacity = '100%' } };
@@ -70,22 +70,23 @@ const resetDom = () => {
 }
 
 function scrollPage(link, displayOptions) {
+  displayOptions = displayOptions || {};
   let behavior = displayOptions.scrollStyle || 'smooth';
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   canopyContainer.dataset.initialLoad = displayOptions.initialLoad;
 
-  if (!Link.selection) return window.scrollTo({ top: 0, behavior }) || Promise.resolve();
-  let maxScrollRatio = behavior === 'instant' || displayOptions.scrollTo === 'paragraph' ? Infinity : 0.75; // no limit on initial load and click
+  if (!link) return window.scrollTo({ top: 0, behavior }) || Promise.resolve();
+  let maxScrollRatio = behavior === 'instant' || displayOptions.scrollTo === 'paragraph' || displayOptions.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
 
   if (displayOptions.scrollTo === 'paragraph') {
     let sectionElement = link.targetParagraph.sectionElement;
-    return scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior, side: 'top' });
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 100, behavior, side: 'top' });
   } else { // scroll to link
     const linkElement = link?.element;
     if (linkElement) {
-      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 50, behavior});
-    } else {
-      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 0, behavior});
+      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 100, behavior});
+    } else { // root paragraph
+      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 100, behavior});
     }
   }
 }
@@ -93,34 +94,59 @@ function scrollPage(link, displayOptions) {
 function scrollElementToPosition(element, options) {
   if (!(element instanceof Element)) throw 'Argument to scrollElementToPosition must be DOM element';
   let { targetRatio, maxScrollRatio, minDiff, direction, behavior, side } = options;
-  const rect = element.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const currentScroll = window.pageYOffset;
   const documentHeight = document.documentElement.scrollHeight;
-  let idealTargetPosition = viewportHeight * targetRatio;
+  let idealTargetPositionOnViewport = viewportHeight * targetRatio;
 
-  let pointToPutAtTarget;
+  let viewportPointToPutAtTarget;
   if (side === 'bottom') {
-    pointToPutAtTarget = rect.bottom;
+    viewportPointToPutAtTarget = elementRect.bottom;
   } else if (side === 'top') {
-    pointToPutAtTarget = rect.top;
+    viewportPointToPutAtTarget = elementRect.top;
   } else {
     side = 'middle';
-    pointToPutAtTarget = rect.top + (rect.bottom - rect.top) / 2;
+    viewportPointToPutAtTarget = elementRect.top + (elementRect.bottom - elementRect.top) / 2;
+  }
+
+  if (element.tagName === 'A') {
+    const paragraphElement = element.closest('p.canopy-paragraph');
+    const paragraphRect = paragraphElement.getBoundingClientRect();
+    const linkRect = element.getBoundingClientRect();
+
+    const hypotheticalScrollPosition = currentScroll + viewportPointToPutAtTarget - idealTargetPositionOnViewport;
+
+    // Check if this new scroll position would place the top of the paragraph off-screen
+    const isParagraphTopOffScreen = (paragraphRect.top + currentScroll - hypotheticalScrollPosition) < 0;
+
+    if (isParagraphTopOffScreen) {
+      const paragraphTopAtFivePercent = viewportHeight * 0.05;
+      const linkPositionRelativeToParagraphTop = linkRect.top - paragraphRect.top;
+      const linkPositionWithParagraphAtTopOfViewport = paragraphTopAtFivePercent + linkPositionRelativeToParagraphTop;
+      const linkWouldBeAboveViewportHalf = linkPositionWithParagraphAtTopOfViewport < viewportHeight * 0.6;
+
+      if (linkWouldBeAboveViewportHalf) {
+        element = paragraphElement;
+        viewportPointToPutAtTarget = paragraphRect.top;
+        targetRatio = 0.05;
+        idealTargetPositionOnViewport = viewportHeight * targetRatio;
+      }
+    }
   }
 
   // Handling large A tags
   if (element.tagName === 'A' && (side === 'middle' || side === 'bottom')) {
-    const topOffScreen = (side === 'bottom' ? 1 : .5) * (rect.bottom - rect.top) > idealTargetPosition;
+    const topOffScreen = (side === 'bottom' ? 1 : .5) * (elementRect.bottom - elementRect.top) > idealTargetPositionOnViewport;
     if (topOffScreen) {
       targetRatio = 0.05;
-      idealTargetPosition = viewportHeight * targetRatio;
-      pointToPutAtTarget = rect.top;
+      idealTargetPositionOnViewport = viewportHeight * targetRatio;
+      viewportPointToPutAtTarget = elementRect.top;
     }
   }
 
   // Determine the correct Y coordinate given the location of the target,
-  let idealScrollY = pointToPutAtTarget + currentScroll - idealTargetPosition;
+  let idealScrollY = viewportPointToPutAtTarget + currentScroll - idealTargetPositionOnViewport;
 
   // Adjust idealScrollY to the closest possible scroll position
   idealScrollY = Math.max(0, Math.min(idealScrollY, documentHeight - viewportHeight));
@@ -139,7 +165,7 @@ function scrollElementToPosition(element, options) {
   // Check that the scroll is larger than the minimum we would initiate a scroll for
   if (minDiff) {
     const diff = Math.abs(currentScroll - actualScrollY);
-    shouldScroll = minDiff && diff > minDiff;
+    shouldScroll = minDiff && (diff > minDiff);
   }
 
   // If the caller has constrained the scroll in a single direction, check we're going that way
@@ -158,7 +184,7 @@ function scrollElementToPosition(element, options) {
   }
 }
 
-async function  scrollToWithPromise(options) {
+async function scrollToWithPromise(options) {
   return new Promise(async function(resolve, reject) {
     await scrollUpIfAtBottom(options); // avoid bug that occurs if page is at bottom
     window.scrollTo(options);
@@ -198,9 +224,26 @@ async function  scrollToWithPromise(options) {
   }
 }
 
-function validatePathAndLink(pathToDisplay, linkToSelect) {
-  if (!(pathToDisplay instanceof Path)) throw new Error('Invalid path argument');
-  if (linkToSelect && !(linkToSelect instanceof Link)) throw new Error('Invalid link selection argument');
+function animatePathChange(newPath, options) {
+  // We do not want the content the user is looking at to appear or disappear.
+  // Case #1: If we are animating upward motion, we want to move up first, then remove later content.
+  // Case #2: If we are animating downward motion, we want to add later content, then scroll to that content.
+  // Case #3: Upward followed by downward motion, we do #1 followed by #2
+
+  let previousPath = Path.rendered;
+  let overlapPath = Path.rendered.overlap(newPath);
+
+  return scrollElementToPosition( // if new path is not subset, we continue down new path
+      overlapPath.paragraph.paragraphElement,
+      {targetRatio: 0.3, maxScrollRatio: Infinity, minDiff: 50, behavior: 'smooth', side: 'top' }
+    )
+    .then(() => new Promise(resolve => setTimeout(resolve, 150)))
+    .then(() => newPath.display({noScroll: true, noAnimate: true, ...options}))
+    .then(() => !newPath.isSubset(previousPath) && new Promise(resolve => setTimeout(resolve, 150)))
+    .then(() => !newPath.isSubset(previousPath) && scrollElementToPosition( // if new path is not subset, we continue down new path
+      newPath.paragraph.paragraphElement,
+      {targetRatio: 0.2, maxScrollRatio: Infinity, minDiff: 50, behavior: 'smooth', side: 'top' })
+    );
 }
 
 export {
@@ -208,6 +251,6 @@ export {
   resetDom,
   tryPathPrefix,
   scrollPage,
-  validatePathAndLink,
-  scrollElementToPosition
+  scrollElementToPosition,
+  animatePathChange
 };

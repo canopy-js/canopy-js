@@ -5,11 +5,11 @@ import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
 import BackButton from 'render/back_button';
 
-function moveInDirection(direction) {
+function moveInDirection(direction, options) {
   const currentLinkElement = Link.selection.element;
 
   if (direction === 'up') {
-    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
+    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null && isVisible(link));
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
     let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
     let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
@@ -74,7 +74,7 @@ function moveInDirection(direction) {
     scrollOrSelect(lowestHigherRect);
 
   } else if (direction === 'down') {
-    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
+    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null && isVisible(link));
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
     let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
     let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
@@ -103,7 +103,7 @@ function moveInDirection(direction) {
         if (isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return highestLowerRect;
         if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect)) return newRect;
 
-        if (highestLowerRect.element.closest('p.canopy-paragraph') === Link.selection.targetParagraph.paragraphElement) { // going down into new paragraph
+        if (highestLowerRect.element.closest('p.canopy-paragraph') === Link.selection?.targetParagraph?.paragraphElement) { // going down into new paragraph
           if (isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) return highestLowerRect;
           if (isHorizontallyOverlapping(newRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect)) return newRect;
           if (Paragraph.current.links[0].element === highestLowerRect.element) return highestLowerRect; // prefer first link if it is close
@@ -359,22 +359,29 @@ function horizontallyCloserRect(rect1, rect2, targetRect) {
   }
 }
 
+function isVisible(element) {
+  const style = window.getComputedStyle(element);
+  return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && style.opacity !== '0%';
+}
+
 function scrollOrSelect(rect) {
   const amountOfLinkThatMustBeVisibleToSelect = 15;
-  const backButton = document.getElementById('canopy-back-button');
 
   if (rect.element === BackButton.element && BackButton.canBecomeSelected) {
     BackButton.select();
-  } else if (rect.element === backButton && ! BackButton.canBecomeSelected) {
+  } else if (rect.element === BackButton.element && !BackButton.canBecomeSelected) {
     let sectionElement = Paragraph.current.sectionElement;
     return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   } else if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
   } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
-  } else if (rect.element !== backButton) {
+  } else if (Link.selection.isBackButton) {
+    BackButton.hide();
+    BackButton.deselect(rect.element);
+  } else if (rect.element !== BackButton.element) {
     const link = new Link(rect.element);
-    return updateView(link.path, link);
+    return link.select();
   }
 }
 

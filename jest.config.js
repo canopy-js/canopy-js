@@ -1,6 +1,6 @@
 module.exports = {
   "resolver": "jest-webpack-resolver",
   "moduleNameMapper": {
-    '\\.svg$': '<rootDir>/playwright/mockSVG.js'
+    '\\.svg$': '<rootDir>/playwright/mock_svg.js'
   }
 }

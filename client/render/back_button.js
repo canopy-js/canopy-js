@@ -59,12 +59,12 @@ class BackButton {
     const paragraphRect = paragraphElement.getBoundingClientRect();
     const buttonRect = backButton.getBoundingClientRect();
     const topIsAboveViewport = canopyContainer.getBoundingClientRect().top < 0;
-    const contentIsNotTooLow = paragraphRect.bottom + 65 <= buttonRect.top; // then showing the button will interrupt the content
+    const contentIsNotTooLow = (paragraphRect.bottom + 120) <= buttonRect.top; // then showing the button will interrupt the content
     const thereisEnoughContent = Paragraph.pageRoot.paragraphElement.getBoundingClientRect().bottom < 0;
 
     if (contentIsNotTooLow && thereisEnoughContent && topIsAboveViewport) {
       this.show(initialLoad);
-    } else {
+    } else if (this.isVisible) {
       this.hide();
       this.deselect();
     }
@@ -75,9 +75,21 @@ class BackButton {
     this.disable = true;
   }
 
+  static timeoutId = null;
+
   static disableForSecond() {
     this.disableShow();
-    setTimeout(() => this.enableShow(), 1000);
+
+    // Clear any existing timeout
+    if (this.timeoutId !== null) {
+      clearTimeout(this.timeoutId);
+    }
+
+    // Set a new timeout
+    this.timeoutId = setTimeout(() => {
+      this.enableShow();
+      this.timeoutId = null; // Reset the timeoutId after the delay
+    }, 1000);
   }
 
   static enableShow(initialLoad) {
@@ -103,7 +115,11 @@ class BackButton {
   }
 
   static get canBecomeSelected() {
-    return this.element.style.opacity === '1' && Link.selection.element !== this.element;
+    return BackButton.isVisible && Link.selection.element !== this.element;
+  }
+
+  static get isVisible() {
+    return this.element.style.opacity === '1';
   }
 
   static select() {
@@ -118,14 +134,19 @@ class BackButton {
 
   static deselect() {
     this.element.classList.remove('canopy-selected-link');
-    this.previouslySelectedLink && this.previouslySelectedLink.select();
+    this.previouslySelectedLink && this.previouslySelectedLink.onCurrentPage && this.previouslySelectedLink.addSelectionClass();
+    this.previouslySelectedLink = null;
   }
 
-  static handlePathChange(initialLoad) {
-    if (!initialLoad) {
+  static wasPreviousSelection() {
+    return this.previouslySelectedLink === null; //
+  }
+
+  static handlePathChange(options) {
+    if (!options.initialLoad && !options.noHideBackButton) {
       BackButton.disableForSecond();
     } else {
-      BackButton.updateVisibilityState({ initialLoad });
+      BackButton.updateVisibilityState(options);
     }
   }
 
@@ -137,6 +158,7 @@ class BackButton {
 
   static async execute() {
     this.deselect();
+    this.disableForSecond();
 
     let success = await scrollElementToPosition(
       this.linkToSelect?.element || Paragraph.pageRoot.paragraphElement,
@@ -144,9 +166,9 @@ class BackButton {
     );
 
     if (success) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
       return updateView(
-        this.linkToSelect?.path || Paragraph.pageRoot.path,
+        this.linkToSelect?.previewPath || Paragraph.pageRoot.path,
         this.linkToSelect,
         { noScroll: true }
       );
@@ -155,6 +177,10 @@ class BackButton {
 
   static get element() {
     return document.getElementById('canopy-back-button');
+  }
+
+  static get container() {
+    return document.getElementById('canopy-back-button-container');
   }
 }
 

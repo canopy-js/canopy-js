@@ -1,6 +1,8 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
 import Paragraph from 'models/paragraph';
+import Link from 'models/link';
 import Topic from '../../cli/shared/topic';
+import updateView from 'display/update_view';
 
 class Path {
   constructor(argument) {
@@ -21,12 +23,13 @@ class Path {
   }
 
   equals(otherPath) {
+    if (!otherPath) return false;
     return this.string === otherPath.string;
   }
 
   isIn(otherPath) { // is otherPath a subpath of this
     if (this.equals(otherPath)) return true;
-    if (otherPath.isTopic) return false;
+    if (otherPath.isSingleTopic) return false;
     return this.isIn(otherPath.paragraph.parentParagraph.path);
   }
 
@@ -35,7 +38,15 @@ class Path {
   }
 
   get parentPath() {
-    return this.paragraph.parentParagraph.path;
+    return this.paragraph?.parentParagraph?.path;
+  }
+
+  get parentLink() {
+    return this.paragraph?.parentLink;
+  }
+
+  get nextLink() {
+    return this.paragraph?.firstLink || this.paragraph?.parentLink;
   }
 
   forEach(callback) {
@@ -43,19 +54,119 @@ class Path {
   }
 
   slice() {
-    return this.pathArray.slice.call(this.pathArray, ...arguments);
+    return new Path(this.pathArray.slice.call(this.pathArray, ...arguments));
+  }
+
+  get segments() {
+    return this.pathArray;
+  }
+
+  clone() {
+    return new Path(this.pathArray.slice());
+  }
+
+  get cycle() {
+    let cycle = null;
+
+    this.pathArray.forEach((selectedSegment, selectedIndex) => {
+      this.pathArray.forEach((currentSegment, currentIndex) => {
+        if (selectedSegment[0].mixedCase === currentSegment[0].mixedCase && selectedIndex < currentIndex) {
+          cycle = {
+            start: selectedIndex,
+            end: currentIndex
+          };
+        }
+      });
+    });
+
+    return cycle;
+  }
+
+  reduce() {
+    const cycle = this.cycle;
+    let resultPath;
+
+    if (cycle) {
+      const pathWithoutCycle = [
+        ...this.pathArray.slice(0, cycle.start),
+        ...this.pathArray.slice(cycle.end)
+      ];
+      resultPath = new Path(pathWithoutCycle);
+    } else {
+      resultPath = this.clone();
+    }
+
+    return resultPath;
+  }
+
+  overlap(otherPath) {
+    if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
+    let candidatePath = otherPath;
+
+    while (!candidatePath.isSingleTopic) {
+      if (this.includes(candidatePath)) return candidatePath;
+      candidatePath = candidatePath.parentPath;
+    }
+
+    return candidatePath;
+  }
+
+  isSubset(otherPath) { // this is subset of otherPath
+    return otherPath.includes(this);
+  }
+
+  intermediaryPaths(otherPath) {
+    if (!this.overlap(otherPath)) return null;
+    if (!this.isSubset(otherPath)) return null;
+
+    let result = [];
+    let bufferPath = otherPath.clone();
+
+    while(bufferPath && !this.equals(bufferPath)) {
+      result.unshift(bufferPath);
+      bufferPath = bufferPath.parentPath;
+    }
+
+    result.unshift(this);
+
+    return result;
+  }
+
+  sibling(otherPath) {
+    return !!(this.parentPath && otherPath.parentPath) && // if either doesn't have a parent it can't have siblings
+      !this.equals(otherPath) && // doesn't count if the paths are the same
+      this.parentPath.equals(otherPath.parentPath);
+  }
+
+  child(otherPath) { // this is child of otherPath
+    return this.parentPath?.equals(otherPath);
+  }
+
+  parent(otherPath) { // this is parent of otherPath
+    return otherPath.parentPath?.equals(this);
+  }
+
+  display(options) {
+    if (options?.newTab) return window.open(location.origin + this.string, '_blank');
+    return updateView(this, this.parentLink, {noDisplay: options.selectALink, ...options}).then(() => { // prepare the DOM so there is a link to select
+      if (options.selectALink) this.nextLink.select({scrollTo: 'link', noDisplay: false, ...options });
+    });
   }
 
   static validatePathArray(array) {
     array.forEach(tuple => {
-      if (tuple.length !== 2) throw newError(`Invalid path segment format: ${tuple}`);
-      if (!(tuple[0] instanceof Topic) || !(tuple[1] instanceof Topic)) throw newError(`Invalid path segment format: ${tuple}`);
+      if (tuple.length !== 2) throw new Error(`Invalid path segment format: ${tuple}`);
+      if (!(tuple[0] instanceof Topic) || !(tuple[1] instanceof Topic)) throw new Error(`Invalid path segment format: ${JSON.stringify(tuple)}`);
     })
   }
 
   addSegment(topic, subtopic) {
     if (this.empty) return new Path([[topic, subtopic]]);
     return new Path(this.pathArray.concat([[topic, subtopic]]));
+  }
+
+  append(otherPath) {
+    return new Path(this.string + '/' + otherPath.string);
   }
 
   replaceTerminalSubtopic(newSubtopic) {
@@ -123,7 +234,7 @@ class Path {
     return new Path(this.pathArray.slice(0, -1));
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.pathArray.length === 1 && this.pathArray[0][0].mixedCase === this.pathArray[0][1].mixedCase;
   }
 
@@ -133,6 +244,10 @@ class Path {
     } else {
       return this.pathArray.length;
     }
+  }
+
+  get topicArray() {
+    return this.pathArray.map(([topic, subtopic]) => topic);
   }
 
   get sectionElement() {
@@ -151,12 +266,39 @@ class Path {
     return !this.pathArray[0];
   }
 
+  get present() {
+    return !!this.pathArray[0];
+  }
+
+  static animate(pathToDisplay, options) { // we animate when the new path overlaps a bit but goes in a different direction
+    if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
+
+    return !Path.rendered.equals(pathToDisplay) &&
+      !options.noScroll &&
+      !options.initialLoad &&
+      !options.noAnimate &&
+      options.scrollStyle !== 'instant' &&
+      Path.rendered.present &&
+      !!Path.rendered.overlap(pathToDisplay) &&
+      !Path.rendered.sibling(pathToDisplay) &&
+      !Path.rendered.child(pathToDisplay) &&
+      !Path.rendered.parent(pathToDisplay);
+  }
+
   static get default() {
     let topic = Topic.for(defaultTopic);
     return new Path([[topic, topic]]);
   }
 
   static get current() {
+    return Path.rendered || Path.url;
+  }
+
+  static get rendered() {
+    return Paragraph.selection?.path;  // the user may have just changed the URL, and we want to know what the current path rendered is
+  }
+
+  static get url() {
     let pathString = window.location.href.slice(window.location.origin.length)
 
     if (projectPathPrefix && pathString.indexOf(`/${projectPathPrefix}`) === 0) {
@@ -168,11 +310,13 @@ class Path {
     return new Path(pathString);
   }
 
-  static get currentOrDefault() {
-    if (Path.current.empty) {
+  static get initial() {
+    if (Path.url.present && Link.priorSelection) {
+      return Link.priorSelection.previewPath;
+    } else if (Path.url.empty) {
       return Path.default;
     } else {
-      return Path.current;
+      return Path.url;
     }
   }
 
@@ -185,7 +329,7 @@ class Path {
   }
 
   static stringToArray(pathString) {
-    if (typeof pathString !== 'string') throw newError("Function requires string argument");
+    if (typeof pathString !== 'string') throw new Error("Function requires string argument");
 
     if (pathString === '/') {
       return [];
@@ -215,14 +359,14 @@ class Path {
   }
 
   static arrayToString(pathArray) {
-    if (!Array.isArray(pathArray)) throw newError('Argument must be array');
+    if (!Array.isArray(pathArray)) throw new Error('Argument must be array');
 
     if (Array.isArray(pathArray) && pathArray.length === 0) {
       return '/';
     }
 
     if (!Array.isArray(pathArray[0])) {
-      throw newError('Path array must be two-dimensional array');
+      throw new Error('Path array must be two-dimensional array');
     }
 
     let pathString = '/';
@@ -246,8 +390,8 @@ class Path {
     // Sometimes browsers insert forward slashes before the first pound sign which we have to remove
     // eg /Topic/#Subtopic/A#B  -> /Topic#Subtopic/A#B
 
-    if (typeof pathString !== 'string') throw newError("pathString must be a string argument");
-    if (!Array.isArray(slashSeparatedUnits)) throw newError('slashSeparatedUnits must be an array');
+    if (typeof pathString !== 'string') throw new Error("pathString must be a string argument");
+    if (!Array.isArray(slashSeparatedUnits)) throw new Error('slashSeparatedUnits must be an array');
 
     if (pathString.match(/\/#\w+/)) {
       for (let i = 1; i < slashSeparatedUnits.length; i++) {
@@ -273,15 +417,15 @@ class Path {
   }
 
   static connectingLinkValid(parentElement, pathToDisplay) {
-    if (!parentElement) throw newError('Parent element required');
-    if (!(pathToDisplay instanceof Path)) throw newError('pathToDisplay must be a Path object');
+    if (!parentElement) throw new Error('Parent element required');
+    if (!(pathToDisplay instanceof Path)) throw new Error('pathToDisplay must be a Path object');
 
     if (parentElement === canopyContainer) return true;
 
     let parentParagraph = new Paragraph(parentElement);
     if (!parentParagraph.linkByTarget(pathToDisplay.firstTopic)) {
       console.error(`Parent element [${parentParagraph.topic.mixedCase}, ${parentParagraph.subtopic.mixedCase}] has no ` +
-        `connecting link to subsequent path segment [${pathToDisplay.firstTopic}, ${pathToDisplay.firstTopic}]`);
+        `connecting link to subsequent path segment [${pathToDisplay.firstTopic.mixedCase}, ${pathToDisplay.firstTopic.mixedCase}]`);
       return false;
     } else {
       return true;
@@ -289,7 +433,7 @@ class Path {
   }
 
   static elementAtRelativePath(path, rootElement) {
-    if (!(path instanceof Path)) throw newError('pathToDisplay must be a Path object');
+    if (!(path instanceof Path)) throw new Error('pathToDisplay must be a Path object');
     rootElement = rootElement || canopyContainer;
 
     let currentNode = rootElement;
@@ -314,15 +458,17 @@ class Path {
       subpath = subpath.withoutFirstSegment;
     }
 
+    if (!currentNode) console.log('element at relative path', path, rootElement, currentNode);
+
     return currentNode;
   }
 
   static setPath(newPath) {
-    if (!(newPath instanceof Path)) throw newError('newPath must be Path object');
+    if (!(newPath instanceof Path)) throw new Error('newPath must be Path object');
 
-    let oldPath = Path.current;
+    let oldPath = Path.url;
     let documentTitle = newPath.firstTopic.display;
-    let historyApiFunction = (Path.current.empty || newPath.equals(oldPath)) ? replaceState : pushState;
+    let historyApiFunction = (Path.url.empty || newPath.equals(oldPath)) ? replaceState : pushState;
     let fullPathString = newPath.string;
 
     historyApiFunction(

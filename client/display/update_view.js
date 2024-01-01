@@ -3,20 +3,18 @@ import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
 import { canopyContainer, backButton } from 'helpers/getters';
-import { validatePathAndLink } from 'display/helpers';
 
-const updateView = (pathToDisplay, linkToSelect, displayOptions) => {
-  validatePathAndLink(pathToDisplay, linkToSelect);
+const updateView = (pathToDisplay, linkToSelect, options) => {
   if (pathToDisplay.empty) pathToDisplay = Path.default;
   document.title = pathToDisplay.firstTopic.mixedCase;
 
-  let newTreeAppended = fetchAndRenderPath(pathToDisplay, canopyContainer).catch(e => console.error(e));
+  let newTreeAppended = fetchAndRenderPath(pathToDisplay, pathToDisplay, canopyContainer).catch(e => console.error(e));
 
   return newTreeAppended.then(() => {
-    displayPath(
+    if (!options?.noDisplay) displayPath(
       pathToDisplay,
       linkToSelect,
-      displayOptions
+      options
     );
   }).catch(e => console.error(e));
 }
