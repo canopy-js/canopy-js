@@ -106,7 +106,7 @@ const config = {
       port: 3004
     },
     {
-      command: 'cp -R playwright/test_project playwright/hash_urls_and_prefix_static_test ' +
+      command: 'cp -R playwright/test_project/* playwright/hash_urls_and_prefix_static_test ' +
                '&& cd playwright/hash_urls_and_prefix_static_test ' +
                '&& canopy build --hash-urls --project-path-prefix test ' +
                '&& mkdir -p root/test ' +

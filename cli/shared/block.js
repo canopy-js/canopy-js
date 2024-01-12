@@ -1,4 +1,4 @@
-class Paragraph {
+class Block {
   constructor(textWithKey) {
     // A key is a non-hyphen-initial string of characters that are not unescaped colons, periods, commands or semi-colons,
     // which are followed by a colon or a question mark followed by white space. If the delimiter is a colon, it is not part
@@ -26,6 +26,10 @@ class Paragraph {
     this.charsAfterKey = match[2] === '?' ? 1 : 2;
     this.newlineAfterDelimiter = match[3] === '\n';
   }
+
+  static for(textWithKey) {
+    return new Block(textWithKey);
+  }
 }
 
-module.exports = Paragraph;
+module.exports = Block;

@@ -18,10 +18,10 @@ let FileSystemManager = require('./file_system_manager');
 let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
-let { DefaultTopic } = require('../shared/helpers');
+let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
 const readline = require('readline');
 
-const bulk = async function(selectedFileList, options) {
+const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message) }
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
@@ -251,9 +251,9 @@ function debounceGenerator() {
   }
 }
 
-function checkGitIgnoreForBulkFile(options) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic.fileName}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic.fileName}`)));
+function checkGitIgnoreForBulkFile(options = {}) {
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic().fileName}($|\n)`, 's'))) {
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic().fileName}`)));
   }
 }
 

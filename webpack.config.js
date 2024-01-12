@@ -5,6 +5,7 @@ const nodeExternals = require('webpack-node-externals');
 module.exports = {
   entry: {
     canopy: './client/canopy.js',
+    playground: './playground/src.js'
   },
   output: {
     filename: '[name].js',
@@ -15,7 +16,9 @@ module.exports = {
       path.resolve(__dirname, 'client/'),
       'node_modules'
     ],
-    extensions: [ '.js' ]
+    extensions: [ '.js' ],
+
+    fallback: { "path": require.resolve("path-browserify") }
   },
   module: {
     rules: [

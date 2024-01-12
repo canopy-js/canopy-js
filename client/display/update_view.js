@@ -4,14 +4,14 @@ import Link from 'models/link';
 import Path from 'models/path';
 import { canopyContainer, backButton } from 'helpers/getters';
 
-const updateView = (pathToDisplay, linkToSelect, options) => {
+const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (pathToDisplay.empty) pathToDisplay = Path.default;
-  document.title = pathToDisplay.firstTopic.mixedCase;
+  if (!options.renderOnly && !options.noDisplay) document.title = pathToDisplay.lastTopic.mixedCase;
 
   let newTreeAppended = fetchAndRenderPath(pathToDisplay, pathToDisplay, canopyContainer).catch(e => console.error(e));
 
   return newTreeAppended.then(() => {
-    if (!options?.noDisplay) displayPath(
+    if (!options?.renderOnly) displayPath(
       pathToDisplay,
       linkToSelect,
       options

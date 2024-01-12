@@ -20,25 +20,19 @@ function moveInDirection(direction, options) {
 
     if (candidateRectContainers.length === 0) {
       if (currentSelectionLowerRect.top < -10) {
-        return scrollElementToPosition(currentLinkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
+        return scrollElementToPosition(currentLinkElement, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
       } else {
-        return updateView(Paragraph.pageRoot.path);
+        return updateView(Paragraph.root.path);
       }
     }
 
     let lowestHigherRect = candidateRectContainers
       .reduce((lowestHigherRect, newRect) => {
-        if (Link.selection.parentLink?.element === lowestHigherRect.element) { // lowestHigherRect is the parent link of current paragraph
-          if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // newRect is also in p of parent link
-            return lowestHigherRect; // prefer parent over closer sibling
-          }
-        }
+        let bestLink = Link.for(lowestHigherRect.element);
+        let newLink = Link.for(newRect.element);
 
-        if (Link.selection.parentLink?.element === newRect.element) { // newRect is the parent link of current paragraph
-          if (newRect.element.closest('p.canopy-paragraph') === lowestHigherRect.element.closest('p.canopy-paragraph')) { // lowestHigherRect is also in p of parent link
-            return newRect; // prefer parent over closer sibling
-          }
-        }
+        if (newLink.siblingOf(bestLink) && bestLink.isParentLinkOf(Link.selection.enclosingParagraph)) return lowestHigherRect;
+        if (bestLink.siblingOf(newLink) && Link.for(newRect.element).isParentLinkOf(Link.selection.enclosingParagraph)) return newRect;
 
         if (isLower(lowestHigherRect, newRect) &&
           !isVerticallyOverlapping(lowestHigherRect, newRect) &&
@@ -85,11 +79,25 @@ function moveInDirection(direction, options) {
 
     if (candidateRectContainers.length === 0) {
       let sectionElement = Paragraph.current.sectionElement;
-      return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+      return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
     }
 
     let highestLowerRect = candidateRectContainers
       .reduce((highestLowerRect, newRect) => {
+        let bestLink = Link.for(highestLowerRect.element);
+        let newLink = Link.for(newRect.element);
+
+        // prefer previous selection of paragraph
+        if (newLink.isLastSelection && bestLink.siblingOf(newLink)) return newRect;
+        if (bestLink.isLastSelection && newLink.siblingOf(bestLink)) return highestLowerRect;
+
+        // going down to new paragraph, prefer first link rather than geometrically proximate
+        if (newLink.firstChildOf(Link.selection) && bestLink.siblingOf(newLink)) return newRect;
+        if (bestLink.firstChildOf(Link.selection) && newLink.siblingOf(bestLink)) return highestLowerRect;
+
+        if (bestLink.isOpen) return highestLowerRect;
+        if (newLink.isOpen) return newRect;
+
         if (isHigher(highestLowerRect, newRect) &&
           !isVerticallyOverlapping(highestLowerRect, newRect) &&
           !isVerticallyOverlapping(highestLowerRect, currentSelectionHigherRect)) return highestLowerRect; // prefer the higher element if noticeably higher
@@ -371,11 +379,11 @@ function scrollOrSelect(rect) {
     BackButton.select();
   } else if (rect.element === BackButton.element && !BackButton.canBecomeSelected) {
     let sectionElement = Paragraph.current.sectionElement;
-    return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   } else if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth'});
+    return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth'});
   } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
+    return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
   } else if (Link.selection.isBackButton) {
     BackButton.hide();
     BackButton.deselect(rect.element);

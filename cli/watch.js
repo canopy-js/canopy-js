@@ -4,9 +4,9 @@ const build = require('./build');
 const chokidar = require('chokidar');
 let chalk = require('chalk');
 let shell = require('shelljs');
-let { canopyLocation, tryAndWriteHtmlError } = require('./shared/helpers');
+let { canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 
-function watch(options) {
+function watch(options = {}) {
   if (!fs.existsSync('topics')) {
     console.log(chalk.red('Error: You must be in a project directory with a topics folder'));
     return;
@@ -32,7 +32,7 @@ function watch(options) {
     .on('unlinkDir', handler);
 }
 
-function buildRegular(options) {
+function buildRegular(options = {}) {
   try {
     tryAndWriteHtmlError(build, options);
   } catch (e) {

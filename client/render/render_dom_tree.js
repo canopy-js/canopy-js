@@ -16,6 +16,9 @@ function renderDomTree(topic, subtopic, renderContext) {
   let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
   if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
 
+  renderContext.currentTopic = topic;
+  renderContext.currentSubtopic = subtopic;
+
   tokensOfParagraph.forEach((token) => {
     let element = renderTokenElement(token, renderContext);
     paragraph.paragraphElement.appendChild(element);
