@@ -8,32 +8,32 @@ jest.mock('../../helpers/getters', () => ({
 
 test('just topic', () => {
   const pathString = '/Topic';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')]]);
 });
 
 test('topic and subtopic', () => {
   const pathString = '/Topic#Subtopic';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('topic and subtopic and topic', () => {
   const pathString = '/Topic#Subtopic/Topic2';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Topic2')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Topic2')]]);
 });
 
 test('two topics and subtopics', () => {
   const pathString = '/Topic#Subtopic/Topic2#Subtopic2';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic2')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic2')]]);
 });
 
 test('lone subtopic', () => {
   const pathString = '/Topic#Subtopic/#Subtopic2';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual(
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual(
     [
       [Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')],
       [Topic.fromMixedCase('Subtopic2'), Topic.fromMixedCase('Subtopic2')]
@@ -43,30 +43,30 @@ test('lone subtopic', () => {
 
 test('empty segment', () => {
   const pathString = '/Topic#Subtopic/#';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('No initial subtopic', () => {
   const pathString = '/Topic/Topic2#Subtopic';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Topic2'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('Interpret fragment without topic as accidentally inserted slash', () => {
   const pathString = '/Topic/#Subtopic';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic')]]);
 });
 
 test('Interpret fragment without topic after first as accidentally inserted slash', () => {
   const pathString = '/Topic/Subtopic1/#Subtopic2';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Subtopic1'), Topic.fromMixedCase('Subtopic2')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Topic')], [Topic.fromMixedCase('Subtopic1'), Topic.fromMixedCase('Subtopic2')]]);
 });
 
 test('Real life example', () => {
   const pathString = 'Topic/#Subtopic1/Subtopic2';
-  const pathArray = Path.stringToArray(pathString);
-  expect(pathArray).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic1')], [Topic.fromMixedCase('Subtopic2'), Topic.fromMixedCase('Subtopic2')]]);
+  const array = Path.stringToArray(pathString);
+  expect(array).toEqual([[Topic.fromMixedCase('Topic'), Topic.fromMixedCase('Subtopic1')], [Topic.fromMixedCase('Subtopic2'), Topic.fromMixedCase('Subtopic2')]]);
 });
