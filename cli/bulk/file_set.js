@@ -1,7 +1,7 @@
 // A set of files and their contents, grouped optionally by directory path
 let pathLibrary = require('path');
 let Topic = require('../shared/topic');
-let Paragraph = require('../shared/paragraph');
+let Block = require('../shared/block');
 
 class FileSet {
   constructor(fileContentsByPath) {
@@ -17,7 +17,7 @@ class FileSet {
         fileName: filePath.split('/').slice(-1)[0],
         fileNameWithoutExtension: filePath.split('/').slice(-1)[0].match(/^(.*?)(\..*)?$/)[1],
         contents: fileContentsByPath[filePath],
-        key: (new Paragraph(fileContentsByPath[filePath])).key,
+        key: (new Block(fileContentsByPath[filePath])).key,
         directoryPath: directoryPath.replace(/\/#$/, '/\\#'),
         terminalCategory: terminalCategoryofFilePath(filePath)
       };

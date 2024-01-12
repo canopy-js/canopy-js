@@ -1,5 +1,5 @@
 let jsonForProjectDirectory = require('./components/json_for_project_directory');
-let { updateFilesystem, getExplFileData } = require('./components/helpers');
+let { updateFilesystem, getExplFileData } = require('./components/fs-helpers');
 let path = require('path');
 
 function buildProject(defaultTopicString, options) {

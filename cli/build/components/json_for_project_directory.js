@@ -1,5 +1,5 @@
 let jsonForExplFile = require('./json_for_expl_file.js');
-let { topicKeyOfString, terminalCategoryofPath, isCategoryNotesFile } = require('./helpers');
+let { topicKeyOfString } = require('./simple-helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
@@ -28,12 +28,10 @@ function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
     }
   });
 
-  parserContext.validateImportReferenceTargets();
   parserContext.validateSubtopicDefinitions();
-  parserContext.validateImportReferenceGlobalMatching();
+  parserContext.validateGlobalReferences();
   if (options.orphans) parserContext.logGlobalOrphans();
   if (options.orphans) parserContext.logLocalOrphans();
-  if (options.reciprocals) parserContext.logNonReciprocals();
 
   return { directoriesToEnsure, filesToWrite };
 }
