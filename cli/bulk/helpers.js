@@ -120,7 +120,7 @@ class CyclePreventer {
   }
 }
 
-function logOrWriteError(func, options) {
+function logOrWriteError(func, options = {}) {
   try {
     func();
   } catch(e) {

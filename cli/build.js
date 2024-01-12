@@ -4,10 +4,10 @@ const dedent = require('dedent-js');
 const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
-let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/helpers');
+let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let Topic = require('./shared/topic');
 
-function build(options) {
+function build(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
   let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');

@@ -1,5 +1,5 @@
 let FileSet = require('./file_set');
-let Paragraph = require('../shared/paragraph.js');
+let Block = require('../shared/block.js');
 let Topic = require('../shared/topic.js');
 let chalk = require('chalk');
 
@@ -11,7 +11,8 @@ class BulkFileParser {
   parseSections() {
     return this.bulkFileString.split(/(?=^\[[^\[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
       .map(s => s.trim()).filter(Boolean).map((sectionString) => {
-        let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)[1];
+        let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)?.[1];
+        if (!displayCategoryPath) throw new Error('Malformed Canopy bulk file: ' + sectionString);
 
         return {
           displayCategoryPath,
@@ -23,7 +24,7 @@ class BulkFileParser {
             .filter(Boolean)
             .map(string => {
               let blockString = string.match(/^\*?\*? ?(.*)/s)[1];
-              let paragraph = new Paragraph(blockString);
+              let paragraph = new Block(blockString);
               return {
                 asterisk: string.match(/^\*\*? /) ? true : false,
                 doubleAsterisk: string.startsWith('** ') ? true : false,

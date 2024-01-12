@@ -1,4 +1,4 @@
-import { canopyContainer, defaultTopic, projectPathPrefix } from 'helpers/getters';
+import { canopyContainer, projectPathPrefix } from 'helpers/getters';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 import REQUEST_CACHE from 'requests/request_cache';

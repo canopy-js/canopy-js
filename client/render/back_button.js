@@ -60,7 +60,7 @@ class BackButton {
     const buttonRect = backButton.getBoundingClientRect();
     const topIsAboveViewport = canopyContainer.getBoundingClientRect().top < 0;
     const contentIsNotTooLow = (paragraphRect.bottom + 120) <= buttonRect.top; // then showing the button will interrupt the content
-    const thereisEnoughContent = Paragraph.pageRoot.paragraphElement.getBoundingClientRect().bottom < 0;
+    const thereisEnoughContent = Paragraph.root.paragraphElement.getBoundingClientRect().bottom < 0;
 
     if (contentIsNotTooLow && thereisEnoughContent && topIsAboveViewport) {
       this.show(initialLoad);
@@ -142,7 +142,7 @@ class BackButton {
     return this.previouslySelectedLink === null; //
   }
 
-  static handlePathChange(options) {
+  static handlePathChange(options = {}) {
     if (!options.initialLoad && !options.noHideBackButton) {
       BackButton.disableForSecond();
     } else {
@@ -151,8 +151,8 @@ class BackButton {
   }
 
   static get linkToSelect() {
-    return Paragraph.current.topicParagraph?.parentLink?.parentLink || // close current topic tree
-      Paragraph.current.topicParagraph?.parentLink || // close current topic subtopics
+    // return Paragraph.current.topicParagraph?.parentLink?.parentLink || // close current topic tree
+    return Paragraph.current.topicParagraph?.parentLink || // close current topic subtopics
       null; // ie root has no parent paragraph
   }
 
@@ -161,14 +161,14 @@ class BackButton {
     this.disableForSecond();
 
     let success = await scrollElementToPosition(
-      this.linkToSelect?.element || Paragraph.pageRoot.paragraphElement,
+      this.linkToSelect?.element || Paragraph.root.paragraphElement,
       { targetRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth' }
     );
 
     if (success) {
       await new Promise(resolve => setTimeout(resolve, 150));
       return updateView(
-        this.linkToSelect?.previewPath || Paragraph.pageRoot.path,
+        this.linkToSelect?.previewPath || Paragraph.root.path,
         this.linkToSelect,
         { noScroll: true }
       );
