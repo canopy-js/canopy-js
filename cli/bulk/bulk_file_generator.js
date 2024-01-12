@@ -1,4 +1,3 @@
-let Paragraph = require('../shared/paragraph');
 let Topic = require('../shared/topic');
 
 class BulkFileGenerator {

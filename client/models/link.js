@@ -71,22 +71,36 @@ class Link {
     // This is just to make it easier to inspect and debug DOM elements
     // Getters are used instead of properties to allow lazy access for callback-specified links
     if (!this.linkElement) return;
-    this._targetTopic = this.linkElement.dataset.targetTopic;
-    this._targetSubtopic = this.linkElement.dataset.targetSubtopic;
+    this._pathString = this.linkElement.dataset.path;
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
   }
 
   get targetTopic() {
-    return Topic.fromMixedCase(this.element.dataset.targetTopic);
+    return this.literalPath.lastTopic;
   }
   get targetSubtopic() {
-    return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
+    if (this.isLocal) return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
+    return this.literalPath.lastSubtopic;
   }
+
+  get childTopic() {
+    return this.literalPath.firstTopic;
+  }
+  get childSubtopic() {
+    if (this.isLocal) return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
+    return this.literalPath.firstSubtopic;
+  }
+
   get enclosingTopic() {
     return Topic.fromMixedCase(this.element.dataset.enclosingTopic);
   }
+
+  get enclosingTopicParagraph() {
+    return this.enclosingParagraph.topicParagraph;
+  }
+
   get enclosingSubtopic() {
     return Topic.fromMixedCase(this.element.dataset.enclosingSubtopic);
   }
@@ -128,15 +142,15 @@ class Link {
     return this.enclosingParagraph.path;
   }
 
-  get targetParagraph() {
+  get targetParagraph() { // if the link is to A/B/C, A is the child and C is the targetParagraph
     if (!this.isParent) return null;
 
     let pathDepth = this.enclosingParagraph.pathDepth;
-    if (this.isGlobalOrImport) pathDepth = Number(pathDepth) + 1;
+    if (this.isGlobal) pathDepth = Number(pathDepth) + 1;
 
     let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.targetTopic.escapedMixedCase}"]` +
-        `[data-subtopic-name="${this.targetSubtopic.escapedMixedCase}"]` +
+        `section[data-topic-name="${this.literalPath.firstTopic.escapedMixedCase}"]` +
+        `[data-subtopic-name="${this.literalPath.firstSubtopic.escapedMixedCase}"]` +
         `[data-path-depth="${pathDepth}"`
       );
 
@@ -148,26 +162,14 @@ class Link {
     return new Paragraph(sectionElement);
   }
 
-  atNewPath(newPath) { // get link instantiated with callback that returns matching link at new path
-    return new Link(() => {
-      let newEnclosingParagraph;
-      if (this.isParent) {
-        newEnclosingParagraph = newPath.paragraph.parentParagraph;
-      } else {
-        newEnclosingParagraph = newPath.paragraph;
-      }
-      return newEnclosingParagraph
-        .links
-        .find(this.matcher);
-    });
+  get childPath() {
+    return this.childParagraph.path;
   }
 
-  get localPathSegmentWhenSelected() {
-    if (this.isGlobalOrImport) {
-      return new Path(this.path.pathArray.slice(-2));
-    } else {
-      return this.path.lastSegment;
-    }
+  get childParagraph() {
+    if (this.isLocal) return this.targetParagraph;
+    if (this.isGlobal) return this.enclosingPath.append(this.literalPath.firstTopicPath).paragraph;
+    return null;
   }
 
   get matcher() {
@@ -202,26 +204,18 @@ class Link {
   }
 
   get path() {
-    console.error('Calls to Link#path must be replaced with #inlinePath or #previewPath or #literalPath')
-
-    if (this.isGlobalOrImport) {
-      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
-    } else if (this.isLocal) {
-      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
-    } else {
-      return this.enclosingParagraph.path;
-    }
+    debugger;
+    throw '#path is deprecated in favor of #inlinePath or #literalPath';
   }
 
   get targetPath() { // links are assumed to be inlined unless the user redirects explicitly
-    console.error('#targetPath is deprecated in favor of #inlinePath or #literalPath');
-
-    return this.path;
+    throw '#targetPath is deprecated in favor of #inlinePath or #literalPath';
   }
 
   get literalPath() {
-    if (!this.isGlobalOrImport) return null;
-    return Path.forSegment(this.targetTopic, this.targetSubtopic); // this will have to change for path links which can have multiple segments
+    if (this.isLocal) return Path.forSegment(this.enclosingTopic, this.targetSubtopic);
+    if (this.isGlobal) return Path.for(this.element.dataset.path); // this will have to change for path links which can have multiple segments
+    return null;
   }
 
   static collectMetadata(linkElement) {
@@ -295,9 +289,17 @@ class Link {
     return this.targetParagraph.lastLink;
   }
 
+  siblingOf(link) {
+    return this.enclosingParagraph && this.enclosingParagraph.equals(link?.enclosingParagraph);
+  }
+
   get parentLink() {
     if (this.element === BackButton.element) return Paragraph.current.parentLink;
     return this.enclosingParagraph.parentLink;
+  }
+
+  isParentLinkOf(paragraph) {
+    return paragraph.parentLink.equals(this);
   }
 
   get grandParentLink() {
@@ -324,6 +326,10 @@ class Link {
     return !this.isOpen;
   }
 
+  get isClosedCycle() {
+    return !this.isOpen && this.cycle;
+  }
+
   get isSelected() {
     return this.element.classList.contains('canopy-selected-link');
   }
@@ -332,16 +338,28 @@ class Link {
     return this.type === 'global';
   }
 
-  get isImport() {
-    return this.type === 'import';
+  get pathReference() {
+    return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase);
+  }
+
+  get isSimpleGlobal() {
+    return this.isGlobal && !this.pathReference; // a global reference to a single global topic
+  }
+
+  get effectivePathReference() { // a path reference which is not a cycle unless the cycle is open and thus functioning as a path reference
+    return this.pathReference && (!this.cycle || this.inlinedCycleReference);
+  }
+
+  get inlinedCycleReference() { // a cycle reference that has been inlined
+    return this.introducesNewCycle && this.isOpen;
   }
 
   get isExternal() {
     return this.type === 'external';
   }
 
-  get isGlobalOrImport() {
-    return this.type === 'global' || this.type === 'import';
+  get isGlobal() {
+    return this.type === 'global';
   }
 
   get isLocal() {
@@ -353,29 +371,84 @@ class Link {
   }
 
   get isParent() {
-    return this.isGlobal || this.isLocal || this.isImport;
+    return this.isGlobal || this.isLocal;
   }
 
   get hasChildren() {
-    return this.targetParagraph?.hasLinks;
+    return this.childParagraph?.hasLinks;
   }
 
   get firstChild() {
-    return this.targetParagraph?.firstLink;
+    return this.childParagraph?.firstLink;
+  }
+
+  firstChildOf(otherLink) {
+    return !!otherLink.firstChild?.equals(this);
   }
 
   get isBackButton() {
     return this.element === BackButton.element;
   }
 
-  get isVisible() {
+  get isOffScreen() {
     const rect = this.element.getBoundingClientRect();
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
     return (
-      (rect.top >= 0 && rect.top <= viewportHeight) ||
-      (rect.bottom >= 0 && rect.bottom <= viewportHeight)
+      rect.top < 0 || // The top edge of the element is above the viewport's top
+      rect.bottom > viewportHeight // The bottom edge of the element is below the viewport's bottom
     );
+  }
+
+  isVisible() {
+    if (!this.element) return false;
+    let rect = this.element.getBoundingClientRect();
+    let windowHeight = window.innerHeight;
+    let windowWidth = window.innerWidth;
+
+    let visibleWidth = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
+    let visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+
+    let totalArea = (rect.bottom - rect.top) * (rect.right - rect.left);
+    let visibleArea = visibleHeight * visibleWidth;
+
+    return (visibleArea / totalArea) >= 0.5;
+  }
+
+  isAboveViewport() {
+    if (!this.element || !this.element.getBoundingClientRect) {
+      return false;
+    }
+
+    const rect = this.element.getBoundingClientRect();
+    return rect.top < 0;
+  }
+
+  isBelowViewport() {
+    if (!this.element || !this.element.getBoundingClientRect) {
+      return false;
+    }
+
+    const rect = this.element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.bottom > viewportHeight;
+  }
+
+  get isFocused() {
+    const rect = this.element.getBoundingClientRect();
+
+    // Get the viewport height
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    // Calculate the top 25% and bottom 40% positions of the viewport
+    const topLimit = viewportHeight * 0.25;
+    const bottomLimit = viewportHeight * 0.6;
+
+    // Check if the element is within the target area
+    const overlapsTop = rect.bottom > topLimit;
+    const overlapsBottom = rect.top < bottomLimit;
+
+    return overlapsTop && overlapsBottom;
   }
 
   get cycle() {
@@ -383,29 +456,20 @@ class Link {
   }
 
   get introducesNewCycle() {
-    if (!this.isGlobalOrImport) return false;
-    return Link.introducesNewCycle(this.enclosingPath, this.literalPath);
-  }
-
-  static introducesNewCycle(enclosingPath, literalPath) {
-    let enclosingPathTopicStrings = enclosingPath.topicArray.map(t => t.mixedCase);
-    let targetPathTopicStrings = literalPath.topicArray.map(t => t.mixedCase);
-    return enclosingPathTopicStrings.some((enclosingTopicString, enclosingTopicIndex) => {
-      return targetPathTopicStrings.some((targetTopicString, targetTopicIndex) => {
-        return enclosingTopicString === targetTopicString &&
-          !(enclosingPath.equals(enclosingPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
-      });
-    });
+    if (!this.isGlobal) return false;
+    return Path.introducesNewCycle(this.enclosingPath, this.literalPath);
   }
 
   get inlinePath() { // ie if the user would inline the link's target at the link's enclosing path
-    if (this.isGlobalOrImport) {
-      return this.enclosingParagraph.path.addSegment(this.targetTopic, this.targetSubtopic);
-    } else if (this.isLocal) {
-      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
-    } else {
-      return this.enclosingParagraph.path;
+    if (this.isGlobal) {
+      return this.enclosingParagraph.path.append(this.literalPath);
     }
+
+    if (this.isLocal) {
+      return this.enclosingParagraph.path.replaceTerminalSubtopic(this.targetSubtopic);
+    }
+
+    return this.enclosingParagraph.path;
   }
 
   get previewPath() {
@@ -415,41 +479,69 @@ class Link {
 
     if (this.isExternal) { // select the link and display enclosing path
       return this.enclosingPath;
-    } else if (this.isGlobalOrImport && this.introducesNewCycle) { // select the link and display enclosing path
+    }
+
+    if (this.isGlobal && this.introducesNewCycle && !this.inlinedCycleReference) { // select the link and display enclosing path
       return this.enclosingPath;
-    } else if (this.isGlobalOrImport) { // select link and advance the path
+    }
+
+    if (this.isGlobal) { // select link and advance the path
       return this.inlinePath;
-    } else if (this.isLocal) { // select link and advance the path
+    }
+
+    if (this.isLocal) { // select link and advance the path
       return this.inlinePath;
-    } else if (this.isBackButton) { // select back button
+    }
+
+    if (this.isBackButton) { // select back button
       return Path.current;
     }
   }
 
-  select(options) {
+  get urlPath() {
+    if (this.cycle || this.pathReference || this.externalLink) return this.enclosingPath;
+    if (this.isBackButton) return Path.url;
+    if (this.isLocal || this.isSimpleGlobal) return this.inlinePath;
+
+  }
+
+  select(options = {}) {
     if (this.isBackButton) return BackButton.select();
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.string, '_blank');
     return updateView(this.previewPath, this, options);
   }
 
-  execute(options) {
+  execute(options = {}) {
     options = { scrollDirect: true, ...options };
 
+    Link.persistLastLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
+
     if (this.isExternal) {
-      return window.open(location.origin + this.inlinePath.string, '_blank'); // external links must open in new tab
-    } else if (this.isBackButton) {
-      return BackButton.execute();
-    } else if (options.redirect) { // all handling is the same for redirection
-      return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
-    } else if (this.isGlobalOrImport && this.introducesNewCycle && !options.inlineCycles) {
-      return this.inlinePath.reduce().display(options);
-    } else { // inlined cycles, globals, and locals advance
-      return this.inlinePath.display({
-        selectALink: options.selectALink !== false,
-        noAnimate: true, // a direct execution that isn't a cycle shouldn't animate
-        ...options
-      });
+      return window.open(this.element.href, '_blank'); // external links must open in new tab
     }
+
+    if (this.isBackButton) {
+      return BackButton.execute();
+    }
+
+    if (options.redirect) { // all handling is the same for redirection
+      return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
+    }
+
+    if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) {
+      return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
+        .then(() => this.inlinePath.reduce().display(options));
+    }
+
+    if ((this.pathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // eg [[A#B]] or [[A/B/C]]
+      return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
+        .then(() => this.inlinePath.display({ scrollDirect: true, ...options }));
+    }
+
+    return this.inlinePath.display({ // inlined cycles, globals, and locals advance
+      selectALink: options.selectALink !== false,
+      ...options
+    });
   }
 
   static removeSelectionClass() {
@@ -487,7 +579,7 @@ class Link {
 
     Link.persistInHistory(linkToSelect);
     Link.persistInSession(linkToSelect);
-    Link.persistLastSelectionData(linkToSelect);
+    Link.persistLastLinkSelection(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -566,7 +658,9 @@ class Link {
   }
 
   // If someone eg presses up from the second link in a paragraph, pressing down should return them there.
-  static persistLastSelectionData(link) {
+  static persistLastLinkSelection(link) {
+    if (link?.isBackButton) return;
+
     if (link) {
       let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
       lastSelectionsOfParagraph[link.enclosingParagraph.path] = link.metadata;
@@ -586,6 +680,18 @@ class Link {
         return null;
       }
     }
+  }
+
+  get isLastSelection() {
+    return !!Link.lastSelectionOfParagraph(this.enclosingParagraph)?.equals(this);
+  }
+
+  static for(arg) {
+    return new this(arg);
+  }
+
+  static from(arg) {
+    return new this(arg);
   }
 }
 

@@ -5,12 +5,19 @@ class Topic {
   // There are several permutations of the topic key
 
   constructor(string) {
+    if (!string) throw new Error('String required to instantiate Topic');
+
     this.display = string; // the string precisely as it appears in the expl file
 
     this.mixedCase = removeStyleCharacters(string)  // the display verison sans style characters * _ ~ ` and a trailing question mark, encoding style characters
       .split(/\\\\/g).map(string => string.replace(/\\/g, '')).join('\\\\'); // Remove backslashes that are escaping literal characters now that removeStyleCharacters has already run
 
-    this.escapedMixedCase = CSS.escape(this.mixedCase);
+    this.cssMixedCase = CSS.escape(this.mixedCase);
+
+    this.escapedMixedCase = this.mixedCase
+      .replace(/#/g, '\\#')
+      .replace(/\//g, '\\/')
+      .replace(/\\/g, '\\\\')
 
     this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
       .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a % which we're using for encodings
