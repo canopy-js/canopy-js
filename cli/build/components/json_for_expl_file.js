@@ -1,16 +1,16 @@
 let parseParagraph = require('./parse_paragraph');
 let Topic = require('../../shared/topic');
-let Paragraph = require('../../shared/paragraph');
+let Block = require('../../shared/block');
 let parseText = require('./parse_text');
 
 function jsonForExplFile(filePath, explFileData, parserContext, options) {
   let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
-  let rootParagraph = new Paragraph(paragraphsWithKeys[0]);
+  let rootParagraph = new Block(paragraphsWithKeys[0]);
   let paragraphsBySubtopic = {};
   parserContext.filePath = filePath;
 
   paragraphsWithKeys.forEach(function(paragraphWithKey) {
-    let paragraph = new Paragraph(paragraphWithKey.trim());
+    let paragraph = new Block(paragraphWithKey.trim());
     if (!paragraph.key) { return; }
 
     parserContext.setTopicAndSubtopic(Topic.for(rootParagraph.key), Topic.for(paragraph.key));
@@ -24,19 +24,18 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
   });
 
   parserContext.validateRedundantLocalReferences();
-  parserContext.validateAmbiguousLocalReferences();
   parserContext.throwSubsumptionConditionalErrors();
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,
-    topicTokens: parseText({ text: rootParagraph.key, parserContext: parserContext.clone({ insideToken: true }) }),
+    topicTokens: parseText({ text: rootParagraph.key, parserContext: parserContext.clone({ insideToken: false }) }),
     paragraphsBySubtopic
   };
 
   return JSON.stringify(
     jsonObject,
     null,
-    options.logging ? 1 : 0
+    options.pretty ? 2 : 0
   );
 }
 

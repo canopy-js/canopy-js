@@ -7,7 +7,9 @@
   removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
   the scroll upwards can be animated using the window.scrollTo method. */
 
-  padding-bottom: calc(120vh);
+  padding-bottom: calc(100vh);
+
+  position: relative;
 
   font-family: "Times New Roman", Times, serif;
 
@@ -82,9 +84,8 @@
       text-decoration: none;
     }
 
-    &.canopy-external-link {
-      display: inline;
-      overflow-wrap: break-word;
+    &.canopy-external-link, &.canopy-back-cycle-link, &.canopy-lateral-cycle-link, &.canopy-path-reference {
+      display: inline-block;
       white-space: normal;
 
       &:not(.canopy-table-list-link-cell) *:last-child::after {
@@ -94,31 +95,34 @@
       }
 
       &:not(.canopy-table-list-link-cell)::after {
-        content: '➹';
         font-size: 9px;
-        white-space: nowrap; /* Prevents the icon from wrapping */
-        position: relative; /* Set position to relative */
-        top: 1px; /* Nudge text down by 2px; adjust as needed */
+        white-space: nowrap;
+        position: relative;
       }
     }
 
-    &.canopy-cycle-link {
-      display: inline-block; /* Ensures the link behaves as a single unit */
+    &.canopy-external-link:not(.canopy-table-list-link-cell)::after {
+      content: '➹';
+      top: 2px;
+      left: 0.5px;
+    }
 
-      &:not(.canopy-table-list-link-cell) *:last-child::after {
-        content: ' ';
-        font-size: 4px;
-        white-space: nowrap;
-      }
+    &.canopy-path-reference:not(.canopy-table-list-link-cell)::after {
+      content: '⇓';
+      top: 1px;
+      left: 1.5px;
+    }
 
-      &:not(.canopy-table-list-link-cell):not(.canopy-open-link)::after {
-        content: '↩';
-        font-size: 10px;
-        position: relative; /* Allows for position adjustment */
-        top: 2px;
-        left: 0px;
-        white-space: nowrap; /* Prevents the icon from wrapping */
-      }
+    &.canopy-back-cycle-link:not(.canopy-table-list-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+      content: '↩';
+      top: 2px;
+      left: 0px;
+    }
+
+    &.canopy-lateral-cycle-link:not(.canopy-table-list-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+      content: '↪';
+      top: 2px;
+      left: 0px;
     }
   }
 
@@ -264,7 +268,7 @@
       justify-content: flex-start;
     }
 
-    &.align-right {
+    &.canopy-align-right {
       width: 90%;
       align-items: flex-end;
       .canopy-table-list-row {
@@ -272,7 +276,7 @@
       }
     }
 
-    &.align-left {
+    &.canopy-align-left {
       width: 90%;
       align-items: flex-start;
     }
@@ -318,34 +322,6 @@
       justify-content: center; /* Center content horizontally */
       align-items: center; /* Center content vertically */
 
-      &.canopy-external-link {
-        margin: 5px; // cancel negative margin
-
-        &.canopy-selectable-link * {
-          text-decoration: none;
-        }
-
-        .canopy-table-list-content-container::after {
-          content: ' ➹';
-          font-size: 11px;
-          margin-left: -5px; /* Negative margin to pull the icon closer to the last word */
-          position: relative; /* Allows for position adjustment */
-          top: 2px; /* Move the icon up (- value) or down (+ value) */
-          left: 5px;
-          white-space: nowrap; /* Prevents the icon from wrapping */
-        }
-      }
-
-      &.canopy-cycle-link .canopy-table-list-content-container::after {
-        content: ' ↩';
-        font-size: 11px;
-        margin-left: -5px; /* Negative margin to pull the icon closer to the last word */
-        position: relative; /* Allows for position adjustment */
-        top: 2px; /* Move the icon up (- value) or down (+ value) */
-        left: 5px;
-        white-space: nowrap; /* Prevents the icon from wrapping */
-      }
-
       &.canopy-selectable-link {
         text-decoration: none;
         text-shadow: none;
@@ -366,6 +342,42 @@
         .canopy-selected-link {
             background-color: #f5f6fe;
         }
+      }
+
+      .canopy-table-list-content-container::after {
+        font-size: 11px;
+        margin-left: -5px; // Negative margin to pull the icon closer to the last word
+        position: relative; // Allows for position adjustment
+        top: 5px; // Move the icon up (- value) or down (+ value)
+        left: 5px;
+        white-space: nowrap; // Prevents the icon from wrapping
+      }
+
+      &.canopy-external-link {
+        margin: 5px; // cancel negative margin
+
+        &.canopy-selectable-link * {
+          text-decoration: none;
+        }
+
+        .canopy-table-list-content-container::after {
+          content: ' ➹';
+          top: 3px;
+        }
+      }
+
+      &.canopy-back-cycle-link .canopy-table-list-content-container::after { // if it is open, it has been inlined and isn't a cycle
+        content: ' ↩';
+      }
+
+      &.canopy-lateral-cycle-link .canopy-table-list-content-container::after { // if it is open, it has been inlined and isn't a cycle
+        content: ' ↪';
+      }
+
+      &.canopy-path-reference .canopy-table-list-content-container::after {
+        content: ' ⇓';
+        left: 6px;
+        top: 2px;
       }
     }
 
@@ -494,11 +506,12 @@
   }
 
   #canopy-back-button-container {
-    position: fixed;  // Fixed position on the screen
-    bottom: 60px;        // Align to the bottom of the screen
-    width: 100%;
-    display: flex;
-    justify-content: center; // Center button horizontally
+    position: absolute;  // Positioned absolutely relative to its parent
+    bottom: 60px;        // Distance from the bottom within the parent
+    left: 0;
+    right: 0;
+    margin: auto;       // Auto margins to center horizontally
+    width: fit-content; // Adjust width as necessary
 
     #canopy-back-button {
       cursor: pointer;
