@@ -12,6 +12,7 @@ function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
     return renderTextToken(token);
   } else if (token.type === 'local') {
+    renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
     return renderGlobalLink(token, renderContext);
@@ -46,7 +47,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'inline_code') {
     return renderInlineCodeText(token, renderContext);
   } else {
-    throw `Unhandled token type: ${token.type} ${token.type === 'table_list'}`
+    throw `Unhandled token type: ${token.type}`
   }
 }
 
@@ -58,18 +59,10 @@ function renderTextToken(token) {
 }
 
 function renderLocalLink(token, renderContext) {
-  let {
-    localLinkSubtreeCallback
-  } = renderContext;
-  localLinkSubtreeCallback(token);
-  return createLocalLinkElement(token, renderContext)
-}
-
-function createLocalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.targetTopic = token.targetTopic; // helpful to have in debugger
+  linkElement.targetTopic = token.targetTopic; // helpful for debugger
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
   linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
@@ -100,18 +93,7 @@ function createLocalLinkElement(token, renderContext) {
 }
 
 function renderGlobalLink(token, renderContext) {
-  let {
-    pathArray,
-    globalLinkSubtreeCallback
-  } = renderContext;
-
-  let linkElement = createGlobalLinkElement(token, renderContext);
-
-  return linkElement;
-}
-
-function createGlobalLinkElement(token, renderContext) {
-  let { fullPath, remainingPath } = renderContext;
+  let { fullPath, remainingPath, currentTopic, currentSubtopic } = renderContext;
 
   let linkElement = document.createElement('a');
 
@@ -124,17 +106,14 @@ function createGlobalLinkElement(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
 
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.targetTopic = token.targetTopic; // helpful to have in debugger
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
+  linkElement.dataset.path = token.path;
+  linkElement.path = token.path; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
 
   linkElement.dataset.text = token.text;
 
-  let targetTopic = Topic.fromMixedCase(token.targetTopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}`;
+  linkElement.href = Path.for(token.path).productionPathString;
 
   let link = new Link(linkElement);
 
@@ -143,50 +122,21 @@ function createGlobalLinkElement(token, renderContext) {
     onLinkClick(link)
   );
 
-  let pathToEnclosingParagraph = renderContext.fullPath.slice(0, fullPath.length - remainingPath.length + 1);
-  if (Link.introducesNewCycle(pathToEnclosingParagraph, link.literalPath)) {
-    linkElement.classList.add('canopy-cycle-link');
+  let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
+  let pathToEnclosingParagraph = pathToEnclosingTopic.append(Path.forSegment(currentTopic, currentSubtopic));
+  let inlinedPath = pathToEnclosingParagraph.append(link.literalPath);
+  let reducedInlinePath = inlinedPath.reduce();
+  let cycle = inlinedPath.length !== reducedInlinePath.length;
+  let backCycle = cycle && reducedInlinePath.subsetOf(pathToEnclosingParagraph);
+  let lateralCycle = cycle && !backCycle;
+
+  if (backCycle) {
+    linkElement.classList.add('canopy-back-cycle-link');
+  } else if (lateralCycle) {
+    linkElement.classList.add('canopy-lateral-cycle-link');
+  } else if (link.pathReference) {
+    linkElement.classList.add('canopy-path-reference');
   }
-
-  return linkElement
-}
-
-function renderImportLink(token, renderContext) {
-  let {
-    pathArray
-  } = renderContext;
-
-  let linkElement = createImportLinkElement(token, renderContext);
-
-  return linkElement;
-}
-
-function createImportLinkElement(token, renderContext) {
-  let linkElement = document.createElement('a');
-
-  token.tokens.forEach(subtoken => {
-    let subtokenElement = renderTokenElement(subtoken, renderContext);
-    linkElement.appendChild(subtokenElement);
-  });
-
-  linkElement.classList.add('canopy-import-link');
-  linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.type = 'import';
-
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  linkElement.dataset.text = token.text;
-
-  let targetTopic = new Topic(token.targetTopic);
-  let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
-
-  linkElement.addEventListener(
-    'click',
-    onLinkClick(new Link(linkElement))
-  );
 
   return linkElement
 }
@@ -197,7 +147,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'external';
   linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url.startsWith('http://') ? token.url : 'http://' + token.url);
+  linkElement.setAttribute('href', token.url.match(/^https?:\/\//) ? token.url : 'http://' + token.url);
   linkElement.setAttribute('target', '_blank');
 
   token.tokens.forEach(subtoken => {
@@ -392,14 +342,13 @@ function renderTableList(token, renderContext) {
 
   if (token.rtl) tableListElement.dir = 'rtl';
 
-  if (token.items.every(item => item.alignment === 'right')) tableListElement.classList.add('align-right');
-  if (token.items.every(item => item.alignment === 'left')) tableListElement.classList.add('align-left');
+  if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
+  if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
 
   let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
-  let sizeIndex = 0;
-  if (token.items.length < 3 && !tableListElement.classList.contains('align-right') && !tableListElement.classList.contains('align-left')) sizeIndex = 1; // even if content doesn't justify size, we expand if there aren't so many
+  let tableListSizeIndex = 0;
 
-  let cellElements = token.items.map(cellObject => {
+  let cellElements = token.items.map((cellObject, cellIndex) => {
     let tableCellElement = document.createElement('DIV');
     tableCellElement.classList.add('canopy-table-list-cell');
     let contentContainer = document.createElement('DIV');
@@ -431,7 +380,12 @@ function renderTableList(token, renderContext) {
       tableCellElement.classList.add('canopy-table-list-ordinal-cell');
     }
 
+    return tableCellElement;
+  });
+
+  for (let i = 0; i < cellElements.length; i++) {
     // try fitting text into boxes and find the minimum cell size that fits
+    let tableCellElement = cellElements[i];
     let tempRowElement = createNewRow();
     let tempParagraphElement = document.createElement('p');
     tempParagraphElement.classList.add('canopy-paragraph');
@@ -441,28 +395,43 @@ function renderTableList(token, renderContext) {
     tempRowElement.appendChild(tableCellElement);
     tableCellElement.style.overflow = 'scroll';
     tableListElement.appendChild(tableCellElement)
-    tableListElement.classList.add(`canopy-${SizesByArea[sizeIndex]}`);
-    let availableWidth, availableHeight, scrollWidth, scrollHeight;
 
     while(1) {
-      availableWidth = tableCellElement.clientWidth - parseFloat(window.getComputedStyle(tableCellElement).paddingLeft) - parseFloat(window.getComputedStyle(tableCellElement).paddingRight);
-      availableHeight = tableCellElement.clientHeight - parseFloat(window.getComputedStyle(tableCellElement).paddingTop) - parseFloat(window.getComputedStyle(tableCellElement).paddingBottom);
-      scrollWidth = tableCellElement.firstChild.scrollWidth - parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
-      scrollHeight = tableCellElement.firstChild.scrollHeight - parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+      if (tableListSizeIndex === 2 && token.items.length > 2) tableListSizeIndex = 3 // quarters look better than halves
+      if (token.items.length < 3 && !token.alignment && tableListSizeIndex < 2) { // even if content isn't big, expand if there aren't so many
+        tableListSizeIndex = 2;
+      }
 
-      if (scrollWidth <= availableWidth && scrollHeight <= availableHeight) break;
-      if (sizeIndex === SizesByArea.length - 1) break;
+      tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      tableListElement.classList.remove(`canopy-${SizesByArea[sizeIndex]}`);
-      sizeIndex++;
-      tableListElement.classList.add(`canopy-${SizesByArea[sizeIndex]}`);
+      let availableWidth = tableCellElement.clientWidth -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingLeft) -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingRight);
+
+      let availableHeight = tableCellElement.clientHeight -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingTop) -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingBottom);
+
+      let scrollWidth = tableCellElement.firstChild.scrollWidth -
+        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+
+      let scrollHeight = tableCellElement.firstChild.scrollHeight -
+        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+
+      let tooWide = scrollWidth > availableWidth;
+      let tooTall = scrollHeight > availableHeight;
+
+      if (!tooWide && !tooTall) break; // fits
+      if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
+
+      tableListSizeIndex++;
+      i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
     }
 
-    tempParagraphElement.remove()
+    tempParagraphElement.remove();
     tempRowElement.remove();
-
-    return tableCellElement;
-  });
+    if (i !== token.items.length - 1) tableListElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
+  }
 
   function createNewRow() {
     let newRow = document.createElement('DIV');
@@ -473,9 +442,9 @@ function renderTableList(token, renderContext) {
   }
 
   let rowSize;
-  if (SizesByArea[sizeIndex].includes('half')) rowSize = 2;
-  if (SizesByArea[sizeIndex].includes('third')) rowSize = 3;
-  if (SizesByArea[sizeIndex].includes('quarter')) rowSize = 4;
+  if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
+  if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
+  if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
 
   // Create the first row
   let tableRowElement = createNewRow();
@@ -503,6 +472,22 @@ function renderTableList(token, renderContext) {
   }
 
   return tableListElement;
+
+  function getTotalWidthWithAfter(element) {
+    // Get the width of the main element
+    const mainWidth = element.getBoundingClientRect().width;
+
+    // Get the computed style of the ::after pseudo-element
+    const afterStyle = window.getComputedStyle(element, '::after');
+
+    // Try to parse the width of the ::after pseudo-element
+    // This assumes a fixed width is set in CSS
+    const afterWidth = parseFloat(afterStyle.width);
+
+    // If afterWidth is NaN (not a number), it means the width couldn't be parsed,
+    // so we assume it's 0 or handle it according to your use case.
+    return mainWidth + (isNaN(afterWidth) ? 0 : afterWidth);
+  }
 }
 
 function renderHtmlBlock(token) {
