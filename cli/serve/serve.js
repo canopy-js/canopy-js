@@ -3,7 +3,7 @@ let fs = require('fs');
 let open = require('open');
 let chalk = require('chalk');
 
-function serve(options) {
+function serve(options = {}) {
   options = options || {};
   let port = options.port;
   let static = options.static;
