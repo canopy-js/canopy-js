@@ -15,6 +15,10 @@
 <br>
 </div>
 
+## See the new playground
+
+Check out the new [interactive playground here](https://playground.canopyjs.org).
+
 ## What Canopy does
 
 Canopy takes a set of text files like this:
