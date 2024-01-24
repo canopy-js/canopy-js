@@ -24,6 +24,7 @@ jobs:
           cp playground/index.html ../playground-deploy/
           cp playground/favicon.ico ../playground-deploy/
           cp playground/logo.png ../playground-deploy/
+          cp playground/google_analytics_tag.txt ../playground-deploy/
       - run: |
           set -ex
           rev=$(git rev-parse --short HEAD)
@@ -41,6 +42,8 @@ jobs:
           # Remove all files in the current branch and copy the new build files
           rm -rf *
           cp -r ../playground-deploy/* .
+
+          cat ./google_analytics_tag.txt >> index.html
 
           # Stage all changes, commit, and force push to the playground branch
           git add -A
