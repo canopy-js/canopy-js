@@ -271,8 +271,8 @@ test('it does not match local references with periods', () => {
 
   };
   expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    'Error: Reference [[State capital. and governor]] in [Idaho] matches no global, local, or import reference.\n' +
-    'topics/Idaho/Idaho.expl:1:49'
+    dedent`Error: Reference \"[[State capital. and governor]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [State capital. and governor].
+    topics/Idaho/Idaho.expl:1:49`
   ));
 });
 
@@ -302,8 +302,7 @@ test('it matches global references', () => {
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -390,8 +389,7 @@ test('it matches global references using explicit syntax to override local refer
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming#Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -405,6 +403,271 @@ test('it matches global references using explicit syntax to override local refer
             "text" : " the US State.",
             "type":"text"
           }
+        ],
+
+        "Wyoming": [
+          {
+            "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
+            "type": "text",
+          }
+        ],
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
+    {
+      "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Wyoming": [
+          {
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
+test('it matches global references using [[X#]] syntax to override local reference creation', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, which contains [[Wyoming]] the small town, and is like [[Wyoming#]] the US State.
+
+    Wyoming: There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.`,
+
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, which contains ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "local",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : " the small town, and is like ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "pathString": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : " the US State.",
+            "type":"text"
+          }
+        ],
+
+        "Wyoming": [
+          {
+            "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
+            "type": "text",
+          }
+        ],
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
+    {
+      "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Wyoming": [
+          {
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
+test('it allows global self-subtopic-references using [[#X]] syntax to override local reference creation', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, which contains [[Wyoming]] the small town, [[#Wyoming]] the small town!
+
+    Wyoming: There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.`,
+
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, which contains ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "local",
+            "targetSubtopic": "Wyoming",
+            "targetTopic": "Idaho",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : " the small town, ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "global",
+            "pathString": "Idaho#Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : " the small town!",
+            "type":"text"
+          }
+        ],
+
+        "Wyoming": [
+          {
+            "text": "There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.",
+            "type": "text",
+          }
+        ],
+      }
+    }
+  );
+
+  expect(JSON.parse(filesToWrite['build/_data/Wyoming.json'])).toEqual(
+    {
+      "displayTopicName": "Wyoming",
+      "topicTokens": [
+         {
+          "text": "Wyoming",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Wyoming": [
+          {
+            "text" : "Wyoming is a midwestern state.",
+            "type":"text"
+          }
+        ],
+      }
+    }
+  );
+});
+
+test('Local references beat global for simple links', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, which contains [[Wyoming]] the small town.
+
+    Wyoming: There is a small town in Idaho called Wyoming, which is different than the US state of Wyoming.`,
+
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
+
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
+    {
+      "displayTopicName": "Idaho",
+      "topicTokens": [
+         {
+          "text": "Idaho",
+          "type": "text",
+        },
+      ],
+      "paragraphsBySubtopic" : {
+        "Idaho": [
+          {
+            "text" : "Idaho is a midwestern state, which contains ",
+            "type":"text"
+          },
+          {
+            "text": "Wyoming",
+            "type": "local",
+            "targetTopic": "Idaho",
+            "targetSubtopic": "Wyoming",
+            "enclosingTopic": "Idaho",
+            "enclosingSubtopic" : "Idaho",
+            "tokens": [
+              {
+                 "text": "Wyoming",
+                 "type": "text",
+               },
+             ]
+          },
+          {
+            "text" : " the small town.",
+            "type":"text"
+          },
         ],
 
         "Wyoming": [
@@ -466,8 +729,7 @@ test('it lets you give arbitrary display names to references like [[a|b]]', () =
           {
             "text": "the Cowboy State",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -513,8 +775,7 @@ test('it lets you select an exclusive display substring like [[{the answer} to t
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "The state of Wyoming",
-            "targetTopic": "The state of Wyoming",
+            "pathString": "The_state_of_Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -534,7 +795,7 @@ test('it lets you select an exclusive display substring like [[{the answer} to t
   );
 });
 
-test('it lets you select multiple exclusive display substrings like [[{the }US {postal service}]]', () => {
+test('it lets you select multiple exclusive display substrings like [[{the} US{ postal service}]]', () => {
   let explFileData = {
     'topics/US/Services.expl': `Services: Americans like [[{the }US {postal service}]].\n`,
     'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
@@ -560,8 +821,7 @@ test('it lets you select multiple exclusive display substrings like [[{the }US {
           {
             "text": "the postal service",
             "type": "global",
-            "targetSubtopic": "The US postal service",
-            "targetTopic": "The US postal service",
+            "pathString": "The_US_postal_service",
             "enclosingTopic": "Services",
             "enclosingSubtopic" : "Services",
             "tokens": [
@@ -607,8 +867,7 @@ test('it lets you select multiple exclusive display substrings with interpolatio
           {
             "text": "a postal service",
             "type": "global",
-            "targetSubtopic": "The US postal service",
-            "targetTopic": "The US postal service",
+            "pathString": "The_US_postal_service",
             "enclosingTopic": "Services",
             "enclosingSubtopic" : "Services",
             "tokens": [
@@ -626,19 +885,6 @@ test('it lets you select multiple exclusive display substrings with interpolatio
       }
     }
   );
-});
-
-test('it adds to the error message for manual display strings clarifying the resolved target', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[the state of {Wyoming}]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
-    `Error: Reference [[the state of {Wyoming}]] in [Idaho] referencing target [the state of Wyoming] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1:42`
-  ));
 });
 
 test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]', () => {
@@ -667,8 +913,7 @@ test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]
           {
             "text": "the state of Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -714,8 +959,7 @@ test('it lets you interpolate different values for display and target like [[har
           {
             "text": "Wyoming territories",
             "type": "global",
-            "targetSubtopic": "Wyoming territory",
-            "targetTopic": "Wyoming territory",
+            "pathString": "Wyoming_territory",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -735,7 +979,7 @@ test('it lets you interpolate different values for display and target like [[har
   );
 });
 
-test('it lets you select an exclusive display string with import references like [[Wyoming#{{Cheyenne}} city]]', () => {
+test('it lets you select an exclusive display string with import references like [[Wyoming#{Cheyenne} city]]', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming#{Cheyenne} city]] of [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`
@@ -760,8 +1004,7 @@ test('it lets you select an exclusive display string with import references like
           {
             "enclosingSubtopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "targetSubtopic": "Cheyenne city",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming#Cheyenne_city",
             "text": "Cheyenne",
             "tokens": [
               {
@@ -769,7 +1012,7 @@ test('it lets you select an exclusive display string with import references like
                 "type": "text",
               },
             ],
-            "type": "import",
+            "type": "global",
           },
           {
             "text": " of ",
@@ -778,8 +1021,7 @@ test('it lets you select an exclusive display string with import references like
           {
             "enclosingSubtopic": "Idaho",
             "enclosingTopic": "Idaho",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "text": "Wyoming",
             "tokens": [
               {
@@ -843,444 +1085,9 @@ test('it lets you select an exclusive display string with import references like
     );
 });
 
-//// Import references
+//// Path references
 
-test('it matches implicit import references', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming|my favorite state]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-
-          {
-            "text" : "Idaho is a midwestern state, like ",
-            "type":"text"
-          },
-          {
-            "text": "my favorite state",
-            "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "my favorite state",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      }
-    }
-  );
-});
-
-test('it matches implicit import references in any order within a sentence', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Yellowstone National Park]] of [[Wyoming]].\n`,
-    'topics/Wyoming/Wyoming.expl':
-      dedent`Wyoming: Wyoming is a midwestern state. It contains [[Yellowstone National Park]]
-
-      Yellowstone National Park: This is a large park.` + '\n'
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/Idaho.json'])).toEqual(
-    {
-      "displayTopicName": "Idaho",
-      "topicTokens": [
-         {
-          "text": "Idaho",
-          "type": "text",
-        },
-      ],
-      "paragraphsBySubtopic" : {
-        "Idaho": [
-
-          {
-            "text" : "Idaho is a midwestern state, near ",
-            "type":"text"
-          },
-          {
-            "text": "Yellowstone National Park",
-            "type": "import",
-            "targetSubtopic": "Yellowstone National Park",
-            "targetTopic": "Wyoming",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "Yellowstone National Park",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : " of ",
-            "type":"text"
-          },
-          {
-            "text": "Wyoming",
-            "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
-            "enclosingTopic": "Idaho",
-            "enclosingSubtopic" : "Idaho",
-            "tokens": [
-              {
-                 "text": "Wyoming",
-                 "type": "text",
-               },
-             ]
-          },
-          {
-            "text" : ".",
-            "type":"text"
-          },
-        ]
-      }
-    }
-  );
-});
-
-test('it requires explicit syntax if import could match multiple globals', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. The largest city in England is [[London]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
-
-      Columbus: Columbus is a large city in Ohio.
-
-      London: London is a small city in Ohio.` + '\n',
-    'topics/Vacation/Vacation.expl':
-      dedent`Vacation: I'd like to go to [[Columbus]], [[Ohio]], and [[London]], [[England]].` + '\n'
-  };
-
-  expect(() => jsonForProjectDirectory(explFileData, 'England', {})).toThrow(chalk.red(
-    `Import reference [London] could belong to multiple global references: [Ohio, England].\n` +
-    `Please indicate which global reference is the import anchor using explicit import syntax eg [[Ohio#London]]\n` +
-    `topics/Vacation/Vacation.expl:1:57`
-  ));
-});
-
-test('it makes local references into import references if that resolves redundancy', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. England has various [[cities]]. One of England's cities is [[London]].
-
-      Cities: England has various cities, but none are so nice as [[London]], [[Ohio]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
-
-      Columbus: Columbus is a large city in Ohio.
-
-      London: London is a small city in Ohio.` + '\n'
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
-    [
-      {
-        "text" : "England is a European country. England has various ",
-        "type":"text"
-      },
-      {
-        "text": "cities",
-        "type": "local",
-        "targetSubtopic": "Cities",
-        "targetTopic": "England",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "England",
-        "tokens": [
-          {
-             "text": "cities",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ". One of England's cities is ",
-        "type":"text"
-      },
-      {
-        "text": "London",
-        "type": "local",
-        "targetSubtopic": "London",
-        "targetTopic": "England",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "England",
-        "tokens": [
-          {
-             "text": "London",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ".",
-        "type":"text"
-      },
-    ]);
-
-  expect(JSON.parse(filesToWrite['build/_data/England.json'])["paragraphsBySubtopic"]["Cities"]).toEqual(
-    [
-      {
-        "text" : "England has various cities, but none are so nice as ",
-        "type":"text"
-      },
-      {
-        "text": "London",
-        "type": "import",
-        "targetSubtopic": "London",
-        "targetTopic": "Ohio",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "Cities",
-        "tokens": [
-          {
-             "text": "London",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ", ",
-        "type":"text"
-      },
-      {
-        "text": "Ohio",
-        "type": "global",
-        "targetSubtopic": "Ohio",
-        "targetTopic": "Ohio",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "Cities",
-        "tokens": [
-          {
-             "text": "Ohio",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ".",
-        "type":"text"
-      },
-    ]);
-});
-
-test('it converts local references to import references if later found redundant', () => {
-  let explFileData = { // first we think the first [[London]] is local, then we see later it isn't
-    'topics/England/England.expl':
-      dedent`England: England is a European country. England has various [[cities]]. I'd also like to go to [[London]], [[Ohio]].
-
-      Cities: England has various cities, including its capital [[London]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
-
-      Columbus: Columbus is a large city in Ohio.
-
-      London: London is a small city in Ohio.` + '\n'
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
-    [
-      {
-        "text" : "England is a European country. England has various ",
-        "type":"text"
-      },
-      {
-        "text": "cities",
-        "type": "local",
-        "targetSubtopic": "Cities",
-        "targetTopic": "England",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "England",
-        "tokens": [
-          {
-             "text": "cities",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ". I'd also like to go to ",
-        "type":"text"
-      },
-      {
-        "text": "London",
-        "type": "import",
-        "targetTopic": "Ohio",
-        "targetSubtopic": "London",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "England",
-        "tokens": [
-          {
-             "text": "London",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ", ",
-        "type":"text"
-      },
-      {
-        "text": "Ohio",
-        "type": "global",
-        "targetTopic": "Ohio",
-        "targetSubtopic": "Ohio",
-        "enclosingTopic": "England",
-        "enclosingSubtopic" : "England",
-        "tokens": [
-          {
-             "text": "Ohio",
-             "type": "text",
-           },
-         ]
-      },
-      {
-        "text" : ".",
-        "type":"text"
-      },
-    ]);
-});
-
-test('it converts local references within lists to import references if later found redundant', () => {
-  let explFileData = { // first we think the first [[London]] is local, then we see later it isn't
-    'topics/England/England.expl':
-      dedent`England:
-      1. England is a European country. England has various [[cities]].
-      2. I'd also like to go to [[London]], [[Ohio]].
-
-      Cities: England has various cities, including its capital [[London]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]].
-
-      Columbus: Columbus is a large city in Ohio.
-
-      London: London is a small city in Ohio.` + '\n'
-  };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'England', {});
-
-  expect(JSON.parse(filesToWrite['build/_data/England.json'])["paragraphsBySubtopic"]["England"]).toEqual(
-    [
-      {
-        "topLevelNodes": [
-          {
-            "ordinal": "1",
-            "ordered": true,
-            "tokensOfLine": [
-              {
-                "text": "England is a European country. England has various ",
-                "type": "text"
-              },
-              {
-                "text": "cities",
-                "type": "local",
-                "targetTopic": "England",
-                "targetSubtopic": "Cities",
-                "enclosingTopic": "England",
-                "enclosingSubtopic": "England",
-                "tokens": [
-                  {
-                     "text": "cities",
-                     "type": "text",
-                   },
-                 ]
-              },
-              {
-                "text": ".",
-                "type": "text"
-              }
-            ],
-            "children": []
-          },
-          {
-            "ordinal": "2",
-            "ordered": true,
-            "tokensOfLine": [
-              {
-                "text": "I'd also like to go to ",
-                "type": "text"
-              },
-              {
-                "text": "London",
-                "type": "import",
-                "targetTopic": "Ohio",
-                "targetSubtopic": "London",
-                "enclosingTopic": "England",
-                "enclosingSubtopic": "England",
-                "tokens": [
-                  {
-                     "text": "London",
-                     "type": "text",
-                   },
-                 ]
-              },
-              {
-                "text": ", ",
-                "type": "text"
-              },
-              {
-                "text": "Ohio",
-                "type": "global",
-                "targetTopic": "Ohio",
-                "targetSubtopic": "Ohio",
-                "enclosingTopic": "England",
-                "enclosingSubtopic": "England",
-                "tokens": [
-                  {
-                     "text": "Ohio",
-                     "type": "text",
-                   },
-                 ]
-              },
-              {
-                "text": ".",
-                "type": "text"
-              }
-            ],
-            "children": []
-          }
-        ],
-        "type": "outline"
-      }
-    ]
-  );
-});
-
-test('it matches import references with explicit syntax and lets you rename the link', () => {
+test('it matches path references with explicit syntax and lets you rename the link', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming#Yellowstone National Park|my favorite park]] in [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl':
@@ -1307,9 +1114,8 @@ test('it matches import references with explicit syntax and lets you rename the 
           },
           {
             "text": "my favorite park",
-            "type": "import",
-            "targetSubtopic": "Yellowstone National Park",
-            "targetTopic": "Wyoming",
+            "type": "global",
+            "pathString": "Wyoming#Yellowstone_National_Park",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -1326,8 +1132,7 @@ test('it matches import references with explicit syntax and lets you rename the 
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -1347,7 +1152,7 @@ test('it matches import references with explicit syntax and lets you rename the 
   );
 });
 
-test('it matches back-to-back global references', () => {
+test('it matches back-to-back global references', () => { // this was a bug in the parser that automatically added character after link to buffer
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]][[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
@@ -1372,8 +1177,7 @@ test('it matches back-to-back global references', () => {
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -1386,8 +1190,7 @@ test('it matches back-to-back global references', () => {
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -1432,8 +1235,7 @@ test('it matches global references at the end of strings', () => {
           {
             "text": "Wyoming",
             "type": "global",
-            "targetSubtopic": "Wyoming",
-            "targetTopic": "Wyoming",
+            "pathString": "Wyoming",
             "enclosingTopic": "Idaho",
             "enclosingSubtopic" : "Idaho",
             "tokens": [
@@ -1458,10 +1260,8 @@ test('it throws error for unrecognized link', () => {
   };
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(
-    `Error: Reference [[Wyoming]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1:42`
-  ));
+  ).toThrow(chalk.red(dedent`Error: Reference \"[[Wyoming]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [Wyoming].
+    topics/Idaho/Idaho.expl:1:42`));
 });
 
 test('it does not throw error for demarcated link', () => {
@@ -1485,7 +1285,9 @@ test('it throws error for regular redundant local references', () => {
       Boise: Boise is the capital of Idaho.` + '\n',
   };
 
-  let message = dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
     One reference is in subtopic [Idaho]
     topics/Idaho/Idaho.expl:1
@@ -1495,14 +1297,8 @@ test('it throws error for regular redundant local references', () => {
 
     Multiple local references to the same subtopic are not permitted.
 
-    Consider making one of these local references a self-import reference.
-    That would look like using [[Idaho#Boise]] in the same paragraph as
-    an anchor reference to global topic [[Idaho]].
-    `;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(message));
+    Consider making one of these local references a self path reference.
+    That would look like using [[#Boise]].`));
 });
 
 test('it only throws error for regular redundant local references in subsumed paragraphs', () => {
@@ -1520,65 +1316,6 @@ test('it only throws error for regular redundant local references in subsumed pa
   ).not.toThrow();
 });
 
-test('it throws error for redundant local references where both could be import references', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. The largest city in England is [[London]].
-
-      London: London is a large city in England.` + '\n',
-
-    'topics/Ohio/Ohio.expl':
-      dedent`Ohio: Ohio is a midwestern state. It contains [[Columbus]] and [[London]], which is also the name of a city in [[England]].
-
-      Columbus: Columbus is a large city in Ohio, which is similar in character to [[London]] [[England]].
-
-      London: London is a small city in Ohio.` + '\n',
-  };
-
-  let message =
-    dedent`Error: local/import reference ambiguity
-
-      Two references exist in topic [Ohio] to target [London] and it is unclear which
-        is the local reference, and which is an import reference.
-
-      ================================ First Reference ===============================
-
-      It is ambiguous whether reference [[London]] in subtopic [Ohio] of topic [Ohio]
-        is a local reference, an or an import reference anchored to topic [England].
-
-      topics/Ohio/Ohio.expl:1:64
-
-      If you intended this link to be an import reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of one of the subtopics to not match the other so
-        that it is clear that the other is the local reference.
-      2. You can use explicit import syntax to clarify this is an import reference,
-        ie, by writing [[England#London]] in a paragraph that has an anchoring global
-        reference like [[England]].
-
-      =============================== Second Reference ==============================
-
-      It is ambiguous whether reference [[London]] in subtopic [Columbus] of topic
-        [Ohio] is a local reference, an or an import reference anchored to topic
-        [England].
-
-      topics/Ohio/Ohio.expl:3:78
-
-      If you intended this link to be an import reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of one of the subtopics to not match the other so
-        that it is clear that the other is the local reference.
-      2. You can use explicit import syntax to clarify this is an import reference,
-        ie, by writing [[England#London]] in a paragraph that has an anchoring global
-        reference like [[England]].`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'England', {})
-  ).toThrow(chalk.red(message));
-});
-
 test('it throws error for redundant local references where both could be global reference', () => {
   let explFileData = {
     'topics/England/England.expl':
@@ -1591,138 +1328,20 @@ test('it throws error for redundant local references where both could be global 
     'topics/England/London.expl': `London: London is a common family name.\n`
   };
 
-  let message =
-    dedent`Error: local/global reference ambiguity
-
-      Two references exist in topic [England] to target [London] and it is unclear
-        which is the local reference, and which is a global reference.
-
-      ================================ First Reference ===============================
-
-      It is ambiguous whether reference [[London]] in subtopic [England] of topic
-        [England] is a local reference, or a global reference.
-
-      topics/England/England.expl:1:72
-
-      If you intended this link to be a global reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of the other subtopic to not match the name of the
-        global reference so that it is clear that is the local reference.
-      2. You can use explicit global syntax to clarify this is a global reference, ie,
-        [[London#London]].
-
-      =============================== Second Reference ==============================
-
-      It is ambiguous whether reference [[London]] in subtopic [Essex] of topic
-        [England] is a local reference, or a global reference.
-
-      topics/England/England.expl:3:65
-
-      If you intended this link to be a global reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of the other subtopic to not match the name of the
-        global reference so that it is clear that is the local reference.
-      2. You can use explicit global syntax to clarify this is a global reference, ie,
-        [[London#London]].`;
-
   expect(
     () => jsonForProjectDirectory(explFileData, 'England', {})
-  ).toThrow(chalk.red(message));
-});
+  ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [England] to subtopic [London]
 
-test('it throws error for redundant local references where one could be global and one could be global or import', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. The largest city in England is [[London]]. England contains [[Essex]]. Randomly, a cool place to visit is [[Arkansas]].
+    One reference is in subtopic [England]
+    topics/England/England.expl:1
 
-      Essex: Essex has been home to many individuals with the surname [[London]].
+    One reference is in subtopic [Essex (England)]
+    topics/England/England.expl:3
 
-      London: London is a large city in England.` + '\n',
+    Multiple local references to the same subtopic are not permitted.
 
-    'topics/Names/London.expl': `London: London is a common family name.\n`,
-
-    'topics/US/Arkansas.expl': dedent`Arkansas: Arkansas is a midsized American State containing the city of [[London]].
-
-    London: London is a small city in Arkansas state.`,
-  };
-
-  let message =
-    dedent`Error: local/global reference ambiguity
-
-      Two references exist in topic [England] to target [London] and it is unclear
-        which is the local reference, and which is a global reference.
-
-      ================================ First Reference ===============================
-
-      It is ambiguous whether reference [[London]] in subtopic [England] of topic
-        [England] is a local reference, a global reference, or an import reference
-        anchored to topic [Arkansas].
-
-      topics/England/England.expl:1:72
-
-      If you intended this link to be a global reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of the other subtopic to not match the name of the
-        global reference so that it is clear that is the local reference.
-      2. You can use explicit global syntax to clarify this is a global reference, ie,
-        [[London#London]].
-
-      If you intended this link to be an import reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of one of the subtopics to not match the other so
-        that it is clear that the other is the local reference.
-      2. You can use explicit import syntax to clarify this is an import reference,
-        ie, by writing [[Arkansas#London]] in a paragraph that has an anchoring global
-        reference like [[Arkansas]].
-
-      =============================== Second Reference ==============================
-
-      It is ambiguous whether reference [[London]] in subtopic [Essex] of topic
-        [England] is a local reference, or a global reference.
-
-      topics/England/England.expl:3:65
-
-      If you intended this link to be a global reference, you can fix this error one
-        of two ways:
-
-      1. You can change the name of the other subtopic to not match the name of the
-        global reference so that it is clear that is the local reference.
-      2. You can use explicit global syntax to clarify this is a global reference, ie,
-        [[London#London]].`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'England', {})
-  ).toThrow(chalk.red(message));
-});
-
-test('it only throws error for ambiguous local references in subsumed paragraphs', () => {
-  let explFileData = {
-    'topics/England/England.expl':
-      dedent`England: England is a European country. England contains [[Essex]].
-
-      Essex: Essex has been home to many individuals with the surname [[London]]. Randomly, a cool place to visit is [[Arkansas]].
-      London is a local reference, but it could be an import reference due to Arkansas. If the Leeds paragraph were subsumed, it
-      would be ambiguous which London was a local reference and which was an import reference, but it is not subsumed, so it is clear
-      this London is a local reference.
-
-      London: London is a large city in England.
-
-      Leeds: There is a big city called [[London]] nearby. Randomly, a cool place to visit is [[Arkansas]].` + '\n',
-
-    'topics/Names/London.expl': `London: London is a common family name.\n`,
-
-    'topics/US/Arkansas.expl': dedent`Arkansas: Arkansas is a midsized American State containing the city of [[London]].
-
-    London: London is a small city in Arkansas state.`,
-  };
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'England', {})
-  ).not.toThrow();
+    Consider making one of these local references a self path reference.
+    That would look like using [[#London]].`));
 });
 
 test('it throws error for redundantly defined topics', () => {
@@ -1758,6 +1377,97 @@ test('it throws error for redundantly defined subtopics', () => {
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
+
+test('it throws error for subtopic named after topic subtopic', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. Its capital is [[Boise]]
+
+    Boise: This is the capital.
+
+    Boise: This is a good city.` + '\n',
+  };
+
+  let message =`Error: Subtopic [Boise] or similar appears twice in topic: [Idaho]\n` +
+    `First definition: topics/Idaho/Idaho.expl:3\n` +
+    `Second definition: topics/Idaho/Idaho.expl:5`;
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(message));
+});
+
+test('it validates that topics of paths exist', () => {
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state, similar to [[Idaho#Boise]]\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(dedent`Error: Reference \"[[Idaho#Boise]]\" in subtopic [Wyoming, Wyoming] contains nonexistent topic [Idaho].
+    topics/Wyoming/Wyoming.expl:1:52`));
+});
+
+test('it validates that subtopics of paths exist', () => {
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state, similar to [[Idaho#Boise]]\n`,
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference "[[Idaho#Boise]]" of paragraph [Wyoming, Wyoming] does not exist.
+    topics/Wyoming/Wyoming.expl:1:52`));
+});
+
+
+test('it validates that subtopics of paths are subsumed by their topics', () => {
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state, similar to [[Idaho#Boise]]\n`,
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.\n
+
+    Boise: This is the capital.\n`,
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference "[[Idaho#Boise]]" of paragraph [Wyoming, Wyoming] exists but is not subsumed by given topic.
+    topics/Wyoming/Wyoming.expl:1:52`));
+});
+
+test('it errors when path segments are not connected', () => {
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state, similar to [[USA/Idaho#Boise]]\n`,
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, whose capital is [[Boise]]\n
+
+    Boise: This is the capital.\n`,
+    'topics/Idaho/USA.expl': dedent`USA: The USA is a country, which contains many states.\n
+
+    Boise: This is the capital.\n`,
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).toThrow(chalk.red(dedent`Error: Global reference "[[USA/Idaho#Boise]]" contains invalid adjacency.
+    [USA, USA] does not reference [Idaho]
+    topics/Wyoming/Wyoming.expl:1:52`));
+});
+
+test('it works when path segments of paths are connected', () => {
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state, similar to [[USA/Idaho#Boise]]\n`,
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state, whose capital is [[Boise]]\n
+
+    Boise: This is the capital.\n`,
+    'topics/Idaho/USA.expl': dedent`USA: The USA is a country, which contains [[Idaho]].`
+  };
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+  ).not.toThrow();
+});
+
+/////// Error Line Numbers ////////
 
 test('it counts blank lines in error line numbers', () => {
   let explFileData = {
@@ -1813,8 +1523,8 @@ test('it handles line counting within nested block', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:4:47`
+    dedent`Error: Reference \"[[Boise]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [Boise].
+    topics/Idaho/Idaho.expl:4:47`
     ));
 });
 
@@ -1830,8 +1540,8 @@ test('it handles lines counting after block', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[Boise]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:5:16`
+    dedent`Error: Reference \"[[Boise]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [Boise].
+    topics/Idaho/Idaho.expl:5:16`
     ));
 });
 
@@ -1843,8 +1553,8 @@ test('it handles character counting after token', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[Boise|bad link]] in [Idaho] referencing target [Boise] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:1:52`
+    dedent`Error: Reference \"[[Boise|bad link]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [Boise].
+    topics/Idaho/Idaho.expl:1:52`
     ));
 });
 
@@ -1858,8 +1568,8 @@ test('it gives correct line and character number for errors in tables', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:3:30`
+    dedent`Error: Reference \"[[non-existent topic]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [non-existent topic].
+    topics/Idaho/Idaho.expl:3:30`
     ));
 });
 
@@ -1873,8 +1583,8 @@ test('it gives correct line and character number for errors in lists', () => {
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).toThrow(chalk.red(
-    `Error: Reference [[non-existent topic]] in [Idaho] matches no global, local, or import reference.\n` +
-    `topics/Idaho/Idaho.expl:3:23`
+    dedent`Error: Reference \"[[non-existent topic]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [non-existent topic].
+    topics/Idaho/Idaho.expl:3:23`
     ));
 });
 
@@ -1891,69 +1601,6 @@ test('it does not throw error for redundantly defined subtopics that are not sub
   expect(
     () => jsonForProjectDirectory(explFileData, 'Idaho', {})
   ).not.toThrow();
-});
-
-test('it throws error if import reference lacks matching global reference', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state. Its capital is [[Boise]]
-
-    Boise: This is the capital.` + '\n',
-    'topics/Wyoming/Wyoming.expl': dedent`Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].
-
-    Idaho: This subtopic makes Idaho above a local reference and so the link to Boise shouldn't be a valid import reference.` + '\n',
-  };
-
-  let message = `Error: Import reference to [Boise (Idaho)] in [Wyoming] lacks global reference to topic [Idaho].\n` +
-    `topics/Wyoming/Wyoming.expl:1\n`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(message));
-});
-
-test('it throws error if import reference is to unsubsumed subtopic of target topic', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
-
-    Boise: This is the capital.` + '\n',
-
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Boise]] [[Idaho]].\n`,
-  };
-
-  let message = `Error: Import reference in [Wyoming] is referring to unsubsumed subtopic [Boise (Idaho)]\n` +
-    `topics/Wyoming/Wyoming.expl:1\n`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(message));
-});
-
-test('it throws error if import reference is to non-existent topic', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[England#London]] [[England]].\n`,
-  };
-
-  let message = `Error: Reference [[England#London]] in topic [Wyoming] refers to non-existent topic [England]\n` +
-    `topics/Wyoming/Wyoming.expl:1:52`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(message));
-});
-
-test('it throws error if import reference is to non-existent subtopic', () => {
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state.\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state. It is near [[Idaho#Boise]] [[Idaho]].\n`,
-  };
-
-  let message = `Error: Reference [[Idaho#Boise]] in topic [Wyoming] refers to non-existent subtopic of [Idaho], [Boise]\n` +
-    `topics/Wyoming/Wyoming.expl:1:52`;
-
-  expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
-  ).toThrow(chalk.red(message));
 });
 
 test('it throws error for topic name beginning with whitespace', () => {
@@ -2037,30 +1684,6 @@ test('it logs local orphan subtopics', () => {
     `topics/Idaho/Idaho.expl:3\n`);
 
   jsonForProjectDirectory(explFileData, 'Idaho', { orphans: true });
-
-  let messagePresent = !!console.log.mock.calls.find(call => {
-    return call[0] === message;
-  })
-
-  expect(messagePresent).toEqual(true);
-  console.log = log;
-});
-
-test('it logs non-reciprocal global references', () => {
-  let log = console.log;
-  console.log = jest.fn();
-  let explFileData = {
-    'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state near [[Wyoming]].\n`,
-    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
-  };
-
-  let message = chalk.magenta('Warning: Nonreciprocal Global Reference\n' +
-    'Global reference in [Idaho] exists to topic [Wyoming] with no reciprocal reference.\n' +
-    'topics/Idaho/Idaho.expl:1\n' +
-    'Try creating a global reference from [Wyoming] to [Idaho]\n' +
-    'topics/Wyoming/Wyoming.expl\n');
-
-  jsonForProjectDirectory(explFileData, 'Idaho', { reciprocals: true });
 
   let messagePresent = !!console.log.mock.calls.find(call => {
     return call[0] === message;
