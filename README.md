@@ -17,7 +17,7 @@
 
 ## See the new playground
 
-Check out the new [interactive playground here](https://playground.canopyjs.org).
+Check out the new [interactive playground here](https://playground.canopyjs.org). Questions or comments: `canopyjs at gmail dot com`.
 
 ## What Canopy does
 
