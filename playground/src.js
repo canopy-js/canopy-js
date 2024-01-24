@@ -301,7 +301,7 @@ Part 11: *Welcome back!* See, we've returned to where we started before all that
 > [[Part 11-1|Great!]]
 ===
 
-Part 11-1: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`canopyjs at gmail dot com\`
+Part 11-1: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
 
 
 [Oceans]
