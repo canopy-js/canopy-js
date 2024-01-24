@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check for uncommitted changes
+if ! git diff-index --quiet HEAD --; then
+    echo "There are uncommitted changes. Please commit or stash them before running this script."
+    exit 1
+fi
+
 # Extract current version
 current_version=$(jq -r '.version' package.json)
 echo "Current version: $current_version"
@@ -10,8 +16,11 @@ major=${ADDR[0]}
 minor=${ADDR[1]}
 patch=${ADDR[2]}
 
+# Remove leading zeros if present
+patch=$(echo $patch | sed 's/^0*//')
+
 # Increment the patch version
-let "patch+=1"
+((patch++))
 
 # Ensure patch has a leading zero if it is less than 10
 if [ $patch -lt 10 ]; then

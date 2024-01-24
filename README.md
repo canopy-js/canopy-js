@@ -15,6 +15,10 @@
 <br>
 </div>
 
+## See the new playground
+
+Check out the new [interactive playground here](https://playground.canopyjs.org). Questions or comments: `hello at canopyjs dot org`.
+
 ## What Canopy does
 
 Canopy takes a set of text files like this:
@@ -167,7 +171,7 @@ If `paragraph A` has a link to `paragraph B`, that means the user can select the
 
 Links are made using the `[[Topic]]` syntax, using the name of another topic or subtopic to specify the target of the link, and one can change the link text like so: `[[Real Topic|Link Text]].` Link targets are case-insensitive and ignore style characters, so eg `[[_topic_]]` would be a valid reference to a topic with the key `Topic:`.
 
-There are three types of references: local, global, and import.
+There are three types of references: local, global, and path references which are a type of global reference.
 
 #### Local References
 
@@ -243,50 +247,40 @@ As pictured above, when a global link is selected, the user has the option of ap
 
 Unlike a subtopic which can only be referenced from within a paragraph of its topic file, a topic can be referenced from any paragraph of any file in the project.
 
-#### Import references
+#### Path references
 
-An import reference is for when you want to reference a subtopic of a given topic from a paragraph belonging to a different topic.
-
-An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. Ideally, the paragraph for Fremont would reference the paragraph for Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can explain Teton itself.
-
-So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but only in a way that preserves the context of Teton within the topic of Wyoming, as we will see.
-
-For example, the following `expl` files:
+A path reference can be made like so:
 
 ```
-Wyoming: Wyoming is a mid-sized state in the Western United States. It has many [[counties]].
+Wyoming: Wyoming is a midwestern state, similar to [[USA/Idaho#Boise]].
+```
 
-Counties: Wyoming contains [[Teton]].
-
-Teton: Teton is a county on the western side of Idaho. Teton borders [[Fremont]] county of [[Idaho]].
+```
+USA: The USA is a country, which contains [[Idaho]].
 
 ```
 
 ```
-Idaho: Idaho is a mid-sized state in the Western United States. It has many [[counties]].
+Idaho: Idaho is a midwestern state, whose capital is [[Boise]]
 
-Counties: Idaho contains [[Fremont]].
-
-Fremont: Fremont is a county on the eastern side of Idaho.
+Boise: This is the capital.
 ```
 
-Would produce the following website:
-<br>
-![Import references](./readme/import.gif)
-<br>
+Selecting such a link will display multiple paragraphs below the current one.
 
-In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the paragraph making the reference.
+#### Cycle references
 
-When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context, first explaining Wyoming and its connection to Teton before explaining Teton itself.
+Cycle references are when a reference points to a topic that is already displayed in the current path. In such a case, the link offers the user a redirecting scroll backwards to the original instance, followed possibly by an advance to the new subsequent position. Eg, if the user is at path `A/B/C` and they click a link pointing to `B/D`, they will be scrolled up to `B`, and then down to `D`. Whether a link is a cycle link or not depends on the current path.
 
-In certain cases, Canopy may not be able to determine which global link a given import reference belongs to. This happens when there are multiple global references that all have subtopics with the same name. In these cases, one can use an explicit syntax like this to clarify which topic an import reference belongs to:
+One common use of path references is to take the user back to a previous list. So, the user might be at path `List/1`, and I might link to `List/2` rather than directly to `2`, which causes the user to return up and forward to `List/2`, rather than downward to `List/1/2` all displayed sequentially on the screen.
 
-```
-This is a [[Global Topic]], and this is an explicit import reference: [[Global Topic#Subtopic]].
+Examples of cycle references can be found in the Canopy playground mentioned above.
 
-```
+#### Path shorthands
 
-Import references add complexity to a project, so before using one, consider whether it might be possible to convert the subtopic you wish to reference into a topic-proper.
+If you want to create a path reference which references another subtopic in the same topic, you can use the omitted topic syntax like this: \[\[#Subtopic\]\]
+
+Conversely, if you would like to clarify that you mean a reference as a global reference even though it corresponds also to a subtopic of the current topic, you can use the omitted subtopic syntax: \[\[Topic#\]\].
 
 #### Advanced link syntax ####
 
@@ -444,7 +438,7 @@ In order to produce our website, we need to convert our `expl` files in the `top
 
 Build has a few options: If you are going to host your site at a subpath like `example.com/subpath/Project`, then you can build with `canopy build --project-path-prefix subdirectory`. If you want to host your site on a static assets server, you can build with hash URLs (eg `example.com/#/Topic`) using `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
 
-If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/body.html` for things before the Canopy content, and `assets/footer.html` for things to be loaded after.
+If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
 
 If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
 
@@ -512,4 +506,4 @@ npm run test
 
 ## Contact
 
-At the moment you can submit questions or comments to canopyjs at gmail dot com. For bugs or other issues, open an issue on the project.
+At the moment you can submit questions or comments to `hello at canopyjs dot org`. For bugs or other issues, open an issue on the project.

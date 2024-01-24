@@ -63,8 +63,10 @@ function generateFileComparator(defaultTopicFilePath) {
     if (file1.key === file1.terminalCategory) return -1;
     if (file2.key === file2.terminalCategory) return 1;
 
-    if (file1.key?.replace(/\([^)]*\)/g, '').trim() === file1.terminalCategory) return -1;
-    if (file2.key?.replace(/\([^)]*\)/g, '').trim() === file2.terminalCategory) return -1;
+    let file1MentionsCategory = file1.key?.toUpperCase().trim().includes(file1.terminalCategory.toUpperCase())
+    let file2MentionsCategory = file2.key?.toUpperCase().trim().includes(file2.terminalCategory.toUpperCase())
+    if (file1MentionsCategory && !file2MentionsCategory) return -1;
+    if (file2MentionsCategory && !file1MentionsCategory) return 1;
 
     if (file1.path > file2.path) return 1;
     if (file1.path < file2.path) return -1;

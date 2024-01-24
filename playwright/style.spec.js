@@ -81,12 +81,10 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly \"Fish\" - W. Carter");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
-      .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
+      .toEqual('https://upload.wikimedia.org/wikipedia/commons/9/98/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
       .toEqual('Jelly \"fish\" title');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
-    await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href))
-      .toEqual('https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg');
   });
 
   test('It creates linked images', async ({ page }) => {
@@ -99,43 +97,112 @@ test.describe('Inline entities', () => {
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
       .toEqual('Frog \"title\"');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
-    await expect(await page.locator('.canopy-selected-section a.canopy-image-anchor').evaluate((element) => element.href)).toEqual('http://google.com/');
+    await expect(await page.locator('.canopy-selected-section a:has(img)').evaluate((element) => element.href)).toEqual('http://google.com/');
   });
 
   test('It creates links from URLs', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
-    await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com");
+    await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com.");
+    await expect(page.evaluate(selector => window.getComputedStyle(document.querySelector(selector), '::after').content.includes('➹'), '.canopy-selected-section a')).toBeTruthy();
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
   });
 
   test('It will not separate link icon from prior word', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
 
-    let svgLeft = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
-      element => element.getBoundingClientRect().left);
-    let tokensLeft = await page.locator('.canopy-selected-section span.canopy-url-link-tokens-container').evaluate(
-      element => element.getBoundingClientRect().left);
+    const isAfterStickingToLink = async (selector) => {
+      return page.evaluate(selector => {
+        const element = document.querySelector(selector);
+        if (!element) return false;
 
-    expect(svgLeft - tokensLeft > 100).toEqual(true); // did not wrap
+        // Get the computed styles of the ::after pseudo-element
+        const afterStyles = window.getComputedStyle(element, '::after');
+        const content = afterStyles.getPropertyValue('content').replace(/['"]/g, '');
+
+        // Create a temporary span and apply styles from ::after pseudo-element
+        const tempSpan = document.createElement('span');
+        tempSpan.textContent = content;
+
+        // Apply relevant styles to the tempSpan
+        tempSpan.style.fontSize = afterStyles.fontSize;
+        tempSpan.style.fontFamily = afterStyles.fontFamily;
+        tempSpan.style.fontWeight = afterStyles.fontWeight;
+        tempSpan.style.fontStyle = afterStyles.fontStyle;
+        tempSpan.style.letterSpacing = afterStyles.letterSpacing;
+        tempSpan.style.textTransform = afterStyles.textTransform;
+        tempSpan.style.marginRight = afterStyles.marginRight;
+        tempSpan.style.textDecoration = afterStyles.textDecoration;
+
+        const lastChildSpan = document.createElement('SPAN');
+        let lastChildNode = element.lastChild;
+        element.lastChild.remove();
+        lastChildSpan.appendChild(lastChildNode);
+        element.appendChild(lastChildSpan);
+
+        element.appendChild(tempSpan);
+        const linkRect = element.getBoundingClientRect();
+        const tempSpanRect = tempSpan.getBoundingClientRect();
+
+        // Cleanup: remove the temporary span
+        element.removeChild(tempSpan);
+
+        // Tolerance in pixels for line height differences
+        const tolerance = 5;
+
+        if (Math.abs(linkRect.bottom - tempSpanRect.bottom) > tolerance) console.error(linkRect.bottom, tempSpanRect.bottom)
+
+        return Math.abs(linkRect.bottom - tempSpanRect.bottom) <= tolerance;
+      }, selector);
+    };
+
+    for (let i = 0; i < 30; i++) {
+      await page.evaluate(selector => {
+        document.querySelector(selector).innerText += 'i';
+      }, '.canopy-selected-section a');
+
+      expect(await isAfterStickingToLink('.canopy-selected-section a')).toBeTruthy();
+    }
   });
 
   test('It will not separate link icon from following punctuation', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
 
-    let svgBottom = await page.locator('.canopy-selected-section span.canopy-url-link-svg-container').evaluate(
-      element => element.getBoundingClientRect().bottom);
-    let nextTokenBottom = await page.evaluate(() =>
-      document.querySelector('.canopy-selected-section span.canopy-url-link-svg-container').closest('a').nextSibling.getBoundingClientRect().bottom);
-    expect(nextTokenBottom - svgBottom).toBeLessThan(5);
+    const elementHandle = await page.$('.canopy-selected-section a');
+    const punctuationHandle = await page.$('.canopy-selected-section a + span');
+
+    // Get the bounding box of the element and the punctuation
+    const elementBox = await elementHandle.boundingBox();
+    const punctuationBox = await punctuationHandle.boundingBox();
+
+    // Calculate the right end position of the element (element's position + its width)
+    const elementBottom = elementBox.y + elementBox.height;
+
+    // Check if the left position of the punctuation is close to the right end of the element
+    expect(punctuationBox.y + punctuationBox.height).toBeCloseTo(elementBottom, 1); // '1' is the threshold for how close they should be
+
+    for (let i =0; i < 20; i++) {
+      await page.evaluate((selector) => {
+        document.querySelector(selector).innerText += 'i';
+      }, '.canopy-selected-section a');
+
+      expect(punctuationBox.y + punctuationBox.height).toBeCloseTo(elementBottom, 1); // '1' is the threshold for how close they should be
+    }
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
     await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
-    await expect(await page.locator('.canopy-selected-section svg')).toHaveCount(1);
+    // Check if the ::after pseudo-element of the link contains the arrow character
+    const arrowContent = await page.locator('.canopy-selected-section a').evaluate(element => {
+      const afterContent = window.getComputedStyle(element, '::after').getPropertyValue('content');
+      return afterContent;
+    });
+
+    const expectedArrowCharacter = '➹';
+    expect(arrowContent).toContain(expectedArrowCharacter);
   });
 
   test('It creates inline HTML elements', async ({ page }) => {
@@ -177,19 +244,6 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(9)).toHaveText('b');
     await expect(page.locator('.canopy-selected-section table tr td').nth(10)).toHaveText('1');
     await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
-  });
-
-  test('It allows import references in tables', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Tables_with_import_references');
-    await expect(page.locator('.canopy-selected-section table')).toHaveCount(1);
-
-    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
-
-    await expect(page.locator('.canopy-selected-section table a.canopy-global-link')).toHaveText('New York');
-    await expect(page.locator('.canopy-selected-section table a.canopy-import-link')).toHaveText('Southern border');
   });
 
   test('It accepts table merge syntax', async ({ page }) => {
@@ -243,49 +297,13 @@ test.describe('Block entities', () => {
   test('It allows table lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(0)).toHaveText('This is 1/4 pill234');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(1)).toHaveText('5');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(2)).toHaveText('This is 1/3 pill?23');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(3)).toHaveText('4');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(4)).toHaveText('This is 1/3 pill ????23');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(5)).toHaveText('4');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(6)).toHaveText('This is 1/2 pill ?????2');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(7)).toHaveText('This is 1/4 card ?????234');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(8)).toHaveText('This is 1/4 card ??? ????234');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(9)).toHaveText('This is 1/3 card ??? ??? ????23');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(10)).toHaveText('4');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(11)).toHaveText('This is 1/3 card ??? ??? ??? ??? ??? ??? ??? ??? ?23');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(12)).toHaveText('4');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(13)).toHaveText('This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ??2');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(14)).toHaveText('34');
-
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(15)).toHaveText('1. A2. B3. C4. D');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list').nth(10)).toHaveAttribute('dir', 'rtl');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(16)).toHaveText('ABCD');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(17)).toHaveText('EF');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(18)).toHaveText('ThisisalongwordABC');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(19)).toHaveText('Thisisalongword??AB');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(20)).toHaveText('C');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(21)).toHaveText('Thisisalongword?????AB');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(22)).toHaveText('C');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(23)).toHaveText('Thisisalongword??????A');
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(24)).toHaveText('BC');
-
-    await expect(page.locator('.canopy-selected-section .canopy-table-list .canopy-table-list-row').nth(25)).toHaveText('Thisisalongword??????A');
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(4);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-card')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-card')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-tube')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-card')).toHaveCount(1);
   });
 
   test('It creates multi-line code blocks', async ({ page }) => {

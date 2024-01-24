@@ -1,12 +1,12 @@
 import { onLinkClick } from 'render/click_handlers';
-import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
-import { scrollPage, imagesLoaded } from 'display/helpers';
-import BackButton from 'render/back_button';
+import ScrollableContainer from 'helpers/scrollable_container';
+import { scrollPage, imagesLoaded, scrollToWithPromise, getScrollInProgress } from 'display/helpers';
+import requestJson from 'requests/request_json';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
@@ -15,6 +15,7 @@ function renderTokenElement(token, renderContext) {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
+    Path.for(token.pathString).topicArray.map(topic => requestJson(topic)); // eager load
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
@@ -106,14 +107,14 @@ function renderGlobalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
 
-  linkElement.dataset.path = token.path;
+  linkElement.dataset.pathString = Path.for(token.pathString).string; // convert to mixed-case
   linkElement.path = token.path; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
 
   linkElement.dataset.text = token.text;
 
-  linkElement.href = Path.for(token.path).productionPathString;
+  linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
 
@@ -122,21 +123,25 @@ function renderGlobalLink(token, renderContext) {
     onLinkClick(link)
   );
 
-  let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
-  let pathToEnclosingParagraph = pathToEnclosingTopic.append(Path.forSegment(currentTopic, currentSubtopic));
-  let inlinedPath = pathToEnclosingParagraph.append(link.literalPath);
-  let reducedInlinePath = inlinedPath.reduce();
-  let cycle = inlinedPath.length !== reducedInlinePath.length;
-  let backCycle = cycle && reducedInlinePath.subsetOf(pathToEnclosingParagraph);
-  let lateralCycle = cycle && !backCycle;
+  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
-  if (backCycle) {
-    linkElement.classList.add('canopy-back-cycle-link');
-  } else if (lateralCycle) {
-    linkElement.classList.add('canopy-lateral-cycle-link');
-  } else if (link.pathReference) {
-    linkElement.classList.add('canopy-path-reference');
-  }
+  let timeoutCount = 0;
+  setTimeout(function assignCycleClasses(){ // requires finished render to know intratopic subtopic hierarchy
+    timeoutCount++;
+    if (timeoutCount > 1000) { console.log('Timed out adding link to DOM', linkElement); return; }
+
+    if (!link.isInDom) { setTimeout(assignCycleClasses); return; }
+
+    linkElement.classList.remove('canopy-provisional-icon-link')
+
+    if (link.isBackCycle) {
+      linkElement.classList.add('canopy-back-cycle-link');
+    } else if (link.isLateralCycle) {
+      linkElement.classList.add('canopy-lateral-cycle-link');
+    } else if (link.isPathReference) {
+      linkElement.classList.add('canopy-path-reference');
+    }
+  });
 
   return linkElement
 }
@@ -147,8 +152,12 @@ function renderExternalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'external';
   linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url.match(/^https?:\/\//) ? token.url : 'http://' + token.url);
+  linkElement.setAttribute('href', token.url); // validation should have been done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
+
+  setTimeout(() => {
+    if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
+  });
 
   token.tokens.forEach(subtoken => {
     let subtokenElement = renderTokenElement(subtoken, renderContext);
@@ -166,12 +175,7 @@ function renderImage(token, renderContext) {
   imageElement.setAttribute('src', token.resourceUrl);
   imageElement.setAttribute('decoding', 'async'); // don't wait for image decode to update selected link on change
 
-  let anchorElement = document.createElement('A');
-  anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
-  anchorElement.setAttribute('target', '_blank');
-  anchorElement.classList.add('canopy-image-anchor');
-  anchorElement.appendChild(imageElement);
-  divElement.appendChild(anchorElement);
+  divElement.appendChild(imageElement);
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
@@ -186,28 +190,47 @@ function renderImage(token, renderContext) {
       let subtokenElement = renderTokenElement(subtoken, renderContext);
       spanElement.appendChild(subtokenElement);
     });
-  } else {
-    divElement.appendChild(anchorElement);
   }
 
   if (token.altText) {
     imageElement.setAttribute('alt', token.altText);
   }
 
-  imageElement.style.setProperty('height', '700px');
-  imageElement.style.setProperty('opacity', '0');
-  imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
-    imageElement.style.setProperty('height', null);
-    imageElement.style.setProperty('opacity', '1');
-    // let pathOfImage = renderContext.paragraph.path;
-    // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
-      // This is breaking browser tests that involve scrolling
-      // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
-      // BackButton.updateVisibilityState();
-    // }
-  });
+  handleDelayedImageLoad(imageElement, renderContext);
 
   return divElement;
+}
+
+function handleDelayedImageLoad(imageElement, renderContext) { // we don't know how big the image will be, and don't want the load to disrupt viewport
+  let originalHeight = imageElement.style.height;
+  let originalOpacity = imageElement.style.opacity;
+  imageElement.style.setProperty('height', '500px'); // big because empty space getting replaced with content looks better than content with content
+  imageElement.style.setProperty('opacity', '0');
+  setTimeout(() => { // after 200 ms add gray box but not before then to avoid flash
+    if (!imageElement.complete) (imageElement.closest('.canopy-image')||imageElement).style.setProperty('background-color', '#f5f5f5')
+  }, 200)
+
+  imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
+    (getScrollInProgress() || Promise.resolve()).then(() => { // if there is a scroll in progress, wait for it to complete.
+      let focusedElement = ScrollableContainer.focusedElement;
+      let oldBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
+      imageElement.style.setProperty('height', originalHeight);
+      imageElement.style.setProperty('opacity', originalOpacity);
+      imageElement.closest('.canopy-image')?.style.setProperty('background-color', 'transparent') // remove gray placeholder
+      let newBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
+      let diff = newBottomOfCurrentParagraph - oldBottomOfCurrentParagraph
+      let current = ScrollableContainer.currentScroll;
+      let newScroll = ScrollableContainer.currentScroll + diff;
+
+      let { pathToParagraph } = renderContext;
+      if (Path.current.includes(pathToParagraph)) { // if when the image loads, it is on the current page and might jump the viewport
+        scrollToWithPromise({  // restore old position
+          top: newScroll,
+          behavior: 'instant'
+        });
+      }
+    });
+  });
 }
 
 function renderHtmlElement(token, renderContext) {
@@ -216,21 +239,9 @@ function renderHtmlElement(token, renderContext) {
   divElement.appendChild(fragment);
   divElement.classList.add('canopy-raw-html');
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
-    let imageContainer = document.createElement('div');
-    let originalHeight = imageElement.style.height;
-    let originalWidth = imageElement.style.width;
-    let originalOpacity = imageElement.style.opacity;
-    imageElement.style.setProperty('opacity', '0');
-    imageElement.addEventListener('load', () => { // wait for them to load
-      imageElement.style.setProperty('opacity', originalOpacity);
-      // let pathOfImage = renderContext.paragraph.path;
-      // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
-        // This is breaking browser tests that involve scrolling
-        // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
-        // BackButton.updateVisibilityState();
-      // }
-    });
+    handleDelayedImageLoad(imageElement, renderContext);
   });
+
   return divElement;
 }
 
@@ -345,7 +356,7 @@ function renderTableList(token, renderContext) {
   if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
   if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
 
-  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
 
   let cellElements = token.items.map((cellObject, cellIndex) => {
@@ -383,18 +394,21 @@ function renderTableList(token, renderContext) {
     return tableCellElement;
   });
 
+  let tempParagraphElement = document.createElement('p');
+  tempParagraphElement.classList.add('canopy-paragraph');
+  let tempSectionElement = document.createElement('section');
+  tempSectionElement.classList.add('canopy-section');
+  let tempRowElement = createNewRow();
+  canopyContainer.appendChild(tempSectionElement);
+  tempSectionElement.appendChild(tempParagraphElement);
+  tempParagraphElement.appendChild(tableListElement);
+  tableListElement.appendChild(tempRowElement);
+
   for (let i = 0; i < cellElements.length; i++) {
     // try fitting text into boxes and find the minimum cell size that fits
     let tableCellElement = cellElements[i];
-    let tempRowElement = createNewRow();
-    let tempParagraphElement = document.createElement('p');
-    tempParagraphElement.classList.add('canopy-paragraph');
-    canopyContainer.appendChild(tempParagraphElement);
-    tempParagraphElement.appendChild(tableListElement);
-    tableListElement.appendChild(tempRowElement);
     tempRowElement.appendChild(tableCellElement);
     tableCellElement.style.overflow = 'scroll';
-    tableListElement.appendChild(tableCellElement)
 
     while(1) {
       if (tableListSizeIndex === 2 && token.items.length > 2) tableListSizeIndex = 3 // quarters look better than halves
@@ -424,14 +438,17 @@ function renderTableList(token, renderContext) {
       if (!tooWide && !tooTall) break; // fits
       if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
 
+      tableListElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
       tableListSizeIndex++;
       i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
     }
 
-    tempParagraphElement.remove();
-    tempRowElement.remove();
-    if (i !== token.items.length - 1) tableListElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
   }
+
+  tempParagraphElement.remove();
+  tempRowElement.remove();
+  tempSectionElement.remove();
+  tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
   function createNewRow() {
     let newRow = document.createElement('DIV');
