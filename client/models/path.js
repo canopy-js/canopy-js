@@ -267,7 +267,8 @@ class Path {
   }
 
   subsetOf(otherPath) { // this is subset of otherPath
-    return otherPath.includes(this);
+    return otherPath.includes(this) &&
+      !this.equals(otherPath); // unlike #includes, which accepts a self-match
   }
 
   intermediaryPaths(otherPath) {

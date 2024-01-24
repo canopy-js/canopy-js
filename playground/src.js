@@ -124,12 +124,17 @@ Part 2: Canopy generates interactive websites from an easy-to-use text format.
 > [[Part 2-1|Okay]]
 ===
 
-Part 2-1: For example, this website is being generated from the text on the left side of the screen. See if you can find this paragraph, change it, and then deselect the text box.
+Part 2-1: This website is being generated from the text on the left.
 ===
-> [[Part 2-2|Done]]
+> [[Part 2-2|Cool]]
 ===
 
-Part 2-2: Great! In Canopy, selecting links adds more paragraphs to the page.
+Part 2-2: See if you can find this paragraph, edit it, and then deselect the text box to see the change.
+===
+> [[Part 2-3|Done]]
+===
+
+Part 2-3: Great! In Canopy, selecting links adds more paragraphs to the page.
 ===
 > [[Part 3|I see]]
 ===
@@ -286,7 +291,7 @@ Part 10: Great! Now lets see how entirely different explanations  can end up usi
 ===
 
 Part 10-1: Here is an explanation of the [[Atlantic Ocean]].
-- Try holding the option or alt key and clicking the link above.
+- Try *holding the option or alt key* and clicking the link above.
 ===
 > [[Part 11|I'm finished]]
 ===
