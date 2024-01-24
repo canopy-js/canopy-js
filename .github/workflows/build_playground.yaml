@@ -22,6 +22,7 @@ jobs:
           cp dist/playground.js ../playground-deploy/
           cp playground/index.html ../playground-deploy/
           cp playground/favicon.ico ../playground-deploy/
+          cp playground/logo.png ../playground-deploy/
       - run: |
           set -ex
           rev=$(git rev-parse --short HEAD)
