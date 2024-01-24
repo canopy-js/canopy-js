@@ -32,6 +32,10 @@ jobs:
           git config --global user.name "Canopy JS"
 
           git checkout -b playground || git checkout playground
+
+          # Pull the latest changes from the remote branch
+          git pull origin playground || true  # The '|| true' ensures that the script continues even if there's nothing to pull
+
           rm -rf *  # Remove all files in the current branch
           cp -r ../playground-deploy/* .  # Copy the new build files
           git add -A
