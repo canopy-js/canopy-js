@@ -42,6 +42,10 @@ class ScrollableContainer {
   }
 
   static get focusGap() {
+    return ScrollableContainer.visibleHeight * 0.3;
+  }
+
+  static get focusY() {
     return ScrollableContainer.visibleHeight * 0.3 + ScrollableContainer.currentScroll;
   }
 

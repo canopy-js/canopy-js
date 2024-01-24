@@ -1,4 +1,5 @@
 let Topic = require('../../shared/topic');
+let chalk = require('chalk');
 
 class Reference {
   constructor(string, enclosingTopic, parserContext) { // eg [[A#B/C#D|X Y]]
@@ -35,7 +36,9 @@ class Reference {
 
   parseDisplayAndTarget() {
     if (!this.valid) {
-      throw new Error('Invalid reference string');
+      this.parserContext.registerSubsumptionConditionalError(
+        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.filePathAndLineNumber}`)
+      );
     }
 
     if (this.hasCurlyBraces) { // curly braces and pipe is interpreted as pipe literal because {a|b} is curly braces not pipe
@@ -126,6 +129,7 @@ class Reference {
   parseSimple() {
     this.targetText = this.contents;
     this.displayText = this.lastPathComponent;
+    if (!this.displayText && this.soloPoundSign) this.displayText = 'Back';
   }
 
   get isPath() {
@@ -143,6 +147,10 @@ class Reference {
 
   get orphanFragment() {
     return !!this.targetText.match(/^#([^#\/]*(?:\\.[^#\/]*)*)$/);
+  }
+
+  get soloPoundSign() {
+    return !!(this.targetText === '#');
   }
 
   get singleTopicWithEmptyFragment() {
@@ -191,6 +199,10 @@ class Reference {
   }
 
   get displayPathString() {
+    if (this.soloPoundSign) { //eg [#], short for topic subtopic
+      return `${this.enclosingTopic.mixedCase}#${this.enclosingTopic.mixedCase}`;
+    }
+
     if (this.localReference) { // eg [[X]] where X is a subtopic of current topic
       // return this.localReferencePath(this.enclosingTopic, this.targetAsTopic);
       return `${this.parserContext.currentTopic.mixedCase}#${this.targetText}`;
