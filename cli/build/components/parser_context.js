@@ -270,16 +270,18 @@ class ParserContext {
     });
   }
 
-  registerGlobalReference(path, referenceString) {
+  registerGlobalReference(pathString, reference, referenceString) {
     this.topicConnections[this.currentTopic.caps] = this.topicConnections[this.currentTopic.caps] || {};
-    this.topicConnections[this.currentTopic.caps][path.firstTopic.caps] = true;
-    this.topicConnections[path.firstTopic.caps] = this.topicConnections[path.firstTopic.caps] || {};
+    this.topicConnections[this.currentTopic.caps][reference.firstTopic.caps] = true;
+    this.topicConnections[reference.firstTopic.caps] = this.topicConnections[reference.firstTopic.caps] || {};
 
-    this.globalReferencesBySubtopic[this.currentTopic.caps] ||= {};
-    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] ||= {};
-    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps][path.firstTopic.caps] = true;
+    this.globalReferencesBySubtopic[this.currentTopic.caps] =
+      this.globalReferencesBySubtopic[this.currentTopic.caps] || {};
+    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] =
+      this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] || {};
+    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps][reference.firstTopic.caps] = true;
 
-    this.pathsReferenced.push([path, this.currentFilePathAndLineNumber, referenceString]);
+    this.pathsReferenced.push([pathString, reference, this.currentFilePathAndLineNumber, referenceString, this.currentTopic, this.currentSubtopic]);
   }
 
   logGlobalOrphans() {
@@ -321,8 +323,7 @@ class ParserContext {
 
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
-      if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) {
-        debugger;
+      if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
         throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             One reference is in subtopic ${displaySegment(topic, enclosingSubtopic1)}
@@ -333,26 +334,45 @@ class ParserContext {
 
             Multiple local references to the same subtopic are not permitted.
 
-            Consider making one of these local references a self-import reference.
-            That would look like using [[${topic.mixedCase}#${referencedSubtopic.mixedCase}]] in the same paragraph as
-            an anchor reference to global topic [[${topic.mixedCase}]].
+            Consider making one of these local references a self path reference.
+            That would look like using [[#${referencedSubtopic.mixedCase}]].
             `));
       }
     });
   }
 
   validateGlobalReferences() {
-    this.pathsReferenced.forEach(([path, pathAndLineNumberString, referenceString]) => {
-      path.array.reduce((currentSegment, nextSegment) => {
-        let [currentTopic, currentSubtopic] = currentSegment;
-        let [nextTopic, nextSubtopic] = nextSegment;
+    this.pathsReferenced.forEach(([pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic]) => {
+      if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
+        pathString.split(/(?<!\\)\//).map(segmentString => {
+          let [currentTopic, currentSubtopic] = segmentString.match(/^(.*?)(?:\\#|#(.*))?$/).slice(1).map(m => m && Topic.fromEncodedSlug(m));
 
-        if (!this.globalReferencesBySubtopic[currentTopic.caps][currentSubtopic.caps][nextTopic.caps]) {
-          throw new Error(chalk.red(`Global reference "${referenceString}" contains invalid adjacency.\n` +
-           `[${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] does not reference [${nextTopic.mixedCase}]\n\n`+
-           `${pathAndLineNumberString}`));
-        }
-      });
+          if (!this.topicExists(currentTopic)) {
+            throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] contains nonexistent topic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
+          }
+
+          if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
+            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
+          }
+
+          if (!this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
+            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`));
+          }
+
+          return segmentString;
+        }).reduce((currentSegmentString, nextSegmentString) => {
+          let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
+          let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
+
+          if (!this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
+            throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
+             `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
+             `${pathAndLineNumberString}`));
+          }
+
+          return nextSegmentString;
+        });
+      }
     });
   }
 
