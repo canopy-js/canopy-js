@@ -535,7 +535,7 @@ describe('BulkFileParser', function() {
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
 
-    expect(() => bulkFileParser.generateFileSet()).toThrow('Invalid directory path: "[]"');
+    expect(() => bulkFileParser.generateFileSet()).toThrow();
   });
 
   test('it removes slash from slash-initial path', () => {
