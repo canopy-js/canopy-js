@@ -1,1 +1,0 @@
-module.exports = 'mocked-svg';
