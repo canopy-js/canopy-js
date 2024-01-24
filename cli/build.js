@@ -29,7 +29,7 @@ function build(options = {}) {
       <head>
       <meta charset="utf-8">` +
       dedent`${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` + // async loading
-      dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js" defer></script>` + "\n" +
+      dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js" defer></script>` + "\n" + // we want custom css to have loaded before table list size eval
       dedent`${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">\n` : ''}` +
       dedent`<link rel="prefetch" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous" fetchpriority="low">` + '\n' +
       dedent`${customHtmlHead ? customHtmlHead : ''}` +
@@ -49,16 +49,6 @@ function build(options = {}) {
 
     fs.writeFileSync('build/index.html', html);
   }
-
-  let html404 = dedent`
-  <html>
-  <head>
-  <meta http-equiv="refresh" content="0; URL=/index.html" />
-  </head>
-  </html>`;
-
-  fs.writeFileSync('build/404.html', html404);
-  fs.writeFileSync('build/.nojekyll', '');
 
   if (options.logging) console.log(chalk.cyan(
     `Canopy build: Rebuilding JSON at ${''
