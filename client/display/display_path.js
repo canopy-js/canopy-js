@@ -1,5 +1,6 @@
 import Path from 'models/path';
 import Link from 'models/link';
+import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import {
   setHeader,
@@ -8,12 +9,12 @@ import {
   scrollPage,
   animatePathChange
 } from 'display/helpers';
-import BackButton from 'render/back_button';
+
 import { canopyContainer } from 'helpers/getters';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
-  if (Path.animate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
+  if (Path.shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
   if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, options);
   try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, options); }
@@ -29,16 +30,15 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
   pathToDisplay.paragraph.addSelectionClass();
-  if (!options.noScroll) scrollPage(linkToSelect, options);
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
-  BackButton.handlePathChange(options);
+  return options.noScroll ? Promise.resolve() : scrollPage(linkToSelect, options);
 };
 
 const displayPathTo = (paragraph, visibleParagraphs, options) => {
   options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
   visibleParagraphs.push(paragraph);
   if (paragraph.isroot) return visibleParagraphs;
-  paragraph.parentLink?.open();
+  if (paragraph.parentLink) { paragraph.parentLink?.open(); Link.persistLastLinkSelection(paragraph.parentLink); } // remember open links of path reference
   Link.persistLastLinkSelection(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
   return displayPathTo(paragraph.parentParagraph, visibleParagraphs, options);
 }
