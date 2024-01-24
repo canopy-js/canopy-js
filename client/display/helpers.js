@@ -52,10 +52,10 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'smooth'});
+    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'instant'});
   } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'smooth' });
+    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'instant' });
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
@@ -69,25 +69,26 @@ const resetDom = () => {
   removeScrollCompleteClass();
 }
 
-function scrollPage(link, displayOptions) {
-  displayOptions = displayOptions || {};
-  let behavior = displayOptions.scrollStyle || 'smooth';
-  let { scrollToParagraph } = displayOptions;
+function scrollPage(link, options) {
+  options = options || {};
+  let behavior = options.scrollStyle || 'smooth';
+  let { scrollToParagraph, direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  canopyContainer.dataset.initialLoad = displayOptions.initialLoad;
+  canopyContainer.dataset.initialLoad = options.initialLoad;
 
   if (!link) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  let maxScrollRatio = behavior === 'instant' || scrollToParagraph || displayOptions.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
+  let maxScrollRatio = behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
+  let minDiff = 75; //(maxScrollRatio === Infinity) ? null : 75;
 
   if (scrollToParagraph) {
-    let sectionElement = link.targetParagraph.paragraphElement;
-    return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio, minDiff: 100, behavior, side: 'top' });
+    return scrollElementToPosition(link.childParagraph.paragraphElement,
+      {targetRatio: 0.3, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
   } else { // scroll to link
     const linkElement = link?.element;
     if (linkElement) {
-      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff: 100, behavior});
+      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff, behavior, direction});
     } else { // root paragraph
-      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff: 100, behavior});
+      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff, behavior, direction});
     }
   }
 }
@@ -96,121 +97,139 @@ function scrollElementToPosition(element, options) {
   if (!(element instanceof Element)) throw new Error('Argument to scrollElementToPosition must be DOM element');
   let { targetRatio, maxScrollRatio, minDiff, direction, behavior, side } = options;
 
-  const scrollableContainer = isElementScrollable(canopyContainer.parentElement) ? canopyContainer.parentElement : document.documentElement;
-  const elementRect = element.getBoundingClientRect();
+  let elementRect = element.getBoundingClientRect();
+  let idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
 
-  const viewportHeight = scrollableContainer.clientHeight;
-  const currentScroll = scrollableContainer.scrollTop;
-  const documentHeight = scrollableContainer.scrollHeight;
-  let idealTargetPositionOnViewport = viewportHeight * targetRatio;
-
-  let viewportPointToPutAtTarget;
+  let containerPointToPutAtTarget;
   if (side === 'bottom') {
-    viewportPointToPutAtTarget = elementRect.bottom + currentScroll;
+    containerPointToPutAtTarget = elementRect.bottom - ScrollableContainer.top + ScrollableContainer.currentScroll;
   } else if (side === 'top') {
-    viewportPointToPutAtTarget = elementRect.top + currentScroll;
+    containerPointToPutAtTarget = elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll;
   } else {
     side = 'middle';
-    viewportPointToPutAtTarget = (elementRect.top + currentScroll) + (elementRect.height / 2);
-  }
-
-  if (element.tagName === 'A') {
-    const paragraphElement = element.closest('p.canopy-paragraph');
-    const paragraphRect = paragraphElement.getBoundingClientRect();
-    const linkRect = element.getBoundingClientRect();
-
-    // Calculate the new scroll position and check if the paragraph top goes off-screen
-    const hypotheticalScrollPosition = currentScroll + viewportPointToPutAtTarget - idealTargetPositionOnViewport;
-    if (paragraphRect.top + currentScroll - hypotheticalScrollPosition < 0) {
-      // Check if placing the paragraph top at 5% of the viewport height will put the link below the viewport's midpoint
-      const paragraphTopAtFivePercent = viewportHeight * 0.05;
-      const linkMidpoint = (linkRect.top + linkRect.bottom) / 2;
-      const linkPositionAfterAdjustment = paragraphTopAtFivePercent + linkMidpoint - paragraphRect.top;
-
-      if (linkPositionAfterAdjustment < viewportHeight * 0.5) {
-        // Adjust the target position to place the paragraph top at 5% of the viewport
-        viewportPointToPutAtTarget = paragraphRect.top + currentScroll - paragraphTopAtFivePercent;
-        idealScrollY = viewportPointToPutAtTarget - idealTargetPositionOnViewport;
-      }
-    }
+    containerPointToPutAtTarget = (elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll) + (elementRect.height / 2);
   }
 
   // Handling large A tags
   if (element.tagName === 'A' && (side === 'middle' || side === 'bottom')) {
-    const topOffScreen = (side === 'bottom' ? 1 : .5) * (elementRect.bottom - elementRect.top) > idealTargetPositionOnViewport;
+    const padding = 20; // minimum space between top of link and top of screen
+    const topOffScreen = (side === 'bottom' ? 1 : .5) * (elementRect.bottom - elementRect.top) + padding > idealTargetPositionOnVisibleContainer;
     if (topOffScreen) {
       targetRatio = 0.05;
-      idealTargetPositionOnViewport = viewportHeight * targetRatio;
-      viewportPointToPutAtTarget = elementRect.top;
+      idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
+      containerPointToPutAtTarget = elementRect.top + ScrollableContainer.currentScroll;
     }
   }
 
-  let idealScrollY = viewportPointToPutAtTarget - idealTargetPositionOnViewport;
+  // if (element.tagName === 'P') { // try not to put parent link out of view
+  //   let parentLinkElement = Paragraph.for(element.closest('.canopy-section')).parentLink?.element;
+
+  //   if (parentLinkElement) {
+  //     const parentLinkRect = parentLinkElement.getBoundingClientRect();
+  //     const containerTargetRelativeToViewport = containerPointToPutAtTarget - ScrollableContainer.currentScroll;
+  //     const parentLinkTopWithinContainer = parentLinkRect.top - ScrollableContainer.top;
+  //     const distanceBetweenLinkAndParagraph = containerPointToPutAtTarget - parentLinkTopWithinContainer - ScrollableContainer.currentScroll;
+  //     const linkFocusPutsParagraphInLowerHalf = distanceBetweenLinkAndParagraph > ScrollableContainer.visibleHeight / 2;
+
+  //     // Check if the parent link goes above the top of the viewport
+  //     if (idealTargetPositionOnVisibleContainer < distanceBetweenLinkAndParagraph && !linkFocusPutsParagraphInLowerHalf) { // link will be off screen
+  //       targetRatio = 0.1;
+  //       idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
+  //       containerPointToPutAtTarget = parentLinkRect.top + ScrollableContainer.currentScroll; // change goal to putting link near top
+  //     }
+  //   }
+  // }
+
+  let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
   // Adjust idealScrollY to the closest possible scroll position
-  if (documentHeight - viewportHeight < idealScrollY) {
-    console.error('Scrollable area not long enough to scroll to desired position');
-  }
-  idealScrollY = Math.max(0, Math.min(idealScrollY, documentHeight - viewportHeight));
+  if (ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight < idealScrollY) console.error('Scrollable area not long enough to scroll to desired position');
+  idealScrollY = Math.max(0, Math.min(idealScrollY, ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight));
 
   // Use the calculated scroll or max scroll if it is too big
-  const maxScrollDistance = maxScrollRatio ? viewportHeight * maxScrollRatio : Infinity;
+  const maxScrollDistance = maxScrollRatio ? ScrollableContainer.visibleHeight * maxScrollRatio : Infinity;
   let actualScrollY;
-  if (idealScrollY > currentScroll) {
-    actualScrollY = Math.min(idealScrollY, currentScroll + maxScrollDistance);
+  if (idealScrollY > ScrollableContainer.currentScroll) {
+    actualScrollY = Math.min(idealScrollY, ScrollableContainer.currentScroll + maxScrollDistance);
   } else {
-    actualScrollY = Math.max(idealScrollY, currentScroll - maxScrollDistance);
+    actualScrollY = Math.max(idealScrollY, ScrollableContainer.currentScroll - maxScrollDistance);
   }
 
-  let shouldScroll = idealScrollY !== 0;
+  let shouldScroll = idealScrollY - ScrollableContainer.currentScroll !== 0;
 
   // Check that the scroll is larger than the minimum we would initiate a scroll for
-  if (minDiff) {
-    const diff = Math.abs(currentScroll - actualScrollY);
-    let linkOffScreen = element.tagName === 'A' && (elementRect.top < 5 || elementRect.bottom > viewportHeight);
+  if (minDiff) { // && maxScrollRatio !== Infinity) {
+    const diff = Math.abs(ScrollableContainer.currentScroll - actualScrollY);
+    let linkOffScreen = element.tagName === 'A' && (elementRect.top < 5 || elementRect.bottom > ScrollableContainer.visibleHeight);
     shouldScroll = !minDiff || (minDiff && (diff > minDiff)) || linkOffScreen;
   }
 
   // If the caller has constrained the scroll in a single direction, check we're going that way
   if (direction === 'up') {
-    shouldScroll = shouldScroll && actualScrollY < currentScroll;
+    shouldScroll = shouldScroll && actualScrollY < ScrollableContainer.currentScroll;
   }
 
   if (direction === 'down') {
-    shouldScroll = shouldScroll && actualScrollY > currentScroll;
+    shouldScroll = shouldScroll && actualScrollY > ScrollableContainer.currentScroll;
   }
 
   if (shouldScroll) {
-    return scrollToWithPromise({ top: actualScrollY, behavior, ...options }, scrollableContainer);
+    return scrollToWithPromise({ top: actualScrollY, behavior, ...options });
   } else {
     return Promise.resolve(true);
   }
 }
 
-async function scrollToWithPromise(options, scrollableContainer = document.documentElement) {
-  return new Promise(async function(resolve, reject) {
-    await scrollUpIfAtBottom(options, scrollableContainer);
-    (scrollableContainer.scrollTo || window.scrollTo).call(scrollableContainer, options);
+function placeLineAt(y, color) {
+  // Create a new div element to represent the line
+  const line = document.createElement('div');
+
+  // Apply CSS styles to make the div a horizontal line at position y
+  line.style.position = 'absolute';
+  line.style.left = '0';
+  line.style.width = '100%';
+  line.style.height = '2px'; // Line thickness
+  line.style.backgroundColor = color; // Line color
+  line.style.top = `${y}px`;
+
+  // Append the line to the body of the document
+  ScrollableContainer.element.appendChild(line);
+}
+
+let scrollInProgress = null;
+function getScrollInProgress() {
+  return scrollInProgress;
+}
+
+let currentScrollOptions = null; // multiple calls to scrollToWithPromise replace the desired destination
+
+function scrollToWithPromise(options) {
+  currentScrollOptions = options;
+  return (scrollInProgress = new Promise(async function(resolve, reject) {
+    ScrollableContainer.scrollTo(currentScrollOptions);
     let startTime = Date.now();
-    let lastY = scrollableContainer.scrollTop || window.scrollY;
+    let lastY = ScrollableContainer.currentScroll;
     let inactivityStart = null;
     let checks = 0;
 
     const checkScroll = () => {
-      const currentY = scrollableContainer.scrollTop || window.scrollY;
+      const currentY = ScrollableContainer.currentScroll;
       if (lastY === currentY && !inactivityStart) inactivityStart = Date.now();
       if (lastY !== currentY) inactivityStart = null;
       if (lastY === currentY && checks < 1) {
-        (scrollableContainer.scrollTo || window.scrollTo).call(scrollableContainer, options);
+        ScrollableContainer.scrollTo(currentScrollOptions);
       }
+
       lastY = currentY;
       checks++;
 
       if (inactivityStart && (Date.now() - inactivityStart > 1000)) {
+        scrollInProgress = null;
         return resolve(false); // the user prevented the scroll from completing
       }
 
       if (Math.abs(currentY - options.top) < 10) {
+        scrollInProgress = null;
         resolve(true); // Resolve the promise when close to the target
       } else {
         setTimeout(checkScroll, 50); // Recheck after 50 milliseconds
@@ -218,72 +237,51 @@ async function scrollToWithPromise(options, scrollableContainer = document.docum
     };
 
     setTimeout(checkScroll, 50); // Start checking after 50 milliseconds
-  });
-
-  function scrollUpIfAtBottom(options = {}, container = document.documentElement) {
-    const scrollPosition = container.scrollTop || window.scrollY;
-    const containerHeight = container.clientHeight || window.innerHeight;
-    const scrollHeight = container.scrollHeight || document.documentElement.scrollHeight;
-
-    if (containerHeight + scrollPosition >= scrollHeight && !options.bottomAdjusted) {
-      return scrollElementToPosition(
-        Paragraph.current.paragraphElement,
-        {targetRatio: 0, side: 'bottom', behavior: 'instant', bottomAdjusted: true },
-        container
-      );
-    }
-  }
-}
-
-function isElementScrollable(element) {
-  const overflowY = window.getComputedStyle(element).overflowY;
-  const isOverflowScrollable = overflowY === 'scroll' || overflowY === 'auto';
-  const contentOverflows = element.scrollHeight > element.clientHeight;
-  return isOverflowScrollable && contentOverflows;
+  }));
 }
 
 function animatePathChange(newPath, linkToSelect, options = {}) {
   // We do not want the content the user is looking at to appear or disappear.
-  // Case #1: If we are animating upward motion, we want to move up first, (below), then remove later content.
-  // Case #2: If we are animating downward motion, we want to add later content, then scroll to that content, which is done in scrollPage
-  // Case #3: Upward followed by downward motion, we do #1 (below) followed by #2 (below)
+  // Case #1: If we are animating upward motion, we want to move up first, then remove lower content.
+  // Case #2: If we are animating downward motion, we want to add lower content, then scroll to that content, which is done in scrollPage
+  // Case #3: Upward followed by downward motion, so we do #1 followed by #2 (below)
 
-  let previousPath = Link.selection.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
+  let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = strictlyUpward ?
-    (linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement)
-    : overlapPath.paragraph.paragraphElement;
+  let targetElement;
+
+  if (strictlyUpward) targetElement = linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
+  if (!strictlyUpward && linkToSelect.isSiblingOf(Link.selection)) targetElement = linkToSelect?.element;
+  if (!strictlyUpward && !linkToSelect.isSiblingOf(Link.selection)) targetElement = overlapPath?.paragraph?.paragraphElement;
+
+  let minDiff = options.noMinDiff ? null : 75;
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
-      {targetRatio: 0.3, maxScrollRatio: Infinity, minDiff: 50, behavior: 'smooth', side: 'top' }
+      {targetRatio: 0.1, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
     ).then(() => new Promise(resolve => setTimeout(resolve, 110)))) : Promise.resolve())
     .then(() => linkToSelect?.select({noScroll: true, noAnimate: true, ...options}) || newPath.display({noScroll: true, noAnimate: true, ...options}))
     .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))
     .then(() => !strictlyUpward && !elementIsFocused(newPath.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
       newPath.paragraph.paragraphElement,
-      {targetRatio: 0.25, maxScrollRatio: Infinity, minDiff: 50, behavior: 'smooth', side: 'top' })
+      {targetRatio: 0.15, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
     );
 }
 
 function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
-  const scrollableContainer = isElementScrollable(canopyContainer.parentElement) ? canopyContainer.parentElement : document.documentElement;
-  const viewportHeight = scrollableContainer.clientHeight;
 
   // Define the viewport range for the element to be considered "focused"
-  const upperViewportLimit = viewportHeight * 0.3; // Element's bottom must be lower than this to be considered "focused"
-  const lowerViewportLimit = viewportHeight * 0.5; // Element's top must be higher than this to be considered "focused"
+  const upperViewportLimit = ScrollableContainer.visibleHeight * 0.3; // Element's bottom must be lower than this to be considered "focused"
+  const lowerViewportLimit = ScrollableContainer.visibleHeight * 0.4; // Element's top must be higher than this to be considered "focused"
 
   // Check if the element's bottom is below the upper limit of the viewport range
   const isBelowUpperLimit = rect.bottom > upperViewportLimit;
-  console.log(element, isBelowUpperLimit, rect.bottom, upperViewportLimit)
   // Check if the element's top is above the lower limit of the viewport range
   const isAboveLowerLimit = rect.top < lowerViewportLimit;
-  console.log(isAboveLowerLimit, rect.top, lowerViewportLimit)
 
   // The element is considered "focused" if it's both below the upper limit and above the lower limit
-  return isBelowUpperLimit && isAboveLowerLimit;
+  return isBelowUpperLimit && isAboveLowerLimit && rect.top > 0;
 }
 
 export {
@@ -292,5 +290,7 @@ export {
   tryPathPrefix,
   scrollPage,
   scrollElementToPosition,
-  animatePathChange
+  animatePathChange,
+  scrollToWithPromise,
+  getScrollInProgress
 };
