@@ -37,10 +37,10 @@ const registerKeyListeners = () => {
       return goToDefaultTopic();
     }
 
-    if (Link.selection || universalShortcutRelationships.hasOwnProperty(shortcutName)) {
+    if (Link.selection || universalShortcutRelationships.includes(shortcutName)) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
-      (Link.lastSelectionOfParagraph(Paragraph.root) || Link.selectALink()).select();
+      Path.rendered.selectALink();
     }
   });
 }
@@ -91,7 +91,10 @@ const shortcutRelationships = {
 }
 
 const universalShortcutRelationships = [ // shortcuts that always work, even if there isn't an already selected link
-  'c'
+  'c',
+  'd',
+  'up',
+  'down'
 ];
 
 const keyNames = {

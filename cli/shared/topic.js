@@ -49,7 +49,7 @@ class Topic {
       .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces
-      .replace(/&NBSP;/g, ' ')
+      .replace(/&[Nn][Bb][Ss][Pp];/g, ' ')
       .trim() // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
     this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded

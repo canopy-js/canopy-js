@@ -33,7 +33,7 @@ function LocalReferenceToken(
 }
 
 function GlobalReferenceToken(
-  path,
+  pathString,
   enclosingTopic,
   enclosingSubtopic,
   text,
@@ -42,7 +42,7 @@ function GlobalReferenceToken(
   this.text = text;
   this.type = 'global';
   this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
-  this.path = path.string;
+  this.pathString = pathString;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
   parserContext.paragraphReferences.push(this);
