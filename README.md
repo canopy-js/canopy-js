@@ -167,7 +167,7 @@ If `paragraph A` has a link to `paragraph B`, that means the user can select the
 
 Links are made using the `[[Topic]]` syntax, using the name of another topic or subtopic to specify the target of the link, and one can change the link text like so: `[[Real Topic|Link Text]].` Link targets are case-insensitive and ignore style characters, so eg `[[_topic_]]` would be a valid reference to a topic with the key `Topic:`.
 
-There are three types of references: local, global, and import.
+There are three types of references: local, global, and path references which are a type of global.
 
 #### Local References
 
@@ -243,50 +243,24 @@ As pictured above, when a global link is selected, the user has the option of ap
 
 Unlike a subtopic which can only be referenced from within a paragraph of its topic file, a topic can be referenced from any paragraph of any file in the project.
 
-#### Import references
+#### Path references
 
-An import reference is for when you want to reference a subtopic of a given topic from a paragraph belonging to a different topic.
-
-An example might be if you want to express that Fremont county of Idaho is adjacent to Teton county of Wyoming. Ideally, the paragraph for Fremont would reference the paragraph for Teton. However, it might not be appropriate to have the paragraph for Teton follow the paragraph for Fremont directly, because the user might first need an explanation of what Wyoming is and how it relates to Teton before we can explain Teton itself.
-
-So, the solution is an "import reference" - the paragraph for "Fremont" is allowed to reference the paragraph for "Teton", but only in a way that preserves the context of Teton within the topic of Wyoming, as we will see.
-
-For example, the following `expl` files:
+A path reference can be made like so:
 
 ```
-Wyoming: Wyoming is a mid-sized state in the Western United States. It has many [[counties]].
+Wyoming: Wyoming is a midwestern state, similar to [[USA/Idaho#Boise]].
+```
 
-Counties: Wyoming contains [[Teton]].
-
-Teton: Teton is a county on the western side of Idaho. Teton borders [[Fremont]] county of [[Idaho]].
+```
+USA: The USA is a country, which contains [[Idaho]].
 
 ```
 
 ```
-Idaho: Idaho is a mid-sized state in the Western United States. It has many [[counties]].
+Idaho: Idaho is a midwestern state, whose capital is [[Boise]]
 
-Counties: Idaho contains [[Fremont]].
-
-Fremont: Fremont is a county on the eastern side of Idaho.
+Boise: This is the capital.
 ```
-
-Would produce the following website:
-<br>
-![Import references](./readme/import.gif)
-<br>
-
-In order to reference "Teton" from the paragraph for "Fremont", we first reference the topic "Wyoming," and then the subtopic of "Teton." The presence of the initial global link to Wyoming "imports" the subtopics of Wyoming to be available for reference within that paragraph, which enables the later subtopic reference to "Fremont", despite "Fremont" being a subtopic of a different topic than the paragraph making the reference.
-
-When the link for "Teton" is selected, the path from Wyoming's paragraph to the paragraph for Teton is displayed, so that the referenced paragraph is shown, but only within the necessary context, first explaining Wyoming and its connection to Teton before explaining Teton itself.
-
-In certain cases, Canopy may not be able to determine which global link a given import reference belongs to. This happens when there are multiple global references that all have subtopics with the same name. In these cases, one can use an explicit syntax like this to clarify which topic an import reference belongs to:
-
-```
-This is a [[Global Topic]], and this is an explicit import reference: [[Global Topic#Subtopic]].
-
-```
-
-Import references add complexity to a project, so before using one, consider whether it might be possible to convert the subtopic you wish to reference into a topic-proper.
 
 #### Advanced link syntax ####
 

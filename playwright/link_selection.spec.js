@@ -66,19 +66,19 @@ test.describe('Link Selection', () => {
   test('Last link selections are preferred when going down', async ({ page, browserName }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');
-    await page.locator('body').press('Enter');
+    await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-section')).toContainText("Martha's Vineyard is a an Island in Massachusetts."); // make sure the entire displayPath render is done before advancing
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await page.locator('body').press('ArrowUp');
     await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
-    await page.locator('body').press('Enter');
+    await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await page.locator('body').press('ArrowUp');
     await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
     await page.reload(); // persists even across reload
-    await page.locator('body').press('Enter');
+    await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
   });
 });
