@@ -2,72 +2,54 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
+import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
-function renderDomTree(renderContext) {
-  let {
-    subtopic,
-    paragraphsBySubtopic
-  } = renderContext;
+function renderDomTree(topic, subtopic, renderContext) {
+  let { paragraphsBySubtopic } = renderContext;
 
-  let sectionElement = createSectionElement(renderContext);
+  let sectionElement = createSectionElement(topic, subtopic, renderContext);
   let paragraph = new Paragraph(sectionElement);
 
-  renderContext.displayBlockingPromises = [];
-  renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(sectionElement, renderContext);
-  renderContext.globalLinkSubtreeCallback = globalLinkSubtreeCallback(sectionElement, renderContext);
+  renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(topic, sectionElement, renderContext);
 
   let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
   if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
+
+  renderContext.currentTopic = topic;
+  renderContext.currentSubtopic = subtopic;
 
   tokensOfParagraph.forEach((token) => {
     let element = renderTokenElement(token, renderContext);
     paragraph.paragraphElement.appendChild(element);
   });
 
-  return Promise.all(renderContext.displayBlockingPromises).then(() => sectionElement);
+  return sectionElement;
 }
 
-function localLinkSubtreeCallback(sectionElement, renderContext) {
+function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
   return (token) => {
-    let promisedSubtree = renderDomTree(
-      Object.assign({}, renderContext, {
-        subtopic: Topic.fromMixedCase(token.targetSubtopic)
-      })
+
+    let { fullPath, remainingPath, currentTopic } = renderContext;
+    let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
+    let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
+    let pathToParagaph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
+    // console.log(token.targetSubtopic, {fullPath, remainingPath, currentTopic, newSubtopic, pathToEnclosingTopic, pathToParagaph})
+
+    let childSectionElement = renderDomTree(
+      topic,
+      Topic.fromMixedCase(token.targetSubtopic),
+      Object.assign({ pathToParagaph }, renderContext)
     );
 
-    promisedSubtree.then((subtree) => {
-      sectionElement.appendChild(subtree);
-    });
-
-    renderContext.displayBlockingPromises.push(promisedSubtree);
+    sectionElement.appendChild(childSectionElement);
   }
 }
 
-function globalLinkSubtreeCallback(sectionElement, renderContext) {
+function createSectionElement(topic, subtopic, renderContext) {
   let {
-    pathToDisplay,
-    subtopic,
-    displayBlockingPromises
-  } = renderContext;
-
-  return (token, linkElement) => {
-    let topic = Topic.fromMixedCase(token.targetTopic);
-    let link = new Link(linkElement);
-    requestJson(topic); // eager-load and cache
-
-    if (globalLinkIsOpen(link, pathToDisplay, subtopic)) {
-      let newPath = pathToDisplay.withoutFirstSegment;
-      let whenTopicTreeAppended = fetchAndRenderPath(newPath, sectionElement);
-      displayBlockingPromises.push(whenTopicTreeAppended)
-    }
-  }
-}
-
-function createSectionElement(renderContext) {
-  let {
-    topic, subtopic, displayTopicName, pathDepth, paragraphsBySubtopic
+    displayTopicName, pathDepth, paragraphsBySubtopic
   } = renderContext;
 
   let sectionElement = document.createElement('section');
@@ -79,7 +61,9 @@ function createSectionElement(renderContext) {
   sectionElement.style.opacity = '0';
   sectionElement.dataset.displayTopicName = displayTopicName;
   sectionElement.dataset.topicName = topic.mixedCase;
+  sectionElement.topicName = topic.mixedCase; // helpful to have in debugger
   sectionElement.dataset.subtopicName = subtopic.mixedCase;
+  sectionElement.subtopicName = subtopic.mixedCase; // helpful to have in debugger
   sectionElement.dataset.pathDepth = pathDepth;
   let tokens = paragraphsBySubtopic[topic.mixedCase];
 
@@ -89,30 +73,6 @@ function createSectionElement(renderContext) {
   }
 
   return sectionElement;
-}
-
-// When rendering the links of a paragraph, is a given link the parent link of
-// the next paragraph in the visible path?
-
-function globalLinkIsOpen(link, path, currentlyRenderingSubtopic) {
-  let subtopicOfPathContainingOpenGlobalReference = path.firstSubtopic;
-  let openGlobalLinkExists = path.secondTopic; // there is a further path segment so some global link is open
-
-  let openGlobalLinkTargetTopic = path.secondTopic;
-  let openGlobalLinkTargetSubtopic = openGlobalLinkTargetTopic;
-
-  // Is the given global link's target the same as the next path segment's topic?
-  let thisGlobalLinkIsPointingToTheRightThingToBeOpen =
-    link.targetTopic.mixedCase === openGlobalLinkTargetTopic?.mixedCase &&
-    link.targetSubtopic.mixedCase === openGlobalLinkTargetSubtopic?.mixedCase;
-
-  // Is this global link in the currently visible lowest subtopic of the given topic?
-  let thisGlobalLinkIsInCorrectSubtopicToBeOpen = currentlyRenderingSubtopic.mixedCase ===
-    subtopicOfPathContainingOpenGlobalReference.mixedCase;
-
-  return openGlobalLinkExists &&
-    thisGlobalLinkIsPointingToTheRightThingToBeOpen &&
-    thisGlobalLinkIsInCorrectSubtopicToBeOpen;
 }
 
 export default renderDomTree;

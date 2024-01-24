@@ -7,8 +7,6 @@ const {
   groupByPath
 } = require('./helpers');
 
-let { convertUnderscoresToSpaces } = require('../shared/helpers');
-let Paragraph = require('../shared/paragraph.js');
 let FileSystemChange = require('./file_system_change');
 let FileSet = require('./file_set');
 

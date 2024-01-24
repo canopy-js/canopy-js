@@ -6,7 +6,7 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
 const sketch = require('./sketch/sketch');
-let { tryDefaultTopic } = require('./shared/helpers');
+let { tryDefaultTopic } = require('./shared/fs-helpers');
 let { throwOrWriteError } = require('./bulk/helpers');
 let defaultTopic = tryDefaultTopic();
 const program = new Command();
@@ -37,6 +37,7 @@ program.command('build')
   .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
   .option('-r, --reciprocals', 'Note which topics reference topics that do not reference them back.', false)
   .option('-e, --error', 'Throw errors with trace for debugging', false)
+  .addOption(new Option('--pretty', 'Pretty print JSON'))
   .action((options) => {
     try {
       build(options);
@@ -55,6 +56,7 @@ program.command('watch')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
+  .addOption(new Option('--pretty', 'Pretty print JSON'))
   .action((options) => {
     try {
       watch(options);
@@ -108,6 +110,7 @@ program.command('bulk')
   .description('watch a Canopy project and rebuild JSON assets on text change')
   .addOption(new Option('--start', 'choose file paths with fuzzy selector').conflicts('finish'))
   .addOption(new Option('--finish', 'import finished session from canopy_bulk_file').conflicts('start'))
+  .addOption(new Option('-u, --use-existing', 'use existing bulk file if present'))
   .addOption(new Option('-b, --blank', 'start with a blank file').conflicts(['finish', 'pick', 'search', 'continue', 'git']))
   .addOption(new Option('-p, --pick', 'choose file paths with fuzzy selector').conflicts('finish'))
   .addOption(new Option('-f, --files', 'used in conjunction with --pick, allows user to select individual files').conflicts(['finish']).implies({ pick: true }))
@@ -121,6 +124,7 @@ program.command('bulk')
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies({sync: true}))
   .addOption(new Option('--error', 'Whether to throw errors'))
+  .addOption(new Option('--pretty', 'Pretty print JSON'))
   .option('--no-open', 'do not open link in browser', true)
   .option('--no-backup', 'clear the backup file and do not write to it')
   .argument('[paths...]')

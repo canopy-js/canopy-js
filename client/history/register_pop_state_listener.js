@@ -8,20 +8,22 @@ function registerPopStateListener() {
     history.scrollRestoration = 'manual';
   }
 
+  history.replaceState(history.state, document.title, window.location.href); // no-op call to trigger pop state event firing
+
   window.addEventListener('popstate', (e) => {
     let linkSelection = Link.selectionPresentInEvent(e) ? new Link(e.state) : null;
 
     let scrollStyle;
-    if (Paragraph.current.path.rootTopicPath.equals(Path.current.rootTopicPath)) { // Navigating within the same page
+    if (Path.current.rootTopicPath.equals(Path.url.rootTopicPath)) { // Navigating within the same page
       scrollStyle = 'smooth';
     } else { // Nagivating to a new page
-      scrollStyle = 'auto';
+      scrollStyle = 'instant';
     }
 
     updateView(
-      Path.currentOrDefault,
-      linkSelection || Link.sessionSelection,
-      { scrollStyle }
+      Path.url,
+      linkSelection || Link.sessionSelection || Path.url.parentLink,
+      { scrollStyle, scrollDirect: true }
     );
   });
 }

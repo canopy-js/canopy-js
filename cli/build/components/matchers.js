@@ -1,9 +1,8 @@
 let {
   LocalReferenceToken,
   GlobalReferenceToken,
-  ImportReferenceToken,
   TextToken,
-  UrlToken,
+  ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
   HtmlToken,
@@ -32,8 +31,7 @@ const Matchers = [
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
-  importReferenceMatcher,
-  linkedImageMatcher,
+  // linkedImageMatcher, // linked images are just images in the text of regular/external links
   footnoteMarkerMatcher,
   imageMatcher,
   italicsMatcher,
@@ -45,9 +43,9 @@ const Matchers = [
 ];
 
 let Topic = require('../../shared/topic');
-let { displaySegment, splitOnPipes } = require('../../shared/helpers');
+let { displaySegment, splitOnPipes } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
-let { parseLink, determineTopicAndSubtopic } = require('./helpers');
+let Reference = require('./reference');
 
 function fenceCodeBlockMatcher({ string, startOfLine }) {
   let match = string.match(/^```\n(.*\n)```(\n|$)/s);
@@ -204,120 +202,58 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 }
 
 function localReferenceMatcher({ string, parserContext, index }) {
-  let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, linkFullText } = parseLink(string, parserContext);
+  let { currentTopic, currentSubtopic } = parserContext;
+  if (!Reference.candidateSubstring(string)) return;
 
-  if (!linkTarget) return; // This is not a valid link
-  if (linkFragment) return; // Any link with a # symbol is a global or import
-  let targetSubtopic = new Topic(linkTarget);
-  if (targetSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
-  if (targetSubtopic.caps === currentSubtopic.caps) return; // a paragraph can't link to itself, probably a global topic by same name
+  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
 
-  if (parserContext.currentTopicHasSubtopic(targetSubtopic)) {
-    if (parserContext.subtopicReferenceIsRedundant(targetSubtopic)) {
-      let currentLinkCouldBeImportOrGlobal = parserContext.localReferenceCouldBeImportOrGlobal(targetSubtopic);
-      let otherLinkCouldBeImportOrGlobal = parserContext.priorLocalReferenceCouldBeImportOrGlobal(targetSubtopic);
+  if (!reference.valid) return;
+  if (!reference.simpleTarget) return; // eg [[A]] or [[A|B]] not [[A#B/C#D]] or [[A#B/C#D|XYZ]]
 
-      if (currentLinkCouldBeImportOrGlobal && !otherLinkCouldBeImportOrGlobal) {
-        return null; // allow text to be matched as import reference in importReferenceMatcher
-      } else if (!currentLinkCouldBeImportOrGlobal && otherLinkCouldBeImportOrGlobal) {
-        parserContext.convertPriorLocalReferenceToImportOrGlobal(targetSubtopic);
-      } else if (currentLinkCouldBeImportOrGlobal && otherLinkCouldBeImportOrGlobal) {
-        parserContext.registerPotentialAmiguousReference(targetSubtopic, linkFullText)
-      } else {
-        parserContext.registerPotentialRedundantLocalReference(targetSubtopic);
-      }
+  let potentialSubtopic = Topic.for(reference.targetText);
+  if (!potentialSubtopic) return; // subsumption dependent error
+  if (potentialSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
+  if (potentialSubtopic.caps === currentSubtopic.caps) return; // a subtopic can't link to itself, perhaps a global topic by same name
+
+  if (parserContext.currentTopicHasSubtopic(potentialSubtopic)) {
+    if (parserContext.subtopicReferenceIsRedundant(potentialSubtopic)) {
+      parserContext.registerPotentialRedundantLocalReference(potentialSubtopic);
     }
 
     let localReferenceToken = new LocalReferenceToken(
       currentTopic.mixedCase,
-      parserContext.getOriginalSubtopic(currentTopic, targetSubtopic).mixedCase,
+      parserContext.getOriginalSubtopic(currentTopic, potentialSubtopic).mixedCase,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
-      linkText,
+      reference.displayText,
       parserContext
     );
 
-    parserContext.registerLocalReference(targetSubtopic, index, linkText, linkFullText, localReferenceToken);
+    parserContext.registerLocalReference(potentialSubtopic, index, reference.contents, string, localReferenceToken);
 
-    return [localReferenceToken, linkFullText.length];
+    return [localReferenceToken, reference.fullText.length];
   } else {
     return null;
   }
 }
 
 function globalReferenceMatcher({ string, parserContext }) {
-  let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, linkFullText } = parseLink(string, parserContext);
-  if (!linkTarget) return; // invalid link
-  if (linkFragment && linkTarget !== linkFragment) return; // import reference
-  let targetTopic = new Topic(linkTarget);
+  let { currentTopic, currentSubtopic } = parserContext;
+  if (!Reference.candidateSubstring(string)) return;
+  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
+  if (!reference.valid) return;
+  let pathString = reference.pathString;
 
-  if (parserContext.topicExists(targetTopic)) {
-    parserContext.registerGlobalReference(targetTopic, currentTopic, currentSubtopic);
-
-    return [
-      new GlobalReferenceToken(
-        parserContext.getOriginalTopic(targetTopic).mixedCase,
-        parserContext.getOriginalTopic(targetTopic).mixedCase,
-        currentTopic.mixedCase,
-        currentSubtopic.mixedCase,
-        linkText,
-        parserContext
-      ), linkFullText.length
-    ];
-  } else {
-    return null;
-  }
-}
-
-function importReferenceMatcher({ string, parserContext, index }) {
-  let { currentTopic, currentSubtopic } = parserContext.currentTopicAndSubtopic;
-  let { linkTarget, linkFragment, linkText, linkFullText, manualDisplayText } = parseLink(string, parserContext);
-  if (!linkTarget) return; // not a well-formed link
-  let { targetTopic, targetSubtopic } = determineTopicAndSubtopic(linkTarget, linkFragment);
-  if (!targetTopic) { // The user chose to just give the subtopic and imply the topic
-    targetTopic = parserContext.findImportReferenceTargetTopic(targetSubtopic, parserContext.paragraphText, parserContext);
-  }
-
-  if (!targetTopic && targetSubtopic.caps === currentSubtopic.caps) {
-    parserContext.registerSubsumptionConditionalError(
-      chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}is a local self-reference with no global target.\n` +
-        `${parserContext.filePathAndLineNumber}`)
-    );
-    return null;
-  }
-
-  if (!targetTopic) {
-    parserContext.registerSubsumptionConditionalError(
-      chalk.red(`Error: Reference ${linkFullText} in ${displaySegment(currentTopic, currentSubtopic)} ${manualDisplayText ? 'referencing target ['+linkTarget+'] ':''}matches no global, local, or import reference.\n` +
-        `${parserContext.filePathAndLineNumber}`)
-    );
-    return null;
-  }
-
-  if (!parserContext.topicExists(targetTopic)) {
-    parserContext.registerSubsumptionConditionalError((chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent topic [${targetTopic.mixedCase}]\n` +
-      `${parserContext.filePathAndLineNumber}`)));
-    return null;
-  }
-
-  if (!parserContext.topicHasSubtopic(targetTopic, targetSubtopic)) {
-    parserContext.registerSubsumptionConditionalError((chalk.red(`Error: Reference ${linkFullText} in topic [${currentTopic.mixedCase}] refers to non-existent subtopic of [${targetTopic.mixedCase}], [${targetSubtopic.mixedCase}]\n` + `${parserContext.filePathAndLineNumber}`)));
-    return null;
-  }
-
-  parserContext.registerImportReference(currentTopic, currentSubtopic, targetTopic, targetSubtopic);
+  parserContext.registerGlobalReference(pathString, reference, reference.fullText);
 
   return [
-    new ImportReferenceToken(
-      parserContext.getOriginalTopic(targetTopic).mixedCase,
-      parserContext.getOriginalSubtopic(targetTopic, targetSubtopic).mixedCase,
+    new GlobalReferenceToken(
+      pathString,
       currentTopic.mixedCase,
       currentSubtopic.mixedCase,
-      linkText,
+      reference.displayText,
       parserContext
-    ), linkFullText.length
+    ), reference.fullText.length
   ];
 }
 
@@ -344,11 +280,11 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[([^!\]]+)\](?:\(([^ )]*)\))/);
+  let match = string.match(/^\[(.+)\](?:\(([^ )[]*)\))/);
   if (match) {
     let [_, text, url] = match;
     return [
-      new UrlToken(url, text, parserContext),
+      new ExternalLinkToken(url, text, parserContext),
       match[0].length
     ];
   }
@@ -358,14 +294,14 @@ function urlMatcher({ string, parserContext }) {
   let match = string.match(/^([A-Za-z0-9+\-.]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
-      new UrlToken(match[1]),
+      new ExternalLinkToken(match[1]),
       match[0].length
     ];
   }
 }
 
 function imageMatcher({ string, parserContext }) {
-  let match = string.match(/^!\[([^\]]*)]\(([^\s]+)\s*(?:(?<!\\)["'“”]((?:.(?!" "|” “))+?.)(?<!\\)["“”](?: (?<!\\)["“”]((?:.(?!(?<!\\)["“”]))*..)(?<!\\)["“”])?)?\)/);
+  let match = string.match(/^!\[(.*?)]\(([^\s]+)\s*(?:(?<!\\)["'“”]((?:.(?!" "|” “))+?.)(?<!\\)["“”](?: (?<!\\)["“”]((?:.(?!(?<!\\)["“”]))*..)(?<!\\)["“”])?)?\)/);
 
   if (match) {
     return [

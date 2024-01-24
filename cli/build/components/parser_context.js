@@ -1,9 +1,8 @@
 let Topic = require('../../shared/topic');
-let { LinkProximityCalculator, terminalCategoryofPath, isCategoryNotesFile, topicKeyOfString, parseLink } = require('./helpers');
 let dedent = require('dedent-js');
 let { ImportReferenceToken } = require('./tokens');
-let Paragraph = require('../../shared/paragraph');
-let { displaySegment, wrapText } = require('../../shared/helpers');
+let Block = require('../../shared/block');
+let { displaySegment, wrapText, parseLink } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
 
 class ParserContext {
@@ -14,8 +13,6 @@ class ParserContext {
       this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
       this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
       this.subtopicParents = {}; // by topic, by subtopic, the parent subtopic that contains a local reference to that subtopic
-      this.subtopicsOfGlobalReferences = {}; // by topic, by target topic, the subtopic of topic that contains the global reference to target topic
-      this.importReferencesToCheck = []; // a list of import references with metadata to validate at the end of the second-pass
       this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
       this.ambiguousLocalReferences = []; // a list of local references that are possibly global/import and possibly redundant
       this.provisionalLocalReferences = {}; // a list of local reference tokens for conversion to import if later found to be redundant
@@ -26,6 +23,8 @@ class ParserContext {
       this.topicFilePaths = {}; // by topic, the file path where that topic is defined
       this.currentTopic = null; // the current topic file being parsed
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
+      this.pathsReferenced = []; // a list of paths referenced in global references to validate
+      this.globalReferencesBySubtopic = {}; // for each topic#subtopic combo, what global references / path references exist?
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
@@ -40,19 +39,19 @@ class ParserContext {
     }
   }
 
-  clone(options) {
+  clone(options = {}) {
     return new ParserContext({ priorParserContext: this, options }); // reuse the data about the project but allow new properties on the instance
   }
 
   // This function does a first-pass over all the expl files of the project and creates several
-  // indexes of that content which will be necessary for the more in-depth second pass performed in parseParagraph
+  // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
   buildNamespaceObject(explFileData) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
 
     Object.keys(explFileData).forEach(function(filePath){
       let fileContents = explFileData[filePath];
       let paragraphsWithKeys = fileContents.split(/\n\n/);
-      let topicParargaph = new Paragraph(paragraphsWithKeys[0]);
+      let topicParargaph = new Block(paragraphsWithKeys[0]);
       if (!topicParargaph.key) return;
       let currentTopic = new Topic(topicParargaph.key);
       let lineNumber = 1;
@@ -78,7 +77,7 @@ class ParserContext {
           paragraphText = paragraphText.slice(1);
         }
 
-        let paragraph = new Paragraph(paragraphText);
+        let paragraph = new Block(paragraphText);
         if (paragraph.key) {
           let currentSubtopic = new Topic(paragraph.key);
 
@@ -119,14 +118,6 @@ class ParserContext {
     this.currentSubtopic = subtopic;
     this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
     this.topicFilePaths[topic.caps] = this.filePath;
-    this.subtopicsOfGlobalReferences[topic.caps] = this.subtopicsOfGlobalReferences[topic.caps] || {};
-  }
-
-  get currentTopicAndSubtopic() {
-    return {
-      currentTopic: this.currentTopic,
-      currentSubtopic: this.currentSubtopic
-    };
   }
 
   set currentText(text) {
@@ -183,12 +174,12 @@ class ParserContext {
   }
 
   getOriginalTopic(givenTopic) {
-    return this.topicSubtopics[givenTopic.caps][givenTopic.caps];
+    return this.topicSubtopics[givenTopic.caps]?.[givenTopic.caps];
   }
 
   getOriginalSubtopic(currentTopic, givenSubtopic) {
     if (!givenSubtopic) throw new Error('two arguments required');
-    return this.topicSubtopics[currentTopic.caps][givenSubtopic.caps];
+    return this.topicSubtopics[currentTopic.caps]?.[givenSubtopic.caps];
   }
 
   currentTopicHasSubtopic(targetSubtopic) {
@@ -201,6 +192,18 @@ class ParserContext {
 
   topicExists(topic) {
     return this.topicSubtopics.hasOwnProperty(topic.caps);
+  }
+
+  pathExists(path) {
+    return path.array.reduce((segment, nextSegment) => {
+      if (!segment) return false;
+
+      if (this.topicSubtopics.hasOwnProperty(segment[0].caps) && this.topicSubtopics[segment[0].caps].hasOwnProperty(segment[1].caps)) {
+        return true
+      } else {
+        return false;
+      }
+    });
   }
 
   subtopicReferenceIsRedundant(targetSubtopic) {
@@ -248,225 +251,13 @@ class ParserContext {
   throwSubsumptionConditionalErrors() {
     this.subsumptionConditionalErrors.forEach(errorObject => {
       if (this.hasConnection(errorObject.enclosingSubtopic, errorObject.enclosingTopic, {}, true)) {
-        throw new Error(errorObject.errorString);
+        throw new Error(chalk.red(errorObject.errorString));
       }
     });
   }
 
-  findImportReferenceTargetTopic(targetSubtopic, paragraphText) {
-    let linksOfParagraph = Array.from(
-      paragraphText.matchAll(/\[\[(?:(?!(?<!\\)\]\]).)+\]\]/g) // [[ followed by any number of not-unescaped-]], followed by ]]
-    ).map(match => {
-      let linkData = parseLink(match[0]);
-      return !linkData.linkFragment && linkData.linkTarget; // only list potential global links
-    }).filter(Boolean);
-
-    let targetTopicCandidates = linksOfParagraph
-      .map(string => new Topic(string))
-      .filter(topic => {
-        return this.topicHasSubtopic(topic, targetSubtopic);
-      }).filter(topic => {
-        return topic.mixedCase !== targetSubtopic.mixedCase // reject a global reference being considered both import and anchoring global
-      });
-
-    if (targetTopicCandidates.length > 1 && !targetTopicCandidates.every(t => t.mixedCase === targetTopicCandidates[0].mixedCase)) {
-      throw new Error(chalk.red( // multiple, different globals could be anchor
-        `Import reference [${targetSubtopic.mixedCase}] could belong to multiple global references: ` +
-        `[${targetTopicCandidates.map(t => t.mixedCase).join(', ')}].\n` +
-        `Please indicate which global reference is the import anchor using explicit import syntax eg [[${targetTopicCandidates[0].mixedCase}#${targetSubtopic.mixedCase}]]\n`
-        + `${this.filePathAndLineNumber}`
-      ))
-    }
-
-    return targetTopicCandidates[0];
-  }
-
-  localReferenceCouldBeImport(targetSubtopic, paragraphText) {
-    return !!this.findImportReferenceTargetTopic(targetSubtopic, paragraphText || this.paragraphText);
-  }
-
-  localReferenceCouldBeGlobal(targetSubtopic, paragraphText) {
-    return !!this.topicExists(targetSubtopic);
-  }
-
-  localReferenceCouldBeImportOrGlobal(targetSubtopic, paragraphText) {
-    return this.localReferenceCouldBeImport(targetSubtopic, paragraphText) || this.localReferenceCouldBeGlobal(targetSubtopic, paragraphText);
-  }
-
-  priorLocalReferenceCouldBeImportOrGlobal(targetSubtopic) {
-    let {
-      paragraphText
-    } = this.provisionalLocalReferences[targetSubtopic.caps];
-
-    return this.localReferenceCouldBeImportOrGlobal(targetSubtopic, paragraphText)
-  }
-
-  priorLocalReferenceCouldBeGlobal(targetSubtopic) {
-    let {
-      paragraphText,
-      index
-    } = this.provisionalLocalReferences[targetSubtopic.caps];
-
-    return this.localReferenceCouldBeGlobal(targetSubtopic, paragraphText)
-  }
-
-  convertPriorLocalReferenceToImportOrGlobal(targetSubtopic) {
-    let {
-      token,
-      paragraphText,
-      index,
-      enclosingTopic,
-      enclosingSubtopic,
-      linkText
-    } = this.provisionalLocalReferences[targetSubtopic.caps];
-
-    let targetTopic = this.findImportReferenceTargetTopic(targetSubtopic, paragraphText);
-
-    token.type = 'import';
-    token.targetTopic = targetTopic.mixedCase;
-    token.targetSubtopic = this.getOriginalSubtopic(targetTopic, targetSubtopic).mixedCase;
-    token.enclosingTopic = enclosingTopic.mixedCase;
-    token.enclosingSubtopic = enclosingSubtopic.mixedCase;
-    token.text = linkText;
-    token.constructor = ImportReferenceToken;
-  }
-
-  registerPotentialAmiguousReference(targetSubtopic, secondLinkText) {
-    let sharedTopic = this.currentTopic;
-
-    let firstParagraphText = this.provisionalLocalReferences[targetSubtopic.caps].paragraphText;
-    let firstEnclosingSubtopic = this.provisionalLocalReferences[targetSubtopic.caps].enclosingSubtopic;
-    let firstFilePath = this.provisionalLocalReferences[targetSubtopic.caps].filePath;
-    let firstLineNumber = this.provisionalLocalReferences[targetSubtopic.caps].lineNumber;
-    let firstCharacterNumber = this.provisionalLocalReferences[targetSubtopic.caps].characterNumber;
-    let firstLinkText = this.provisionalLocalReferences[targetSubtopic.caps].linkFullText;
-    let firstAnchorTopic = this.findImportReferenceTargetTopic(targetSubtopic, firstParagraphText);
-    let firstLinkCouldBeGlobal = !!this.priorLocalReferenceCouldBeGlobal(targetSubtopic);
-    let firstLinkCouldBeImport = !!firstAnchorTopic;
-
-    let secondFilePath = this.topicFilePaths[this.currentTopic.caps];
-    let secondLineNumber = this.lineNumber;
-    let secondCharacterNumber = this.characterNumber;
-    let secondEnclosingSubtopic = this.currentSubtopic;
-    let secondAnchorTopic = this.findImportReferenceTargetTopic(targetSubtopic, this.paragraphText);
-    let secondLinkCouldBeGlobal = !!this.localReferenceCouldBeGlobal(targetSubtopic);
-    let secondLinkCouldBeImport = !!secondAnchorTopic;
-
-    let atLeastOneGlobal = secondLinkCouldBeGlobal || secondLinkCouldBeGlobal;
-    let atLeastOneImport = secondLinkCouldBeImport || secondLinkCouldBeImport;
-    let generalAmbiguityType =
-      (atLeastOneGlobal ? 'global' : '') +
-      ((atLeastOneGlobal && atLeastOneImport) ? '/' : '') +
-      (atLeastOneImport ? 'import' : '');
-
-    let ambiguityTypeGenerator = (potentialGlobal, potentialImport, anchorTopic) =>
-      ((potentialGlobal && !potentialImport) ? 'or ' : '') +
-      ((!potentialGlobal && potentialImport) ? 'an ' : 'a ') +
-      (potentialGlobal ? 'global' : '') +
-      ((potentialGlobal && potentialImport) ? ' reference, ' : '') +
-      (potentialImport ? 'or an import' : '') +
-      ' reference' +
-      (potentialImport ? ` anchored to topic [${anchorTopic.mixedCase}]` : '');
-    let firstAmbiguityType = ambiguityTypeGenerator(firstLinkCouldBeGlobal, firstLinkCouldBeImport, firstAnchorTopic);
-    let secondAmbiguityType = ambiguityTypeGenerator(secondLinkCouldBeGlobal, secondLinkCouldBeImport, secondAnchorTopic);
-
-    let globalAmbiguityAdvice = (subtopic) =>
-      dedent`If you intended this link to be a global reference, you can fix this error one of two ways:
-
-       1. You can change the name of the other subtopic to not match the name of the global reference so that it is clear that is the local reference.
-       2. You can use explicit global syntax to clarify this is a global reference, ie, [[${subtopic.mixedCase}#${subtopic.mixedCase}]].`;
-
-    let importAmbiguityAdvice = (subtopic, anchorTopic) =>
-      dedent`If you intended this link to be an import reference, you can fix this error one of two ways:
-
-      1. You can change the name of one of the subtopics to not match the other so that it is clear that the other is the local reference.
-      2. You can use explicit import syntax to clarify this is an import reference, ie, by writing [[${anchorTopic.mixedCase}#${subtopic.mixedCase}]] in a paragraph that has an anchoring global reference like [[${anchorTopic.mixedCase}]].`;
-
-    let message = dedent`Error: local/${generalAmbiguityType} reference ambiguity
-
-    Two references exist in topic [${sharedTopic.mixedCase}] to target [${targetSubtopic.mixedCase}] and it is unclear which is the local reference, and which is a${generalAmbiguityType.startsWith('i') ? 'n' : ''} ${generalAmbiguityType} reference.
-
-    ================================ First Reference ===============================
-
-    It is ambiguous whether reference ${firstLinkText} in subtopic [${firstEnclosingSubtopic.mixedCase}] of topic [${sharedTopic.mixedCase}] is a local reference, ${firstAmbiguityType}.
-
-    ${firstFilePath}:${firstLineNumber}:${firstCharacterNumber}
-
-    ${firstLinkCouldBeGlobal ? globalAmbiguityAdvice(targetSubtopic) : ''}${(firstLinkCouldBeGlobal && firstLinkCouldBeImport) ? '\n\n' : ''}${firstLinkCouldBeImport ? importAmbiguityAdvice(targetSubtopic, firstAnchorTopic) : ''}
-
-    =============================== Second Reference ==============================
-
-    It is ambiguous whether reference ${secondLinkText} in subtopic [${secondEnclosingSubtopic.mixedCase}] of topic [${sharedTopic.mixedCase}] is a local reference, ${secondAmbiguityType}.
-
-    ${secondFilePath}:${secondLineNumber}:${secondCharacterNumber}
-
-    ${secondLinkCouldBeGlobal ? globalAmbiguityAdvice(targetSubtopic) : ''}${(secondLinkCouldBeGlobal && secondLinkCouldBeImport) ? '\n\n' : ''}${secondLinkCouldBeImport ? importAmbiguityAdvice(targetSubtopic, secondAnchorTopic) : ''}`;
-
-    message = chalk.red(wrapText(message, 80));
-
-    this.ambiguousLocalReferences.push({
-      message,
-      firstEnclosingSubtopic,
-      secondEnclosingSubtopic: this.currentSubtopic,
-      targetSubtopic,
-      sharedTopic
-    });
-  }
-
-  validateAmbiguousLocalReferences() {
-    this.ambiguousLocalReferences.forEach(ambiguousReferenceData => {
-      let { sharedTopic, firstEnclosingSubtopic, secondEnclosingSubtopic, message } = ambiguousReferenceData;
-      if (this.hasConnection(firstEnclosingSubtopic, sharedTopic) && this.hasConnection(secondEnclosingSubtopic, sharedTopic)) { // ambiguous links are in real subsumed paragraphs, even the same paragraph is a problem unlike regular redundant references
-        throw new Error(message);
-      }
-    });
-  }
-
-  currentFilePathAndLineNumber() {
+  get currentFilePathAndLineNumber() {
     return `${this.topicFilePaths[this.currentTopic.caps]}:${this.lineNumber}:${this.characterNumber}`;
-  }
-
-  registerImportReference(enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic) {
-    this.importReferencesToCheck.push({
-      enclosingTopic,
-      enclosingSubtopic,
-      targetTopic,
-      targetSubtopic,
-      paragraphReferences: this.paragraphReferences,
-      filePath: this.filePath,
-      lineNumber: this.lineNumber
-    });
-  }
-
-  validateImportReferenceGlobalMatching() { // every import reference must have a global reference to the target subtopic's topic in the same paragraph
-    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, paragraphReferences, filePath, lineNumber}) => {
-      paragraphReferences.filter(t => t.type === 'import').forEach(importReferenceToken => {
-        let globalToken = paragraphReferences.find(
-          token =>
-            token.type === 'global' &&
-            token.targetTopic === importReferenceToken.targetTopic &&
-            token.targetSubtopic === importReferenceToken.targetTopic
-        );
-
-        if(!globalToken) {
-          let targetTopic = new Topic(importReferenceToken.targetTopic);
-          let targetSubtopic = new Topic(importReferenceToken.targetSubtopic);
-          let originalTargetTopic = this.getOriginalTopic(targetTopic);
-          let originalTargetSubtopic = this.getOriginalSubtopic(targetTopic, targetSubtopic);
-          throw new Error(chalk.red(`Error: Import reference to ${displaySegment(originalTargetTopic, originalTargetSubtopic)} in ${displaySegment(enclosingTopic, enclosingSubtopic)} lacks global reference to topic [${originalTargetTopic.mixedCase}].\n` +
-            `${filePath}:${lineNumber}\n`));
-        }
-      });
-    });
-  }
-
-  validateImportReferenceTargets() { // every import reference must point at a subtopic that actually exists in the target topic
-    this.importReferencesToCheck.forEach(({enclosingTopic, enclosingSubtopic, targetTopic, targetSubtopic, filePath, lineNumber}) => {
-      if (!this.hasConnection(targetSubtopic, targetTopic)) {
-        throw new Error(chalk.red(`Error: Import reference in ${displaySegment(enclosingTopic, enclosingSubtopic)} is referring to unsubsumed subtopic ${displaySegment(targetTopic, targetSubtopic)}\n` +
-          `${filePath}:${lineNumber}\n`));
-      }
-    });
   }
 
   validateSubtopicDefinitions() {
@@ -479,11 +270,18 @@ class ParserContext {
     });
   }
 
-  registerGlobalReference(targetTopic, currentTopic, currentSubtopic) {
-    this.topicConnections[currentTopic.caps] = this.topicConnections[currentTopic.caps] || {};
-    this.topicConnections[currentTopic.caps][targetTopic.caps] = true;
-    this.topicConnections[targetTopic.caps] = this.topicConnections[targetTopic.caps] || {};
-    this.subtopicsOfGlobalReferences[currentTopic.caps][targetTopic.caps] = currentSubtopic;
+  registerGlobalReference(pathString, reference, referenceString) {
+    this.topicConnections[this.currentTopic.caps] = this.topicConnections[this.currentTopic.caps] || {};
+    this.topicConnections[this.currentTopic.caps][reference.firstTopic.caps] = true;
+    this.topicConnections[reference.firstTopic.caps] = this.topicConnections[reference.firstTopic.caps] || {};
+
+    this.globalReferencesBySubtopic[this.currentTopic.caps] =
+      this.globalReferencesBySubtopic[this.currentTopic.caps] || {};
+    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] =
+      this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] || {};
+    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps][reference.firstTopic.caps] = true;
+
+    this.pathsReferenced.push([pathString, reference, this.currentFilePathAndLineNumber, referenceString, this.currentTopic, this.currentSubtopic]);
   }
 
   logGlobalOrphans() {
@@ -523,28 +321,9 @@ class ParserContext {
     });
   }
 
-  logNonReciprocals() {
-    Object.keys(this.topicConnections).forEach((currentTopicCaps, i) => {
-      Object.keys(this.topicConnections[currentTopicCaps]).forEach((targetTopicCaps, i) => {
-        if (!this.topicConnections[targetTopicCaps] || !this.topicConnections[targetTopicCaps][currentTopicCaps]) {
-          let currentSubtopic = this.subtopicsOfGlobalReferences[currentTopicCaps][targetTopicCaps];
-          let currentTopic = this.topicSubtopics[currentTopicCaps][currentTopicCaps];
-          let targetTopic = this.topicSubtopics[targetTopicCaps][targetTopicCaps];
-          console.log(chalk.magenta(
-            `Warning: Nonreciprocal Global Reference\n` +
-            `Global reference in ${displaySegment(currentTopic, currentSubtopic)} exists to topic [${targetTopic.mixedCase}] with no reciprocal reference.\n` +
-            `${this.topicFilePaths[currentTopic.caps]}:${this.subtopicLineNumbers[currentTopic.caps][currentSubtopic.caps]}\n` +
-            `Try creating a global reference from [${targetTopic.mixedCase}] to [${currentTopic.mixedCase}]\n` +
-            `${this.topicFilePaths[targetTopic.caps]}\n`
-          ));
-        }
-      });
-    });
-  }
-
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
-      if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) {
+      if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
         throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             One reference is in subtopic ${displaySegment(topic, enclosingSubtopic1)}
@@ -555,10 +334,42 @@ class ParserContext {
 
             Multiple local references to the same subtopic are not permitted.
 
-            Consider making one of these local references a self-import reference.
-            That would look like using [[${topic.mixedCase}#${referencedSubtopic.mixedCase}]] in the same paragraph as
-            an anchor reference to global topic [[${topic.mixedCase}]].
+            Consider making one of these local references a self path reference.
+            That would look like using [[#${referencedSubtopic.mixedCase}]].
             `));
+      }
+    });
+  }
+
+  validateGlobalReferences() {
+    this.pathsReferenced.forEach(([pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic]) => {
+      if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
+        pathString.split(/(?<!\\)\//).map(segmentString => {
+          let [currentTopic, currentSubtopic] = segmentString.match(/^(.*?)(?:\\#|#(.*))?$/).slice(1).map(m => m && Topic.fromEncodedSlug(m));
+
+          if (!this.topicExists(currentTopic)) {
+            throw new Error(chalk.red(`Error: Reference "${referenceString}" contains nonexistent topic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
+          }
+
+          if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
+            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
+          }
+
+          if (!this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
+            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`));
+          }
+
+          return segmentString;
+        }).reduce((currentSegmentString, nextSegmentString) => {
+          let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
+          let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
+
+          if (!this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
+            throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
+             `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
+             `${pathAndLineNumberString}`));
+          }
+        });
       }
     });
   }

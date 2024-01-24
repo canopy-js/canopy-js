@@ -1,28 +1,18 @@
 import json from '../../package.json';
 
-const canopyContainer = document.getElementById('_canopy');
+let canopyContainer = document.getElementById('_canopy');
 
 canopyContainer.dataset.canopyVersion = json.version;
 
-const defaultTopic = canopyContainer && canopyContainer.dataset.defaultTopic;
+let defaultTopic = () => canopyContainer && canopyContainer.dataset.defaultTopic;
 
-const projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPathPrefix;
+let projectPathPrefix = canopyContainer && canopyContainer.dataset.projectPathPrefix;
 
-const hashUrls = canopyContainer && canopyContainer.dataset.hashUrls;
-
-function getAncestorElement(currentElement, className) {
-  let parentElement = currentElement.parentElement;
-  while (parentElement.classList && !parentElement.classList.contains(className)) {
-    if (parentElement === canopyContainer) return null;
-    parentElement = parentElement.parentNode;
-  }
-  return parentElement;
-}
+let hashUrls = canopyContainer && canopyContainer.dataset.hashUrls;
 
 export {
   canopyContainer,
   defaultTopic,
   projectPathPrefix,
-  hashUrls,
-  getAncestorElement
+  hashUrls
 };

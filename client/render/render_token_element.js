@@ -1,23 +1,26 @@
-import { onLocalLinkClick, onGlobalAndImportLinkClick } from 'render/click_handlers';
+import { onLinkClick } from 'render/click_handlers';
 import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
-import { scrollPage, imagesLoaded } from 'display/helpers';
-import BackButton from 'render/back_button';
+import ScrollableContainer from 'helpers/scrollable_container';
+import { scrollPage, imagesLoaded, scrollToWithPromise, getScrollInProgress } from 'display/helpers';
+import requestJson from 'requests/request_json';
 
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
     return renderTextToken(token);
   } else if (token.type === 'local') {
+    renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
+    requestJson(Path.for(token.pathString).firstTopic); // eager load
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
-  } else if (token.type === 'url') {
+  } else if (token.type === 'external') {
     return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
     return renderImage(token, renderContext);
@@ -46,7 +49,7 @@ function renderTokenElement(token, renderContext) {
   } else if (token.type === 'inline_code') {
     return renderInlineCodeText(token, renderContext);
   } else {
-    throw `Unhandled token type: ${token.type} ${token.type === 'table_list'}`
+    throw `Unhandled token type: ${token.type}`
   }
 }
 
@@ -58,19 +61,12 @@ function renderTextToken(token) {
 }
 
 function renderLocalLink(token, renderContext) {
-  let {
-    localLinkSubtreeCallback
-  } = renderContext;
-
-  localLinkSubtreeCallback(token);
-  return createLocalLinkElement(token, renderContext)
-}
-
-function createLocalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // helpful for debugger
   linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
@@ -80,14 +76,14 @@ function createLocalLinkElement(token, renderContext) {
     linkElement.appendChild(subtokenElement);
   });
 
-  let callback = onLocalLinkClick(token.targetTopic, token.targetSubtopic, new Link(linkElement));
+  let callback = onLinkClick(new Link(linkElement));
 
   linkElement.addEventListener(
     'click',
     callback
   );
 
-  linkElement._CanopyClickHandler = callback
+  linkElement._CanopyClickHandler = callback;
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
@@ -99,19 +95,8 @@ function createLocalLinkElement(token, renderContext) {
 }
 
 function renderGlobalLink(token, renderContext) {
-  let {
-    pathArray,
-    globalLinkSubtreeCallback
-  } = renderContext;
+  let { fullPath, remainingPath, currentTopic, currentSubtopic } = renderContext;
 
-  let linkElement = createGlobalLinkElement(token, renderContext);
-
-  globalLinkSubtreeCallback(token, linkElement);
-
-  return linkElement;
-}
-
-function createGlobalLinkElement(token, renderContext) {
   let linkElement = document.createElement('a');
 
   token.tokens.forEach(subtoken => {
@@ -123,104 +108,62 @@ function createGlobalLinkElement(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
 
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.dataset.pathString = Path.for(token.pathString).string; // convert to mixed-case
+  linkElement.path = token.path; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
 
   linkElement.dataset.text = token.text;
 
-  let targetTopic = Topic.fromMixedCase(token.targetTopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}`;
+  linkElement.href = Path.for(token.pathString).productionPathString;
 
-  let callback = onGlobalAndImportLinkClick(new Link(linkElement))
-
-  linkElement._CanopyClickHandler = callback;
+  let link = new Link(linkElement);
 
   linkElement.addEventListener(
     'click',
-    callback
+    onLinkClick(link)
   );
-  return linkElement
-}
 
-function renderImportLink(token, renderContext) {
-  let {
-    pathArray
-  } = renderContext;
+  let { pathToParagraph } = renderContext;
+  let inlinedPath = pathToParagraph.append(link.literalPath);
+  let reducedInlinePath = inlinedPath.reduce();
+  let cycle = inlinedPath.length !== reducedInlinePath.length;
+  let backCycle = cycle && reducedInlinePath.subsetOf(pathToParagraph);
+  let lateralCycle = cycle && !backCycle;
 
-  let linkElement = createImportLinkElement(token, renderContext);
+  // if (pathToParagraph.pathString === '/Hisbonen/Hashta_b’shlucho_mekadesh#Learn_the_sugya') debugger;
+  // console.log(Path.for(token.pathString).string, {linkElement, pathToParagraph, inlinedPath, reducedInlinePath, cycle, backCycle})
 
-  return linkElement;
-}
-
-function createImportLinkElement(token, renderContext) {
-  let linkElement = document.createElement('a');
-
-  token.tokens.forEach(subtoken => {
-    let subtokenElement = renderTokenElement(subtoken, renderContext);
-    linkElement.appendChild(subtokenElement);
-  });
-
-  linkElement.classList.add('canopy-import-link');
-  linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.type = 'import';
-
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  linkElement.dataset.text = token.text;
-
-  let targetTopic = new Topic(token.targetTopic);
-  let targetSubtopic = new Topic(token.targetSubtopic);
-  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
-
-  linkElement.addEventListener(
-    'click',
-    onGlobalAndImportLinkClick(new Link(linkElement))
-  );
+  if (backCycle) {
+    linkElement.classList.add('canopy-back-cycle-link');
+  } else if (lateralCycle) {
+    linkElement.classList.add('canopy-lateral-cycle-link');
+  } else if (link.pathReference) {
+    linkElement.classList.add('canopy-path-reference');
+  }
 
   return linkElement
 }
 
 function renderExternalLink(token, renderContext) {
   let linkElement = document.createElement('A');
-  linkElement.classList.add('canopy-url-link');
+  linkElement.classList.add('canopy-external-link');
   linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.type = 'url';
+  linkElement.dataset.type = 'external';
   linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url);
+  linkElement.setAttribute('href', token.url.match(/^https?:\/\//) ? token.url : 'http://' + token.url);
   linkElement.setAttribute('target', '_blank');
 
-  let externalLinkContainer = document.createElement('SPAN');
-  externalLinkContainer.classList.add('canopy-url-link-container');
-  linkElement.appendChild(externalLinkContainer);
-
-  let tokensContainer = document.createElement('SPAN');
-  tokensContainer.classList.add('canopy-url-link-tokens-container');
-  externalLinkContainer.appendChild(tokensContainer);
+  setTimeout(() => {
+    if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
+  });
 
   token.tokens.forEach(subtoken => {
     let subtokenElement = renderTokenElement(subtoken, renderContext);
-    tokensContainer.appendChild(subtokenElement);
+    linkElement.appendChild(subtokenElement);
   });
 
-  tokensContainer.innerHTML += '<span class="canopy-url-link-tokens-spacing">&nbsp;&nbsp;</span>';
-
-  let svgContainer = document.createElement('SPAN');
-  svgContainer.classList.add('canopy-url-link-svg-container');
-  svgContainer.innerHTML += externalLinkIconSvg.replace(/\r?\n|\r/g, '');
-  externalLinkContainer.appendChild(svgContainer);
-
-  externalLinkContainer.innerHTML += '<span class="canopy-url-link-svg-spacing">&nbsp;</span>';
-
   return linkElement;
-}
-
-function isVisible(element) {
-  const style = window.getComputedStyle(element);
-  return style.display !== 'none' && style.visibility !== 'hidden';
 }
 
 function renderImage(token, renderContext) {
@@ -231,12 +174,7 @@ function renderImage(token, renderContext) {
   imageElement.setAttribute('src', token.resourceUrl);
   imageElement.setAttribute('decoding', 'async'); // don't wait for image decode to update selected link on change
 
-  let anchorElement = document.createElement('A');
-  anchorElement.setAttribute('href', token.anchorUrl || token.resourceUrl);
-  anchorElement.setAttribute('target', '_blank');
-  anchorElement.classList.add('canopy-image-anchor');
-  anchorElement.appendChild(imageElement);
-  divElement.appendChild(anchorElement);
+  divElement.appendChild(imageElement);
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
@@ -251,28 +189,47 @@ function renderImage(token, renderContext) {
       let subtokenElement = renderTokenElement(subtoken, renderContext);
       spanElement.appendChild(subtokenElement);
     });
-  } else {
-    divElement.appendChild(anchorElement);
   }
 
   if (token.altText) {
     imageElement.setAttribute('alt', token.altText);
   }
 
-  imageElement.style.setProperty('height', '700px');
-  imageElement.style.setProperty('opacity', '0');
-  imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
-    imageElement.style.setProperty('height', null);
-    imageElement.style.setProperty('opacity', '1');
-    // let pathOfImage = renderContext.paragraph.path;
-    // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
-      // This is breaking browser tests that involve scrolling
-      // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
-      // BackButton.updateVisibilityState();
-    // }
-  });
+  handleDelayedImageLoad(imageElement, renderContext);
 
   return divElement;
+}
+
+function handleDelayedImageLoad(imageElement, renderContext) { // we don't know how big the image will be, and don't want the load to disrupt viewport
+  let originalHeight = imageElement.style.height;
+  let originalOpacity = imageElement.style.opacity;
+  imageElement.style.setProperty('height', '500px'); // big because empty space getting replaced with content looks better than content with content
+  imageElement.style.setProperty('opacity', '0');
+  setTimeout(() => { // after 200 ms add gray box but not before then to avoid flash
+    if (!imageElement.complete) (imageElement.closest('.canopy-image')||imageElement).style.setProperty('background-color', '#f5f5f5')
+  }, 200)
+
+  imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
+    (getScrollInProgress() || Promise.resolve()).then(() => { // if there is a scroll in progress, wait for it to complete.
+      let focusedElement = ScrollableContainer.focusedElement;
+      let oldBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
+      imageElement.style.setProperty('height', originalHeight);
+      imageElement.style.setProperty('opacity', originalOpacity);
+      imageElement.closest('.canopy-image')?.style.setProperty('background-color', 'transparent') // remove gray placeholder
+      let newBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
+      let diff = newBottomOfCurrentParagraph - oldBottomOfCurrentParagraph
+      let current = ScrollableContainer.currentScroll;
+      let newScroll = ScrollableContainer.currentScroll + diff;
+
+      let { pathToParagraph } = renderContext;
+      if (Path.current.includes(pathToParagraph)) { // if when the image loads, it is on the current page and might jump the viewport
+        scrollToWithPromise({  // restore old position
+          top: newScroll,
+          behavior: 'instant'
+        });
+      }
+    });
+  });
 }
 
 function renderHtmlElement(token, renderContext) {
@@ -281,21 +238,9 @@ function renderHtmlElement(token, renderContext) {
   divElement.appendChild(fragment);
   divElement.classList.add('canopy-raw-html');
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
-    let imageContainer = document.createElement('div');
-    let originalHeight = imageElement.style.height;
-    let originalWidth = imageElement.style.width;
-    let originalOpacity = imageElement.style.opacity;
-    imageElement.style.setProperty('opacity', '0');
-    imageElement.addEventListener('load', () => { // wait for them to load
-      imageElement.style.setProperty('opacity', originalOpacity);
-      // let pathOfImage = renderContext.paragraph.path;
-      // if (Path.current.includes(pathOfImage)) { // if when the image loads, it is on the current page and might jump the viewport
-        // This is breaking browser tests that involve scrolling
-        // scrollPage(Link.selection, { scrollStyle: canopyContainer.dataset.imageLoadScrollBehavior });
-        // BackButton.updateVisibilityState();
-      // }
-    });
+    handleDelayedImageLoad(imageElement, renderContext);
   });
+
   return divElement;
 }
 
@@ -359,7 +304,7 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
-  tableElement.setAttribute('dir', 'auto');
+  tableElement.setAttribute('dir', 'instant');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
@@ -407,18 +352,13 @@ function renderTableList(token, renderContext) {
 
   if (token.rtl) tableListElement.dir = 'rtl';
 
-  if (token.items.every(item => item.alignment === 'right')) tableListElement.classList.add('align-right');
-  if (token.items.every(item => item.alignment === 'left')) tableListElement.classList.add('align-left');
+  if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
+  if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
 
-  let SizesByWidth = ['quarter', 'third', 'half'];
-  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-card'];
+  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
+  let tableListSizeIndex = 0;
 
-  let tableCellSize;
-  let minimumCellArea = 'quarter-pill';
-  let minimumCellWidth = 'quarter';
-  if (token.items.length < 3) minimumCellArea = 'third-pill'; // even if content doesn't justify size, we expand if there aren't so many
-
-  let cellElements = token.items.map(cellObject => {
+  let cellElements = token.items.map((cellObject, cellIndex) => {
     let tableCellElement = document.createElement('DIV');
     tableCellElement.classList.add('canopy-table-list-cell');
     let contentContainer = document.createElement('DIV');
@@ -450,50 +390,65 @@ function renderTableList(token, renderContext) {
       tableCellElement.classList.add('canopy-table-list-ordinal-cell');
     }
 
-    // determine cell size
-    let longestWord = tableCellElement.innerText.split(' ').sort((a, b) => b.length - a.length)[0];
-    let longestWordLength = longestWord.length;
-    let totalLength = tableCellElement.innerText.length;
-
-    let sizeOptionsBasedOnLargestWordLength;
-    if (longestWordLength < 16) { // 0 - 10 eg "Acknowledgements"
-      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('quarter')) minimumCellWidth = 'quarter';
-    } else if (longestWordLength < 21) { // 10-30
-      if (SizesByWidth.indexOf(minimumCellWidth) < SizesByWidth.indexOf('third')) minimumCellWidth = 'third';
-    } else {
-      minimumCellWidth = 'half';
-    }
-
-    if (totalLength < 17) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-pill')) minimumCellArea = 'quarter-pill';
-    } else if (totalLength < 22) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-pill')) minimumCellArea = 'third-pill';
-    } else if (totalLength < 29 && token.items.length <= 2) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-pill')) minimumCellArea = 'half-pill';
-    } else if (totalLength < 26) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('quarter-card')) minimumCellArea = 'quarter-card';
-    } else if (totalLength < 51) {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('third-card')) minimumCellArea = 'third-card';
-    } else {
-      if (SizesByArea.indexOf(minimumCellArea) < SizesByArea.indexOf('half-card')) minimumCellArea = 'half-card';
-    }
-
-    tableCellSize = SizesByArea.find((newSize, index) => {
-      if (SizesByWidth.indexOf(minimumCellWidth) > SizesByWidth.indexOf(newSize.match(/^[a-z]+/)[0])) return false;
-      if (SizesByArea.indexOf(minimumCellArea) > SizesByArea.indexOf(newSize)) return false;
-      return true; // otherwise update tableCellSize
-    });
-
     return tableCellElement;
   });
 
-  let id = setInterval(() => { // once elements are in DOM and have height, make heights consistent
-    if (setLargestHeightToAll(cellElements)) clearInterval(id);
-  }, 0)
+  let tempParagraphElement = document.createElement('p');
+  tempParagraphElement.classList.add('canopy-paragraph');
+  let tempSectionElement = document.createElement('section');
+  tempSectionElement.classList.add('canopy-section');
+  let tempRowElement = createNewRow();
+  canopyContainer.appendChild(tempSectionElement);
+  tempSectionElement.appendChild(tempParagraphElement);
+  tempParagraphElement.appendChild(tableListElement);
+  tableListElement.appendChild(tempRowElement);
 
-  tableListElement.classList.add(`canopy-${tableCellSize}`);
+  for (let i = 0; i < cellElements.length; i++) {
+    // try fitting text into boxes and find the minimum cell size that fits
+    let tableCellElement = cellElements[i];
+    tempRowElement.appendChild(tableCellElement);
+    tableCellElement.style.overflow = 'scroll';
 
-  // Function to create a new row
+    while(1) {
+      if (tableListSizeIndex === 2 && token.items.length > 2) tableListSizeIndex = 3 // quarters look better than halves
+      if (token.items.length < 3 && !token.alignment && tableListSizeIndex < 2) { // even if content isn't big, expand if there aren't so many
+        tableListSizeIndex = 2;
+      }
+
+      tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+
+      let availableWidth = tableCellElement.clientWidth -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingLeft) -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingRight);
+
+      let availableHeight = tableCellElement.clientHeight -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingTop) -
+        parseFloat(window.getComputedStyle(tableCellElement).paddingBottom);
+
+      let scrollWidth = tableCellElement.firstChild.scrollWidth -
+        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+
+      let scrollHeight = tableCellElement.firstChild.scrollHeight -
+        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+
+      let tooWide = scrollWidth > availableWidth;
+      let tooTall = scrollHeight > availableHeight;
+
+      if (!tooWide && !tooTall) break; // fits
+      if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
+
+      tableListElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
+      tableListSizeIndex++;
+      i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
+    }
+
+  }
+
+  tempParagraphElement.remove();
+  tempRowElement.remove();
+  tempSectionElement.remove();
+  tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+
   function createNewRow() {
     let newRow = document.createElement('DIV');
     newRow.classList.add('canopy-table-list-row');
@@ -503,9 +458,9 @@ function renderTableList(token, renderContext) {
   }
 
   let rowSize;
-  if (tableCellSize.includes('half')) rowSize = 2;
-  if (tableCellSize.includes('third')) rowSize = 3;
-  if (tableCellSize.includes('quarter')) rowSize = 4;
+  if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
+  if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
+  if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
 
   // Create the first row
   let tableRowElement = createNewRow();
@@ -534,25 +489,20 @@ function renderTableList(token, renderContext) {
 
   return tableListElement;
 
-  function getLargestHeight(elements) {
-    let largestHeight = 0;
-    elements.forEach(element => {
-      let computedHeight = window.getComputedStyle(element).height;
-      let height = parseFloat(computedHeight);
-      if (height > largestHeight) {
-        largestHeight = height;
-      }
-    });
-    return largestHeight;
-  }
+  function getTotalWidthWithAfter(element) {
+    // Get the width of the main element
+    const mainWidth = element.getBoundingClientRect().width;
 
-  function setLargestHeightToAll(elements) {
-    let largestHeight = getLargestHeight(elements);
-    if (largestHeight === 0) return false;
-    elements.forEach(element => {
-      element.style.height = largestHeight + 'px';
-    });
-    if (largestHeight > 0) return true;
+    // Get the computed style of the ::after pseudo-element
+    const afterStyle = window.getComputedStyle(element, '::after');
+
+    // Try to parse the width of the ::after pseudo-element
+    // This assumes a fixed width is set in CSS
+    const afterWidth = parseFloat(afterStyle.width);
+
+    // If afterWidth is NaN (not a number), it means the width couldn't be parsed,
+    // so we assume it's 0 or handle it according to your use case.
+    return mainWidth + (isNaN(afterWidth) ? 0 : afterWidth);
   }
 }
 

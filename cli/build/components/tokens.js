@@ -1,4 +1,4 @@
-let { splitOnPipes, detectTextDirection } = require('../../shared/helpers');
+let { splitOnPipes, detectTextDirection } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
 
 function parseText(options) {
@@ -33,8 +33,7 @@ function LocalReferenceToken(
 }
 
 function GlobalReferenceToken(
-  targetTopic,
-  targetSubtopic,
+  pathString,
   enclosingTopic,
   enclosingSubtopic,
   text,
@@ -43,33 +42,14 @@ function GlobalReferenceToken(
   this.text = text;
   this.type = 'global';
   this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
-  this.targetSubtopic = targetSubtopic;
-  this.targetTopic = targetTopic;
+  this.pathString = pathString;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
   parserContext.paragraphReferences.push(this);
 }
 
-function ImportReferenceToken(
-  targetTopic,
-  targetSubtopic,
-  enclosingTopic,
-  enclosingSubtopic,
-  text,
-  parserContext
-) {
-  this.text = text;
-  this.type = 'import';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
-  this.targetSubtopic = targetSubtopic;
-  this.targetTopic = targetTopic;
-  this.enclosingTopic = enclosingTopic;
-  this.enclosingSubtopic = enclosingSubtopic;
-  parserContext.paragraphReferences.push(this);
-}
-
-function UrlToken(url, text, parserContext) {
-  this.type = 'url';
+function ExternalLinkToken(url, text, parserContext) {
+  this.type = 'external';
   this.url = url || text;
   this.text = text || url;
   if (!text) {
@@ -278,6 +258,10 @@ function TableListToken(text, parserContext) {
 
   let items = [...text.matchAll(/(?:(?<=[-] )|(([\w\d]{1,4})\.\s)|([<>]) )([^\n]+)\n/g)];
 
+  const allRightAligned = items.every(item => item[3] === '>');
+  const allLeftAligned = items.every(item => item[3] === '<');
+  this.alignment = allRightAligned ? 'right' : (allLeftAligned ? 'left' : null);
+
   items = items.map(item => {
     if (item[2]) { // It has an ordinal, so it's some sort of list.
      return { list: true, ordinal: item[2], text: item[4] };
@@ -288,13 +272,12 @@ function TableListToken(text, parserContext) {
     }
   });
 
-  if (text.startsWith('<') || detectTextDirection(text) === 'rtl') this.rtl = true;
+  this.rtl = (text.startsWith('<') || detectTextDirection(text) === 'rtl') ? true : false;
 
   this.items = items.map((item, lineNumber) => {
     return {
       list: item.list,
       hidden: item.text.includes('\\x'),
-      alignment: item.alignment || 'center',
       ordinal: item.ordinal,
       tokens: parseText({
         text: item.text.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
@@ -364,9 +347,9 @@ function StrikethroughToken(text, parserContext, _, previousCharacter) {
 module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
-  ImportReferenceToken,
+
   TextToken,
-  UrlToken,
+  ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
   HtmlToken,

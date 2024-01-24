@@ -1,13 +1,11 @@
 import {
   topicParentLink,
   moveToParent,
-  moveToChild,
   moveDownOrRedirect,
-  depthFirstSearch,
+  inlineACycleLink,
   zoomOnLocalPath,
   removeSelection,
   duplicate,
-  browserBack,
   copyDecodedUrl,
   goToDefaultTopic
 } from 'keys/key_handlers';
@@ -19,7 +17,7 @@ import Paragraph from 'models/paragraph';
 
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
-    if (document.activeElement.tagName === "INPUT") return; // User is typing in text box
+    if (isActiveElementTextInput()) return; // User is typing in text box
 
     let modifiers =
       (e.metaKey ? 'meta-' : '') +
@@ -39,13 +37,10 @@ const registerKeyListeners = () => {
       return goToDefaultTopic();
     }
 
-    if (Link.selection) {
+    if (Link.selection || universalShortcutRelationships.includes(shortcutName)) {
       (shortcutRelationships[shortcutName]||function(){})()
     } else if (shortcutRelationships[shortcutName]) {
-      updateView(
-        Path.current,
-        Link.lastSelectionOfParagraph(Paragraph.pageRoot) || Link.selectALink()
-      );
+      Path.rendered.selectALink();
     }
   });
 }
@@ -54,20 +49,23 @@ const shortcutRelationships = {
   'left': moveInDirection.bind(null, 'left'),
   'up': moveInDirection.bind(null, 'up'),
   'down': moveInDirection.bind(null, 'down'),
+  'shift-down': inlineACycleLink,
+  'alt-down': inlineACycleLink,
   'right': moveInDirection.bind(null, 'right'),
 
   'h': moveInDirection.bind(null, 'left'),
   'k': moveInDirection.bind(null, 'up'),
   'j': moveInDirection.bind(null, 'down'),
+  'shift-j': inlineACycleLink,
+  'alt-j': inlineACycleLink,
   'l': moveInDirection.bind(null, 'right'),
 
   'u': moveToParent,
   'i': moveToParent,
   'shift-enter': moveToParent,
-  'space': moveToParent,
 
-  'n': moveToChild,
-  'm': moveToChild,
+  'n': moveDownOrRedirect,
+  'm': moveDownOrRedirect,
 
   'escape': removeSelection,
   'z': zoomOnLocalPath,
@@ -84,9 +82,19 @@ const shortcutRelationships = {
   'meta-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // mac
   'ctrl-alt-enter': () => moveDownOrRedirect({ newTab: true, altKey: true }), // windows & linux
 
-  'tab': depthFirstSearch,
-  'shift-tab': browserBack
+  'enter-shift': () => moveDownOrRedirect({}),
+  'meta-shift-enter': () => moveDownOrRedirect({ newTab: true, shiftKey: true }), // mac
+  'ctrl-shift-enter': () => moveDownOrRedirect({ newTab: true, shiftKey: true }), // windows & linux
+  'alt-shift-enter': () => moveDownOrRedirect({ newTab: false, altKey: true, shiftKey: true }),
+  'meta-alt-shift-enter': () => moveDownOrRedirect({ newTab: true, altKey: true, shiftKey: true }), // mac
+  'ctrl-alt-shift-enter': () => moveDownOrRedirect({ newTab: true, altKey: true, shiftKey: true }), // windows & linux
 }
+
+const universalShortcutRelationships = [ // shortcuts that always work, even if there isn't an already selected link
+  'c',
+  'up',
+  'down'
+];
 
 const keyNames = {
   37: 'left',
@@ -121,6 +129,14 @@ const keyNames = {
   51: '3',
   52: '4',
   53: '5',
+}
+
+function isActiveElementTextInput() {
+    let activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === "TEXTAREA" || (activeElement.tagName === "INPUT" && ["text", "password", "email", "search", "number", "tel", "url"].includes(activeElement.type.toLowerCase())))) {
+        return true; // Active element is a text input or textarea
+    }
+    return false; // Active element is not a text input or textarea
 }
 
 export default registerKeyListeners;

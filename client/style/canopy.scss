@@ -7,7 +7,8 @@
   removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
   the scroll upwards can be animated using the window.scrollTo method. */
 
-  padding-bottom: calc(120vh);
+  padding-bottom: calc(100vh);
+  min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
   font-family: "Times New Roman", Times, serif;
 
@@ -31,11 +32,11 @@
   }
 
   section.canopy-topic-section {
-    margin-top: 25px;
+    margin-top: 35px;
   }
 
   section {
-    margin-top: 25px;
+    margin-top: 35px;
   }
 
   p {
@@ -82,41 +83,48 @@
       text-decoration: none;
     }
 
-    &.canopy-url-link {
-      text-decoration: none; // we want the selection background to extend beyond the icon but the underlining only until the end of the icon's bottom
+    &.canopy-external-link, &.canopy-back-cycle-link, &.canopy-lateral-cycle-link, &.canopy-path-reference {
       display: inline;
-      overflow-wrap: break-word;
       white-space: normal;
-      margin-right: -2px; // we want the text after the icon to hug the icon, eg if it is a period
+      margin-right: 5px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
 
-      .canopy-url-link-tokens-container {
-        text-decoration: underline #DDDDDD;
-
-        &:hover {
-          text-decoration: underline #000000; // hover underline should be black
-        }
+      &:not(.canopy-table-list-link-cell) *:last-child::after {
+        content: ' ';
+        font-size: 3px;
+        white-space: nowrap;
       }
 
-      .canopy-url-link-svg-container {
-        padding-right: 3px; // this is the spacing after the icon that extends the selected-link-selection bg but not the underlining
-        margin-left: -8px; // We add 3 non-breaking spaces, then move the svg over them so the last word always wraps with svg
-        margin-right: -8px; // If character after is punctuation and we move it within the spacing, it will also wrap with the svg
+      &:not(.canopy-table-list-link-cell)::after {
+        font-size: 9px;
+        white-space: nowrap;
+        position: relative;
+        margin-right: -3px;
       }
+    }
 
-      .canopy-url-link-tokens-spacing { // this is the spacing before the icon that creates space for the icon's negative margin
-        font-size: 18px;                // we use spaces and not padding because spaces can get text-decoration
-      }
+    &.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after {
+      content: '➹';
+      top: 2px;
+      left: 0.5px;
+    }
 
-      span {
-        display: inline;
-      }
+    &.canopy-path-reference:not(.canopy-table-list-link-cell)::after {
+      content: '⇲';
+      top: 1px;
+      left: 1.5px;
+    }
 
-      svg {
-        height: 15px;
-        width: 12px;
-        vertical-align: -4px; // move the icon in-line with the text
-      }
-     }
+    &.canopy-back-cycle-link:not(.canopy-table-list-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+      content: '↩';
+      top: 2px;
+      left: 0px;
+    }
+
+    &.canopy-lateral-cycle-link:not(.canopy-table-list-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+      content: '↪';
+      top: 2px;
+      left: 0px;
+    }
   }
 
 /////////////////////////////////////////////
@@ -261,7 +269,7 @@
       justify-content: flex-start;
     }
 
-    &.align-right {
+    &.canopy-align-right {
       width: 90%;
       align-items: flex-end;
       .canopy-table-list-row {
@@ -269,7 +277,7 @@
       }
     }
 
-    &.align-left {
+    &.canopy-align-left {
       width: 90%;
       align-items: flex-start;
     }
@@ -292,6 +300,8 @@
 
       .canopy-table-list-content-container {
         display: inline;
+        max-width: 100%;
+        max-height: 100%;
       }
 
       &.canopy-table-list-ordinal-cell .canopy-table-list-content-container {
@@ -312,18 +322,6 @@
       display: flex;
       justify-content: center; /* Center content horizontally */
       align-items: center; /* Center content vertically */
-
-      .canopy-table-list-content-container {
-        display: inline;
-      }
-
-      &.canopy-url-link {
-        margin: 5px; // cancel negative margin
-      }
-
-      &.canopy-url-link.canopy-selectable-link * {
-        text-decoration: none;
-      }
 
       &.canopy-selectable-link {
         text-decoration: none;
@@ -346,24 +344,60 @@
             background-color: #f5f6fe;
         }
       }
+
+      .canopy-table-list-content-container::after {
+        font-size: 11px;
+        margin-left: -5px; // Negative margin to pull the icon closer to the last word
+        position: relative; // Allows for position adjustment
+        top: 5px; // Move the icon up (- value) or down (+ value)
+        left: 5px;
+        white-space: nowrap; // Prevents the icon from wrapping
+      }
+
+      &.canopy-external-link {
+        margin: 5px; // cancel negative margin
+
+        &.canopy-selectable-link * {
+          text-decoration: none;
+        }
+
+        .canopy-table-list-content-container::after {
+          content: ' ➹';
+          top: 3px;
+        }
+      }
+
+      &.canopy-back-cycle-link .canopy-table-list-content-container::after { // if it is open, it has been inlined and isn't a cycle
+        content: ' ↩';
+      }
+
+      &.canopy-lateral-cycle-link .canopy-table-list-content-container::after { // if it is open, it has been inlined and isn't a cycle
+        content: ' ↪';
+      }
+
+      &.canopy-path-reference .canopy-table-list-content-container::after {
+        content: ' ⇲';
+        left: 6px;
+        top: 2px;
+      }
     }
 
     &.canopy-quarter-pill .canopy-table-list-cell {
       width: 175px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-third-pill .canopy-table-list-cell {
       width: 220px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-half-pill .canopy-table-list-cell {
       width: 270px;
       padding: 9px;
-      max-height: 50px;
+      height: 50px;
     }
 
     &.canopy-quarter-card .canopy-table-list-cell {
@@ -378,8 +412,15 @@
       padding: 15px;
     }
 
+    &.canopy-half-tube .canopy-table-list-cell {
+      width: 285px;
+      height: 160px;
+      padding: 30px;
+    }
+
     &.canopy-half-card .canopy-table-list-cell {
       width: 285px;
+      height: 265px;
       min-height: 160px;
       padding: 30px;
     }
@@ -394,6 +435,9 @@
   }
 
   .canopy-image {
+    display: block;
+    object-fit: cover;
+
     &:not(:last-child) {
       margin-bottom: 15px;
     }
@@ -403,7 +447,6 @@
     a {
       margin: 0 auto;
       display: block;
-      background-color: F1F1F1;
     }
 
     img {
@@ -415,13 +458,13 @@
     span.canopy-image-caption {
       margin: 0px auto;
       width: 100%;
-      padding: 6px 0;
+      padding: 6px 6px;
       text-align: left;
       display: block;
       font-size: 16px;
-      margin-top: 4px;
       line-height: 18px;
       color: #595959;
+      background-color: white;
 
       a {
         color: #595959;
@@ -442,6 +485,32 @@
     text-align: center;
     overflow: hidden;
     margin: 10px;
+  }
+
+  .canopy-open-link .canopy-image, .canopy-selected-link .canopy-image {
+    position: relative;
+  }
+
+  .canopy-selected-link .canopy-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(130, 150, 250, 0.3); /* Deeper blue with 50% opacity */
+    pointer-events: none; /* Ensures the overlay doesn't interfere with clicks */
+  }
+
+  .canopy-open-link:not(.canopy-selected-link) .canopy-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(128, 128, 128, 0.2); /* Gray color with 50% opacity */
+    pointer-events: none; /* Ensures the overlay doesn't interfere with clicks */
   }
 
   div.canopy-image-div > sup {
@@ -465,37 +534,5 @@
 
   div.canopy-raw-html {
     display: inline;
-  }
-
-  #canopy-back-button-container {
-    position: fixed;  // Fixed position on the screen
-    bottom: 60px;        // Align to the bottom of the screen
-    width: 100%;
-    display: flex;
-    justify-content: center; // Center button horizontally
-
-    #canopy-back-button {
-      cursor: pointer;
-      background-color: white;
-      border: 1px solid black;
-      border-radius: 5px;
-      display: flex;
-      justify-content: center; // Center content horizontally
-      align-items: center; // Center content vertically
-      padding: 18px 33px; // Example padding, adjust as needed
-      text-decoration: none; // Removes text decoration
-      text-shadow: none; // Removes text shadow
-      font-size: 18px;
-      color: black;
-      user-select: none;
-
-      &:hover {
-        background-color: #f5f6fe; // Hover background color
-      }
-
-      &.canopy-selected-link {
-        background-color: #edeefc; // Selected state background color
-      }
-    }
   }
 }

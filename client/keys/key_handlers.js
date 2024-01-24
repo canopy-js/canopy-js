@@ -3,231 +3,64 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
-import BackButton from 'render/back_button';
-
-function moveToParent() {
-  let link = Link.selection;
-
-  let parentLink = link && link.parentLink && Link.lastSelectionOfParagraph(link.parentLink?.enclosingParagraph) || link.parentLink;
-
-  // Use the isVisible function to check visibility.
-  if (!parentLink) { // eg link in root paragraph
-    if (!isVisible(link)) {
-      let sectionElement = Link.selection.enclosingParagraph.sectionElement;
-      scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.75, minDiff: 0, direction: 'up', behavior: 'smooth'});
-    } else {
-      if (!link.enclosingParagraph.equals(Paragraph.pageRoot)) throw 'this should never happen';
-      return updateView(link.enclosingParagraph.path); // deselect link
-    }
-  } else { // there is a parent link
-    if (!isVisible(parentLink)) {
-      if (link.isBackButton) BackButton.deselect() || BackButton.disableForSecond();
-      scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.75, minDiff: 50, direction: 'up', behavior: 'smooth'});
-    } else {
-      return updateView(
-        link.parentLink.path,
-        new Link(() => Link.lastSelectionOfParagraph(link.parentLink.enclosingParagraph) || link.parentLink)
-      );
-    }
-  }
-}
 
 function topicParentLink() {
   let link = Link.selection;
   let newLink = Link.lastSelectionOfParagraph(link.enclosingParagraph.topicParagraph.parentParagraph) ||
     link.enclosingParagraph.topicParagraph.parentLink;
 
-  return updateView(
-    newLink?.path || Path.current,
-    newLink || link
-  );
+  return newLink?.select() || Link.deselect();
 }
 
-function moveToChild() {
-  let oldLink = Link.selection;
-
-  if (oldLink.isImport && oldLink.isVisible) {
-    updateView(
-      oldLink.path,
-      oldLink.targetParagraph.parentLink
-    );
-  }
-
-  if ((oldLink.isGlobal || oldLink.isLocal) && oldLink.isVisible) {
-    let newLink = oldLink.targetParagraph?.firstLink || oldLink.targetParagraph?.parentLink;
-
-    updateView(
-      newLink.path,
-      new Link(() => Link.lastSelectionOfParagraph(newLink.enclosingParagraph) || newLink)
-    );
-  }
-
-  if (!oldLink.isParent && !oldLink.isBackButton && oldLink.isVisible) {
-    updateView(
-      oldLink.path,
-      oldLink
-    );
-  }
-
-  if (BackButton.canBecomeSelected) {
-    BackButton.select();
-  }
-}
-
-function moveDownOrRedirect({ newTab, altKey }) {
-  let link, path;
-
-  if (Link.selection.isBackButton) {
-    BackButton.disableForSecond();
-    BackButton.execute();
-    return;
-  }
-
-  if (Link.selection.isLocal && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    link = Link.selection.targetParagraph?.firstLink || Link.selection.targetParagraph?.parentLink;
-    path = link.path;
-
-    if (newTab) {
-      return window.open(location.origin + path, '_blank'); // zoom
-    } else if (isVisible(link)) {
-      return updateView(path, link); // no zoom
-    }
-  }
-
-  if (Link.selection.isGlobal && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    if (!altKey) {
-      link =
-        Link.lastSelectionOfParagraph(Link.selection.targetParagraph) ||
-        Link.selection.targetParagraph?.firstLink;
-      path = link.path;
-    } else {
-      path = Link.selection.targetPath.lastSegment;
-    }
-
-    if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
-    } else if (altKey) {
-      return updateView(
-        path,
-        null,
-        { scrollStyle: 'instant' }
-      )
-    } else if (isVisible(link)) {
-      return updateView(path, link);
-    }
-  }
-
-  if (Link.selection.isImport && (Link.selection.targetParagraph.hasLinks || altKey)) {
-    if (!altKey) {
-      link = Link.selection.targetParagraph?.parentLink;
-      path = link.path;
-    } else {
-      path = Link.selection.targetPath.lastSegment;
-    }
-
-    if (newTab) {
-      return window.open(location.origin + path.string, '_blank');
-    } else if (altKey) {
-      return updateView(
-        path,
-        Link.selection.parentLink.atNewPath(path),
-        { scrollStyle: 'instant' }
-      )
-    } else if (isVisible(link)) {
-      return updateView(path);
-    }
-  }
-
-  if (Link.selection.type === 'url') {
-    return window.open(Link.selection.element.href, '_blank');
-  }
-
-  if (BackButton.canBecomeSelected) {
-    return BackButton.select();
-  }
-
-  // If no child link or child link is not visible, scroll downwards
-  if (link) {
-    let linkElement = link.element;
-    scrollElementToPosition(linkElement, {targetRatio: 0.25, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
-  } else {
-    let sectionElement = Link.selection.targetParagraph.sectionElement;
-    scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.75, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
-  }
-}
-
-function isVisible(link) {
-  if (!link) return false;
-  let linkElement = link.element;
-  let rect = linkElement.getBoundingClientRect();
-  let windowHeight = window.innerHeight;
-  let windowWidth = window.innerWidth;
-
-  // Calculate the area of the element that is visible in the viewport
-  let visibleWidth = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
-  let visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-
-  // Calculate the total area of the element and the area that is visible
-  let totalArea = (rect.bottom - rect.top) * (rect.right - rect.left);
-  let visibleArea = visibleHeight * visibleWidth;
-
-  // Check if at least 50% of the element is visible
-  return (visibleArea / totalArea) >= 0.5;
-}
-
-function depthFirstSearch() {
+function moveToParent() {
   let link = Link.selection;
+  let parentLink = link && link.parentLink && Link.lastSelectionOfParagraph(link.parentLink?.enclosingParagraph) || link.parentLink;
+  let selectionInRootParagraph = !parentLink;
 
-  // Open a parent link
-  if (link.isLocal && link.hasChildren) {
-    let nextLink = link.firstChildLink || link.nextSibling || link;
-    return updateView(
-      nextLink.path,
-      nextLink
-    );
+  if (selectionInRootParagraph && !link.isVisible()) {
+    let sectionElement = Link.selection.enclosingParagraph.sectionElement;
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.5, minDiff: 0, direction: 'up', behavior: 'smooth'});
   }
 
-  if (link.isGlobalOrImport) {
-    let linkToSelect = link.nextSibling || link.parentLink?.nextSibling || link.enclosingParagraph.firstLink;
-    return updateView(
-      linkToSelect.enclosingParagraph.path,
-      linkToSelect
-    );
+  if (selectionInRootParagraph && link.isVisible()) {
+    return updateView(link.enclosingParagraph.path); // deselect link
   }
 
-  // Move to the next sibling including parent link with no children
-  if (link.nextSibling && !link.nextSibling.equals(link)) {
-    return updateView(
-      link.nextSibling.enclosingParagraph.path,
-      link.nextSibling,
-    );
+  if (parentLink && !parentLink.isVisible()) {
+    return scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
   }
 
-  // Move to next parent sibling, grandparent sibling, etc.
-  if (link.lastSibling.equals(link)) {
-    let linkToSelect = (function parentSibling (link) {
-      if (!(link.parentLink && link.parentLink.isLocal)) { // If there is no parent link that is local
-        return link.firstSibling; // cycle
-      } else if (link.parentLink.nextSibling) { // If there is a parent-sibling link select that
-        return link.parentLink.nextSibling;
-      } else {
-        return parentSibling(link.parentLink) // otherwise repeat the above steps using the local parent link
-      }
-    })(link);
-
-    return updateView(
-      linkToSelect.path,
-      linkToSelect
-    );
+  if (parentLink && parentLink.isVisible()) {
+    return link.parentLink.select();
   }
 }
 
-function browserBack() { // an undo for DFS
-  let oldPathname = window.location.pathname;
-  history.back();
-  if (oldPathname !== window.location.pathname) { // we aren't undoing a DFS
-    history.forward();
+function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
+  let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
+
+  if (firstChild && firstChild.isBelowViewport() && !Link.selection.pathReference) {
+    return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
+
+  if (firstChild && firstChild.isAboveViewport() && !Link.selection.pathReference) {
+    return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth', side: 'bottom'});
+  }
+
+  if (Link.selection.isParent && !Link.selection.hasChildren && !Link.selection.cycle && !Link.selection.pathReference) {
+    let sectionElement = Link.selection.targetParagraph.sectionElement;
+    return scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+  }
+
+  if (firstChild && firstChild.isVisible && !firstChild.isSelected && !newTab && !Link.selection.pathReference) { // selectALink
+    return firstChild.select({ newTab, redirect: altKey, inlineCycles: shiftKey });
+  }
+
+  return Link.selection.execute({ newTab, redirect: altKey, inlineCycles: shiftKey });
+}
+
+function inlineACycleLink() {
+  if (!Link.selection.isCycle) return moveInDirection('down');
+  return Link.selection.execute({ inlineCycles: true });
 }
 
 function copyDecodedUrl() {
@@ -242,16 +75,11 @@ function goToDefaultTopic() {
 }
 
 function zoomOnLocalPath() {
-  let currentLink = Link.selection;
-  let newPath = currentLink.localPathSegmentWhenSelected;
+  let relativeLinkNumber = Link.selection.relativeLinkNumber;
 
-  let newLink = currentLink.atNewPath(newPath);
-
-  return updateView(
-    newPath,
-    newLink,
-    { scrollStyle: 'instant' }
-  );
+  return Link.selection?.inlinePath.lastSegment.display({ renderOnly: true }).then(() => {
+    Link.from(() => Link.selection?.inlinePath.lastSegment.parentParagraph.nthLink(relativeLinkNumber)).select({ scrollStyle: 'instant' });
+  });
 }
 
 function removeSelection() {
@@ -264,14 +92,12 @@ function duplicate() {
 
 export {
   moveToParent,
-  moveToChild,
   moveDownOrRedirect,
+  inlineACycleLink,
   topicParentLink,
-  depthFirstSearch,
   zoomOnLocalPath,
   removeSelection,
   duplicate,
-  browserBack,
   copyDecodedUrl,
   goToDefaultTopic
 };

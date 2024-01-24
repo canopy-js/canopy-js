@@ -1,70 +1,38 @@
 import updateView from 'display/update_view';
 import Path from 'models/path';
+import Link from 'models/link';
 
-function onLocalLinkClick(targetTopic, targetSubtopic, link) {
+function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
-    let path, linkToSelect;
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
+    let redirect = e.altKey;
+    let inlineCycles = e.shiftKey;
+    let redirectingCycle = link.cycle && !inlineCycles;
 
-    if (newTab && !e.altKey) { // no zoom
-      return window.open(location.origin + link.targetPath.lastSegment.string, '_blank');
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.pathReference) { // close global link
+      return link.parentLink?.select({ scrollDirect: true, noAnimate: true }) || Path.root.display({ scrollDirect: true, noAnimate: true });
     }
 
-    if (newTab && e.altKey) { // zoom
-      return window.open(location.origin + link.targetPath.string, '_blank');
+    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.pathReference) { // select open link
+      return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
-    if (!newTab && e.altKey) { //zoom
-      let path = link.targetPath.lastSegment;
-      return updateView(path, link.atNewPath(path));
+    if (!newTab && !e.altKey && link.isOffScreen && !link.isClosedCycle) { // scroll up to see partially visible link
+      return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
-    if (!newTab && !e.altKey && link.isSelected) { // unselect link
-      path = link.parentLink?.path || Path.current.rootTopicPath;
-      return updateView(path);
-    }
-
-    if (!newTab && !e.altKey && !link.isSelected) { // select link
-      path = link.path;
-      linkToSelect = link;
-      return updateView(path, linkToSelect, { scrollTo: 'child' });
-    }
-  };
-}
-
-function onGlobalAndImportLinkClick (link) {
-  return (e) => {
-    e.preventDefault();
-    let path, linkToSelect;
-    let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
-
-    if (!newTab && !e.altKey && link.isSelected) { // close global child
-      path = link.enclosingParagraph.path;
-      return updateView(path);
-    }
-
-    if (!newTab && !e.altKey && !link.isSelected) { // open global child
-      path = link.path;
-      linkToSelect = link;
-      return updateView(path, linkToSelect, { scrollTo: 'child' });
-    }
-
-    if (!newTab && e.altKey) { // Redirect to global child
-      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return updateView(path, null, { scrollStyle: 'smooth', scrollTo: 'child' });
-    }
-
-    if (newTab && e.altKey) { // zoom
-      path = Path.forSegment(link.targetTopic, link.targetSubtopic);
-      return window.open(location.origin + path.string, '_blank');
-    }
-
-    if (newTab && !e.altKey) { // inline
-      path = link.path; // open the link in new tab
-      return window.open(location.origin + path.string, '_blank');
-    }
+    return link.execute({
+      newTab,
+      redirect: e.altKey,
+      inlineCycles: e.shiftKey,
+      scrollDirect: true,
+      scrollToParagraph: !link?.isBackCycle,
+      selectALink: false,
+      pushHistoryState: true,
+      noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles
+    });
   }
 }
 
-export { onLocalLinkClick, onGlobalAndImportLinkClick };
+export { onLinkClick };

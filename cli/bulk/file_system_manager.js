@@ -1,8 +1,7 @@
 let fs = require('fs-extra');
 let FileSet = require('./file_set');
 let chalk = require('chalk');
-let Paragraph = require('../shared/paragraph');
-let { DefaultTopic } = require('../shared/helpers');
+let { DefaultTopic } = require('../shared/fs-helpers');
 
 class FileSystemManager {
   execute(fileSystemChange, logging) {
@@ -73,15 +72,22 @@ class FileSystemManager {
 
   loadOriginalSelectionFileSet() {
     if (!fs.existsSync('.canopy_bulk_original_selection')) {
-      throw new Error(chalk.red('Expected .canopy_bulk_original_selection file but did not find one'));
+      console.error(chalk.red('Expected .canopy_bulk_original_selection file but did not find one'));
+      return new FileSet({});
     }
     let json = fs.readFileSync('.canopy_bulk_original_selection').toString();
-    let selectedFilesList = JSON.parse(json);
-    return this.getFileSet(selectedFilesList);
+    try {
+      let selectedFilesList = JSON.parse(json);
+      return this.getFileSet(selectedFilesList);
+    } catch {
+      return this.getFileSet([]);
+    }
   }
 
   deleteOriginalSelectionFile() { // this has to be separate from loadOriginalSelectionFileSet in the case where a parsing error prevents processing
-    fs.unlinkSync('.canopy_bulk_original_selection');
+    if (fs.existsSync('.canopy_bulk_original_selection')) {
+      fs.unlinkSync('.canopy_bulk_original_selection');
+    }
   }
 
   getOriginalSelectionFileList() {

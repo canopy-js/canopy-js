@@ -1,46 +1,46 @@
 import Path from 'models/path';
 import Link from 'models/link';
+import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import {
   setHeader,
   tryPathPrefix,
   resetDom,
   scrollPage,
+  animatePathChange
 } from 'display/helpers';
-import BackButton from 'render/back_button';
+
 import { canopyContainer } from 'helpers/getters';
 
-function displayPath (pathToDisplay, linkToSelect, displayOptions) {
-  displayOptions = displayOptions || {};
-  if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, displayOptions);
-  try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, displayOptions); }
-  if (!pathToDisplay.paragraph.pageRoot && !linkToSelect) linkToSelect = pathToDisplay.paragraph.parentLink;
-  if (linkToSelect?.contradicts(pathToDisplay)) return updateView(linkToSelect.path, linkToSelect, displayOptions);
+function displayPath(pathToDisplay, linkToSelect, options = {}) {
+  if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
+  if (Path.shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
+  if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
+  if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, options);
+  try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, options); }
+  if (linkToSelect?.isCycle) updateView(linkToSelect.inlinePath, null, {renderOnly: true}); // invisibly render child paragraphs
+
+  Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // must be done before link.select because selection cache is by current URL
+  Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
+  Link.persistSelection(linkToSelect); // if null, persists deselect
+  if (options.noDisplay) return;
 
   resetDom();
-  let header = setHeader(pathToDisplay.rootTopicPath.topic, displayOptions);
-  document.title = pathToDisplay.rootTopicPath.paragraph.topic.mixedCase;
-  Path.setPath(linkToSelect?.path || pathToDisplay); // must be done before link.select because selection cache is by current URL
-  Link.select(linkToSelect); // if null, persists deselect
+  let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
 
-  let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], displayOptions);
-  pathToDisplay.paragraph.select();
-  scrollPage(linkToSelect, displayOptions);
+  let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
+  pathToDisplay.paragraph.addSelectionClass();
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
-  BackButton.handlePathChange(displayOptions.initialLoad);
+  return !options.noScroll ? Promise.resolve : scrollPage(linkToSelect, options);
 };
 
-const displayPathTo = (paragraph, visibleParagraphs, displayOptions) => {
-  if (displayOptions.scrollStyle === 'auto') {
-    paragraph.allocateSpace();
-  } else {
-    paragraph.display();
-  }
+const displayPathTo = (paragraph, visibleParagraphs, options) => {
+  options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
   visibleParagraphs.push(paragraph);
-  if (paragraph.isPageRoot) return visibleParagraphs;
-  paragraph.parentLink && paragraph.parentLinks.forEach(link => link.open());
-  paragraph.ancestorImportReferences.forEach(link => link.open());
-  return displayPathTo(paragraph.parentParagraph, visibleParagraphs, displayOptions);
+  if (paragraph.isroot) return visibleParagraphs;
+  if (paragraph.parentLink) { paragraph.parentLink?.open(); Link.persistLastLinkSelection(paragraph.parentLink); } // remember open links of path reference
+  Link.persistLastLinkSelection(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
+  return displayPathTo(paragraph.parentParagraph, visibleParagraphs, options);
 }
 
 export default displayPath;
