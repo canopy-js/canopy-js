@@ -382,7 +382,8 @@ class Link {
   }
 
   get isBackCycle() {
-    return this.inlinePath.reduce().subsetOf(this.inlinePath);
+    return this.inlinePath.reduce().subsetOf(this.inlinePath)
+      && !this.inlinePath.reduce().equals(this.inlinePath);
   }
 
   get isParent() {
