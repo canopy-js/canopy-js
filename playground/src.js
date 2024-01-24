@@ -124,12 +124,12 @@ Part 2: Canopy generates interactive websites from an easy-to-use text format.
 > [[Part 2-1|Okay]]
 ===
 
-Part 2-1: For example, this website is being generated from the text on the left side of the screen. See if you can find this paragraph, change it, then deselect the text box.
+Part 2-1: For example, this website is being generated from the text on the left side of the screen. See if you can find this paragraph, change it, and then deselect the text box.
 ===
 > [[Part 2-2|Done]]
 ===
 
-Part 2-2: Selecting links adds more paragraphs to the page.
+Part 2-2: Great! In Canopy, selecting links adds more paragraphs to the page.
 ===
 > [[Part 3|I see]]
 ===
@@ -280,7 +280,7 @@ Carbon: Carbon is a [[chemical element]] that has the symbol \`C\` and the numbe
 
 Nitrogen: Nitrogen is a [[chemical element]] that has the symbol \`N\` and the number 7.
 
-Part 10: Great! Now lets see how entirely different explanations  can end up using the same information.
+Part 10: Great! Now lets see how entirely different explanations  can end up using the same content.
 ===
 > [[Part 10-1|Ok]]
 ===
