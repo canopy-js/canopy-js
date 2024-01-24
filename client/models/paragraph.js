@@ -1,6 +1,7 @@
 import Path from 'models/path';
 import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
+import ScrollableContainer from 'helpers/scrollable_container';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 
@@ -117,6 +118,10 @@ class Paragraph {
     return this.links[0] || null;
   }
 
+  nthLink(n) {
+    return this.links[n] || null;
+  }
+
   get lastLink() {
     return this.links[this.links.length - 1] || null;
   }
@@ -222,7 +227,15 @@ class Paragraph {
   }
 
   get isInDom() {
-    return this.sectionElement.closest('div#_canopy');
+    return !!this.sectionElement.closest('div#_canopy');
+  }
+
+  get top() {
+    return this.paragraphElement.getBoundingClientRect().top;
+  }
+
+  get bottom() {
+    return this.paragraphElement.getBoundingClientRect().bottom;
   }
 
   static get selection() {
@@ -262,8 +275,36 @@ class Paragraph {
     return new Paragraph(sectionElement);
   }
 
+  static get visible() {
+    let path = Path.rendered;
+    let paragraphs = [];
+
+    while (path) {
+      paragraphs.push(path.paragraph);
+      path = parentPath;
+    }
+
+    return paragraphs;
+  }
+
+  static atY(integerY) {
+    return Paragraph.visible.reduce((bestParagraph, currentParagraph) => {
+      if (bestParagraph.top < integerY && bestParagraph.bottom > integerY) return bestParagraph;
+      if (currentParagraph.top < integerY && currentParagraph.bottom > integerY) return currentParagraph;
+      return Math.abs(bestParagraph.top - integerY) < Math.abs(currentParagraph.top - integerY) ? bestParagraph : currentParagraph;
+    });
+  }
+
+  static get focused() {
+    return Paragraph.atY(ScrollableContainer.visibleHeight * 0.3 + ScrollableContainer.currentScroll);
+  }
+
   static get contentLoaded() {
     return !!document.querySelector('h1'); // this is a proxy for whether the first render has occured yet
+  }
+
+  static for(element) {
+    return new Paragraph(element);
   }
 }
 

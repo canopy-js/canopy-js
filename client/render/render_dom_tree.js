@@ -2,6 +2,7 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
+import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import renderTokenElement from 'render/render_token_element';
 
@@ -29,10 +30,17 @@ function renderDomTree(topic, subtopic, renderContext) {
 
 function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
   return (token) => {
+
+    let { fullPath, remainingPath, currentTopic } = renderContext;
+    let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
+    let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
+    let pathToParagaph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
+    // console.log(token.targetSubtopic, {fullPath, remainingPath, currentTopic, newSubtopic, pathToEnclosingTopic, pathToParagaph})
+
     let childSectionElement = renderDomTree(
       topic,
       Topic.fromMixedCase(token.targetSubtopic),
-      Object.assign({}, renderContext)
+      Object.assign({ pathToParagaph }, renderContext)
     );
 
     sectionElement.appendChild(childSectionElement);
