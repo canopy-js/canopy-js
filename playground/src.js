@@ -129,7 +129,7 @@ Part 2-1: This website is being generated from the text on the left.
 > [[Part 2-2|Cool]]
 ===
 
-Part 2-2: See if you can find this paragraph, edit it, and then deselect the text box to see the change.
+Part 2-2: See if you can find this paragraph on the left, edit it, and then deselect the text box to see the change.
 ===
 > [[Part 2-3|Done]]
 ===
