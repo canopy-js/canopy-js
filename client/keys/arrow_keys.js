@@ -3,26 +3,30 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
-import BackButton from 'render/back_button';
 
 function moveInDirection(direction, options) {
-  const currentLinkElement = Link.selection.element;
+  const currentLinkElement = Link.selection?.element;
 
   if (direction === 'up') {
-    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null && isVisible(link));
+    if (!currentLinkElement && Link.visible.length > 1) { // up shouldn't go down but should select a link unless none are visible
+      // return Path.rendered.selectALink({ direction: 'up' });
+      // Actually do nothing because its the wrong direction
+    }
+    let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
     let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
     let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers
-      .filter(rectObject => isHigher(rectObject, currentSelectionLowerRect) && !isVerticallyOverlapping(rectObject, currentSelectionLowerRect))
-      .filter(rect => rect.element !== currentLinkElement);
+      .filter(rect => isHigher(rect, currentSelectionLowerRect)
+        && !isVerticallyOverlapping(rect, currentSelectionLowerRect)
+        && rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
       if (currentSelectionLowerRect.top < -10) {
         return scrollElementToPosition(currentLinkElement, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
       } else {
-        return updateView(Paragraph.root.path);
+        return Path.root.display();
       }
     }
 
@@ -31,12 +35,13 @@ function moveInDirection(direction, options) {
         let bestLink = Link.for(lowestHigherRect.element);
         let newLink = Link.for(newRect.element);
 
+        // Prefer parent within higher paragraph
         if (newLink.siblingOf(bestLink) && bestLink.isParentLinkOf(Link.selection.enclosingParagraph)) return lowestHigherRect;
-        if (bestLink.siblingOf(newLink) && Link.for(newRect.element).isParentLinkOf(Link.selection.enclosingParagraph)) return newRect;
+        if (bestLink.siblingOf(newLink) && Link.for(newRect.element).isParentLinkOf(Link.selection?.enclosingParagraph)) return newRect;
 
-        if (isLower(lowestHigherRect, newRect) &&
+        if (isLower(lowestHigherRect, newRect) && // of those links that are higher than current selection, prefer lower if noticeable
           !isVerticallyOverlapping(lowestHigherRect, newRect) &&
-          !isVerticallyOverlapping(lowestHigherRect, currentSelectionLowerRect)) return lowestHigherRect; // of those links that are higher than current selection, prefer lower if noticeable
+          !isVerticallyOverlapping(lowestHigherRect, currentSelectionLowerRect)) return lowestHigherRect;
 
         if (isLower(newRect, lowestHigherRect) &&
           !isVerticallyOverlapping(lowestHigherRect, newRect) &&
@@ -65,21 +70,25 @@ function moveInDirection(direction, options) {
         }
       });
 
-    scrollOrSelect(lowestHigherRect);
+    scrollOrSelect(lowestHigherRect, { direction: 'up'} );
 
   } else if (direction === 'down') {
+    if (!currentLinkElement) return Path.rendered.selectALink({ direction: 'down' });
+
     let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null && isVisible(link));
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
     let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
     let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
 
     let candidateRectContainers = rectContainers
-      .filter(rectObject => isLower(rectObject, currentSelectionHigherRect) && !isVerticallyOverlapping(rectObject, currentSelectionHigherRect) && isInViewportVertically(rectObject))
-      .filter(rect => rect.element !== currentLinkElement);
+      .filter(rect => isLower(rect, currentSelectionHigherRect)
+        && !isVerticallyOverlapping(rect, currentSelectionHigherRect)
+        && isInViewportVertically(rect)
+        && rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
       let sectionElement = Paragraph.current.sectionElement;
-      return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+      return scrollElementToPosition(sectionElement, {targetRatio: 0.05, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
     }
 
     let highestLowerRect = candidateRectContainers
@@ -92,9 +101,10 @@ function moveInDirection(direction, options) {
         if (bestLink.isLastSelection && newLink.siblingOf(bestLink)) return highestLowerRect;
 
         // going down to new paragraph, prefer first link rather than geometrically proximate
-        if (newLink.firstChildOf(Link.selection) && bestLink.siblingOf(newLink)) return newRect;
-        if (bestLink.firstChildOf(Link.selection) && newLink.siblingOf(bestLink)) return highestLowerRect;
+        // if (newLink.firstChildOf(Link.selection) && bestLink.siblingOf(newLink)) return newRect;
+        // if (bestLink.firstChildOf(Link.selection) && newLink.siblingOf(bestLink)) return highestLowerRect;
 
+        // If we are previewing a path reference, 'down' should take us down the open path
         if (bestLink.isOpen) return highestLowerRect;
         if (newLink.isOpen) return newRect;
 
@@ -124,7 +134,7 @@ function moveInDirection(direction, options) {
         }
       });
 
-    scrollOrSelect(highestLowerRect);
+    scrollOrSelect(highestLowerRect, { direction: 'down'} );
 
   } else if (direction === 'left') {
     let candidateLinks = Link.selection.element.closest('p.canopy-paragraph').querySelectorAll('.canopy-selectable-link');
@@ -372,24 +382,16 @@ function isVisible(element) {
   return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && style.opacity !== '0%';
 }
 
-function scrollOrSelect(rect) {
+function scrollOrSelect(rect, options) {
   const amountOfLinkThatMustBeVisibleToSelect = 15;
 
-  if (rect.element === BackButton.element && BackButton.canBecomeSelected) {
-    BackButton.select();
-  } else if (rect.element === BackButton.element && !BackButton.canBecomeSelected) {
-    let sectionElement = Paragraph.current.sectionElement;
-    return scrollElementToPosition(sectionElement, {targetRatio: 0.4, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
-  } else if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
+  if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth'});
   } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
-  } else if (Link.selection.isBackButton) {
-    BackButton.hide();
-    BackButton.deselect(rect.element);
-  } else if (rect.element !== BackButton.element) {
+  } else {
     const link = new Link(rect.element);
-    return link.select();
+    return link.select(options);
   }
 }
 
