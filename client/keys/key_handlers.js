@@ -3,7 +3,6 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
-import BackButton from 'render/back_button';
 
 function topicParentLink() {
   let link = Link.selection;
@@ -28,7 +27,6 @@ function moveToParent() {
   }
 
   if (parentLink && !parentLink.isVisible()) {
-    if (link.isBackButton) BackButton.deselect() || BackButton.disableForSecond();
     return scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
   }
 
@@ -38,7 +36,8 @@ function moveToParent() {
 }
 
 function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
-  let firstChild = Link.selection.firstChild;
+  let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
+
   if (firstChild && firstChild.isBelowViewport() && !Link.selection.pathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
@@ -48,9 +47,12 @@ function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
   }
 
   if (Link.selection.isParent && !Link.selection.hasChildren && !Link.selection.cycle && !Link.selection.pathReference) {
-    if (BackButton.canBecomeSelected) return BackButton.select();
     let sectionElement = Link.selection.targetParagraph.sectionElement;
     return scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+  }
+
+  if (firstChild && firstChild.isVisible && !firstChild.isSelected && !newTab && !Link.selection.pathReference) { // selectALink
+    return firstChild.select({ newTab, redirect: altKey, inlineCycles: shiftKey });
   }
 
   return Link.selection.execute({ newTab, redirect: altKey, inlineCycles: shiftKey });
@@ -73,11 +75,15 @@ function goToDefaultTopic() {
 }
 
 function zoomOnLocalPath() {
-  return Link.selection?.enclosingTopicParagraph.pathDown.display();
+  let relativeLinkNumber = Link.selection.relativeLinkNumber;
+
+  return Link.selection?.inlinePath.lastSegment.display({ renderOnly: true }).then(() => {
+    Link.from(() => Link.selection?.inlinePath.lastSegment.parentParagraph.nthLink(relativeLinkNumber)).select({ scrollStyle: 'instant' });
+  });
 }
 
 function removeSelection() {
-  return updateView(Path.current.rootTopicPath, null);
+  return updateView(Path.current.rootTopicPath, null, { scrollStyle: 'instant' });
 }
 
 function duplicate() {

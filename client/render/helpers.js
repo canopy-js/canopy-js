@@ -4,7 +4,7 @@ import renderTokenElement from './render_token_element';
 function generateHeader(topicTokens, displayTopicName) {
   let topic = new Topic(displayTopicName);
 
-  let previousHeader = document.querySelector(`h1[data-topic-name="${topic.escapedMixedCase}"]`);
+  let previousHeader = document.querySelector(`h1[data-topic-name="${topic.cssMixedCase}"]`);
   if (previousHeader) return previousHeader;
 
   let headerElement = document.createElement('h1');

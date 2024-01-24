@@ -32,15 +32,16 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementOrPromise) => 
           pathDepth: fullPath.length - remainingPath.length
         },
       );
-    }).catch(e => { return null });
+    }).catch(e => { return null }); // 404
 
   let appendingPromise = Promise.all([parentElementOrPromise, sectionElementPromise]).then(([parentSectionElement, sectionElement]) => {
-    if (!sectionElement) return Promise.resolve();
+    if (!parentSectionElement || !sectionElement) return Promise.resolve();
     if (!Path.connectingLinkValid(parentSectionElement, remainingPath)) return Promise.resolve(); // fail silently, error on tryPrefix
     parentSectionElement.appendChild(sectionElement);
   });
 
   let subtopicElementPromise = sectionElementPromise.then(sectionElement => {
+    if (!sectionElement) return null;
     return sectionElement.querySelector(`section[data-subtopic-name="${remainingPath.firstSubtopic.cssMixedCase}"]`) || sectionElement; // querySelector can't target self
   });
 

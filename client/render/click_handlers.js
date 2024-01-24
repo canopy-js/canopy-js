@@ -5,7 +5,6 @@ import Link from 'models/link';
 function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
-    let path, linkToSelect;
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
     let redirect = e.altKey;
     let inlineCycles = e.shiftKey;
@@ -19,7 +18,7 @@ function onLinkClick(link) {
       return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
-    if (!newTab && !e.altKey && link.isOffScreen && !link.isClosedCycle) {
+    if (!newTab && !e.altKey && link.isOffScreen && !link.isClosedCycle) { // scroll up to see partially visible link
       return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
@@ -28,7 +27,7 @@ function onLinkClick(link) {
       redirect: e.altKey,
       inlineCycles: e.shiftKey,
       scrollDirect: true,
-      scrollToParagraph: true,
+      scrollToParagraph: !link?.isBackCycle,
       selectALink: false,
       pushHistoryState: true,
       noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles
