@@ -369,6 +369,7 @@ class Path {
 
   static shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
     if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
+    if (!pathToDisplay.paragraph) return false;
     if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
     let firstDestination = (options.scrollToParagraph || !linkToSelect ? pathToDisplay.paragraph.paragraphElement : linkToSelect.element).top - ScrollableContainer.focusGap;

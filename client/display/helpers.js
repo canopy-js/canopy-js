@@ -52,10 +52,10 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'smooth'});
+    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'instant'});
   } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'smooth' });
+    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'instant' });
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
@@ -75,7 +75,6 @@ function scrollPage(link, options) {
   let { scrollToParagraph, direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   canopyContainer.dataset.initialLoad = options.initialLoad;
-
 
   if (!link) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
   let maxScrollRatio = behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
