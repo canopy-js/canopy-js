@@ -307,7 +307,7 @@ Part 11-1: 👋 That's all for now! Click here to [learn more about Canopy.js](h
 [Oceans]
 
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
-- (The second time you see this text, click [[Part 10-3|here]].)
+- (The *second time* you see this text, click [[Part 10-3|*here*]].)
 ===
 > [[Part 10-1|Click here first]]
 ===

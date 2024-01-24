@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with import references]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
 
@@ -35,11 +35,6 @@ Tables with omitted cells:
 |---|---|---|-----------|
 | 2 | 4 | 6 | \x |
 
-Tables with import references:
-| This | is | a | table |
-|---|---|---|-----------|
-| 2 | 4 | [[New York]] | [[Southern border]] |
-
 Table lists:
 For small elements we use a width of 4:
 ===
@@ -49,16 +44,9 @@ For small elements we use a width of 4:
 - 4
 - 5
 ===
-This is the smallest text that gets a width of 3:
+For more text we use a width of 3
 ===
-- This is 1/3 pill?
-- 2
-- 3
-- 4
-===
-This is the largest text content that gets a 1/3 pill:
-===
-- This is 1/3 pill ????
+- This is 1/3 pill?????
 - 2
 - 3
 - 4
@@ -70,35 +58,21 @@ Bigger yet is a half pill if N < 2:
 ===
 Bigger yet is a quarter card if N > 2:
 ===
-- This is 1/4 card ?????
+- This is 1/4 card ????????
 - 2
 - 3
 - 4
 ===
-This is the biggest that gets a quarter card:
+This gets a third card:
 ===
-- This is 1/4 card ??? ????
+- This is 1/3 card ??? ??? ?????????????
 - 2
 - 3
 - 4
 ===
-This is the smallest value that gets a third card:
+For this gets a half card:
 ===
-- This is 1/3 card ??? ??? ????
-- 2
-- 3
-- 4
-===
-This is the biggest that gets a third card:
-===
-- This is 1/3 card ??? ??? ??? ??? ??? ??? ??? ??? ?
-- 2
-- 3
-- 4
-===
-For bigger ones we use a width of 2:
-===
-- This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ??
+- This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ????? ?????????????????????
 - 2
 - 3
 - 4
@@ -119,37 +93,30 @@ This list goes backwards:
 - E
 - F
 <<<
-This is the largest word that gets a quarter width:
+This is a long word that gets a quarter width:
 ===
 - Thisisalongword
 - A
 - B
 - C
 ===
-This is the smallest word that gets a third width:
+This is a long word that gets a third width:
 ===
-- Thisisalongword??
+- Thisisalongword???
 - A
 - B
 - C
 ===
-This is the largest word that gets a third width:
+This gets a half tube:
 ===
-- Thisisalongword?????
+- Thisisalongword????????
 - A
 - B
 - C
 ===
-This is the smallest word that gets a half width:
+Or half-pills for N < 3
 ===
-- Thisisalongword??????
-- A
-- B
-- C
-===
-Same with half-pills for N < 3
-===
-- Thisisalongword??????
+- Thisisalongword????????
 - A
 ===
 
@@ -296,7 +263,7 @@ Code snippets that contain style characters and tokens:
 This is a `code snippet that contains _style characters_ and style tokens like {{OPEN_}} abc {{CLOSE_}}`.
 
 Images:
-This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/f/f7/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8.jpg "Jelly \"fish\" title" "Jelly \"Fish\" - [W. Carter](https://en.wikipedia.org/wiki/File:Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg)")
+This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipedia/commons/9/98/Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg "Jelly \"fish\" title" "Jelly \"Fish\" - [W. Carter](https://en.wikipedia.org/wiki/File:Lion%27s_mane_jellyfish_in_Gullmarn_fjord_at_S%C3%A4mstad_8_-_edited.jpg)")
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Linked images:
@@ -315,13 +282,13 @@ Links with no breaks:
 This is a [link](http://google.com).
 
 Links with prior word break:
-This is a [link link link link link link link link link link link link link link link liiiii](http://google.com).
+This is a [link link link link link link link link link link link link link link link lii](http://google.com).
 
 Links with following punctuation break:
-This is a [link link link link link link link link link link link link link link link liiiy](http://google.com)-
+This is a [link link link link link link link link link link link link link link link liiiiiiii](http://google.com)-
 
 Links with following non-punctuation:
-This is a [link link link link link link link link link link link link link link link liiy](http://google.com) abc.
+This is a [link link link link link link link link link link link link link link link liiiiiiiiy](http://google.com) abc.
 
 
 Hyperlinks:

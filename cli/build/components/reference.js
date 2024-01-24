@@ -1,4 +1,5 @@
 let Topic = require('../../shared/topic');
+let chalk = require('chalk');
 
 class Reference {
   constructor(string, enclosingTopic, parserContext) { // eg [[A#B/C#D|X Y]]
@@ -35,7 +36,9 @@ class Reference {
 
   parseDisplayAndTarget() {
     if (!this.valid) {
-      throw new Error('Invalid reference string');
+      this.parserContext.registerSubsumptionConditionalError(
+        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.filePathAndLineNumber}`)
+      );
     }
 
     if (this.hasCurlyBraces) { // curly braces and pipe is interpreted as pipe literal because {a|b} is curly braces not pipe

@@ -31,7 +31,7 @@ const Matchers = [
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
-  linkedImageMatcher,
+  // linkedImageMatcher, // linked images are just images in the text of regular/external links
   footnoteMarkerMatcher,
   imageMatcher,
   italicsMatcher,
@@ -210,7 +210,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
   if (!reference.valid) return;
   if (!reference.simpleTarget) return; // eg [[A]] or [[A|B]] not [[A#B/C#D]] or [[A#B/C#D|XYZ]]
 
-  let potentialSubtopic = reference.path.firstSubtopic;
+  let potentialSubtopic = Topic.for(reference.targetText);
   if (!potentialSubtopic) return; // subsumption dependent error
   if (potentialSubtopic.caps === currentTopic.caps) return; // this is a global self-reference, the root subtopic cannot be local-referenced
   if (potentialSubtopic.caps === currentSubtopic.caps) return; // a subtopic can't link to itself, perhaps a global topic by same name
@@ -242,24 +242,19 @@ function globalReferenceMatcher({ string, parserContext }) {
   if (!Reference.candidateSubstring(string)) return;
   let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
   if (!reference.valid) return;
-  let path = reference.path;
-  if (path.empty) return; // signifies subsumption dependent error
+  let pathString = reference.pathString;
 
-  if (parserContext.topicExists(path.firstTopic)) {
-    parserContext.registerGlobalReference(path, reference.fullText);
+  parserContext.registerGlobalReference(pathString, reference, reference.fullText);
 
-    return [
-      new GlobalReferenceToken(
-        path,
-        currentTopic.mixedCase,
-        currentSubtopic.mixedCase,
-        reference.displayText,
-        parserContext
-      ), reference.fullText.length
-    ];
-  } else {
-    return null;
-  }
+  return [
+    new GlobalReferenceToken(
+      pathString,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
+      reference.displayText,
+      parserContext
+    ), reference.fullText.length
+  ];
 }
 
 function escapedCharacterMatcher({ string, parserContext }) {
@@ -285,7 +280,7 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[([^!\]]+)\](?:\(([^ )]*)\))/);
+  let match = string.match(/^\[(.+)\](?:\(([^ )[]*)\))/);
   if (match) {
     let [_, text, url] = match;
     return [
