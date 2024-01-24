@@ -2,16 +2,28 @@ import fetchAndRenderPath from 'render/fetch_and_render_path';
 import displayPath from 'display/display_path';
 import Link from 'models/link';
 import Path from 'models/path';
-import { canopyContainer, backButton } from 'helpers/getters';
+import Paragraph from 'models/paragraph';
+import { canopyContainer } from 'helpers/getters';
+let lastPath = null;
 
 const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (pathToDisplay.empty) pathToDisplay = Path.default;
   if (!options.renderOnly && !options.noDisplay) document.title = pathToDisplay.lastTopic.mixedCase;
 
-  let newTreeAppended = fetchAndRenderPath(pathToDisplay, pathToDisplay, canopyContainer).catch(e => console.error(e));
+  let renderComplete = (lastPath = !options.pending && pathToDisplay || lastPath) &&
+    fetchAndRenderPath(pathToDisplay, pathToDisplay, canopyContainer).catch(e => console.error(e));
 
-  return newTreeAppended.then(() => {
-    if (!options?.renderOnly) displayPath(
+  Promise.race([
+    renderComplete,
+    (new Promise(resolve => setTimeout(resolve, 400)))
+  ]).then((success) => {
+    if (!success && linkToSelect && Paragraph.contentLoaded) {
+      linkToSelect?.element && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect, { pending: true });
+    }
+  });
+
+  return renderComplete.then(() => {
+    if (!options?.renderOnly && pathToDisplay.equals(lastPath)) displayPath(
       pathToDisplay,
       linkToSelect,
       options
