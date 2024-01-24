@@ -1,12 +1,3 @@
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" src="./favicon.ico" type="image/png">
-</head>
-<body>
-<script src="./playground.js"></script>
-</body>
-</html>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4E2NPT43G2"></script>
 <script>
