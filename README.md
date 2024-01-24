@@ -490,4 +490,4 @@ npm run test
 
 ## Contact
 
-At the moment you can submit questions or comments to canopyjs at gmail dot com. For bugs or other issues, open an issue on the project.
+At the moment you can submit questions or comments to `canopyjs at gmail dot com`. For bugs or other issues, open an issue on the project.
