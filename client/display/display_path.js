@@ -31,7 +31,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
   pathToDisplay.paragraph.addSelectionClass();
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
-  return !options.noScroll ? Promise.resolve : scrollPage(linkToSelect, options);
+  return options.noScroll ? Promise.resolve() : scrollPage(linkToSelect, options);
 };
 
 const displayPathTo = (paragraph, visibleParagraphs, options) => {
