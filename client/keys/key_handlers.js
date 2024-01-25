@@ -38,20 +38,20 @@ function moveToParent() {
 function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
   let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
 
-  if (firstChild && firstChild.isBelowViewport() && !Link.selection.pathReference) {
+  if (firstChild && firstChild.isBelowViewport() && !Link.selection.isPathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
 
-  if (firstChild && firstChild.isAboveViewport() && !Link.selection.pathReference) {
+  if (firstChild && firstChild.isAboveViewport() && !Link.selection.isPathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth', side: 'bottom'});
   }
 
-  if (Link.selection.isParent && !Link.selection.hasChildren && !Link.selection.cycle && !Link.selection.pathReference) {
+  if (Link.selection.isParent && !Link.selection.hasChildren && !Link.selection.cycle && !Link.selection.isPathReference) {
     let sectionElement = Link.selection.targetParagraph.sectionElement;
     return scrollElementToPosition(sectionElement, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
 
-  if (firstChild && firstChild.isVisible && !firstChild.isSelected && !newTab && !Link.selection.pathReference) { // selectALink
+  if (firstChild && firstChild.isVisible && !firstChild.isSelected && !newTab && !Link.selection.isPathReference) { // selectALink
     return firstChild.select({ newTab, redirect: altKey, inlineCycles: shiftKey });
   }
 

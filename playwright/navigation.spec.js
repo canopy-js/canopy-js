@@ -665,6 +665,36 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard#Parking_lot/Martha's_Vineyard#Cafeteria");
   });
 
+  test('it differentiates between back cycles and lateral', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
+    await expect(page).toHaveURL('United_States/New_York/Martha\'s_Vineyard#Parking_lot');
+
+    // Function to get the text content including ::after content for a link
+    const getTextIncludingAfter = async (selector) => {
+      const element = await page.$(selector);
+      const elementText = await element.textContent();
+      const afterContent = await page.evaluate(el => {
+        const style = window.getComputedStyle(el, '::after');
+        return style.content;
+      }, element);
+
+      // Remove quotes added by getComputedStyle around the content value
+      const cleanedAfterContent = afterContent.replace(/^"|"$/g, '');
+
+      return elementText + cleanedAfterContent;
+    };
+
+    // Get the combined text for the first link
+    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link');
+    // Assert the combined text for the first link
+    expect(combinedTextFirstLink).toBe('cafeteria↪');
+
+    // Get the combined text for the second link
+    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link');
+    // Assert the combined text for the second link
+    expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
+  });
+
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -747,7 +777,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States');
   });
 
-  test('Path reduction', async ({ page, context }) => {
+  test('It reduces paths', async ({ page, context }) => {
     await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('h1')).toBeVisible();

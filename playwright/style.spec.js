@@ -167,6 +167,7 @@ test.describe('Inline entities', () => {
 
   test('It will not separate link icon from following punctuation', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
 
     const elementHandle = await page.$('.canopy-selected-section a');
     const punctuationHandle = await page.$('.canopy-selected-section a + span');

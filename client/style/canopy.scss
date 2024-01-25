@@ -86,7 +86,8 @@
     &.canopy-external-link, &.canopy-back-cycle-link, &.canopy-lateral-cycle-link, &.canopy-path-reference {
       display: inline;
       white-space: normal;
-      margin-right: 5px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
+      margin-right: 1px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
+      padding-right: 4px;
 
       &:not(.canopy-table-list-link-cell) *:last-child::after {
         content: ' ';
@@ -105,7 +106,7 @@
     &.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after {
       content: '➹';
       top: 2px;
-      left: 0.5px;
+      left: 1px;
     }
 
     &.canopy-path-reference:not(.canopy-table-list-link-cell)::after {

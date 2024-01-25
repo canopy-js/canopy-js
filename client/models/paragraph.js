@@ -227,7 +227,7 @@ class Paragraph {
   }
 
   get isInDom() {
-    return this.sectionElement.closest('div#_canopy');
+    return !!this.sectionElement.closest('div#_canopy');
   }
 
   get top() {

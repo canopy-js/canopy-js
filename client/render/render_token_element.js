@@ -124,23 +124,17 @@ function renderGlobalLink(token, renderContext) {
     onLinkClick(link)
   );
 
-  let { pathToParagraph } = renderContext;
-  let inlinedPath = pathToParagraph.append(link.literalPath);
-  let reducedInlinePath = inlinedPath.reduce();
-  let cycle = inlinedPath.length !== reducedInlinePath.length;
-  let backCycle = cycle && reducedInlinePath.subsetOf(pathToParagraph);
-  let lateralCycle = cycle && !backCycle;
+  setTimeout(function assignCycleClasses(){ // requires finished render to know intratopic subtopic hierarchy
+    if (!link.isInDom) setTimeout(assignCycleClasses);
 
-  // if (pathToParagraph.pathString === '/Hisbonen/Hashta_b’shlucho_mekadesh#Learn_the_sugya') debugger;
-  // console.log(Path.for(token.pathString).string, {linkElement, pathToParagraph, inlinedPath, reducedInlinePath, cycle, backCycle})
-
-  if (backCycle) {
-    linkElement.classList.add('canopy-back-cycle-link');
-  } else if (lateralCycle) {
-    linkElement.classList.add('canopy-lateral-cycle-link');
-  } else if (link.pathReference) {
-    linkElement.classList.add('canopy-path-reference');
-  }
+    if (link.isBackCycle) {
+      linkElement.classList.add('canopy-back-cycle-link');
+    } else if (link.isLateralCycle) {
+      linkElement.classList.add('canopy-lateral-cycle-link');
+    } else if (link.isPathReference) {
+      linkElement.classList.add('canopy-path-reference');
+    }
+  });
 
   return linkElement
 }

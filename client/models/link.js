@@ -349,20 +349,24 @@ class Link {
     return this.type === 'global';
   }
 
-  get pathReference() {
+  get isPathReference() {
     return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase);
   }
 
   get isSimpleGlobal() {
-    return this.isGlobal && !this.pathReference; // a global reference to a single global topic
+    return this.isGlobal && !this.isPathReference; // a global reference to a single global topic
   }
 
   get effectivePathReference() { // a path reference which is not a cycle unless the cycle is open and thus functioning as a path reference
-    return this.pathReference && (!this.cycle || this.inlinedCycleReference);
+    return this.isPathReference && (!this.cycle || this.inlinedCycleReference);
   }
 
   get inlinedCycleReference() { // a cycle reference that has been inlined
     return this.introducesNewCycle && this.isOpen;
+  }
+
+  get isInDom() {
+    return !!this.element.closest('div#_canopy');
   }
 
   get isExternal() {
@@ -383,6 +387,10 @@ class Link {
 
   get isBackCycle() {
     return this.inlinePath.reduce().subsetOf(this.inlinePath);
+  }
+
+  get isLateralCycle() {
+    return this.cycle && !this.inlinePath.reduce().subsetOf(this.inlinePath);
   }
 
   get isParent() {
@@ -518,9 +526,8 @@ class Link {
   }
 
   get urlPath() {
-    if (this.cycle || this.pathReference || this.externalLink) return this.enclosingPath;
+    if (this.cycle || this.isPathReference || this.externalLink) return this.enclosingPath;
     if (this.isLocal || this.isSimpleGlobal) return this.inlinePath;
-
   }
 
   select(options = {}) {
@@ -548,7 +555,7 @@ class Link {
         .then(() => this.inlinePath.reduce().display(options));
     }
 
-    if ((this.pathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // eg [[A#B]] or [[A/B/C]]
+    if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // eg [[A#B]] or [[A/B/C]]
       return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
         .then(() => this.inlinePath.display({ scrollDirect: true, ...options }));
     }

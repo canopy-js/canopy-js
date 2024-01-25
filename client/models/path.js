@@ -373,11 +373,13 @@ class Path {
     if (!pathToDisplay.paragraph) return false;
     if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
-    let firstDestination = (options.scrollToParagraph || !linkToSelect ? pathToDisplay.paragraph.paragraphElement : linkToSelect.element).top - ScrollableContainer.focusGap;
+    let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph.paragraphElement : linkToSelect.element;
+    let firstDestinationY = firstDestinationElement.top - ScrollableContainer.focusGap;
 
-    let longDistanceUp = firstDestination - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
+    let longDistanceUp = firstDestinationY - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
 
     let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
+      && !Path.rendered.equals(pathToDisplay)
       && !Path.rendered.subsetOf(pathToDisplay)
       && !Path.rendered.siblingOf(pathToDisplay)
       && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap

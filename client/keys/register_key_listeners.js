@@ -92,6 +92,7 @@ const shortcutRelationships = {
 
 const universalShortcutRelationships = [ // shortcuts that always work, even if there isn't an already selected link
   'c',
+  'd',
   'up',
   'down'
 ];

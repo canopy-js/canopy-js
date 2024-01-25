@@ -249,16 +249,13 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement;
-
-  if (strictlyUpward) targetElement = linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
-  if (!strictlyUpward && linkToSelect.isSiblingOf(Link.selection)) targetElement = linkToSelect?.element;
-  if (!strictlyUpward && !linkToSelect.isSiblingOf(Link.selection)) targetElement = overlapPath?.paragraph?.paragraphElement;
+  let targetElement = linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
+  let firstTargetRatio = strictlyUpward ? 0.3 : 0.1; // when making second stop, we go higher
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
-      {targetRatio: 0.1, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
+      {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
     ).then(() => new Promise(resolve => setTimeout(resolve, 110)))) : Promise.resolve())
     .then(() => linkToSelect?.select({noScroll: true, noAnimate: true, ...options}) || newPath.display({noScroll: true, noAnimate: true, ...options}))
     .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))

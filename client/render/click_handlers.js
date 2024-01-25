@@ -10,11 +10,11 @@ function onLinkClick(link) {
     let inlineCycles = e.shiftKey;
     let redirectingCycle = link.cycle && !inlineCycles;
 
-    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.pathReference) { // close global link
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference) { // close global link
       return link.parentLink?.select({ scrollDirect: true, noAnimate: true }) || Path.root.display({ scrollDirect: true, noAnimate: true });
     }
 
-    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.pathReference) { // select open link
+    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.isPathReference) { // select open link
       return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
