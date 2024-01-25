@@ -15,9 +15,9 @@ import { canopyContainer } from 'helpers/getters';
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
   if (Path.shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
+  try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, options); }
   if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, options);
-  try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, options); }
   if (linkToSelect?.isCycle) updateView(linkToSelect.inlinePath, null, {renderOnly: true}); // invisibly render child paragraphs
 
   Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // must be done before link.select because selection cache is by current URL
