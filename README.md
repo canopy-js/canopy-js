@@ -171,7 +171,7 @@ If `paragraph A` has a link to `paragraph B`, that means the user can select the
 
 Links are made using the `[[Topic]]` syntax, using the name of another topic or subtopic to specify the target of the link, and one can change the link text like so: `[[Real Topic|Link Text]].` Link targets are case-insensitive and ignore style characters, so eg `[[_topic_]]` would be a valid reference to a topic with the key `Topic:`.
 
-There are three types of references: local, global, and path references which are a type of global.
+There are three types of references: local, global, and path references which are a type of global reference.
 
 #### Local References
 
@@ -265,6 +265,22 @@ Idaho: Idaho is a midwestern state, whose capital is [[Boise]]
 
 Boise: This is the capital.
 ```
+
+Selecting such a link will display multiple paragraphs below the current one.
+
+#### Cycle references
+
+Cycle references are when a reference points to a topic that is already displayed in the current path. In such a case, the link offers the user a redirecting scroll backwards to the original instance, followed possibly by an advance to the new subsequent position. Eg, if the user is at path `A/B/C` and they click a link pointing to `B/D`, they will be scrolled up to `B`, and then down to `D`. Whether a link is a cycle link or not depends on the current path.
+
+One common use of path references is to take the user back to a previous list. So, the user might be at path `List/1`, and I might link to `List/2` rather than directly to `2`, which causes the user to return up and forward to `List/2`, rather than downward to `List/1/2` all displayed sequentially on the screen.
+
+Examples of cycle references can be found in the Canopy playground mentioned above.
+
+#### Path shorthands
+
+If you want to create a path reference which references another subtopic in the same topic, you can use the omitted topic syntax like this: \[\[#Subtopic\]\]
+
+Conversely, if you would like to clarify that you mean a reference as a global reference even though it corresponds also to a subtopic of the current topic, you can use the omitted subtopic syntax: \[\[Topic#\]\].
 
 #### Advanced link syntax ####
 
