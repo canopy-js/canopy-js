@@ -129,7 +129,7 @@ Part 2-1: This content is being generated from the text on the left, which can b
 > [[Part 2-2|Cool]]
 ===
 
-Part 2-2: Great! In Canopy, selecting links adds more paragraphs to the page.
+Part 2-2: In Canopy, selecting links adds more paragraphs to the page.
 ===
 > [[Part 3|I see]]
 ===
