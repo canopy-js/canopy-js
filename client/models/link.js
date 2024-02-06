@@ -438,6 +438,12 @@ class Link {
     return (visibleArea / totalArea) >= 0.5;
   }
 
+  get isEntirelyVisible() {
+    if (!this.element) return false;
+
+    return this.top >= 0 && this.bottom <= ScrollableContainer.visibleHeight;
+  }
+
   isAboveViewport() {
     if (!this.element || !this.element.getBoundingClientRect) {
       return false;

@@ -245,18 +245,17 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!pathToDisplay.paragraph) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
-  let firstDestinationElementY = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
+  let firstDestinationElementY = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top + ScrollableContainer.currentScroll;
   let firstDestinationY = firstDestinationElementY - ScrollableContainer.focusGap;
-
   let longDistanceUp = firstDestinationY - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
 
   let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
     && !Path.rendered.siblingOf(pathToDisplay)
-    && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
+    && !pathToDisplay.parentOf(Path.rendered); // this doesn't disqualify animation but we would require a large gap
 
-  return longDistanceUp || twoStepChange;
+  return longDistanceUp && twoStepChange;
 }
 
 function animatePathChange(newPath, linkToSelect, options = {}) {
@@ -268,7 +267,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
+  let targetElement = overlapPath.paragraph?.paragraphElement; //linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
   let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
