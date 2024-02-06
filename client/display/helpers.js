@@ -255,7 +255,7 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
     && !Path.rendered.siblingOf(pathToDisplay)
     && !pathToDisplay.parentOf(Path.rendered); // this doesn't disqualify animation but we would require a large gap
 
-  return longDistanceUp && twoStepChange;
+  return longDistanceUp || twoStepChange;
 }
 
 function animatePathChange(newPath, linkToSelect, options = {}) {
@@ -267,7 +267,8 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect.onCurrentPage && linkToSelect?.element) || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
+  let targetElement = (linkToSelect.onCurrentPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
+    || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
   let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
