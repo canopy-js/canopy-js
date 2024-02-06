@@ -290,17 +290,15 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
 function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
 
-  // Define the viewport range for the element to be considered "focused"
-  const upperViewportLimit = ScrollableContainer.visibleHeight * 0.3; // Element's bottom must be lower than this to be considered "focused"
-  const lowerViewportLimit = ScrollableContainer.visibleHeight * 0.1; // Element's top must be higher than this to be considered "focused"
+  // Define the viewport height thresholds for the element to be considered within the desired vertical range
+  const topThreshold = window.innerHeight * 0.05; // 5% of the viewport height
+  const bottomThreshold = window.innerHeight * 0.50; // 50% of the viewport height
 
-  // Check if the element's bottom is below the upper limit of the viewport range
-  const isBelowUpperLimit = rect.bottom > upperViewportLimit;
-  // Check if the element's top is above the lower limit of the viewport range
-  const isAboveLowerLimit = rect.top < lowerViewportLimit;
-
-  // The element is considered "focused" if it's both below the upper limit and above the lower limit
-  return isBelowUpperLimit && isAboveLowerLimit && rect.top > 0;
+  // Check if the entire element is within the 5% to 50% range of the viewport
+  // The top of the element should be below the top threshold (5% mark)
+  // The bottom of the element should be above the bottom threshold (50% mark)
+  // This ensures the entire element is between 5% and 50% of the viewport vertically
+  return rect.top >= topThreshold && rect.bottom <= bottomThreshold;
 }
 
 export {
