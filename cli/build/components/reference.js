@@ -129,6 +129,7 @@ class Reference {
   parseSimple() {
     this.targetText = this.contents;
     this.displayText = this.lastPathComponent;
+    if (!this.displayText && this.soloPoundSign) this.displayText = 'Back';
   }
 
   get isPath() {
@@ -146,6 +147,10 @@ class Reference {
 
   get orphanFragment() {
     return !!this.targetText.match(/^#([^#\/]*(?:\\.[^#\/]*)*)$/);
+  }
+
+  get soloPoundSign() {
+    return !!(this.targetText === '#');
   }
 
   get singleTopicWithEmptyFragment() {
@@ -194,6 +199,10 @@ class Reference {
   }
 
   get displayPathString() {
+    if (this.soloPoundSign) { //eg [#], short for topic subtopic
+      return `${this.enclosingTopic.mixedCase}#${this.enclosingTopic.mixedCase}`;
+    }
+
     if (this.localReference) { // eg [[X]] where X is a subtopic of current topic
       // return this.localReferencePath(this.enclosingTopic, this.targetAsTopic);
       return `${this.parserContext.currentTopic.mixedCase}#${this.targetText}`;

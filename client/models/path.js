@@ -368,25 +368,6 @@ class Path {
     return !!this.array[0];
   }
 
-  static shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
-    if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
-    if (!pathToDisplay.paragraph) return false;
-    if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
-
-    let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph.paragraphElement : linkToSelect.element;
-    let firstDestinationY = firstDestinationElement.top - ScrollableContainer.focusGap;
-
-    let longDistanceUp = firstDestinationY - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
-
-    let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
-      && !Path.rendered.equals(pathToDisplay)
-      && !Path.rendered.subsetOf(pathToDisplay)
-      && !Path.rendered.siblingOf(pathToDisplay)
-      && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
-
-    return longDistanceUp || twoStepChange;
-  }
-
   static get default() {
     let topic = Topic.for(defaultTopic());
     return new Path([[topic, topic]]);

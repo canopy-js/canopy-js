@@ -550,12 +550,12 @@ class Link {
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
     }
 
-    if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) {
+    if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
         .then(() => this.inlinePath.reduce().display(options));
     }
 
-    if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // eg [[A#B]] or [[A/B/C]]
+    if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
       return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
         .then(() => this.inlinePath.display({ scrollDirect: true, ...options }));
     }

@@ -7,6 +7,7 @@ import {
   tryPathPrefix,
   resetDom,
   scrollPage,
+  shouldAnimate,
   animatePathChange
 } from 'display/helpers';
 
@@ -14,7 +15,7 @@ import { canopyContainer } from 'helpers/getters';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
-  if (Path.shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
+  if (shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
   try { linkToSelect?.element } catch { return updateView(pathToDisplay, null, options); }
   if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
   if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, options);

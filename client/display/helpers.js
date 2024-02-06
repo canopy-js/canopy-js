@@ -240,6 +240,25 @@ function scrollToWithPromise(options) {
   }));
 }
 
+function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
+  if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
+  if (!pathToDisplay.paragraph) return false;
+  if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
+
+  let firstDestinationElementY = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
+  let firstDestinationY = firstDestinationElementY - ScrollableContainer.focusGap;
+
+  let longDistanceUp = firstDestinationY - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
+
+  let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
+    && !Path.rendered.equals(pathToDisplay)
+    && !Path.rendered.subsetOf(pathToDisplay)
+    && !Path.rendered.siblingOf(pathToDisplay)
+    && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
+
+  return longDistanceUp || twoStepChange;
+}
+
 function animatePathChange(newPath, linkToSelect, options = {}) {
   // We do not want the content the user is looking at to appear or disappear.
   // Case #1: If we are animating upward motion, we want to move up first, then remove lower content.
@@ -252,7 +271,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let targetElement = linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
-  let firstTargetRatio = strictlyUpward ? 0.3 : 0.1; // when making second stop, we go higher
+  let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
       {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
@@ -261,7 +280,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
     .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))
     .then(() => !strictlyUpward && !elementIsFocused(newPath.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
       newPath.paragraph.paragraphElement,
-      {targetRatio: 0.15, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
+      {targetRatio: 0.25, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
     );
 }
 
@@ -270,7 +289,7 @@ function elementIsFocused(element) {
 
   // Define the viewport range for the element to be considered "focused"
   const upperViewportLimit = ScrollableContainer.visibleHeight * 0.3; // Element's bottom must be lower than this to be considered "focused"
-  const lowerViewportLimit = ScrollableContainer.visibleHeight * 0.4; // Element's top must be higher than this to be considered "focused"
+  const lowerViewportLimit = ScrollableContainer.visibleHeight * 0.1; // Element's top must be higher than this to be considered "focused"
 
   // Check if the element's bottom is below the upper limit of the viewport range
   const isBelowUpperLimit = rect.bottom > upperViewportLimit;
@@ -287,6 +306,7 @@ export {
   tryPathPrefix,
   scrollPage,
   scrollElementToPosition,
+  shouldAnimate,
   animatePathChange,
   scrollToWithPromise,
   getScrollInProgress

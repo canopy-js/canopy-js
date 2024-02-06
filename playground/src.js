@@ -124,17 +124,12 @@ Part 2: Canopy generates interactive websites from an easy-to-use text format.
 > [[Part 2-1|Okay]]
 ===
 
-Part 2-1: This website is being generated from the text on the left.
+Part 2-1: This content is being generated from the text on the left, which can be edited live.
 ===
 > [[Part 2-2|Cool]]
 ===
 
-Part 2-2: See if you can find this paragraph on the left, edit it, and then deselect the text box to see the change.
-===
-> [[Part 2-3|Done]]
-===
-
-Part 2-3: Great! In Canopy, selecting links adds more paragraphs to the page.
+Part 2-2: Great! In Canopy, selecting links adds more paragraphs to the page.
 ===
 > [[Part 3|I see]]
 ===
