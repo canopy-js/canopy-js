@@ -267,7 +267,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = overlapPath.paragraph?.paragraphElement; //linkToSelect?.element || overlapPath.parentLink?.element || overlapPath.paragraph?.paragraphElement;
+  let targetElement = (linkToSelect.onCurrentPage && linkToSelect?.element) || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
   let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
