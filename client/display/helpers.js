@@ -240,6 +240,9 @@ function scrollToWithPromise(options) {
   }));
 }
 
+// Different animation cases to handle:
+// - Switching between links in the same paragraph in a two-step animation
+
 function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;

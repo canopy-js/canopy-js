@@ -386,11 +386,11 @@ class Link {
   }
 
   get isBackCycle() {
-    return this.inlinePath.reduce().subsetOf(this.inlinePath);
+    return this.inlinePath.reduce().subsetOf(this.enclosingPath);
   }
 
   get isLateralCycle() {
-    return this.cycle && !this.inlinePath.reduce().subsetOf(this.inlinePath);
+    return this.cycle && !this.inlinePath.reduce().subsetOf(this.enclosingPath);
   }
 
   get isParent() {

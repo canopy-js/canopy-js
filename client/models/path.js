@@ -227,6 +227,8 @@ class Path {
     const cycle = this.cycle;
     let resultPath;
 
+    // console.log(this.cycle)
+
     if (cycle) {
       const pathWithoutCycle = [
         ...this.array.slice(0, cycle.start),
