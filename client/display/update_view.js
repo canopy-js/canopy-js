@@ -18,7 +18,7 @@ const updateView = (pathToDisplay, linkToSelect, options = {}) => {
     (new Promise(resolve => setTimeout(resolve, 400)))
   ]).then((success) => {
     if (!success && linkToSelect && Paragraph.contentLoaded) {
-      linkToSelect?.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect, { pending: true });
+      linkToSelect?.element && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect, { pending: true });
     }
   });
 

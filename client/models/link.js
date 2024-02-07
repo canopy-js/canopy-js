@@ -250,7 +250,7 @@ class Link {
   static elementFromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
-    if (!enclosingParagraph) throw new Error("Link selection data refers to non-existant link");
+    if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
     let link = enclosingParagraph.linkBySelector(
       (link, i) => link.element.dataset.text === object.text &&
         i === object.relativeLinkNumber
@@ -366,7 +366,7 @@ class Link {
   }
 
   get isInDom() {
-    return !!this.element.closest('div#_canopy');
+    return !!this.element.closest('#_canopy');
   }
 
   get isExternal() {

@@ -6,7 +6,6 @@ import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import renderTokenElement from 'render/render_token_element';
-import fetchAndRenderPath from 'render/fetch_and_render_path';
 
 function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.cssMixedCase}"]`);
@@ -246,11 +245,13 @@ function scrollToWithPromise(options) {
 function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;
+  if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
   let firstDestinationElementY = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top + ScrollableContainer.currentScroll;
   let firstDestinationY = firstDestinationElementY - ScrollableContainer.focusGap;
-  let longDistanceUp = firstDestinationY - ScrollableContainer.currentScroll < -ScrollableContainer.focusGap;
+  let firstDestinationYRelative = firstDestinationY - ScrollableContainer.currentScroll;
+  let longDistanceUp = firstDestinationYRelative < -ScrollableContainer.focusGap || firstDestinationYRelative < 0;
 
   let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
@@ -270,7 +271,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect.onCurrentPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
+  let targetElement = (linkToSelect?.onCurrentPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
     || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;

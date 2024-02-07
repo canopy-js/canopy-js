@@ -76,7 +76,7 @@ class Paragraph {
   }
 
   get path() {
-    if (!this.isInDom) throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
+    if (!this.isInDom) debugger;// throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
     let array = [];
     let currentElement = this.sectionElement;
     let currentParagraph = this;

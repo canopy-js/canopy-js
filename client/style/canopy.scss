@@ -163,6 +163,7 @@
   blockquote {
     padding: 0 .7em;
     color: #565e67;
+    white-space: pre-wrap;
 
     a, a.canopy-selectable-link {
       color: #565e67;
@@ -264,6 +265,7 @@
     flex-direction: column;
     align-items: center; /* This centers the rows within the container */
     margin: 0 auto;
+    padding-top: 10px;
 
     .canopy-table-list-row {
       display: flex;

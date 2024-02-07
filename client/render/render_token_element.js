@@ -1,5 +1,4 @@
 import { onLinkClick } from 'render/click_handlers';
-import externalLinkIconSvg from 'assets/external_link_icon/icon.svg';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import Path from 'models/path';
@@ -16,7 +15,7 @@ function renderTokenElement(token, renderContext) {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
-    requestJson(Path.for(token.pathString).firstTopic); // eager load
+    // requestJson(Path.for(token.pathString).firstTopic); // eager load
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
@@ -124,10 +123,14 @@ function renderGlobalLink(token, renderContext) {
     onLinkClick(link)
   );
 
-  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); //put icon for table list space allocation
+  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
+  let timeoutCount = 0;
   setTimeout(function assignCycleClasses(){ // requires finished render to know intratopic subtopic hierarchy
-    if (!link.isInDom) setTimeout(assignCycleClasses);
+    timeoutCount++;
+    if (timeoutCount > 1000) { console.log('Timed out adding link to DOM', linkElement); return; }
+
+    if (!link.isInDom) { setTimeout(assignCycleClasses); return; }
 
     linkElement.classList.remove('canopy-provisional-icon-link')
 
@@ -149,7 +152,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'external';
   linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url.match(/^https?:\/\//) ? token.url : 'http://' + token.url);
+  linkElement.setAttribute('href', token.url); // validation should have been done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
 
   setTimeout(() => {
