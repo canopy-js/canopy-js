@@ -127,7 +127,7 @@ function tableMatcher({ string, parserContext, startOfLine }) {
 
 function tableListMatcher({ string, parserContext, startOfLine }) {
   if (!string.match(/\n[-=<]+(\n|$)/)) return; // check the end first to avoid catastrophic backtracking
-  let match = string.match(/^[=\-<]+\n(([-<>] ?[^\n]*\n)+|([\w\d]+\.\s[^\n]+\n)+)[=\-<]+\n?/);
+  let match = string.match(/^[=\-<]+\n((([-<>] ?|[\w\d]+\.\s)[^\n]*\n)+)[=\-<]+\n?/);
   if (!match) return null;
 
   if (match && startOfLine) {
@@ -209,6 +209,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
   if (!reference.valid) return;
   if (!reference.simpleTarget) return; // eg [[A]] or [[A|B]] not [[A#B/C#D]] or [[A#B/C#D|XYZ]]
+  if (!reference.targetText) return; // Eg someone accidentally did [[]] or [[|XYZ]]
 
   let potentialSubtopic = Topic.for(reference.targetText);
   if (!potentialSubtopic) return; // subsumption dependent error

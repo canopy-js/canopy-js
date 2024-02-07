@@ -368,6 +368,10 @@
         }
       }
 
+      &.canopy-provisional-icon-link .canopy-table-list-content-container::after { // add a placeholder icon for table list size evaluation
+        content: ' ↩';
+      }
+
       &.canopy-back-cycle-link .canopy-table-list-content-container::after { // if it is open, it has been inlined and isn't a cycle
         content: ' ↩';
       }

@@ -149,6 +149,10 @@ class Reference {
     return !!this.targetText.match(/^#([^#\/]*(?:\\.[^#\/]*)*)$/);
   }
 
+  get initialOrphanFragment() {
+    return !!this.targetText.match(/^#([^#\/]*)/);
+  }
+
   get soloPoundSign() {
     return !!(this.targetText === '#');
   }
@@ -220,69 +224,15 @@ class Reference {
     }
 
     if (this.orphanFragment) { // eg [[#A]], global self-reference to current topic and given subtopic
-      // let subtopic = Topic.for(Reference.textAfterFragment(this.targetText));
-      // if (!this.parserContext.getOriginalSubtopic(this.enclosingTopic, subtopic)) {
-      //   throw new Error(`Subtopic does not exist: [${this.enclosingTopic.mixedCase}, ${subtopic.mixedCase}], in reference ${this.fullText}`);
-      // }
-
-      // return this.singleSegmentGlobalReferencePath(
-      //   this.enclosingTopic,
-      //   subtopic
-      // );
       return `${this.enclosingTopic.mixedCase}#${Reference.textAfterFragment(this.targetText)}`;
     }
 
-    // global path reference, eg [[A#B/C#D]]
+    if (this.initialOrphanFragment) {
+      return `${this.enclosingTopic.mixedCase}#${Reference.textAfterFragment(this.targetText)}`;
+    }
+
     return this.targetText;
-    // let oldArray = SimplePath.for(Topic.convertSpacesToUnderscores(this.targetText)).array;
-
-    // let newArray = oldArray.map(([topic, subtopic]) => [
-    //   this.parserContext.getOriginalTopic(topic),
-    //   this.parserContext.getOriginalSubtopic(topic, subtopic)
-    // ])
-
-    // let errorIndex = -1;
-    // errorIndex = newArray.findIndex(([topic, _]) => !topic);
-    // if (errorIndex !== -1) {
-    //   this.parserContext.registerSubsumptionConditionalError(
-    //     `Path of global reference includes non-existent topic, [${oldArray[errorIndex][0].mixedCase}]\n` +
-    //     `Full reference: ${this.fullText}\n\n`+
-    //     this.parserContext.currentFilePathAndLineNumber + '\n'
-    //   );
-    //   return SimplePath.for([]);
-    // }
-
-    // errorIndex = newArray.findIndex(([topic, subtopic], index) => !subtopic);
-    // if (errorIndex !== -1) {
-    //   this.parserContext.registerSubsumptionConditionalError(
-    //     `Path of global reference includes non-existent subtopic, [${oldArray[errorIndex][0].mixedCase}, ${oldArray[errorIndex][1].mixedCase}]\n` +
-    //     `Full reference: ${this.fullText}\n\n`+
-    //     this.parserContext.currentFilePathAndLineNumber + '\n'
-    //   );
-    //   return SimplePath.for([]);
-    // }
-
-    // return SimplePath.for(newArray);
   }
-
-  // localReferencePath(topic, subtopic) {
-  //   return SimplePath.forSegment(
-  //     this.parserContext.getOriginalTopic(topic),
-  //     this.parserContext.getOriginalSubtopic(topic, subtopic)
-  //   );
-  // }
-
-  // singleSegmentGlobalReferencePath(topic, subtopic) {
-  //   if (!this.parserContext.topicExists(topic)) throw new Error(`No topic by name exists: [${topic.mixedCase}] in reference "${this.fullText}"`);
-
-  //   let originalTopic = this.parserContext.getOriginalTopic(topic);
-  //   let originalSubtopicOrTopic = !subtopic ? this.parserContext.getOriginalTopic(topic) : this.parserContext.getOriginalSubtopic(topic, subtopic);
-
-  //   return SimplePath.forSegment(
-  //     originalTopic,
-  //     originalSubtopicOrTopic
-  //   );
-  // }
 
   static candidateSubstring(string) {
     return string.match(/^\[\[([\s\S]*?)(?<!\\)\]\]/)?.[0] || '';

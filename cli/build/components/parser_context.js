@@ -369,6 +369,8 @@ class ParserContext {
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`));
           }
+
+          return nextSegmentString;
         });
       }
     });

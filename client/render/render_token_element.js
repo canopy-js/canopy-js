@@ -124,8 +124,12 @@ function renderGlobalLink(token, renderContext) {
     onLinkClick(link)
   );
 
+  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); //put icon for table list space allocation
+
   setTimeout(function assignCycleClasses(){ // requires finished render to know intratopic subtopic hierarchy
     if (!link.isInDom) setTimeout(assignCycleClasses);
+
+    linkElement.classList.remove('canopy-provisional-icon-link')
 
     if (link.isBackCycle) {
       linkElement.classList.add('canopy-back-cycle-link');
