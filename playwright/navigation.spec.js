@@ -228,7 +228,7 @@ test.describe('Navigation', () => {
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
 
-    await page.locator('text=New York').click();
+    await page.locator('a:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -239,7 +239,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('a:has-text("New York")').click();
+    await page.locator('a:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
@@ -250,7 +250,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("New York")').click();
+    await page.locator('a:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -272,7 +272,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('a[data-type="global"]:has-text("New York")').click();
+    await page.locator('a[data-type="global"]:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
@@ -282,7 +282,7 @@ test.describe('Navigation', () => {
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
 
-    await page.locator('text=New York').click({
+    await page.locator('a:has-text("New York"):visible').click({
       modifiers: ['Alt']
     });
     await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
@@ -296,7 +296,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("New York")').click({
+      page.locator('a:has-text("New York"):visible').click({
         modifiers: [systemNewTabKey]
       })
     ]);
@@ -313,7 +313,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("New Jersey")').click({
+      page.locator('a:has-text("New Jersey"):visible').click({
         modifiers: [systemNewTabKey]
       })
     ]);
@@ -330,7 +330,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("New York")').click({
+      page.locator('a:has-text("New York"):visible').click({
         modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
@@ -372,7 +372,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('a:has-text("southern border")').click();
+    await page.locator('a:has-text("southern border"):visible').click();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
@@ -382,7 +382,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("southern border")').click();
+    await page.locator('a:has-text("southern border"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
@@ -406,7 +406,7 @@ test.describe('Navigation', () => {
     await page.goto('New_Jersey#Attractions');
     await expect(page.locator('.canopy-selected-link')).toHaveText('attractions');
 
-    await page.locator('a[data-type="local"]:has-text("attractions")').click();
+    await page.locator('a[data-type="local"]:has-text("attractions"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('New Jersey');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
@@ -417,7 +417,7 @@ test.describe('Navigation', () => {
     await page.goto('New_Jersey#Northern_part');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
 
-    await page.locator('a[data-type="local"]:has-text("northern part")').click();
+    await page.locator('a[data-type="local"]:has-text("northern part"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('New Jersey');
     await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
@@ -428,7 +428,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
-    await page.locator('a:has-text("southern border")').click({
+    await page.locator('a:has-text("southern border"):visible').click({
       modifiers: ['Alt']
     })
 
@@ -443,7 +443,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("southern border")').click({
+      page.locator('a:has-text("southern border"):visible').click({
         modifiers: [systemNewTabKey]
       })
     ]);
@@ -460,7 +460,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("southern border")').click({
+      page.locator('a:has-text("southern border"):visible').click({
         modifiers: [systemNewTabKey, 'Alt']
       })
     ]);
@@ -515,7 +515,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("northern border")').click();
+    await page.locator('a:has-text("northern border"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
@@ -541,7 +541,7 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
-    await page.locator('a:has-text("northern border")').click({
+    await page.locator('a:has-text("northern border"):visible').click({
       modifiers: ['Alt']
     })
 
@@ -556,7 +556,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("northern border")').click({
+      page.locator('a:has-text("northern border"):visible').click({
         modifiers: [systemNewTabKey]
       })
     ]);
@@ -573,7 +573,7 @@ test.describe('Navigation', () => {
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('a:has-text("northern border")').click({
+      page.locator('a:has-text("northern border"):visible').click({
         modifiers: [systemNewTabKey, 'Alt']
       })
     ]);

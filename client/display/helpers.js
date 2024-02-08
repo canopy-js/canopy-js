@@ -271,7 +271,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect?.onCurrentPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
+  let targetElement = (linkToSelect?.onPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
     || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;

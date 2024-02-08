@@ -32,6 +32,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
   pathToDisplay.paragraph.addSelectionClass();
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
+  setTimeout(() => Link.onPage.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.select({ renderOnly: true })))); // eager render
   return options.noScroll ? Promise.resolve() : scrollPage(linkToSelect, options);
 };
 

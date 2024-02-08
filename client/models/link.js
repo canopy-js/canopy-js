@@ -579,7 +579,7 @@ class Link {
     Link.updateSelectionClass(this);
   }
 
-  get onCurrentPage() {
+  get onPage() {
     const style = window.getComputedStyle(this.element);
 
     return (
@@ -700,6 +700,12 @@ class Link {
     return Array.from(document.querySelectorAll('.canopy-selectable-link'))
       .map(element => Link.for(element))
       .filter(link => link.isVisible)
+  }
+
+  static get onPage() {
+    return Array.from(document.querySelectorAll('.canopy-selectable-link'))
+      .map(element => Link.for(element))
+      .filter(link => link.onPage)
   }
 
   static for(arg) {

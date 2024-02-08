@@ -15,7 +15,7 @@ function renderTokenElement(token, renderContext) {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
   } else if (token.type === 'global') {
-    // requestJson(Path.for(token.pathString).firstTopic); // eager load
+    Path.for(token.pathString).topicArray.map(topic => requestJson(topic)); // eager load
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'import') {
     return renderImportLink(token, renderContext);
