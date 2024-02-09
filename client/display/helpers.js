@@ -248,10 +248,8 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
-  let firstDestinationElementY = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top + ScrollableContainer.currentScroll;
-  let firstDestinationY = firstDestinationElementY - ScrollableContainer.focusGap;
-  let firstDestinationYRelative = firstDestinationY - ScrollableContainer.currentScroll;
-  let longDistanceUp = firstDestinationYRelative < -ScrollableContainer.focusGap || firstDestinationYRelative < 0;
+  let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
+  let longDistanceUp = firstDestinationElementYRelative < 0; // next destination is off top of screen
 
   let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
