@@ -3,12 +3,12 @@ let { updateFilesystem, getExplFileData } = require('./components/fs-helpers');
 let path = require('path');
 
 function buildProject(defaultTopicString, options) {
-  let explFileData = getExplFileData(path.resolve('topics'));
+  let [explFileData, newStatusData] = getExplFileData(path.resolve('topics'), options);
 
   let {
     directoriesToEnsure,
     filesToWrite
-  } = jsonForProjectDirectory(explFileData, defaultTopicString, options);
+  } = jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString, options);
 
   updateFilesystem(directoriesToEnsure, filesToWrite, options);
 }

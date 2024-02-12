@@ -13,7 +13,7 @@ function watch(options = {}) {
   }
 
   try { // initial build
-    tryAndWriteHtmlError(build, Object.assign({ ...options, ...{ logging: false }}));
+    tryAndWriteHtmlError(build, options);
     console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
   } catch (e) {
     console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
