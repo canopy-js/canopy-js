@@ -44,7 +44,7 @@ function tryAndWriteHtmlError(func, options = {}) {
     fs.writeFileSync(
       'build/index.html',
       `<h1 style="text-align: center;">Error building project</h1>
-      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${stripAnsi(e.message).replace(/\n+/g, '<br><br>')}</p>`
+      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${stripAnsi(e?.message||e||'Error getting error').replace(/\n+/g, '<br><br>')}</p>`
     );
 
     throw e; // rethrow the error so that the appropriate logging can be added
