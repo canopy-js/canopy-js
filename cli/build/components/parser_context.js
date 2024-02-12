@@ -45,8 +45,8 @@ class ParserContext {
 
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
-  buildNamespaceObject(explFileData) {
-    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
+  buildNamespaceObject(explFileData, newStatusData) {
+    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics, subtopicParents } = this;
 
     Object.keys(explFileData).forEach(function(filePath){
       let fileContents = explFileData[filePath];
@@ -355,7 +355,7 @@ class ParserContext {
             throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
           }
 
-          if (!this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
+          if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
             throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`));
           }
 
@@ -364,7 +364,7 @@ class ParserContext {
           let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
           let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
 
-          if (!this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
+          if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`));
@@ -378,6 +378,7 @@ class ParserContext {
 
   hasConnection(subtopic, topic, visitedSubtopics = {}) { // Does a given subtopic have a local-reference path to the given topic?
     if (subtopic.caps === topic.caps) return true;
+    if (this.subtopicParents[topic.caps] === null) return true; // we will proceed assuming there is a connection because this is a cache run
     if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
     if (!this.subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
     if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
