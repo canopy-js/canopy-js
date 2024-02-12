@@ -3,10 +3,10 @@ let { topicKeyOfString } = require('./simple-helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
 
-function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
+function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString, options={}) {
   let destinationBuildDirectory = 'build';
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let parserContext = new ParserContext({ explFileData, defaultTopicString, options });
+  let parserContext = new ParserContext({ explFileData, newStatusData, defaultTopicString, options });
   let directoriesToEnsure = [];
   let filesToWrite = {};
 
@@ -14,6 +14,7 @@ function jsonForProjectDirectory(explFileData, defaultTopicString, options) {
 
   Object.keys(explFileData).forEach(function(filePath) {
     if (!topicKeyOfString(explFileData[filePath])) return;
+    if (newStatusData && !newStatusData[filePath]) return; // with --cache we only build json for new expl files
 
     let json = jsonForExplFile(filePath, explFileData, parserContext, options);
     let topic = new Topic(topicKeyOfString(explFileData[filePath]), true);
