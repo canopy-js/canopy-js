@@ -17,20 +17,20 @@ function moveToParent() {
   let parentLink = link && link.parentLink && Link.lastSelectionOfParagraph(link.parentLink?.enclosingParagraph) || link.parentLink;
   let selectionInRootParagraph = !parentLink;
 
-  if (selectionInRootParagraph && !link.isVisible()) {
+  if (selectionInRootParagraph && !link.isVisible) {
     let sectionElement = Link.selection.enclosingParagraph.sectionElement;
     return scrollElementToPosition(sectionElement, {targetRatio: 0.75, maxScrollRatio: 0.5, minDiff: 0, direction: 'up', behavior: 'smooth'});
   }
 
-  if (selectionInRootParagraph && link.isVisible()) {
+  if (selectionInRootParagraph && link.isVisible) {
     return updateView(link.enclosingParagraph.path); // deselect link
   }
 
-  if (parentLink && !parentLink.isVisible()) {
+  if (parentLink && !parentLink.isVisible) {
     return scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
   }
 
-  if (parentLink && parentLink.isVisible()) {
+  if (parentLink && parentLink.isVisible) {
     return link.parentLink.select();
   }
 }
