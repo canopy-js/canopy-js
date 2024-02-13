@@ -16,7 +16,7 @@ class ScrollableContainer {
     if (!this.windowMode) return this.element.clientHeight;
   }
 
-  static get innerHeight() {
+  static get scrollHeight() {
     if (this.windowMode) return document.documentElement.scrollHeight;
     if (!this.windowMode) return this.element.scrollHeight;
   }

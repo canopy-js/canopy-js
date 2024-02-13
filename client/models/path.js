@@ -31,8 +31,11 @@ class Path {
     }
   }
 
+  static stringToArrayCache = {};
+
   static stringToArray(pathString) {
     if (typeof pathString !== 'string') throw new Error("Function requires string argument");
+    if (this.stringToArrayCache.hasOwnProperty(pathString)) return this.stringToArrayCache[pathString];
 
     if (pathString === '/') {
       return [];
@@ -58,7 +61,7 @@ class Path {
       Topic.fromEncodedSlug(subtopicString)
     ]);
 
-
+    this.stringToArrayCache[pathString] = array;
     return array;
   }
 
@@ -290,6 +293,17 @@ class Path {
     return result;
   }
 
+  get includedParagraphs() {
+    let result = [];
+    let currentParagraph = this.paragraph;
+    while (currentParagraph) {
+      result.push(currentParagraph);
+      currentParagraph = currentParagraph.parentParagraph;
+    }
+
+    return result;
+  }
+
   siblingOf(otherPath) {
     return !!(this.parentPath && otherPath.parentPath) && // if either doesn't have a parent it can't have siblings
       !this.equals(otherPath) && // doesn't count if the paths are the same
@@ -328,6 +342,12 @@ class Path {
     if (this.length === 0) return this;
     let lastSegment = this.lastSegment;
     return this.withoutLastSegment.addSegment(lastSegment.firstTopic, newSubtopic);
+  }
+
+  get removeTerminalSubtopic() {
+    if (this.length === 0) return this;
+    let lastSegment = this.lastSegment;
+    return this.withoutLastSegment.addSegment(lastSegment.firstTopic, lastSegment.firstTopic);
   }
 
   toString() {
