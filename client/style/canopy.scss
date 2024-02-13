@@ -335,6 +335,7 @@
       &.canopy-selectable-link {
         text-decoration: none;
         text-shadow: none;
+        user-select: none;
       }
 
       &.canopy-selected-link {
