@@ -6,7 +6,7 @@ let { displaySegment, wrapText, parseLink } = require('../../shared/simple-helpe
 let chalk = require('chalk');
 
 class ParserContext {
-  constructor({ explFileData, defaultTopicString, priorParserContext, options }) {
+  constructor({ explFileData, newStatusData, defaultTopicString, priorParserContext, options }) {
     if (priorParserContext) {
       Object.assign(this, priorParserContext, options) // create a new object with new properties, but with references to prior data properties
     } else {
@@ -30,7 +30,7 @@ class ParserContext {
       this.characterNumber = 1; // the current line number being parsed
       this.linePrefixSize = 0 // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
 
-      this.buildNamespaceObject(explFileData);
+      this.buildNamespaceObject(explFileData, newStatusData);
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
       this.insideToken = false; // are we parsing tokens inside another token? We use this to avoid recognizing multi-line tokens inside other tokens.
@@ -45,8 +45,8 @@ class ParserContext {
 
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
-  buildNamespaceObject(explFileData) {
-    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
+  buildNamespaceObject(explFileData, newStatusData) {
+    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics, subtopicParents } = this;
 
     Object.keys(explFileData).forEach(function(filePath){
       let fileContents = explFileData[filePath];
@@ -70,6 +70,7 @@ class ParserContext {
       }
 
       topicSubtopics[currentTopic.caps] = {};
+      if (newStatusData && !newStatusData[filePath]) subtopicParents[currentTopic.caps] = null; // indicate that we lack data because of cache run
 
       paragraphsWithKeys.forEach(function(paragraphText) {
         if (paragraphText[0] === "\n") { // because we split on \n\n, there is only a chance that the first character is a newline
@@ -378,6 +379,7 @@ class ParserContext {
 
   hasConnection(subtopic, topic, visitedSubtopics = {}) { // Does a given subtopic have a local-reference path to the given topic?
     if (subtopic.caps === topic.caps) return true;
+    if (this.subtopicParents[topic.caps] === null) return true; // we will proceed assuming there is a connection because this is a cache run
     if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
     if (!this.subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
     if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic

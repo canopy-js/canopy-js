@@ -6,7 +6,7 @@ let Topic = require('../../shared/topic');
 function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString, options={}) {
   let destinationBuildDirectory = 'build';
   let destinationDataDirectory = destinationBuildDirectory + '/_data';
-  let parserContext = new ParserContext({ explFileData, defaultTopicString, options });
+  let parserContext = new ParserContext({ explFileData, newStatusData, defaultTopicString, options });
   let directoriesToEnsure = [];
   let filesToWrite = {};
 
