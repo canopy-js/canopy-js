@@ -142,8 +142,8 @@ function scrollElementToPosition(element, options) {
   let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
   // Adjust idealScrollY to the closest possible scroll position
-  if (ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight < idealScrollY) console.error('Scrollable area not long enough to scroll to desired position');
-  idealScrollY = Math.max(0, Math.min(idealScrollY, ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight));
+  if (ScrollableContainer.scrollHeight - ScrollableContainer.visibleHeight < idealScrollY) console.error('Scrollable area not long enough to scroll to desired position');
+  idealScrollY = Math.max(0, Math.min(idealScrollY, ScrollableContainer.scrollHeight - ScrollableContainer.visibleHeight));
 
   // Use the calculated scroll or max scroll if it is too big
   const maxScrollDistance = maxScrollRatio ? ScrollableContainer.visibleHeight * maxScrollRatio : Infinity;
@@ -252,7 +252,7 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
   let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
   let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
-  let longDistanceUp = firstDestinationElementYRelative < 0 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
+  let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
 
   let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)

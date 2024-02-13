@@ -2,6 +2,7 @@ import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
+import ScrollableContainer from 'helpers/scrollable_container';
 
 class Link {
   constructor(argument) {
@@ -415,33 +416,29 @@ class Link {
 
   get isOffScreen() {
     const rect = this.element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-
-    return (
-      rect.top < 0 || // The top edge of the element is above the viewport's top
-      rect.bottom > viewportHeight // The bottom edge of the element is below the viewport's bottom
-    );
+    const viewportHeight = ScrollableContainer.visibleHeight;
+    return rect.top < 0 || rect.bottom > viewportHeight;
   }
 
-  isVisible() {
+  get isVisible() {
     if (!this.element) return false;
-    let rect = this.element.getBoundingClientRect();
-    let windowHeight = window.innerHeight;
-    let windowWidth = window.innerWidth;
+    const rect = this.element.getBoundingClientRect();
+    const windowHeight = ScrollableContainer.visibleHeight;
 
-    let visibleWidth = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
-    let visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+    // Calculate the visible height of the element
+    const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
 
-    let totalArea = (rect.bottom - rect.top) * (rect.right - rect.left);
-    let visibleArea = visibleHeight * visibleWidth;
+    // Calculate the total height of the element
+    const totalHeight = rect.bottom - rect.top;
 
-    return (visibleArea / totalArea) >= 0.5;
+    // Check if more than 50% of the element's height is visible
+    return (visibleHeight / totalHeight) >= 0.5;
   }
 
   get isEntirelyVisible() {
     if (!this.element) return false;
-
-    return this.top >= 0 && this.bottom <= ScrollableContainer.visibleHeight;
+    const rect = this.element.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
   }
 
   isAboveViewport() {
