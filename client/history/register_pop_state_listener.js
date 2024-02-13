@@ -11,7 +11,7 @@ function registerPopStateListener() {
   history.replaceState(history.state, document.title, window.location.href); // no-op call to trigger pop state event firing
 
   window.addEventListener('popstate', (e) => {
-    let linkSelection = Link.selectionPresentInEvent(e) ? new Link(e.state) : null;
+    let linkSelection = e?.state?.linkSelection ? new Link(e?.state?.linkSelection) : null;
 
     let scrollStyle;
     if (Path.current.rootTopicPath.equals(Path.url.rootTopicPath)) { // Navigating within the same page
@@ -22,7 +22,7 @@ function registerPopStateListener() {
 
     updateView(
       Path.url,
-      linkSelection || Link.sessionSelection || Path.url.parentLink,
+      linkSelection || Path.url.parentLink,
       { scrollStyle, scrollDirect: true }
     );
   });

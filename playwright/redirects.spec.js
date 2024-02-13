@@ -2,6 +2,14 @@ const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
+
+  await page.goto('/United_States');
+  await expect(page).toHaveURL("United_States");
+  await page.evaluate(() => localStorage.clear()); // get rid of old link selections
+  await page.evaluate(() => sessionStorage.clear());
+  await page.waitForFunction(() => {
+    return localStorage.length === 0 && sessionStorage.length === 0;
+  });
 });
 
 function logBrowserErrors(message) {
