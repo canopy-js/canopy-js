@@ -788,7 +788,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('h1')).toBeVisible();
 
-    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border');
+    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border >> visible=true');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
 
     // we also want it to scroll to New_York#Southern_border, not to New_York, ie it should identify when nodes after the cycle occur

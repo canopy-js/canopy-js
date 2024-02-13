@@ -48,7 +48,12 @@ class Paragraph {
   transferDataset() { // This is so we can more easily debug in the console
     this._topicName = this.sectionElement.dataset.topicName;
     this._subtopicName = this.sectionElement.dataset.subtopicName;
+    this._pathString = this.sectionElement.dataset.pathString;
     this.pathDepth = Number(this.sectionElement.dataset.pathDepth);
+  }
+
+  get isVisible() {
+    return window.getComputedStyle(this.sectionElement).display !== 'none';
   }
 
   get topic () {
@@ -76,27 +81,29 @@ class Paragraph {
   }
 
   get path() {
-    if (!this.isInDom) debugger;// throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
-    let array = [];
-    let currentElement = this.sectionElement;
-    let currentParagraph = this;
-    let currentTopicParagraph = this.topicParagraph;
+    return new Path(this.sectionElement.dataset.pathString);
+    // if (!this.isInDom) debugger;// throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
+    // let array = [];
+    // let currentElement = this.sectionElement;
+    // let currentParagraph = this;
+    // let currentTopicParagraph = this.topicParagraph;
 
-    while (currentElement !== canopyContainer) {
-      currentTopicParagraph = currentParagraph.topicParagraph;
+    // while (currentElement !== canopyContainer) {
+    //   currentTopicParagraph = currentParagraph.topicParagraph;
 
-      array.unshift([
-        Topic.fromMixedCase(currentElement.dataset.topicName),
-        Topic.fromMixedCase(currentElement.dataset.subtopicName)
-      ]);
+    //   array.unshift([
+    //     Topic.fromMixedCase(currentElement.dataset.topicName),
+    //     Topic.fromMixedCase(currentElement.dataset.subtopicName)
+    //   ]);
 
-      while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {
-        currentElement = currentElement.parentNode;
-        if (currentElement !== canopyContainer) currentParagraph = new Paragraph(currentElement);
-      }
-    }
+    //   while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {
+    //     currentElement = currentElement.parentNode;
+    //     if (currentElement !== canopyContainer) currentParagraph = new Paragraph(currentElement);
+    //   }
+    // }
 
-    return new Path(array);
+
+    // return new Path(array);
   }
 
   get pathDown() { // path from the paragraph down the page
@@ -130,7 +137,7 @@ class Paragraph {
     return Link.lastSelectionOfParagraph(this);
   }
 
-  get isroot() {
+  get isRoot() {
     return this.sectionElement.parentNode === canopyContainer
   }
 
@@ -218,7 +225,9 @@ class Paragraph {
     if (this.isTopic) {
       return this;
     } else {
-      return new Paragraph(this.sectionElement.parentNode.closest('.canopy-topic-section'));
+      let topicParagraph = this.sectionElement.parentNode.closest('.canopy-topic-section');
+      if (!topicParagraph) throw new Error('Missing topic paragraph');
+      return new Paragraph(topicParagraph);
     }
   }
 
@@ -281,7 +290,7 @@ class Paragraph {
 
     while (path) {
       paragraphs.push(path.paragraph);
-      path = parentPath;
+      path = path.parentPath;
     }
 
     return paragraphs;
@@ -293,6 +302,17 @@ class Paragraph {
       if (currentParagraph.top < integerY && currentParagraph.bottom > integerY) return currentParagraph;
       return Math.abs(bestParagraph.top - integerY) < Math.abs(currentParagraph.top - integerY) ? bestParagraph : currentParagraph;
     });
+  }
+
+  static pruneDom() { // remove eager or past renders that are not accessible by the visible links
+    let necessaryParagraphs = {};
+    Paragraph.visible.forEach(p => necessaryParagraphs[p.path] = true);
+    Link.visible.forEach(link => link.inlinePath.includedParagraphs.forEach(p => { necessaryParagraphs[p.path] = true }));
+    Paragraph.all.filter(p => p.isTopic && !necessaryParagraphs.hasOwnProperty(p.path)).forEach(p => p.sectionElement.remove());
+  }
+
+  static get all() {
+    return Array.from(document.querySelectorAll('.canopy-section')).map(sectionElement => Paragraph.for(sectionElement));
   }
 
   static get focused() {
