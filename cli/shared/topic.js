@@ -1,11 +1,13 @@
 let removeStyleCharacters = require('./remove_style_characters');
 require('css.escape');
+const Cache = {};
 
 class Topic {
   // There are several permutations of the topic key
 
   constructor(string) {
     if (!string) throw new Error('String required to instantiate Topic');
+    if (Cache.hasOwnProperty(string) && Cache.hasOwnProperty(string).display) return console.log('topic cache hit') || Cache[string];
 
     this.display = string; // the string precisely as it appears in the expl file
 
@@ -53,6 +55,8 @@ class Topic {
       .trim() // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
     this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+
+    Cache[string] = this;
   }
 
   static fromMixedCase(string) {

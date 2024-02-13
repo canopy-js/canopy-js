@@ -142,8 +142,8 @@ function scrollElementToPosition(element, options) {
   let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
   // Adjust idealScrollY to the closest possible scroll position
-  if (ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight < idealScrollY) console.error('Scrollable area not long enough to scroll to desired position');
-  idealScrollY = Math.max(0, Math.min(idealScrollY, ScrollableContainer.innerHeight - ScrollableContainer.visibleHeight));
+  if (ScrollableContainer.scrollHeight - ScrollableContainer.visibleHeight < idealScrollY) console.error('Scrollable area not long enough to scroll to desired position');
+  idealScrollY = Math.max(0, Math.min(idealScrollY, ScrollableContainer.scrollHeight - ScrollableContainer.visibleHeight));
 
   // Use the calculated scroll or max scroll if it is too big
   const maxScrollDistance = maxScrollRatio ? ScrollableContainer.visibleHeight * maxScrollRatio : Infinity;
@@ -249,13 +249,17 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
   let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
-  let longDistanceUp = firstDestinationElementYRelative < 0; // next destination is off top of screen
+  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
+  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
+  let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
+  let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
 
   let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
     && !Path.rendered.siblingOf(pathToDisplay)
-    && !pathToDisplay.parentOf(Path.rendered); // this doesn't disqualify animation but we would require a large gap
+    && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
+    && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)); // eg shortcut that selects sibling link
 
   return longDistanceUp || twoStepChange;
 }
@@ -273,7 +277,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
     || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
-  let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
+  let firstTargetRatio = targetElement.tagName === 'A' ? 0.2 : 0.2; // paragraphs should be higher to be focused than links
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
       {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
@@ -282,7 +286,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
     .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))
     .then(() => !strictlyUpward && !elementIsFocused(newPath.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
       newPath.paragraph.paragraphElement,
-      {targetRatio: 0.25, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
+      {targetRatio: 0.24, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
     );
 }
 
@@ -290,8 +294,8 @@ function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
 
   // Define the viewport height thresholds for the element to be considered within the desired vertical range
-  const topThreshold = window.innerHeight * 0.05; // 5% of the viewport height
-  const bottomThreshold = window.innerHeight * 0.50; // 50% of the viewport height
+  const topThreshold = window.innerHeight * 0.1;
+  const bottomThreshold = window.innerHeight * 0.4;
 
   // Check if the entire element is within the 5% to 50% range of the viewport
   // The top of the element should be below the top threshold (5% mark)

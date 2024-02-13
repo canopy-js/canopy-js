@@ -32,6 +32,7 @@ program.command('build')
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
   .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
+  .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
   .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
@@ -54,6 +55,7 @@ program.command('watch')
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
   .addOption(new Option('--pretty', 'Pretty print JSON'))
@@ -76,6 +78,7 @@ program.command('dev')
   .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
   .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/subpath/', '')
   .option('-k, --keep-build-directory', 'Remove recursively the previous build directory and create new', false)
+  .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
   .action((portArgument, options) => {
@@ -127,6 +130,8 @@ program.command('bulk')
   .addOption(new Option('--pretty', 'Pretty print JSON'))
   .option('--no-open', 'do not open link in browser', true)
   .option('--no-backup', 'clear the backup file and do not write to it')
+  .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
+  .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
@@ -138,16 +143,16 @@ program.command('bulk')
     });
   });
 
-program.command('sketch')
-  .description('interactive CLI for creating content')
-  .action(() => {
-    try {
-      sketch();
-    } catch (e) {
-      if (options.error) throw e;
-      console.error(e.message);
-      process.exit(1)
-    }
-  });
+// program.command('sketch')
+//   .description('interactive CLI for creating content')
+//   .action(() => {
+//     try {
+//       sketch();
+//     } catch (e) {
+//       if (options.error) throw e;
+//       console.error(e.message);
+//       process.exit(1)
+//     }
+//   });
 
 program.parse();

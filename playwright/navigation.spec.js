@@ -2,6 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
+
+  await page.goto('/United_States');
+  await expect(page).toHaveURL("United_States");
+  await page.evaluate(() => localStorage.clear()); // get rid of old link selections
 });
 
 function logBrowserErrors(message) {
@@ -93,6 +97,7 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowLeft');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור השלישי');
     await page.locator('body').press('ArrowLeft');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('first left to right link');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('second left to right link');
     await page.locator('body').press('ArrowUp');
@@ -662,7 +667,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
-    await page.getByRole('link', { name: 'cafeteria ↪' }).click({
+    await page.locator('a:has-text("cafeteria").canopy-lateral-cycle-link').click({
       modifiers: ['Shift']
     });
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -690,12 +695,12 @@ test.describe('Navigation', () => {
     };
 
     // Get the combined text for the first link
-    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link');
+    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible');
     // Assert the combined text for the first link
     expect(combinedTextFirstLink).toBe('cafeteria↪');
 
     // Get the combined text for the second link
-    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link');
+    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible');
     // Assert the combined text for the second link
     expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
   });
@@ -787,7 +792,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('h1')).toBeVisible();
 
-    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border');
+    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border >> visible=true');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
 
     // we also want it to scroll to New_York#Southern_border, not to New_York, ie it should identify when nodes after the cycle occur

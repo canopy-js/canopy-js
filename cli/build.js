@@ -12,8 +12,11 @@ function build(options = {}) {
   let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
-  if (!keepBuildDirectory) fs.rmSync('build', { recursive: true, force: true });
-  fs.rmSync('build/_data', { recursive: true, force: true });
+  if (!keepBuildDirectory) {
+    fs.rmSync('build', { recursive: true, force: true });
+    fs.rmSync('build/_data', { recursive: true, force: true });
+  }
+
   fs.ensureDirSync('build');
 
   if (!manualHtml) {
@@ -56,7 +59,7 @@ function build(options = {}) {
     + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
   ));
 
-  if (fs.existsSync(`assets`)) {
+  if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
     fs.rmSync('build/_assets', { recursive: true, force: true });
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
@@ -87,7 +90,10 @@ function build(options = {}) {
     fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
   }
 
-  tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options);
+  if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
+  tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // if cache, do a quick build of changed expl only
+  if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
+  if (options.cache && options.logging) tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options); // then do all
 
   if (options.logging) console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }

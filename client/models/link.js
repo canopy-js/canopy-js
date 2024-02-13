@@ -2,6 +2,7 @@ import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
+import ScrollableContainer from 'helpers/scrollable_container';
 
 class Link {
   constructor(argument) {
@@ -234,7 +235,6 @@ class Link {
     let link = new Link(linkElement);
     let paragraph = Paragraph.containingLink(link);
 
-    // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
     return {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
@@ -243,14 +243,10 @@ class Link {
     };
   }
 
-  static containsLinkSelectionMetadata(object) {
-    return object.relativeLinkNumber !== undefined;
-  }
-
   static elementFromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
-    if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
+    if (!enclosingParagraph) { throw new Error("Link selection data refers to non-existant link", object); }
     let link = enclosingParagraph.linkBySelector(
       (link, i) => link.element.dataset.text === object.text &&
         i === object.relativeLinkNumber
@@ -415,33 +411,29 @@ class Link {
 
   get isOffScreen() {
     const rect = this.element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-
-    return (
-      rect.top < 0 || // The top edge of the element is above the viewport's top
-      rect.bottom > viewportHeight // The bottom edge of the element is below the viewport's bottom
-    );
+    const viewportHeight = ScrollableContainer.visibleHeight;
+    return rect.top < 0 || rect.bottom > viewportHeight;
   }
 
-  isVisible() {
+  get isVisible() {
     if (!this.element) return false;
-    let rect = this.element.getBoundingClientRect();
-    let windowHeight = window.innerHeight;
-    let windowWidth = window.innerWidth;
+    const rect = this.element.getBoundingClientRect();
+    const windowHeight = ScrollableContainer.visibleHeight;
 
-    let visibleWidth = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
-    let visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+    // Calculate the visible height of the element
+    const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
 
-    let totalArea = (rect.bottom - rect.top) * (rect.right - rect.left);
-    let visibleArea = visibleHeight * visibleWidth;
+    // Calculate the total height of the element
+    const totalHeight = rect.bottom - rect.top;
 
-    return (visibleArea / totalArea) >= 0.5;
+    // Check if more than 50% of the element's height is visible
+    return (visibleHeight / totalHeight) >= 0.5;
   }
 
   get isEntirelyVisible() {
     if (!this.element) return false;
-
-    return this.top >= 0 && this.bottom <= ScrollableContainer.visibleHeight;
+    const rect = this.element.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
   }
 
   isAboveViewport() {
@@ -609,7 +601,7 @@ class Link {
   }
 
   static selectionPresentInEvent(e) {
-    return e.state && Link.containsLinkSelectionMetadata(e.state);
+    return e.state && e.state?.linkSelection;
   }
 
   static get sessionSelection() {
@@ -627,9 +619,15 @@ class Link {
   static get historySelection() {
     if (Path.url.empty) return null; // initial '/' load will never recall link selection
 
-    if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
-      let link = new Link(history.state);
-      return link;
+    if (history?.state?.linkSelection) {
+      let link = new Link(history.state.linkSelection);
+      try {
+        link.element;
+        return link;
+      } catch {
+        history.state.linkSelection = null;
+        return null
+      }
     } else {
       return null;
     }
@@ -659,7 +657,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link && link.metadata || null,
+      link && { linkSelection: link.metadata } || null,
       document.title,
       window.location.href
     );
@@ -687,6 +685,8 @@ class Link {
           return link;
         }
       } catch {
+        delete lastSelectionsOfParagraph[paragraph.path]; // erase bad value
+        sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
         return null;
       }
     }

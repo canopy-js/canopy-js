@@ -126,10 +126,10 @@ function renderGlobalLink(token, renderContext) {
   if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
   let timeoutCount = 0;
-  setTimeout(function assignCycleClasses(){ // requires finished render to know intratopic subtopic hierarchy
+  setTimeout(function assignCycleClasses() { // requires finished render to know intratopic subtopic hierarchy
     timeoutCount++;
     if (timeoutCount > 1000) { console.log('Timed out adding link to DOM', linkElement); return; }
-
+    if (!link.element) return;
     if (!link.isInDom) { setTimeout(assignCycleClasses); return; }
 
     linkElement.classList.remove('canopy-provisional-icon-link')
@@ -375,6 +375,9 @@ function renderTableList(token, renderContext) {
       while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
       tableCellElement = tokenElement;
       tableCellElement.appendChild(contentContainer);
+      tableCellElement.addEventListener('dragstart', function(event) {
+        event.preventDefault();
+      });
     } else {
       cellObject.tokens.forEach(token => {
         tokenElement = renderTokenElement(token, renderContext);

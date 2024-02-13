@@ -71,7 +71,7 @@ function rebuildCanopy(edit) {
     let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
 
     let directoriesToEnsure, filesToWrite;
-    ({ directoriesToEnsure, filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, defaultTopicKey, {}));
+    ({ directoriesToEnsure, filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, null, defaultTopicKey));
     consoleElement.classList.remove('error');
     consoleElement.innerText = '';
 

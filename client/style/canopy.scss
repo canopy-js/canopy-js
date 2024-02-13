@@ -91,11 +91,11 @@
         padding-right: 4px;
       }
 
-      &:not(.canopy-table-list-link-cell) *:last-child::after {
-        content: ' ';
-        font-size: 3px;
-        white-space: nowrap;
-      }
+//      &:not(.canopy-table-list-link-cell):last-child::after { // This is causing <br> tags not to be shrunk in tables
+//        content: ' ';
+//        font-size: 3px;
+//        white-space: nowrap;
+//      }
 
       &:not(.canopy-table-list-link-cell)::after {
         font-size: 9px;
@@ -237,6 +237,7 @@
 
     td.canopy-table-link-cell {
       cursor: pointer;
+      user-select: none;
 
       a.canopy-selectable-link {
         text-decoration: none;
@@ -327,10 +328,12 @@
       display: flex;
       justify-content: center; /* Center content horizontally */
       align-items: center; /* Center content vertically */
+      user-select: none;
 
       &.canopy-selectable-link {
         text-decoration: none;
         text-shadow: none;
+        user-select: none;
       }
 
       &.canopy-selected-link {
