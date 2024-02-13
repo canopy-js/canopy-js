@@ -2,6 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
+
+  await page.goto('/United_States');
+  await expect(page).toHaveURL("United_States");
+  await page.evaluate(() => localStorage.clear()); // get rid of old link selections
 });
 
 function logBrowserErrors(message) {
@@ -762,16 +766,12 @@ test.describe('Navigation', () => {
   });
 
   test('Redirecting to default topic replaces history state', async ({ page, context }) => {
-    await page.goto('/');
+    await page.goto('/United_States/New_York');
+    await expect(page).toHaveURL('/United_States/New_York');
+    await page.goto('/'); // when this gets forwarded to United_States, it should replace the history state not add
     await expect(page).toHaveURL('United_States');
     await page.goBack();
-
-    let URL = await page.url();
-    if (URL.includes('United_States')){
-      expect(page).toHaveURL('United_States'); // Firefox doesn't allow browser back to new tab state, so we test for back being no-op
-    } else {
-      expect(await page.locator('#_canopy').count()).toEqual(0);
-    }
+    await expect(page).toHaveURL('/United_States/New_York');
   });
 
   test('Escape on root paragraph navigates to default topic', async ({ page, context }) => {
