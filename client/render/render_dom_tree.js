@@ -29,7 +29,6 @@ function renderDomTree(topic, subtopic, renderContext) {
 
 function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
   return (token) => {
-
     let { fullPath, remainingPath, currentTopic } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
     let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
@@ -47,7 +46,7 @@ function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
 
 function createSectionElement(topic, subtopic, renderContext) {
   let {
-    displayTopicName, pathDepth, paragraphsBySubtopic
+    displayTopicName, pathDepth, paragraphsBySubtopic, pathToParagraph
   } = renderContext;
 
   let sectionElement = document.createElement('section');
@@ -63,6 +62,8 @@ function createSectionElement(topic, subtopic, renderContext) {
   sectionElement.dataset.subtopicName = subtopic.mixedCase;
   sectionElement.subtopicName = subtopic.mixedCase; // helpful to have in debugger
   sectionElement.dataset.pathDepth = pathDepth;
+  sectionElement.dataset.pathString = pathToParagraph.replaceTerminalSubtopic(subtopic).string;
+
   let tokens = paragraphsBySubtopic[topic.mixedCase];
 
   if (topic.mixedCase === subtopic.mixedCase) {

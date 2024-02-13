@@ -11,13 +11,13 @@ const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (!options.renderOnly && !options.noDisplay) document.title = pathToDisplay.lastTopic.mixedCase;
 
   let renderComplete = (lastPath = !options.pending && pathToDisplay || lastPath) &&
-    fetchAndRenderPath(pathToDisplay, pathToDisplay, canopyContainer).catch(e => console.error(e));
+    fetchAndRenderPath(pathToDisplay, pathToDisplay, Promise.resolve(canopyContainer)).catch(e => console.error(e));
 
   Promise.race([
     renderComplete,
     (new Promise(resolve => setTimeout(resolve, 400)))
   ]).then((success) => {
-    if (!success && linkToSelect && Paragraph.contentLoaded) {
+    if (!success && linkToSelect && Paragraph.contentLoaded && !options.renderOnly) {
       linkToSelect?.element && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect, { pending: true });
     }
   });
