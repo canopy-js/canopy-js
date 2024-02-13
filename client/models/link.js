@@ -235,7 +235,6 @@ class Link {
     let link = new Link(linkElement);
     let paragraph = Paragraph.containingLink(link);
 
-    // changing the metadata schema requires changing Link#containsLinkSelectionMetadata
     return {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
@@ -244,14 +243,10 @@ class Link {
     };
   }
 
-  static containsLinkSelectionMetadata(object) {
-    return object.relativeLinkNumber !== undefined;
-  }
-
   static elementFromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
-    if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
+    if (!enclosingParagraph) { throw new Error("Link selection data refers to non-existant link", object); }
     let link = enclosingParagraph.linkBySelector(
       (link, i) => link.element.dataset.text === object.text &&
         i === object.relativeLinkNumber
@@ -606,7 +601,7 @@ class Link {
   }
 
   static selectionPresentInEvent(e) {
-    return e.state && Link.containsLinkSelectionMetadata(e.state);
+    return e.state && e.state?.linkSelection;
   }
 
   static get sessionSelection() {
@@ -624,9 +619,15 @@ class Link {
   static get historySelection() {
     if (Path.url.empty) return null; // initial '/' load will never recall link selection
 
-    if (history.state && Link.containsLinkSelectionMetadata(history.state)) {
-      let link = new Link(history.state);
-      return link;
+    if (history?.state?.linkSelection) {
+      let link = new Link(history.state.linkSelection);
+      try {
+        link.element;
+        return link;
+      } catch {
+        history.state.linkSelection = null;
+        return null
+      }
     } else {
       return null;
     }
@@ -656,7 +657,7 @@ class Link {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
-      link && link.metadata || null,
+      link && { linkSelection: link.metadata } || null,
       document.title,
       window.location.href
     );
@@ -684,6 +685,8 @@ class Link {
           return link;
         }
       } catch {
+        delete lastSelectionsOfParagraph[paragraph.path]; // erase bad value
+        sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
         return null;
       }
     }
