@@ -181,12 +181,7 @@
       margin-left: 10px;
     }
 
-    margin-block-start: .5em;
-    margin-block-end: .5em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-
-    margin-bottom: 10px;
+    margin: 12px;
 
     a.canopy-selectable-link {
       text-decoration: underline #D3D3D3;
@@ -274,11 +269,11 @@
 
     .canopy-table-list-row {
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
+      box-sizing: border-box;
     }
 
     &.canopy-align-right {
-      width: 90%;
       align-items: flex-end;
       .canopy-table-list-row {
         justify-content: flex-end;
@@ -286,7 +281,6 @@
     }
 
     &.canopy-align-left {
-      width: 90%;
       align-items: flex-start;
     }
 
@@ -397,43 +391,43 @@
     }
 
     &.canopy-quarter-pill .canopy-table-list-cell {
-      width: 175px;
+      width: calc(750px/4 - 10px); // divide by divisor then account for 5px margin on both sides
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-third-pill .canopy-table-list-cell {
-      width: 220px;
+      width: calc(750px/3 - 10px); // divide by divisor then account for 5px margin on both sides
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-half-pill .canopy-table-list-cell {
-      width: 270px;
+      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-quarter-card .canopy-table-list-cell {
-      width: 175px;
+      width: calc(750px/4 - 10px); // divide by divisor then account for 5px margin on both sides
       height: 95px;
       padding: 15px;
     }
 
     &.canopy-third-card .canopy-table-list-cell {
-      width: 215px;
+      width: calc(750px/3 - 10px); // divide by divisor then account for 5px margin on both sides
       height: 120px;
       padding: 15px;
     }
 
     &.canopy-half-tube .canopy-table-list-cell {
-      width: 285px;
+      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
       height: 160px;
       padding: 30px;
     }
 
     &.canopy-half-card .canopy-table-list-cell {
-      width: 285px;
+      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
       height: 265px;
       min-height: 160px;
       padding: 30px;
