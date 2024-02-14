@@ -4,6 +4,7 @@ import Path from 'models/path';
 import { canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { generateHeader } from 'render/helpers';
+let promiseCache = {};
 
 const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   if (remainingPath.length === 0) return Promise.resolve(parentElementPromise);
@@ -12,7 +13,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   let preexistingSectionElement = Path.elementAtRelativePath(pathToParagraphTopic, canopyContainer);
   let preexistingSectionElementPromise = preexistingSectionElement ? Promise.resolve(preexistingSectionElement) : null;
 
-  let sectionElementPromise = preexistingSectionElementPromise || requestJson(remainingPath.firstTopic)
+  let sectionElementPromise = preexistingSectionElementPromise || promiseCache[pathToParagraphTopic.string] || requestJson(remainingPath.firstTopic)
     .then(({ paragraphsBySubtopic, displayTopicName, topicTokens }) => {
       if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader(topicTokens, displayTopicName));
 
@@ -29,6 +30,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
         },
       );
     }).catch(e => { return null }); // 404
+
+  promiseCache[pathToParagraphTopic.string] = sectionElementPromise;
 
   let appendingPromise = Promise.all([parentElementPromise, sectionElementPromise]).then(([parentSectionElement, sectionElement]) => {
     if (!parentSectionElement || !sectionElement) return Promise.resolve();
