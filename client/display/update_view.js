@@ -4,7 +4,7 @@ import Link from 'models/link';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import { canopyContainer } from 'helpers/getters';
-let lastPath = null;
+let lastPath = null; // ensure only the last call gets displayed
 
 const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (pathToDisplay.empty) pathToDisplay = Path.default;
