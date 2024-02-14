@@ -6,7 +6,7 @@ let { displaySegment, wrapText, parseLink } = require('../../shared/simple-helpe
 let chalk = require('chalk');
 
 class ParserContext {
-  constructor({ explFileData, newStatusData, defaultTopicString, priorParserContext, options }) {
+  constructor({ explFileData, defaultTopicString, priorParserContext, options }) {
     if (priorParserContext) {
       Object.assign(this, priorParserContext, options) // create a new object with new properties, but with references to prior data properties
     } else {
@@ -30,7 +30,7 @@ class ParserContext {
       this.characterNumber = 1; // the current line number being parsed
       this.linePrefixSize = 0 // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
 
-      this.buildNamespaceObject(explFileData, newStatusData);
+      this.buildNamespaceObject(explFileData);
 
       this.preserveNewlines = false; // should text tokens preserve newlines?
       this.insideToken = false; // are we parsing tokens inside another token? We use this to avoid recognizing multi-line tokens inside other tokens.
@@ -70,7 +70,6 @@ class ParserContext {
       }
 
       topicSubtopics[currentTopic.caps] = {};
-      if (newStatusData && !newStatusData[filePath]) subtopicParents[currentTopic.caps] = null; // indicate that we lack data because of cache run
 
       paragraphsWithKeys.forEach(function(paragraphText) {
         if (paragraphText[0] === "\n") { // because we split on \n\n, there is only a chance that the first character is a newline
@@ -356,7 +355,7 @@ class ParserContext {
             throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
           }
 
-          if (!this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
+          if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
             throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`));
           }
 
@@ -365,7 +364,7 @@ class ParserContext {
           let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
           let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
 
-          if (!this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
+          if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`));
