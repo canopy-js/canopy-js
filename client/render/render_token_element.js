@@ -414,10 +414,10 @@ function renderTableList(token, renderContext) {
     tableCellElement.style.overflow = 'scroll';
 
     while(1) {
-      if (tableListSizeIndex === 2 && token.items.length > 2) tableListSizeIndex = 3 // quarters look better than halves
-      if (token.items.length < 3 && !token.alignment && tableListSizeIndex < 2) { // even if content isn't big, expand if there aren't so many
-        tableListSizeIndex = 2;
-      }
+      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // quarters look better than halves
+      // if (token.items.length < 3 && !token.alignment && tableListSizeIndex < 2) { // even if content isn't big, expand if there aren't so many
+      //   tableListSizeIndex = 2;
+      // }
 
       tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 

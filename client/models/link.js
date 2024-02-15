@@ -538,7 +538,7 @@ class Link {
   execute(options = {}) {
     options = { scrollDirect: true, ...options };
 
-    Link.persistLastLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
+    if (!options.renderOnly && !options.noDisplay) Link.persistLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
 
     if (this.isExternal) {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
@@ -594,10 +594,9 @@ class Link {
 
   static lastSelection = null;
 
-  static persistSelection(linkToSelect) {
-    Link.persistInHistory(linkToSelect);
-    Link.persistInSession(linkToSelect);
-    Link.persistLastLinkSelection(linkToSelect);
+  static persistLinkSelection(linkToSelect) {
+    Link.persistLinkSelectionInHistory(linkToSelect);
+    Link.persistLinkSelectionInSession(linkToSelect);
   }
 
   static selectionPresentInEvent(e) {
@@ -607,34 +606,35 @@ class Link {
   static get sessionSelection() {
     if (Path.url.empty) return null; // initial '/' load will never recall link selection
 
-    let sessionData = sessionStorage.getItem(Path.url.string);
-    if (sessionData && sessionData !== 'null') {
-      let link = new Link(JSON.parse(sessionData));
-      return link;
+    let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+    let linkData = lastSelectionsOfParagraph[Path.url.string];
+
+    if (linkData && linkData !== null) {
+      return new Link(linkData);
     } else {
       return null;
     }
+  }
+
+  static eraseLinkData() {
+    let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
+    delete lastSelectionsOfParagraph[this.enclosingPath];
+    sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
+    if (history?.state?.linkSelection) history.state.linkSelection = null;
   }
 
   static get historySelection() {
     if (Path.url.empty) return null; // initial '/' load will never recall link selection
 
     if (history?.state?.linkSelection) {
-      let link = new Link(history.state.linkSelection);
-      try {
-        link.element;
-        return link;
-      } catch {
-        history.state.linkSelection = null;
-        return null
-      }
+      return new Link(history.state.linkSelection);
     } else {
       return null;
     }
   }
 
   static get savedSelection() {
-    return this.historySelection || this.sessionSelection || null;
+    return this.historySelection;// || this.sessionSelection || null;
   }
 
   static get selection() {
@@ -646,14 +646,7 @@ class Link {
     }
   }
 
-  static persistInSession(link) {
-    // This has to be static because Link.selection hasn't always updated
-    // between when a new link is selected and when we want to persist that selection
-    let linkData = link && JSON.stringify(link.metadata);
-    sessionStorage.setItem(location.pathname + location.hash, linkData || null);
-  }
-
-  static persistInHistory(link) {
+  static persistLinkSelectionInHistory(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
     history.replaceState(
@@ -667,28 +660,20 @@ class Link {
     throw new Error("Link#current does not exist, try Link#selection");
   }
 
-  // If someone eg presses up from the second link in a paragraph, pressing down should return them there.
-  static persistLastLinkSelection(link) {
+  static persistLinkSelectionInSession(link) {
     if (link) {
       let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
       lastSelectionsOfParagraph[link.enclosingParagraph.path] = link.metadata;
       sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
+      //console.log('Storing', link?.childSubtopic?.mixedCase, 'as session selection for', link.enclosingParagraph.path.string)
     }
   }
 
   static lastSelectionOfParagraph(paragraph) {
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
     if (lastSelectionsOfParagraph[paragraph.path]) {
-      let link = new Link(lastSelectionsOfParagraph[paragraph.path]);
-      try { // sometimes metadata from previous versions is stored and doesn't correspond to real links anymore
-        if (link.element) {
-          return link;
-        }
-      } catch {
-        delete lastSelectionsOfParagraph[paragraph.path]; // erase bad value
-        sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
-        return null;
-      }
+      //console.log('Found', lastSelectionsOfParagraph[paragraph.path], 'as last selection of ', paragraph.path)
+      return new Link(lastSelectionsOfParagraph[paragraph.path]);
     }
   }
 

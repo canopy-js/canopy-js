@@ -22,7 +22,7 @@ function registerPopStateListener() {
 
     updateView(
       Path.url,
-      linkSelection || Link.sessionSelection || Path.url.parentLink,
+      linkSelection || Path.url.parentLink,
       { scrollStyle, scrollDirect: true }
     );
   });

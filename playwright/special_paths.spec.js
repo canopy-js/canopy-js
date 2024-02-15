@@ -19,6 +19,10 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/United_States');
   await expect(page).toHaveURL("United_States");
   await page.evaluate(() => localStorage.clear()); // get rid of old link selections
+  await page.evaluate(() => sessionStorage.clear());
+  await page.waitForFunction(() => {
+    return localStorage.length === 0 && sessionStorage.length === 0;
+  });
 });
 
 test.describe('Special paths', () => {
