@@ -495,7 +495,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
-  test('Down on path reference selects child', async ({ page }) => {
+  test('Down on path reference selects links of current paragraph', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('Enter');
@@ -503,7 +503,7 @@ test.describe('Navigation', () => {
 
     await page.locator('body').press('ArrowDown');
 
-    await expect(page.locator('.canopy-selected-link')).toHaveText('northern part'); // does not skip level
+    await expect(page.locator('.canopy-selected-link')).toHaveText('url'); // stays within paragraph
   });
 
   test('Enter on path reference inlines target', async ({ page }) => {
