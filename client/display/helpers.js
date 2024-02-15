@@ -248,20 +248,22 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
-  let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
-  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
-  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
-  let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
-  let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
+  // let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
+  // let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
+  // let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
+  // let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
+  // let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
 
-  let twoStepChange = !!Path.rendered.overlap(pathToDisplay)
+  let twoStepChange = Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
     && !Path.rendered.siblingOf(pathToDisplay)
+    && !linkToSelect || !linkToSelect.siblingOf(Link.selection)
     && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
-    && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)); // eg shortcut that selects sibling link
+    && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
+    && !linkToSelect.equals(Link.selection.parentLink);
 
-  return longDistanceUp || twoStepChange;
+  return twoStepChange; //|| longDistanceUp;
 }
 
 function animatePathChange(newPath, linkToSelect, options = {}) {
