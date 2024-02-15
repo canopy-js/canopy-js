@@ -105,8 +105,8 @@ function moveInDirection(direction, options) {
         // if (bestLink.firstChildOf(Link.selection) && newLink.siblingOf(bestLink)) return highestLowerRect;
 
         // If we are previewing a path reference, 'down' should take us down the open path
-        if (bestLink.isOpen) return highestLowerRect;
-        if (newLink.isOpen) return newRect;
+        // if (bestLink.isOpen) return highestLowerRect; // actually, this is confusing because it makes other links in the current P unreachable
+        // if (newLink.isOpen) return newRect;
 
         if (isHigher(highestLowerRect, newRect) &&
           !isVerticallyOverlapping(highestLowerRect, newRect) &&
