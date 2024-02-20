@@ -296,7 +296,135 @@ Part 11: *Welcome back!* See, we've returned to where we started before all that
 > [[Part 11-1|Great!]]
 ===
 
-Part 11-1: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
+Part 11-1: So, now you've seen the main feature set of Canopy.
+===
+> [[Part 11-2|Great]]
+===
+
+Part 11-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
+===
+> [[Part 11-3|True]]
+===
+
+Part 11-3: The answer is, Canopy is a good fit for any domain that is:
+1. Detailed
+2. Broad
+3. Highly-interconnected
+4. Where different users need meaningfully different information from the same corpus
+===
+> [[Part 11-4|Interesting]]
+===
+
+Part 11-4: Lets see some examples.
+===
+> [[Part 11-5|Okay]]
+===
+
+Part 11-5: Canopy might be a good fit for historical information. For example:
+- [[World War I]]
+- [[World War II]]
+===
+> [[Part 11-6|Okay]]
+===
+
+World War I: World War I was a conflict that lasted from 1914–1918.
+===
+- [[Results of WWI]]
+===
+
+Results of WWI: The Treaty of Versailles which forced Germany to accept blame and financial obligations for the war, is cited as one of the [[#causes of WWII]]
+===
+> [[#Part 11-6|Done]]
+===
+
+World War II: World War II was a conflict that lasted from 1939-1945.
+===
+- [[Causes of WWII]]
+===
+
+Causes of WWII: The Treaty of Versailles which heavily penalized Germany was one of the major [[#results of WWI]]
+===
+> [[#Part 11-6|Done]]
+===
+
+Part 11-6: Another application area is documenting large software projects.
+===
+> [[Part 11-7|How so?]]
+===
+
+Part 11-7: Let’s see an example. “MailerApp” is a tool for managing email lists. [[Part 11-8|(Finish)]]
+===
+- [[History]]
+- [[Features]]
+- [[Patterns]]
+- [[Code]]
+===
+
+History: MailCorp's history includes the [[1998 BigCorpCustomer Feature Request]].
+
+1998 BigCorpCustomer Feature Request:
+On May 1st 1998 BigCorpCustomer asked to be able to send emails, and so we decided to implement the [[{#|}{{message scheduling}} feature]]
+===
+> [[#Part 11-8|Done]]
+===
+
+Features: A major feature of MailerApp is [[message scheduling]].
+
+Message scheduling: Message scheduling is when a user logs in to the app, creates a message, and schedules it to be sent.
+- This functionality is implemented using a [[#sending queue]]
+- The message scheduling functionality was designed in response to the [[#1998 BigCorpCustomer Feature Request]]
+===
+> [[#Part 11-8|Done]]
+===
+
+Patterns: The app uses certain design patterns to produce the feature set.
+- One such pattern is the [[MailerApp {{sending queue}}]].
+
+Sending queue: MailerApp uses a “sending queue” to allow a user to schedule emails to be sent.
+- The job of the queue is to keep track of a list of messages the user has scheduled, and whether they have been sent yet.
+- The queue must be checked periodically to see if there are unsent messages, and to send them.
+- These concepts are implemented in the using [[#SendWorker class]] and the [[#PendingMessages database table]]
+===
+> [[#Part 11-8|Done]]
+===
+
+Code: The code base has a [[\`SendWorker\` class]], and a [[\`PendingMessages\` database table]].
+
+SendWorker class: The \`SendWorker\` class periodically checks the \`PendingMessages\` table of the database and makes a SMPT request when it sees a record with \`sent\` set to false.
+- The \`SendWorker\` class relies on the [[#PendingMessages database table]].
+- The \`SendWorker\` class is part of the implementation of the app's [[#sending queue]]
+===
+> [[#Part 11-8|Done]]
+===
+
+PendingMessages database table: There is a \`PendingMessages\` database table:
+- The \`PendingMessages\` table has a \`text\` field for the text of the email.
+- The \`PendingMessages\` table has a \`sent\` boolean field to indicate whether the message has been sent yet.
+- The PendingMessages table is used by the [[#SendWorker class]]
+- The SendWorker class is part of the implementation of the app's [[#sending queue]]
+===
+> [[#Part 11-8|Done]]
+===
+
+Part 11-8: Lastly, Canopy can be useful for building personal knowledge bases.
+===
+> [[Part 11-9|What’s that?]]
+===
+
+Part 11-9: The concept of a personal blog has become very common.
+- However, an author may make the same point many times.
+- Additionally, certain useful points might not merit a full article.
+- Also, certain topic connections may be too dense to capture in an article.
+===
+> [[Part 11-10|Okay]]
+===
+
+Part 11-10: So, an author could use Canopy to represent “all” their views on a variety of subjects, creating a network of interconnected points, with each user exploring in different directions.
+===
+> [[Part 12-1|Got it]]
+===
+
+Part 12-1: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
 
 
 [Oceans]
@@ -309,7 +437,7 @@ Part 11-1: 👋 That's all for now! Click here to [learn more about Canopy.js](h
 ![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
 Part 10-1: The Atlantic ocean connects via the Panama Canal to the [[Pacific Ocean]].
-- Try clicking the link above normally, *then try again with the alt or option key.*
+- Try clicking the link above normally.
 
 Part 10-3: We went in a circle and ended up back where we started!
 ===
@@ -329,7 +457,11 @@ Part 10-4: Explanations starting from different points can end up covering the s
 > [[Part 10-2|Great!]]
 ===
 
-Part 10-2: The Pacific ocean connects via the Panama Canal to the [[Atlantic Ocean]].
+Part 10-2: Now lets start the explanation from [[Pacific Ocean]].
+- The *second time* you see this, click [[Part 10-3|here]]
+- Try clicking the above link *holding alt or option*.
+
+Part 10-3: The Pacific ocean connects via the Panama Canal to the [[Atlantic Ocean]].
 - Try clicking that link normally.
 
 
