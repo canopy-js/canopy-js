@@ -17,10 +17,18 @@ function setHeader(topic, displayOptions) {
   return { show: () => { headerDomElement.style.opacity = '100%' } };
 }
 
-function hideAllSectionElements() {
-  Array.from(document.getElementsByTagName("section")).forEach((sectionElement) => {
-    sectionElement.style.display = 'none';
-  });
+function hideAllSectionElements(pathToDisplay) {
+  removeUnusedChildSections(canopyContainer, pathToDisplay);
+
+  function removeUnusedChildSections(parentElement, pathToDisplay) { // remove all elements from parents top-down to reduce dom changes
+    Array.from(parentElement.childNodes)
+      .filter(element => element.tagName === 'SECTION')
+      .forEach(element => {
+        let currentParagraph = Paragraph.for(element);
+        if (!currentParagraph.path.isIn(pathToDisplay)) currentParagraph.removeFromDom();
+        removeUnusedChildSections(element, pathToDisplay);
+      });
+  }
 }
 
 function closeAllLinks() { // now selection class management is done in Link.updateSelectionClass
@@ -32,12 +40,6 @@ function closeAllLinks() { // now selection class management is done in Link.upd
 function deselectSectionElement() {
   Array.from(document.querySelectorAll('.canopy-selected-section')).forEach((sectionElement) => {
     sectionElement.classList.remove('canopy-selected-section');
-  });
-}
-
-function removeScrollCompleteClass() {
-  Array.from(document.querySelectorAll('.canopy-scroll-complete')).forEach((sectionElement) => {
-    sectionElement.classList.remove('canopy-scroll-complete');
   });
 }
 
@@ -60,12 +62,11 @@ function tryPathPrefix(path, displayOptions) {
   }
 }
 
-const resetDom = () => {
+const resetDom = (pathToDisplay) => {
   hideHeaders();
   closeAllLinks();
-  hideAllSectionElements();
+  hideAllSectionElements(pathToDisplay);
   deselectSectionElement();
-  removeScrollCompleteClass();
 }
 
 function scrollPage(link, options) {
@@ -248,11 +249,11 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
 
-  // let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
-  // let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
-  // let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
-  // let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
-  // let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.4 * ScrollableContainer.visibleHeight); // must be negative ie up
+  let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
+  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
+  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
+  let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
+  let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.6 * ScrollableContainer.visibleHeight); // must be negative ie up
 
   let twoStepChange = Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
@@ -263,7 +264,7 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
     && !linkToSelect.equals(Link.selection.parentLink);
 
-  return twoStepChange; //|| longDistanceUp;
+  return twoStepChange || longDistanceUp;
 }
 
 function animatePathChange(newPath, linkToSelect, options = {}) {

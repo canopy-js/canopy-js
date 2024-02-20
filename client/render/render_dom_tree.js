@@ -27,7 +27,7 @@ function renderDomTree(topic, subtopic, renderContext) {
   return sectionElement;
 }
 
-function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
+function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
   return (token) => {
     let { fullPath, remainingPath, currentTopic } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
@@ -40,7 +40,7 @@ function localLinkSubtreeCallback(topic, sectionElement, renderContext) {
       Object.assign({ pathToParagaph }, renderContext)
     );
 
-    sectionElement.appendChild(childSectionElement);
+    parentSectionElement.appendChild(childSectionElement);
   }
 }
 
