@@ -92,6 +92,7 @@ function CodeBlockToken(text) {
 
 function BlockQuoteToken(text, direction, parserContext) {
   this.type = 'block_quote';
+
   this.tokens = parseText({
     text,
     parserContext: parserContext.clone({
@@ -100,6 +101,7 @@ function BlockQuoteToken(text, direction, parserContext) {
       linePrefixSize: 2 // ie "> "
     }).incrementCharacterNumber('> '.length)
   });
+
   this.direction = direction;
 }
 
