@@ -125,12 +125,9 @@ function renderGlobalLink(token, renderContext) {
 
   if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
-  let timeoutCount = 0;
-  setTimeout(function assignCycleClasses() { // requires finished render to know intratopic subtopic hierarchy
-    timeoutCount++;
-    if (timeoutCount > 1000) { console.log('Timed out adding link to DOM', linkElement); return; }
+  setTimeout(() => { // will run when the paragraph has a parent chain so we can detect cycle types
     if (!link.element) return;
-    if (!link.isInDom) { setTimeout(assignCycleClasses); return; }
+    if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
     linkElement.classList.remove('canopy-provisional-icon-link')
 

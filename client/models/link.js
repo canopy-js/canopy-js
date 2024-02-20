@@ -87,6 +87,7 @@ class Link {
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
+    this._text = this.linkElement.dataset.text;
   }
 
   get targetTopic() {
@@ -150,7 +151,7 @@ class Link {
   }
 
   get enclosingPath() {
-    if (this.metadataObject && !Paragraph.contentLoaded) return new Path(this.metadataObject.enclosingPathString);
+    if (this.metadataObject) return new Path(this.metadataObject.enclosingPathString);
     return this.enclosingParagraph.path;
   }
 
@@ -587,12 +588,9 @@ class Link {
   }
 
   static updateSelectionClass(linkToSelect) {
-    if (this.lastSelection !== linkToSelect) this.lastSelection = Link.selection;
-    document.querySelector('a.canopy-selected-link')?.classList.remove('canopy-selected-link');
+    Array.from(document.querySelectorAll('a.canopy-selected-link')).forEach(link => link.classList.remove('canopy-selected-link'));
     if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
   }
-
-  static lastSelection = null;
 
   static persistLinkSelection(linkToSelect) {
     Link.persistLinkSelectionInHistory(linkToSelect);
@@ -616,7 +614,7 @@ class Link {
     }
   }
 
-  static eraseLinkData() {
+  eraseLinkData() {
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
     delete lastSelectionsOfParagraph[this.enclosingPath];
     sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
