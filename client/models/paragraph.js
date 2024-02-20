@@ -19,7 +19,11 @@ class Paragraph {
     if (!sectionElement || sectionElement.tagName !== 'SECTION' ) throw new Error("Paragraph instantiation requires section element");
     if (!sectionElement.classList.contains('canopy-section')) throw new Error("Paragraph class requires Canopy section element");
     this.sectionElement = sectionElement;
+    // this.parentNode = sectionElement.parentNode;
     this.transferDataset();
+
+    let existingParagraph = Paragraph.byPath(this.sectionElement.dataset.pathString);
+    if (existingParagraph) return existingParagraph;
   }
 
   static from(sectionElement) {
@@ -166,8 +170,10 @@ class Paragraph {
   }
 
   get parentLink() {
-    if (this.sectionElement.parentNode === canopyContainer) { return null; }
+    // if (this.sectionElement.parentNode === canopyContainer) { return null; }
+    if (this.parentNode === canopyContainer) { return null; } // with shadow dom can't assume section element is attached
 
+    if (!this.parentParagraph) debugger;
     if (this.parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
       return Link.selection; // when selected link is path reference and so is one of the open links also
     }
@@ -213,8 +219,10 @@ class Paragraph {
   }
 
   get parentParagraph() {
+    if (this.parentNode && this.parentNode.tagName === 'SECTION') return Paragraph.for(this.parentNode);
+
     if (this.sectionElement) {
-      let parentElement = this.sectionElement.parentNode.closest('.canopy-section');
+      let parentElement = this.sectionElement?.parentNode?.closest('.canopy-section');
       return parentElement ? new Paragraph(parentElement) : null;
     } else {
       return null;
@@ -304,11 +312,49 @@ class Paragraph {
     });
   }
 
-  static pruneDom() { // remove eager or past renders that are not accessible by the visible links
-    let necessaryParagraphs = {};
-    Paragraph.visible.forEach(p => necessaryParagraphs[p.path] = true);
-    Link.visible.forEach(link => link.inlinePath.includedParagraphs.forEach(p => { necessaryParagraphs[p.path] = true }));
-    Paragraph.all.filter(p => p.isTopic && !necessaryParagraphs.hasOwnProperty(p.path)).forEach(p => p.sectionElement.remove());
+  // Shadow DOM
+  static paragraphsByPath = {};
+  static byPath(pathString) {
+    if (!pathString) return null;
+    if (pathString instanceof Path) pathString = pathString.pathString;
+    return this.paragraphsByPath[pathString];
+  }
+
+  removeFromDom() {
+    this.sectionElement.parentNode.removeChild(this.sectionElement);
+  }
+
+  addToDom() {
+    if (!this.parentNode) throw new Error('Every sectionElement must have parentNode');
+    this.parentNode.appendChild(this.sectionElement); // attach bottom up so added to the DOM all at once.
+    if (this.parentParagraph) this.parentParagraph.addToDom(); // recurse
+    if (this.path.isSingleTopic) return canopyContainer.appendChild(this.sectionElement); // base
+  }
+
+  static registerNode(sectionElement) {
+    let paragraph = Paragraph.byPath(sectionElement.dataset.pathString) || Paragraph.for(sectionElement);
+    Paragraph.paragraphsByPath[sectionElement.dataset.pathString] = paragraph;
+  }
+
+  static registerChild(childElement, parentElement) {
+    Paragraph.registerNode(childElement);
+    let childParagraph = Paragraph.byPath(childElement.dataset.pathString)
+    childParagraph.parentNode = parentElement; // including canopyContainer, to reassemble DOM later
+  }
+
+  static registerSubtopics(sectionElement) {
+    Array.from(sectionElement.querySelectorAll('.canopy-section'))
+      .forEach(sectionElement => {
+        Paragraph.registerNode(sectionElement)
+        Paragraph.registerChild(sectionElement, sectionElement.parentNode);
+      })
+  }
+
+  static detachSubtopics(sectionElement) { // separate the subtopics from parents until attached to DOM
+    Array.from(sectionElement.querySelectorAll('.canopy-section'))
+      .forEach(sectionElement => {
+        sectionElement.parentNode.removeChild(sectionElement);
+      })
   }
 
   static get all() {
@@ -324,6 +370,7 @@ class Paragraph {
   }
 
   static for(element) {
+    if (Paragraph.byPath(element.dataset.pathString)) return Paragraph.byPath(element.dataset.pathString);
     return new Paragraph(element);
   }
 }

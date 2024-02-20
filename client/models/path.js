@@ -375,6 +375,8 @@ class Path {
   }
 
   get paragraph() {
+    if (Paragraph.byPath(this)) return Paragraph.byPath(this);
+
     if (this.sectionElement) {
       return new Paragraph(this.sectionElement);
     } else {

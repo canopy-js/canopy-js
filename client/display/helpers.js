@@ -17,10 +17,18 @@ function setHeader(topic, displayOptions) {
   return { show: () => { headerDomElement.style.opacity = '100%' } };
 }
 
-function hideAllSectionElements() {
-  Array.from(document.getElementsByTagName("section")).forEach((sectionElement) => {
-    sectionElement.style.display = 'none';
-  });
+function hideAllSectionElements(pathToDisplay) {
+  removeUnusedChildSections(canopyContainer, pathToDisplay);
+
+  function removeUnusedChildSections(parentElement, pathToDisplay) { // remove all elements from parents top-down to reduce dom changes
+    Array.from(parentElement.childNodes)
+      .filter(element => element.tagName === 'SECTION')
+      .forEach(element => {
+        let currentParagraph = Paragraph.for(element);
+        if (!currentParagraph.path.isIn(pathToDisplay)) currentParagraph.removeFromDom();
+        removeUnusedChildSections(element, pathToDisplay);
+      });
+  }
 }
 
 function closeAllLinks() { // now selection class management is done in Link.updateSelectionClass
@@ -60,10 +68,10 @@ function tryPathPrefix(path, displayOptions) {
   }
 }
 
-const resetDom = () => {
+const resetDom = (pathToDisplay) => {
   hideHeaders();
   closeAllLinks();
-  hideAllSectionElements();
+  hideAllSectionElements(pathToDisplay);
   deselectSectionElement();
   removeScrollCompleteClass();
 }

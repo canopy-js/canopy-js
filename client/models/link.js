@@ -150,7 +150,7 @@ class Link {
   }
 
   get enclosingPath() {
-    if (this.metadataObject && !Paragraph.contentLoaded) return new Path(this.metadataObject.enclosingPathString);
+    if (this.metadataObject) return new Path(this.metadataObject.enclosingPathString);
     return this.enclosingParagraph.path;
   }
 
@@ -616,7 +616,7 @@ class Link {
     }
   }
 
-  static eraseLinkData() {
+  eraseLinkData() {
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
     delete lastSelectionsOfParagraph[this.enclosingPath];
     sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
