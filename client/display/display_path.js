@@ -16,19 +16,20 @@ import { canopyContainer } from 'helpers/getters';
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
   if (shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
-  try { linkToSelect?.element } catch { linkToSelect.eraseLinkData(); return updateView(pathToDisplay, null, options); }
   if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
-  if (!pathToDisplay.paragraph) return tryPathPrefix(pathToDisplay, options);
+  if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   if (linkToSelect?.isCycle) setTimeout(() => updateView(linkToSelect.inlinePath, null, {renderOnly: true})); // invisibly render child paragraphs
 
   Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // must be done before link.select because selection cache is by current URL
-  Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
   Link.persistLinkSelection(linkToSelect); // if null, persists deselect
   if (options.noDisplay) return;
 
-  resetDom();
+  resetDom(pathToDisplay);
+  Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
   let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
 
+  Paragraph.byPath(pathToDisplay).addToDom();
+  try { linkToSelect?.element } catch { linkToSelect.eraseLinkData(); return updateView(pathToDisplay, null, options); }
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
   pathToDisplay.paragraph.addSelectionClass();
   setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());

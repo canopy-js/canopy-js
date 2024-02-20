@@ -128,7 +128,7 @@ function renderGlobalLink(token, renderContext) {
   let timeoutCount = 0;
   setTimeout(function assignCycleClasses() { // requires finished render to know intratopic subtopic hierarchy
     timeoutCount++;
-    if (timeoutCount > 1000) { console.log('Timed out adding link to DOM', linkElement); return; }
+    if (timeoutCount > 1000) { /*console.log('Timed out adding link to DOM', linkElement);*/ return; }
     if (!link.element) return;
     if (!link.isInDom) { setTimeout(assignCycleClasses); return; }
 
