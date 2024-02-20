@@ -340,6 +340,7 @@ class Paragraph {
     Paragraph.registerNode(childElement);
     let childParagraph = Paragraph.byPath(childElement.dataset.pathString)
     childParagraph.parentNode = parentElement; // including canopyContainer, to reassemble DOM later
+    childParagraph.executeOnAppendCallbacks();
   }
 
   static registerSubtopics(sectionElement) {
@@ -355,6 +356,19 @@ class Paragraph {
       .forEach(sectionElement => {
         sectionElement.parentNode.removeChild(sectionElement);
       })
+  }
+
+  onAppendCallbacks = [];
+  addOnAppendCallback(callback) { // this allows us to execute code when the paragraph knows what its parent is
+    if (this.parentNode) {
+      callback();
+    } else {
+      this.onAppendCallbacks.push(callback);
+    }
+  }
+
+  executeOnAppendCallbacks() {
+    this.onAppendCallbacks.forEach(callback => callback());
   }
 
   static get all() {

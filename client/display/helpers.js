@@ -43,12 +43,6 @@ function deselectSectionElement() {
   });
 }
 
-function removeScrollCompleteClass() {
-  Array.from(document.querySelectorAll('.canopy-scroll-complete')).forEach((sectionElement) => {
-    sectionElement.classList.remove('canopy-scroll-complete');
-  });
-}
-
 function hideHeaders() {
   Array.from(document.querySelectorAll('#_canopy h1')).forEach(header => {
     header.style.display = 'none';
@@ -73,7 +67,6 @@ const resetDom = (pathToDisplay) => {
   closeAllLinks();
   hideAllSectionElements(pathToDisplay);
   deselectSectionElement();
-  removeScrollCompleteClass();
 }
 
 function scrollPage(link, options) {

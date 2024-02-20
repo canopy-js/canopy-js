@@ -87,6 +87,7 @@ class Link {
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
+    this._text = this.linkElement.dataset.text;
   }
 
   get targetTopic() {

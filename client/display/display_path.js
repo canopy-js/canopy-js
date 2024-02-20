@@ -18,17 +18,16 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
   if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
-  if (linkToSelect?.isCycle) setTimeout(() => updateView(linkToSelect.inlinePath, null, {renderOnly: true})); // invisibly render child paragraphs
 
   Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // must be done before link.select because selection cache is by current URL
   Link.persistLinkSelection(linkToSelect); // if null, persists deselect
   if (options.noDisplay) return;
 
+  Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
   resetDom(pathToDisplay);
   Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
   let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
 
-  Paragraph.byPath(pathToDisplay).addToDom();
   try { linkToSelect?.element } catch { linkToSelect.eraseLinkData(); return updateView(pathToDisplay, null, options); }
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
   pathToDisplay.paragraph.addSelectionClass();

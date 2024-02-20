@@ -98,17 +98,12 @@ class Path {
     if (!otherPath) return false;
     if (this.equals(otherPath)) return true;
     if (otherPath.isSingleTopic) return false;
-    if (this.isSegmentOf(otherPath)) return true; // trying to figure it out before DOM is rendered
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
 
   visitsTopicNotIn(otherPath) {
     return this.topicStringArray.some(topic => !otherPath.topicStringArray.includes(topic));
-  }
-
-  isSegmentOf(otherPath) { // the visible path string has subset
-    return otherPath.string.includes(this.string);
   }
 
   includes(otherPath) {
