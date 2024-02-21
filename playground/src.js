@@ -367,10 +367,9 @@ Message scheduling: Message scheduling is when a user logs in to the app, create
 > [[#Part 11-8|Done]]
 ===
 
-Patterns: The app has certain high-level abstractions that support the features, such as the [[sending queue]].
+Patterns: The app has certain high-level patterns that implement the features, such as the [[sending queue]].
 
-Sending queue: MailerApp allows a user to schedule emails to be sent.
-- This is done by creating a “sending queue.”
+Sending queue: MailerApp uses a “sending queue” to allow a user to schedule emails to be sent.
 - The job of the queue is to keep track of a list of messages the user has scheduled, and whether they have been sent yet.
 - The queue must be checked periodically to see if there are unsent messages, and to send them.
 - These concepts are implemented in the using [[#SendWorker class]] and the [[#PendingMessages database table]]
@@ -448,8 +447,8 @@ Part 10-4: Explanations starting from different points can end up covering the s
 ===
 
 Part 10-2: Now lets start the explanation from [[Pacific Ocean]].
-- Try clicking that link normally.
 - The *second time* you see this, click [[Part 10-3|here]]
+- Try clicking the above link *holding alt or option*.
 
 Part 10-3: The Pacific ocean connects via the Panama Canal to the [[Atlantic Ocean]].
 - Try clicking that link normally.

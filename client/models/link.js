@@ -588,12 +588,9 @@ class Link {
   }
 
   static updateSelectionClass(linkToSelect) {
-    if (this.lastSelection !== linkToSelect) this.lastSelection = Link.selection;
-    document.querySelector('a.canopy-selected-link')?.classList.remove('canopy-selected-link');
+    Array.from(document.querySelectorAll('a.canopy-selected-link')).forEach(link => link.classList.remove('canopy-selected-link'));
     if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
   }
-
-  static lastSelection = null;
 
   static persistLinkSelection(linkToSelect) {
     Link.persistLinkSelectionInHistory(linkToSelect);

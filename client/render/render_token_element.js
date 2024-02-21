@@ -125,8 +125,10 @@ function renderGlobalLink(token, renderContext) {
 
   if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
-  setTimeout(() => link.enclosingParagraph.addOnAppendCallback(() => { // will run when the paragraph has a parent chain so we can detect cycle types
+  setTimeout(() => { // will run when the paragraph has a parent chain so we can detect cycle types
     if (!link.element) return;
+    if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
+
     linkElement.classList.remove('canopy-provisional-icon-link')
 
     if (link.isBackCycle) {
@@ -136,7 +138,7 @@ function renderGlobalLink(token, renderContext) {
     } else if (link.isPathReference) {
       linkElement.classList.add('canopy-path-reference');
     }
-  }));
+  });
 
   return linkElement
 }
