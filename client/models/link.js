@@ -452,7 +452,7 @@ class Link {
     }
 
     const rect = this.element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportHeight = ScrollableContainer.innerHeight;
     return rect.bottom > viewportHeight;
   }
 
@@ -468,7 +468,7 @@ class Link {
     const rect = this.element.getBoundingClientRect();
 
     // Get the viewport height
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const viewportHeight = ScrollableContainer.innerHeight;
 
     // Calculate the top 25% and bottom 40% positions of the viewport
     const topLimit = viewportHeight * 0.25;
