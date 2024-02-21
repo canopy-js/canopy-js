@@ -33,6 +33,9 @@ function tryDefaultTopic() {
   return defaultTopic;
 }
 
+function defaultTopic() {
+  return new DefaultTopic();
+}
 
 function tryAndWriteHtmlError(func, options = {}) {
   try {
@@ -49,4 +52,4 @@ function tryAndWriteHtmlError(func, options = {}) {
 }
 
 
-module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic,tryAndWriteHtmlError };
+module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, tryAndWriteHtmlError, defaultTopic };

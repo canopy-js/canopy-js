@@ -352,22 +352,33 @@ Part 11-6: Another application area is documenting large software projects.
 > [[Part 11-7|How so?]]
 ===
 
-Part 11-7: Let’s see an example. “MailerApp” is a tool for managing email lists. [[Part 11-8|(Continue)]]
+Part 11-7: Let’s see an example. “MailerApp” is a tool for managing email lists. [[Part 11-8|(Finish)]]
 ===
+- [[History]]
 - [[Features]]
 - [[Patterns]]
 - [[Code]]
+===
+
+History: MailCorp's history includes the [[1998 BigCorpCustomer Feature Request]].
+
+1998 BigCorpCustomer Feature Request:
+On May 1st 1998 BigCorpCustomer asked to be able to send emails, and so we decided to implement the [[{#|}{{message scheduling}} feature]]
+===
+> [[#Part 11-8|Done]]
 ===
 
 Features: A major feature of MailerApp is [[message scheduling]].
 
 Message scheduling: Message scheduling is when a user logs in to the app, creates a message, and schedules it to be sent.
 - This functionality is implemented using a [[#sending queue]]
+- The message scheduling functionality was designed in response to the [[#1998 BigCorpCustomer Feature Request]]
 ===
 > [[#Part 11-8|Done]]
 ===
 
-Patterns: The app has certain high-level patterns that implement the features, such as the [[sending queue]].
+Patterns: The app uses certain design patterns to produce the feature set.
+- One such pattern is the [[MailerApp {{sending queue}}]].
 
 Sending queue: MailerApp uses a “sending queue” to allow a user to schedule emails to be sent.
 - The job of the queue is to keep track of a list of messages the user has scheduled, and whether they have been sent yet.
