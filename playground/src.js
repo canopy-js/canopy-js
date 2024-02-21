@@ -301,7 +301,7 @@ Part 11-1: So, now you've seen the main feature set of Canopy.
 > [[Part 11-2|Great]]
 ===
 
-Part 11-2: So, you’re probably thinking, amazing, but, what would I use this for?
+Part 11-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
 ===
 > [[Part 11-3|True]]
 ===
