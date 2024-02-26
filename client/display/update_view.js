@@ -8,7 +8,6 @@ let lastPath = null; // ensure only the last call gets displayed
 
 const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (pathToDisplay.empty) pathToDisplay = Path.default;
-  if (!options.renderOnly && !options.noDisplay) document.title = pathToDisplay.lastTopic.mixedCase;
 
   let renderComplete = (lastPath = !options.pending && pathToDisplay || lastPath) &&
     fetchAndRenderPath(pathToDisplay, pathToDisplay, Promise.resolve(canopyContainer)).catch(e => console.error(e));

@@ -344,8 +344,8 @@ class ParserContext {
   validateGlobalReferences() {
     this.pathsReferenced.forEach(([pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic]) => {
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
-        pathString.split(/(?<!\\)\//).map(segmentString => {
-          let [currentTopic, currentSubtopic] = segmentString.match(/^(.*?)(?:\\#|#(.*))?$/).slice(1).map(m => m && Topic.fromEncodedSlug(m));
+        pathString.split(/(?<!(?<!\\)\\)\//).map(segmentString => {
+          let [currentTopic, currentSubtopic] = segmentString.match(/^(.*?)(?:(?<!(?<!\\)\\)#(.*))?$/).slice(1).map(m => m && Topic.fromUrl(m));
 
           if (!this.topicExists(currentTopic)) {
             throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] contains nonexistent topic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
@@ -361,8 +361,8 @@ class ParserContext {
 
           return segmentString;
         }).reduce((currentSegmentString, nextSegmentString) => {
-          let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
-          let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromEncodedSlug(m));
+          let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromUrl(m));
+          let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^(.*?)(?:\\#|#(.*))?$/).map(m => m && Topic.fromUrl(m));
 
           if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
