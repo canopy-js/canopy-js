@@ -218,7 +218,6 @@ class Link {
   }
 
   get path() {
-    debugger;
     throw '#path is deprecated in favor of #inlinePath or #literalPath';
   }
 
@@ -544,6 +543,9 @@ class Link {
     if (this.isExternal) {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
     }
+
+    if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
+    if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
     if (options.redirect) { // all handling is the same for redirection
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab

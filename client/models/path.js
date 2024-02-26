@@ -41,15 +41,18 @@ class Path {
       return [];
     }
 
-    let slashSeparatedUnits = pathString.
-      split('/').
-      filter((string) => string !== '');
+    let slashSeparatedUnits = pathString
+      .replace(/%5C%23|%23/g, match => match === '%23' ? '#' : match) // unescaped pounds are path structure
+      .replace(/%5C%2F|%2F/g, match => match === '%2F' ? '/' : match) // unescaped forward slashes are path structure
+      .replace(/%5C#/g, '%5C%23') // shouldn't occur but escaped pounds are name characters and will get decoded in name-decoding.
+      .split('/')
+      .filter((string) => string !== '');
 
     slashSeparatedUnits = Path.fixOrphanSubtopics(pathString, slashSeparatedUnits);
 
     let array = slashSeparatedUnits.map((slashSeparatedUnit) => {
       // Capture two groups: (letters)#(optional_more_letters)
-      let match = slashSeparatedUnit.match(/([^#]*)(?:#([^#]*))?/);
+      let match = slashSeparatedUnit.match(/((?:\\#|[^#])*)(?:#(.*))?/); // divide on unescaped #
       return [
         match[1] || match[2] || null,
         match[2] || match[1] || null,
@@ -57,11 +60,12 @@ class Path {
     }).filter((segment) => segment[0] !== null);
 
     array = array.map(([topicString, subtopicString]) => [
-      Topic.fromEncodedSlug(topicString),
-      Topic.fromEncodedSlug(subtopicString)
+      Topic.fromUrl(topicString),
+      Topic.fromUrl(subtopicString)
     ]);
 
     this.stringToArrayCache[pathString] = array;
+
     return array;
   }
 
@@ -402,14 +406,6 @@ class Path {
 
   static get rendered() {
     return Paragraph.selection?.path;  // the user may have just changed the URL, and we want to know what the current path rendered is
-  }
-
-  static get focused() {
-    let focusY = ScrollableContainer.visibleHeight * 0.3 + ScrollableContainer.currentScroll;
-
-    Array.from(document.querySelectorAll('.canopy-paragraph')).find(paragraphElement => {
-
-    });
   }
 
   static get url() {
