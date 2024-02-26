@@ -107,7 +107,7 @@ function renderGlobalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
 
-  linkElement.dataset.pathString = Path.for(token.pathString).string; // convert to mixed-case
+  linkElement.dataset.pathString = token.pathString; // convert to mixed-case
   linkElement.path = token.path; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;

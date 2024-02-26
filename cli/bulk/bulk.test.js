@@ -62,7 +62,7 @@ describe('BulkFileGenerator', function() {
 
   test('it generates data file with special characters', () => {
     let originalSelectedFilesByContents = {
-      'topics/A/B/C/%233/Topic_%234.expl':
+      'topics/A/B/C/#3/Topic_#4.expl':
         dedent`Topic #4: Hello world.
 
         Subtopic: Hello.` + '\n',
@@ -645,8 +645,8 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test('it lets you have # as a category name', () => {
-    let bulkFileString = dedent`[A/B/C/\\#]
+  test('it lets you have # as a category name without escaping', () => {
+    let bulkFileString = dedent`[A/B/C/#]
     * This is a note.` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
@@ -769,7 +769,7 @@ describe('FileSystemChangeCalculator', function() {
     expect(fileSystemChange.fileDeletions).toEqual([]);
     expect(fileSystemChange.directoryDeletions).toEqual([]);
     expect(fileSystemChange.fileCreations).toEqual([[
-      'topics/A/B/C/#3/100%25_Juice.expl', // # we don't encode for files but % we do to avoid accidental collisions
+      'topics/A/B/C/#3/100%25_Juice.expl', // we no longer encode # or % for file names, only URLs
       '100% Juice: New data.\n'
     ]]);
     expect(fileSystemChange.directoryCreations).toEqual([

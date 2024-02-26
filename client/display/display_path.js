@@ -27,6 +27,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   resetDom(pathToDisplay);
   Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
   let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
+  document.title = pathToDisplay.lastTopic.mixedCase;
 
   try { linkToSelect?.element } catch { linkToSelect.eraseLinkData(); return updateView(pathToDisplay, null, options); }
   let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);

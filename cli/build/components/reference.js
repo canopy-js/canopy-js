@@ -27,11 +27,11 @@ class Reference {
   }
 
   get hasCurlyBraces() {
-    return !!this.fullText.match(/(?<!\\)\{/);
+    return !!this.fullText.match(/(?<!(?<!\\)\\)\{/);
   }
 
   get hasPipe() {
-    return !!this.fullText.match(/(?<!\\)\|/);
+    return !!this.fullText.match(/(?<!(?<!\\)\\)\|/);
   }
 
   parseDisplayAndTarget() {
@@ -59,7 +59,7 @@ class Reference {
   }
 
   parseCurlyBraceReference() {
-    const regex = /((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/gs;
+    const regex = /(?<!(?<!\\)\\)(\{\{?)(?<!(?<!\\)\\)((?:(?!\}).)+)(?<!(?<!\\)\\)(\}\}?)|(?<!(?<!\\)\\)((?:(?![{}]).)+)/gs;
     const segments = Array.from(this.contents.matchAll(regex));
 
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
@@ -88,7 +88,7 @@ class Reference {
   }
 
   handleSingleBrace(contents) {
-    const pipeSegments = contents.split(/(?<!\\)\|/);
+    const pipeSegments = contents.split(/(?<!(?<!\\)\\)\|/);
 
     if (pipeSegments.length === 2) {
       this.targetText += pipeSegments[0];
@@ -110,7 +110,7 @@ class Reference {
 
 
   parsePipeReference() {
-    const [target, display] = this.contents.split(/(?<!\\)\|/);
+    const [target, display] = this.contents.split(/(?<!(?<!\\)\\)\|/);
     this.targetText = target;
     this.displayText = display;
   }
@@ -133,7 +133,7 @@ class Reference {
   }
 
   get isPath() {
-    return !!this.targetText.match(/(?<!\\)[#\/]/);
+    return !!this.targetText.match(/(?<!(?<!\\)\\)[#\/]/);
   }
 
   get simpleTarget() {
@@ -162,12 +162,12 @@ class Reference {
   }
 
   static textBeforeFragment(string) {
-    const match = string.match(/^(.*?)(?<!\\)#/);
+    const match = string.match(/^(.*?)(?<!(?<!\\)\\)#/);
     return match ? match[1] : null;
   }
 
   static textAfterFragment(string) {
-    const match = string.match(/(?<!\\)#(.*)$/);
+    const match = string.match(/(?<!(?<!\\)\\)#(.*)$/);
     return match ? match[1] : null;
   }
 
@@ -176,12 +176,12 @@ class Reference {
   }
 
   get firstTopic() {
-    return Topic.fromEncodedSlug(Reference.firstSegmentComponent(this.pathString));
+    return Topic.fromUrl(Reference.firstSegmentComponent(this.pathString));
   }
 
   get firstSubtopic() {
-    let subtopicString = this.pathString.match(/(?<!\\)#((?:\\\/|[^\/])*)(?<!\\)(?=\/|$)/)?.[1];
-    return subtopicString ? Topic.fromEncodedSlug(subtopicString) :  null;
+    let subtopicString = this.pathString.match(/(?<!(?<!\\)\\)#((?:\\\/|[^\/])*)(?<!(?<!\\)\\)(?=\/|$)/)?.[1];
+    return subtopicString ? Topic.fromUrl(subtopicString) :  null;
   }
 
   get localReference() {
@@ -195,10 +195,10 @@ class Reference {
   }
 
   get pathString() {
-    return this.displayPathString.split(/(?<!\\)\//).map(segmentString => {
-      let [topic, subtopic] = segmentString.match(/^((?:[^#\/\\]|\\.)*)(?:[#\/]((.*)))?$/).slice(1).map(m => m && Topic.for(m));
-      return (this.parserContext.getOriginalTopic(topic)||topic).url +
-        (subtopic ? ('#' + ((this.parserContext.getOriginalSubtopic(topic, subtopic)||subtopic).url)) : ''); // full encoding is the simplest way to handle eg \#
+    return this.displayPathString.split(/(?<!(?<!\\)\\)\//).map(segmentString => {
+      let [topic, subtopic] = segmentString.match(/^((?:[^#\/\\]|\\.)*)(?:[#\/]((.*)))?$/).slice(1).map(m => m && Topic.fromExpl(m));
+      return (this.parserContext.getOriginalTopic(topic)||topic).url + // gives us original display version
+        (subtopic ? ('#' + ((this.parserContext.getOriginalSubtopic(topic, subtopic)||subtopic).url)) : '');
     }).join('/');
   }
 
