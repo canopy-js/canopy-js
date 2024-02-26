@@ -160,7 +160,6 @@ Table list cell 11:
 
 Table list cell 12:
 
-
 Code blocks:
 ```
 // This is a code block
@@ -289,7 +288,6 @@ This is a [link link link link link link link link link link link link link link
 
 Links with following non-punctuation:
 This is a [link link link link link link link link link link link link link link link liiiiiiiiy](http://google.com) abc.
-
 
 Hyperlinks:
 This is a [link](http://google.com).

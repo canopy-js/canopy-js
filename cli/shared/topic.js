@@ -7,47 +7,29 @@ class Topic {
 
   constructor(string) {
     if (!string) throw new Error('String required to instantiate Topic');
-    if (Cache.hasOwnProperty(string) && Cache.hasOwnProperty(string).display) return console.log('topic cache hit') || Cache[string];
+    if (Cache.hasOwnProperty(string) && Cache.hasOwnProperty(string).display) return Cache[string];
 
-    this.display = string; // the string precisely as it appears in the expl file
+    this.display = string; // the string precisely as it appears in the expl file, even with backslashes which will get handled on the front-end
 
     this.mixedCase = removeStyleCharacters(string)  // the display verison sans style characters * _ ~ ` and a trailing question mark, encoding style characters
-      .split(/\\\\/g).map(string => string.replace(/\\/g, '')).join('\\\\'); // Remove backslashes that are escaping literal characters now that removeStyleCharacters has already run
+      .replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]); // remove backslashes that are escaping subsequent character. webkit compatible
 
     this.cssMixedCase = CSS.escape(this.mixedCase);
 
     this.escapedMixedCase = this.mixedCase
       .replace(/#/g, '\\#')
       .replace(/\//g, '\\/')
-      .replace(/\\/g, '\\\\')
+      .replace(/\\/g, '\\\\');
 
-    this.slug = this.mixedCase // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
-      .replace(/%/g, '%25') // This way you can't have collisions if the user names something with a % which we're using for encodings
-      .replace(/\\\\/g, '%5C%5C') // a double backslash represents a literal backslash not an escape character
-      .replace(/`/g, '%60') // Chrome automatically replaces in URL and could be misinterpreted on the command line as subshell
-      .replace(/_/g, '%5C_') // Literal style characters are escaped so that when we parse the URL, we don't remove them with removeStyleCharacters
-      .replace(/ /g, '_') // This must be done after literal underscores have received encoded backslashes above to distinguish between them and these
-      .replace(/\//g, '%2F')
-      .replace(/([.,])(?=["'')}\]]+$)/g, ''); // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
+    this.url = Topic.encodeString(this.mixedCase, Topic.urlEncodingRules);
 
-    this.url = this.slug
-      .replace(/#/g, '%23')
+    this.fileName = Topic.encodeString(this.mixedCase, Topic.fileNameEncodingRules);
 
-    this.fileName = this.slug // This string encodes characters that will cause problems in the URL, but we do not encode all characters eg quotation marks. Must be reversable.
-      .replace(/"/g, '%22')
-      .replace(/'/g, '%27')
-      .replace(/,/g, '%2C')
-      .replace(/:/g, '%3A')
-      .replace(/</g, '%3C')
-      .replace(/>/g, '%3E')
-      .replace(/\|/g, '%7C')
-      .replace(/\*/g, '%2A')
-      .replace(/\?/g, '%3F');
-
-    this.caps = this.mixedCase // This is the string that is used to find matches between links and topic names.
+    this.caps = this.mixedCase // This is the string that is used to find matches between links and topic names. Not reversible.
       .toUpperCase() // We want matches to be case-insensitive
       .replace(/\?$/, '') // It should match whether or not both have trailing question marks
       .replace(/["”“’‘']/g, '') // We remove quotation marks so matches ignore them
+      .replace(/([.,])(?=["'')}\]]+$)/g, '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
       .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces
@@ -59,54 +41,99 @@ class Topic {
     Cache[string] = this;
   }
 
+  static spaceToUnderscoreRules = [ // No two rules may add up to a third, eg A->B, C->D, E->BD or there is irreversible ambiguity.
+    ['\\', '%5C%5C'], // we are encoding a display string where double literals are a real backslash, & decoding to produce a pseudo display string
+    ['_', '%5C_'], // Where one rule eg outputs eg "AB", and another outputs "B", the former must be listed higher ie earlier to ensure reversibility
+    [' ', '_']
+  ];
+
+  static fileNameEncodingRules = [
+    ...this.spaceToUnderscoreRules,
+    ['%', '%25'], // if we don't encode % even in file names, then there may be collisions with other encodings eg % followed by literal 3F
+    ['"', '%22'],
+    ["'", '%27'],
+    [',', '%2C'],
+    [':', '%3A'],
+    ['<', '%3C'],
+    ['>', '%3E'],
+    ['|', '%7C'],
+    ['*', '%2A'],
+    ['?', '%3F']
+  ];
+
+  static urlEncodingRules = [
+    ...this.spaceToUnderscoreRules,
+    ['%', '%25'],
+    ['`', '%60'], // Chrome automatically encodes ` in URL to %60 in window.location, so we have to know to decode it
+    ['"', '%22'], // Chrome automatically encodes " in URL to %22 in window.location, so we have to know to decode it
+    ['^', '%5E'], // Chrome automatically encodes ^ in URL to %5E in window.location, so we have to know to decode it
+    ['/', '%2F'],
+    ['#', '%5C%23']
+  ];
+
+  static encodeString(string, rules) {
+    return this.processSegment(string, rules);
+  }
+
+  static decodeString(string, rules) {
+    const reversedRules = rules.slice().map(([a,b]) => [b,a]);
+    return this.processSegment(string, reversedRules);
+  }
+
+  static processSegment(segment, rules) {
+    if (rules.length === 0) return segment; // Base case: no more rules to apply
+
+    const [currentRule, ...remainingRules] = rules;
+    return this.applyRule(segment, currentRule, remainingRules);
+  }
+
+  static applyRule(segment, rule, remainingRules) {
+    const [target, replacement] = rule;
+    const parts = segment.split(new RegExp(target === '\\\\' ? target : '\\' + target, 'g'));
+
+    return parts.map((part, index) => {
+      const processedPart = remainingRules.length > 0 ? this.processSegment(part, remainingRules) : part;
+      return index < parts.length - 1 ? processedPart + replacement : processedPart;
+    }).join('');
+  }
+
   static fromMixedCase(string) {
-    string = string.replace(/([`_~*])/g, '\\$1'); // In mixed case style character literals are unescaped, so we escape them to avoid double-processing
+    string = string.replace(/([`_~*\\])/g, '\\$1'); // In mixed case style character literals are unescaped, so we escape them to avoid double-processing, same for \\
     let topic = new Topic(string);
     topic.display = null; // If a topic instance was instantiated from the mixed-case string, the display version is irretrievable
     return topic;
   }
 
-  static fromEncodedSlug(string) {
-    string = convertUnderscoresToSpaces(string);
-    string = decodeURIComponent(string);
-    string = string
-      .replace(/\*/g, '\\*') // underscores are escaped in the URL itself, but for the other style characters we must escape them so that
-      .replace(/`/g, '\\`')  // they don't get stripped by removeStyleCharacters
-      .replace(/~/g, '\\~');
-
-    let topic = new Topic(string); // Encoded style characters decode to escaped style characters, so we can use the regular
-                                   // "display -> mixed case" processing step, even though this isn't the display string
-    topic.display = null; // The encoded slug was formed from the lossy mixed case version, so that is the best we can reconstruct from it
+  static fromExpl(string) { // backslashes eg \# should be removed, unlike from mixed case
+    let topic = new Topic(string);
+    topic.display = null; // If a topic instance was instantiated from something other than the original topic key ie display, it is irreversible
     return topic;
   }
-}
 
-Topic.convertUnderscoresToSpaces = function convertUnderscoresToSpaces(string) {
-  // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
-  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal instead of backslash literal followed by a space
-    .map(string => string
-      .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
-      .map(string => string.replace(/_/g, ' '))
-      .join('%5C_') //convert underscores not preceded by single %5C to spaces
-    ).join('%5C%5C');
-}
+  static fromUrl(string) { // eg %5C_Topic_names_with_literal_underscores%5C_ which needs decoding and then is mixed case already _X_
+    let decodedString = Topic.decodeString(string, Topic.urlEncodingRules);
+    return Topic.fromMixedCase(decodedString); // if %5C%5C becomes \\\\, then we need to do another round of parsing before we get a mixedCase ie \\
+  }
 
-Topic.convertSpacesToUnderscores = function convertSpacesToUnderscores(string) {
-  return string.split('/').map(string => Topic.for(string).fileName).join('/');
-}
+  static fromFileName(string) {
+    let decodedString = Topic.decodeString(string, Topic.fileNameEncodingRules);
+    let topic = Topic.for(decodedString); // decoded strings are pseudo-display not mixed-case because eg backslash literals %5C%5C are reversed to be two backslashes again
+    topic.display = null; // we can't really reverse to get the original display string
+    return topic;
+  }
 
-Topic.for = function topicFor(string) {
-  return new Topic(string);
-}
+  static convertUnderscoresToSpaces(string) {
+    // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
+    return Topic.decodeString(string, Topic.spaceToUnderscoreRules);
+  }
 
-function convertUnderscoresToSpaces(string) {
-  // We want to turn underscores into spaces, but not escaped underscores ie %5C_, but yes escaped escaped underscores ie %5C%5C_
-  return string.split(/%5C%5C/g) // first remove double backslashes to avoid seeing %5C%5C_ as an underscore literal
-    .map(string => string
-      .split(/%5C_/g) // now remove escaped backslashes to avoid seeing them as spaces converted to underscores
-      .map(string => string.replace(/_/g, ' '))
-      .join('%5C_') //convert underscores not preceded by single %5C to spaces
-    ).join('%5C%5C');
+  static convertSpacesToUnderscores(string) {
+    return Topic.encodeString(string, Topic.spaceToUnderscoreRules);
+  }
+
+  static for(string) {
+    return new Topic(string);
+  }
 }
 
 module.exports = Topic;
