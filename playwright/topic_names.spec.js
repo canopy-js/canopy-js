@@ -79,7 +79,7 @@ test.describe('Topic names', () => {
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop");
     await expect(page.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
 
     const [newPage] = await Promise.all([
@@ -89,14 +89,14 @@ test.describe('Topic names', () => {
       })
     ]);
 
-    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop");
     await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await expect(newPage.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
   });
 
   test('it renders everything properly for topics with question marks', async ({ page, context }) => {
-    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%231_gift_shop`);
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
@@ -328,88 +328,128 @@ test.describe('Topic names', () => {
     await expect(newPage.locator('text=This is a book of businesses. >> visible=true')).toHaveCount(1);
   });
 
+  test('it renders everything properly for topics with double encoding', async ({ page, context }) => { // test that we aren't just decoding many times
+    await page.goto(`United_States/New_York/Martha's_Vineyard/Phone%5C_book`);
+    await expect(page.locator('.canopy-selected-link')).toHaveText("Phone_book");
 
-  test('Topic names can contain italics', async ({ page }) => {
+    await page.locator('body').press('ArrowRight');
+
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%252523_depot");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("the %2523 depot");
+    await expect(page.locator('text=This is a store. >> visible=true')).toHaveCount(1);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=the %2523 depot >> visible=true").click({
+        modifiers: [systemNewTabKey]
+      })
+    ]);
+
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%252523_depot");
+    await expect(newPage.locator('h1:has-text("United States")')).toBeVisible();
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText("the %2523 depot");
+    await expect(newPage.locator('text=This is a store. >> visible=true')).toHaveCount(1);
+  });
+
+  test('Topic names can contain italics', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("italic topic names");
     await expect(page.locator('.canopy-selected-link i')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link i')).toHaveText("italic");
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=italic topic names >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('Italic topic names');
-    await expect(page.locator('h1 i >> visible=true')).toHaveCount(1);
-    await expect(page.locator('h1 i >> visible=true')).toHaveText('Italic');
+    await expect(newPage.locator('h1:visible')).toHaveText('Italic topic names');
+    await expect(newPage.locator('h1 i >> visible=true')).toHaveCount(1);
+    await expect(newPage.locator('h1 i >> visible=true')).toHaveText('Italic');
   });
 
-  test('Topic names can contain code snippets', async ({ page }) => {
+  test('Topic names can contain code snippets', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Code_snippet_topic_names');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("code snippet topic names");
     await expect(page.locator('.canopy-selected-link code')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link code')).toHaveText("code snippet");
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=code snippet topic names >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('Code snippet topic names');
-    await expect(page.locator('h1 code >> visible=true')).toHaveCount(1);
-    await expect(page.locator('h1 code >> visible=true')).toHaveText('Code snippet');
+    await expect(newPage.locator('h1:visible')).toHaveText('Code snippet topic names');
+    await expect(newPage.locator('h1 code >> visible=true')).toHaveCount(1);
+    await expect(newPage.locator('h1 code >> visible=true')).toHaveText('Code snippet');
   });
 
-  test('Topic names can contain literal underscores', async ({ page }) => {
+  test('Topic names can contain literal underscores', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/%5C_Topic_names_with_literal_underscores%5C_');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("_topic names with literal underscores_");
     await expect(page.locator('.canopy-selected-link i')).toHaveCount(0);
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=_topic names with literal underscores_ >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('_Topic names with literal underscores_');
-    await expect(page.locator('h1 i >> visible=true')).toHaveCount(0);
+    await expect(newPage.locator('h1:visible')).toHaveText('_Topic names with literal underscores_');
+    await expect(newPage.locator('h1 i >> visible=true')).toHaveCount(0);
   });
 
-  test('Topic names can contain literal backticks', async ({ page }) => {
+  test('Topic names can contain literal backticks', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/%60Topic_names_with_literal_backticks%60');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("`topic names with literal backticks`");
     await expect(page.locator('.canopy-selected-link code')).toHaveCount(0);
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=`topic names with literal backticks` >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('`Topic names with literal backticks`');
-    await expect(page.locator('h1 code >> visible=true')).toHaveCount(0);
+    await expect(newPage.locator('h1:visible')).toHaveText('`Topic names with literal backticks`');
+    await expect(newPage.locator('h1 code >> visible=true')).toHaveCount(0);
   });
 
-  test('Topic names can contain literal backslashes', async ({ page }) => {
+  test('Topic names can contain literal backslashes', async ({ page, context }) => {
     await page.goto('United_States/New_York/Style_examples#Special_topic_names/Topic_names_with_%5C%5C_backslashes');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("topic names with \\ backslashes");
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=topic names with \\ backslashes >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('Topic names with \\ backslashes');
+    await expect(newPage.locator('h1:visible')).toHaveText('Topic names with \\ backslashes');
   });
 
-  test('_data is a valid topic name', async ({ page }) => {
+  test('_data is a valid topic name', async ({ page, context }) => {
     await page.goto('United_States/New_York/Style_examples#Special_topic_names/%5C_data');
     await page.locator('.canopy-selected-link');
     await expect(page.locator('.canopy-selected-link')).toHaveText("_data");
 
-    await page.locator('.canopy-selected-link').click({
-      modifiers: ['Alt']
-    })
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator("text=_data >> visible=true").click({
+        modifiers: ['Alt', systemNewTabKey]
+      })
+    ]);
 
-    await expect(page.locator('h1:visible')).toHaveText('_data');
+    await expect(newPage.locator('h1:visible')).toHaveText('_data');
   });
 });

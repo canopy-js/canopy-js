@@ -24,11 +24,11 @@ class BulkFileParser {
             .filter(Boolean)
             .map(string => {
               let blockString = string.match(/^\*?\*? ?(.*)/s)[1];
-              let paragraph = new Block(blockString);
+              let block = new Block(blockString);
               return {
                 asterisk: string.match(/^\*\*? /) ? true : false,
                 doubleAsterisk: string.startsWith('** ') ? true : false,
-                key: paragraph.key,
+                key: block.key,
                 text: blockString
               }
             })

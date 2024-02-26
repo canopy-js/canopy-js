@@ -90,7 +90,7 @@ function rebuildCanopy(edit) {
     });
 
     // New data might invalidate old URL
-    let hash = window.location.hash.slice(2).match(/^(.*?)(?<!\\)(?=[#\/]|$)/)[0];
+    let hash = window.location.hash.slice(2).match(/^(.*?)(?<!(?<!\\)\\)(?=[#\/]|$)/)[0];
     let hashWithSpaces = Topic.convertUnderscoresToSpaces(hash);
     if (!REQUEST_CACHE.hasOwnProperty(hashWithSpaces)) { // URL invalid
       history.replaceState(null, null, location.pathname + location.search); // clear fragment

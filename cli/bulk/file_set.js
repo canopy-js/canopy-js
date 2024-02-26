@@ -90,7 +90,7 @@ class FileSet {
 
 function terminalCategoryofFilePath(filePath) {
   let items = filePath.split('/');
-  return Topic.fromEncodedSlug(items[items.length - 2]).mixedCase;
+  return Topic.fromFileName(items[items.length - 2]).mixedCase;
 }
 
 function generateDisplayPath(directoryPath) {
@@ -99,8 +99,7 @@ function generateDisplayPath(directoryPath) {
   return directoryPath
     .match(/topics\/(.*)/)[1]
     .split('/')
-    .map(segment => Topic.convertUnderscoresToSpaces(segment))
-    .map(segment => (Topic.fromEncodedSlug(segment).mixedCase))
+    .map(segment => (Topic.fromFileName(segment).mixedCase))
     .join('/');
 }
 

@@ -67,7 +67,7 @@ function detectTextDirection(text) {
 
 
 function parseLink(string, parserContext) {
-  let linkMatch = string.match(/^\[\[((?:(?!(?<!\\)(?:\]\]|\[\[)).)+)\]\]/s);
+  let linkMatch = string.match(/^\[\[((?:(?!(?<!(?<!\\)\\)(?:\]\]|\[\[)).)+)\]\]/s);
   if (!linkMatch) return {};
   let linkContents = linkMatch[1];
   let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
@@ -76,8 +76,8 @@ function parseLink(string, parserContext) {
   let exclusiveTargetSyntax = false;
   let exclusiveDisplaySyntax = false;
 
-  if (linkContents.match(/(?<!\\)\{/)) {
-    let segments = Array.from(linkContents.matchAll(/((?<!\\)\{\{?)((?:(?!(?<!\\)\}).)+)((?<!\\)\}\}?)|((?:(?!(?<!\\)[{}]).)+)/gs));
+  if (linkContents.match(/(?<!(?<!\\)\\)\{/)) {
+    let segments = Array.from(linkContents.matchAll(/((?<!(?<!\\)\\)\{\{?)((?:(?!(?<!(?<!\\)\\)\}).)+)((?<!(?<!\\)\\)\}\}?)|((?:(?!(?<!(?<!\\)\\)[{}]).)+)/gs));
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
       if (plainText) { // a section of regular text in a link eg [[ABC...
         displayText += plainText;
@@ -87,7 +87,7 @@ function parseLink(string, parserContext) {
         manualDisplayText = true;
 
         if (openingBraces.length === 1) { // eg [[{ ... }]]
-          let pipeSegments = braceContents.split(/(?<!\\)\|/);
+          let pipeSegments = braceContents.split(/(?<!(?<!\\)\\)\|/);
           if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
             targetText += pipeSegments[0];
             displayText += pipeSegments[1];
@@ -110,8 +110,8 @@ function parseLink(string, parserContext) {
 
     displayText = exclusiveDisplaySyntax ? exclusiveDisplayText : displayText;
     targetText = exclusiveTargetSyntax ? exclusiveTargetText : targetText;
-  } else if (linkContents.match(/(?<!\\)\|/)) { // eg [[A|B]]
-    let segments = linkContents.split(/(?<!\\)\|/);
+  } else if (linkContents.match(/(?<!(?<!\\)\\)\|/)) { // eg [[A|B]]
+    let segments = linkContents.split(/(?<!(?<!\\)\\)\|/);
     targetText = segments[0];
     displayText = segments[1];
     manualDisplayText = true;
@@ -119,7 +119,7 @@ function parseLink(string, parserContext) {
     targetText = linkContents;
   }
 
-  let match = targetText.match(/^((?:(?!(?<!\\)#).)+)(?:#((?:(?!(?<!\\)#).)+))?$/s); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
+  let match = targetText.match(/^((?:(?!(?<!(?<!\\)\\)#).)+)(?:#((?:(?!(?<!(?<!\\)\\)#).)+))?$/s); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
 
   return {
     linkTarget: (match && match[1])?.replace(/\n/g, ' ').replace(/<[bB][rR]>/g, ' ') || null, // eg "France"
