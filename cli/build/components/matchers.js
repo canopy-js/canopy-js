@@ -281,7 +281,7 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[(.+)\](?:\(([^ )[]*)\))/);
+  let match = string.match(/^\[(.+)\](?:\(([^ ]*)\))/);
   if (match) {
     let [_, text, url] = match;
     return [
