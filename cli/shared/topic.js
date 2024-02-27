@@ -29,7 +29,7 @@ class Topic {
       .toUpperCase() // We want matches to be case-insensitive
       .replace(/\?$/, '') // It should match whether or not both have trailing question marks
       .replace(/["”“’‘']/g, '') // We remove quotation marks so matches ignore them
-      .replace(/([.,])(?=["'')}\]]+$)/g, '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
+      .replace(/(\\{2})*([.,])(?=["'')}\]]*$)/g, (m, bs, punc) => bs ? m : '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
       .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces

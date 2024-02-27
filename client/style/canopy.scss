@@ -195,6 +195,11 @@
     a.canopy-selectable-link {
       text-decoration: underline #D3D3D3;
     }
+
+    .canopy-blockquote-breaktag { // we replace break tags to be able to give them padding
+      padding-top: 12px;
+      display: block;
+    }
   }
 
   pre {
@@ -220,7 +225,7 @@
     table-layout: fixed;
 
     &:not(:last-child) {
-      margin-bottom: 21px;
+      margin-bottom: 25px;
     }
 
     td, th {
@@ -485,6 +490,10 @@
 
       a {
         color: #595959;
+      }
+
+      a.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after { // need to beat specificity of general definition
+        content: ''; // no ➹ icon for links in image captions because usually they'll be external
       }
 
       span {

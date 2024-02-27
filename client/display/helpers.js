@@ -247,7 +247,7 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;
   if (!pathToDisplay.overlap(Path.rendered)) return false;
-  if (options.noScroll || options.noAnimate || options.initialLoad || options.noDisplay || options.scrollStyle === 'instant') return false;
+  if (options.noScroll || options.noAnimate || options.initialLoad || options.scrollStyle === 'instant') return false;
 
   let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
   let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport

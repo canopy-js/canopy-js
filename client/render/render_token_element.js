@@ -268,6 +268,13 @@ function renderBlockQuote(token, renderContext) {
     blockQuoteElement.appendChild(subtokenElement);
   });
 
+  Array.from(blockQuoteElement.querySelectorAll('br')).forEach(breakTagElement => {
+    let spanElement = document.createElement('span');
+    spanElement.classList.add('canopy-blockquote-breaktag');
+    breakTagElement.parentNode.insertBefore(spanElement, breakTagElement);
+    breakTagElement.remove();
+  });
+
   return blockQuoteElement;
 }
 
