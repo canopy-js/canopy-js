@@ -329,7 +329,7 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `This is a block quote that has two lines\n\n` +
+      `This is a block quote that has two lines\n` +
       `This is the second line`
     );
   });
@@ -346,7 +346,7 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `המילים האלה\n\n` +
+      `המילים האלה\n` +
       `הן מימין לשמאל`
     );
 
