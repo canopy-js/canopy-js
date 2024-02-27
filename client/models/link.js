@@ -58,6 +58,10 @@ class Link {
     }
   }
 
+  get tryElement() {
+    try { this.element } catch { return null; }
+  }
+
   set element(argument) {
     if (argument instanceof HTMLAnchorElement) {
       this.linkElement = argument;
@@ -538,7 +542,7 @@ class Link {
   execute(options = {}) {
     options = { scrollDirect: true, ...options };
 
-    if (!options.renderOnly && !options.noDisplay) Link.persistLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
+    if (!options.renderOnly) Link.persistLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
 
     if (this.isExternal) {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
@@ -552,13 +556,13 @@ class Link {
     }
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
-      return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
-        .then(() => this.inlinePath.reduce().display(options));
+      if (options.pushHistoryState) Link.pushHistoryState(this);
+      return this.inlinePath.reduce().display(options);
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
-      return (options.pushHistoryState ? this.select({ noScroll: true, noDisplay: true }) : Promise.resolve()) // persist clicked link in history
-        .then(() => this.inlinePath.display({ scrollDirect: true, ...options }));
+      if (options.pushHistoryState) Link.pushHistoryState(this);
+      return this.inlinePath.display({ scrollDirect: true, ...options });
     }
 
     return (options.selectALink && this.firstChild || this).select(options);
@@ -653,6 +657,16 @@ class Link {
       link && { linkSelection: link.metadata } || null,
       document.title,
       window.location.href
+    );
+  }
+
+  static pushHistoryState(link) {
+    if (!link) return;
+
+    history.pushState(
+      { linkSelection: link.metadata },
+      document.title,
+      window.location.origin + link.previewPath.productionPathString
     );
   }
 
