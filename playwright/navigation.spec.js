@@ -186,7 +186,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
   });
 
-  test('It decodes encoded path components', async ({ page }) => { // Eg Gmail does this sometimes to links
+  test('It decodes encoded path pound symbols', async ({ page }) => { // Eg Gmail does this sometimes to links
     await page.goto('United_States/New_York#Southern_border/New_Jersey%23Northern_border'); // this is an unescaped encoded #
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects

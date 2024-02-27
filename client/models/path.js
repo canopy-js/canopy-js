@@ -42,6 +42,7 @@ class Path {
     }
 
     let slashSeparatedUnits = pathString // we don't have to handle / here because simple encoding is sufficient because no browser-swap issue
+      .replace(/(%5C)?%23/g, (match, group) => group ? match : '#')
       .replace(/%5C%23|%23/g, match => match === '%23' ? '#' : match) // unescaped pounds are path structure
       .replace(/%5C#/g, '%5C%23') // shouldn't occur but escaped pounds are name characters and will get decoded in name-decoding.
       .split('/')

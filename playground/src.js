@@ -42,10 +42,10 @@ let Topic = require('../cli/shared/topic');
 import REQUEST_CACHE from 'requests/request_cache';
 fetch = (url) => console.log(`Fetch request for '${url}' canceled by plaground`) || Promise.reject();
 let Block = require('../cli/shared/block');
-rebuildCanopy(); // initial build
-
-let updateView = require('display/update_view').default;
 let Path = require('models/path').default;
+let updateView = require('display/update_view').default;
+
+rebuildCanopy(); // initial build
 
 function rebuildCanopy(edit) {
   Array.from(canopyContainer.children).forEach(child => {
@@ -88,9 +88,10 @@ function rebuildCanopy(edit) {
     });
 
     // New data might invalidate old URL
-    let hash = window.location.hash.slice(2).match(/^(.*?)(?<!(?<!\\)\\)(?=[#\/]|$)/)[0];
-    let hashWithSpaces = Topic.convertUnderscoresToSpaces(hash);
-    if (!REQUEST_CACHE.hasOwnProperty(hashWithSpaces)) { // URL invalid
+    let path = Path.for(window.location.hash.slice(2));
+    let firstTopic = path.firstTopic;
+
+    if (firstTopic && !REQUEST_CACHE.hasOwnProperty(firstTopic.mixedCase)) { // URL invalid
       history.replaceState(null, null, location.pathname + location.search); // clear fragment
     }
 
@@ -295,7 +296,7 @@ Part 11: *Welcome back!* See, we've returned to where we started before all that
 
 Part 11-1: So, now you've seen the main feature set of Canopy.
 ===
-> [[Part 11-2|Great]]
+> [[Part 11-2|Correct]]
 ===
 
 Part 11-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
