@@ -1,6 +1,6 @@
 {
   "name": "canopy-js",
-  "version": "0.4.30",
+  "version": "0.4.31",
   "description": "A library for creating and browsing explanation trees",
   "scripts": {
     "jest": "jest cli client",

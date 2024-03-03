@@ -979,7 +979,7 @@ test('it lets you interpolate different values for display and target like [[har
   );
 });
 
-test('it lets you select an exclusive display string with import references like [[Wyoming#{Cheyenne} city]]', () => {
+test('it lets you select an exclusive display string with path references like [[Wyoming#{Cheyenne} city]]', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming#{Cheyenne} city]] of [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`

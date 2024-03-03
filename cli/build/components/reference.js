@@ -27,11 +27,11 @@ class Reference {
   }
 
   get hasCurlyBraces() {
-    return !!this.fullText.match(/(?<!(?<!\\)\\)\{/);
+    return !!this.fullText.match(/(^|[^\\])\{/);
   }
 
   get hasPipe() {
-    return !!this.fullText.match(/(?<!(?<!\\)\\)\|/);
+    return !!this.fullText.match(/(^|[^\\])\|/);
   }
 
   parseDisplayAndTarget() {
@@ -59,7 +59,7 @@ class Reference {
   }
 
   parseCurlyBraceReference() {
-    const regex = /(?<!(?<!\\)\\)(\{\{?)(?<!(?<!\\)\\)((?:(?!\}).)+)(?<!(?<!\\)\\)(\}\}?)|(?<!(?<!\\)\\)((?:(?![{}]).)+)/gs;
+    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^\/{}])+)/gs;
     const segments = Array.from(this.contents.matchAll(regex));
 
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
@@ -88,13 +88,13 @@ class Reference {
   }
 
   handleSingleBrace(contents) {
-    const pipeSegments = contents.split(/(?<!(?<!\\)\\)\|/);
+    const match = contents.match(/((?:\\.|[^\\|])*?)\|((?:\\.|[^\\|])*?)$/);
 
-    if (pipeSegments.length === 2) {
-      this.targetText += pipeSegments[0];
-      this.displayText += pipeSegments[1];
-      this.exclusiveTargetText += pipeSegments[0];
-      this.exclusiveDisplayText += pipeSegments[1];
+    if (match?.[1]) { // ie "A|B" or "A|" or "|A"
+      this.targetText += match[1];
+      this.displayText += match[2];
+      this.exclusiveTargetText += match[1];
+      this.exclusiveDisplayText += match[2];
     } else {
       this.exclusiveDisplaySyntax = true;
       this.exclusiveDisplayText += contents;
@@ -110,7 +110,8 @@ class Reference {
 
 
   parsePipeReference() {
-    const [target, display] = this.contents.split(/(?<!(?<!\\)\\)\|/);
+    const [target, display, extra] = [...this.contents.matchAll(/((?:\\.|[^\/])+?)(?:\||$)/g)].map(match => match[1]);
+    if (extra) throw `Link ${this.fullText} parsed as pipe but has more than two segments`;
     this.targetText = target;
     this.displayText = display;
   }
@@ -133,7 +134,7 @@ class Reference {
   }
 
   get isPath() {
-    return !!this.targetText.match(/(?<!(?<!\\)\\)[#\/]/);
+    return !!this.targetText.match(/(^|[^\\])(\\\\)*[#\/]/);
   }
 
   get simpleTarget() {
@@ -162,12 +163,12 @@ class Reference {
   }
 
   static textBeforeFragment(string) {
-    const match = string.match(/^(.*?)(?<!(?<!\\)\\)#/);
+    const match = string.match(/^((?:\\.|[^\/])+?)#/);
     return match ? match[1] : null;
   }
 
   static textAfterFragment(string) {
-    const match = string.match(/(?<!(?<!\\)\\)#(.*)$/);
+    const match = string.match(/^(?:\\.|[^\/])*?#(.*)$/);
     return match ? match[1] : null;
   }
 
@@ -180,7 +181,7 @@ class Reference {
   }
 
   get firstSubtopic() {
-    let subtopicString = this.pathString.match(/(?<!(?<!\\)\\)#((?:\\\/|[^\/])*)(?<!(?<!\\)\\)(?=\/|$)/)?.[1];
+    let subtopicString = this.pathString.match(/^(?:\\.|[^\/])+?#((?:\\.|[^\/])+?)(?:\/.*)?$/)?.[1];
     return subtopicString ? Topic.fromUrl(subtopicString) :  null;
   }
 
@@ -195,8 +196,8 @@ class Reference {
   }
 
   get pathString() {
-    return this.displayPathString.split(/(?<!(?<!\\)\\)\//).map(segmentString => {
-      let [topic, subtopic] = segmentString.match(/^((?:[^#\/\\]|\\.)*)(?:[#\/]((.*)))?$/).slice(1).map(m => m && Topic.fromExpl(m));
+    return [...this.displayPathString.matchAll(/(?:\\.|[^\\\/])+?(?:#(?:\\.|[^\\\/])+?)?(?:(?=\/|$))/g)].map(match => match[0]).map(segmentString => {
+      let [topic, subtopic] = segmentString.match(/((?:[^#\/\\]|\\.)*)(?:[#]((?:[^#\/\\]|\\.)*))?/).slice(1).map(m => m && Topic.fromExpl(m));
       return (this.parserContext.getOriginalTopic(topic)||topic).url + // gives us original display version
         (subtopic ? ('#' + ((this.parserContext.getOriginalSubtopic(topic, subtopic)||subtopic).url)) : '');
     }).join('/');
@@ -235,13 +236,12 @@ class Reference {
   }
 
   static candidateSubstring(string) {
-    return string.match(/^\[\[([\s\S]*?)(?<!\\)\]\]/)?.[0] || '';
+    return string.match(/^\[\[((?:\\.|[^\\])+?)\]\]/)?.[0] || '';
   }
 
   static for(string, enclosingTopic, parserContext) {
     return new Reference(string, enclosingTopic, parserContext);
   }
-
 }
 
 module.exports = Reference;

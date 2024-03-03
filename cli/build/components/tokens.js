@@ -258,7 +258,7 @@ function TableToken(text, parserContext) {
 function TableListToken(text, parserContext) {
   this.type = 'table_list';
 
-  let items = [...text.matchAll(/(?:(?<=[-] )|(([\w\d]{1,4})\.\s)|([<>]) )([^\n]+)\n/g)];
+  let items = [...text.matchAll(/(?:- ?|(([\w\d]{1,4})\.\s)|([<>]) )([^\n]+)\n/g)];
 
   const allRightAligned = items.every(item => item[3] === '>');
   const allLeftAligned = items.every(item => item[3] === '<');

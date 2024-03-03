@@ -42,8 +42,7 @@ let Topic = require('../cli/shared/topic');
 import REQUEST_CACHE from 'requests/request_cache';
 fetch = (url) => console.log(`Fetch request for '${url}' canceled by plaground`) || Promise.reject();
 let Block = require('../cli/shared/block');
-let Path = require('models/path').default;
-let updateView = require('display/update_view').default;
+let Path; // calls getters before _canopy element is ready
 
 rebuildCanopy(); // initial build
 
@@ -88,6 +87,7 @@ function rebuildCanopy(edit) {
     });
 
     // New data might invalidate old URL
+    Path = require('models/path').default;
     let path = Path.for(window.location.hash.slice(2));
     let firstTopic = path.firstTopic;
 
@@ -330,9 +330,9 @@ Part 12-3: *Example 2/7:* Another application area is documenting large software
 > [[Part 12-4|Next]]
 ===
 
-Part 12-4: *Example 3/7:* Canopy could also be useful for building personal knowledge bases.
+Part 12-4: *Example 3/7:* Canopy could also be useful for large personal writing projects.
 ===
-> [[Knowledge Bases|More]]
+> [[Blogs|More]]
 > [[Part 12-5|Next]]
 ===
 
@@ -679,17 +679,26 @@ Causes of WWII: A prime cause of WWII was the Treaty of Versailles, which heavil
 ===
 
 
-[Knowledge Bases]
+[Blogs]
 
-Knowledge bases: The concept of a personal blog has become very common.
+Blogs: The concept of a personal blog has become very common.
 - However, an author may make the same point many times.
 - Additionally, certain useful points might not merit a full article.
 - Also, certain topic connections may be too dense to capture in an article.
+- Finally, the author may have more to say than fits in a book.
 ===
-> [[Knowledge Bases 2|Okay]]
+> [[Blogs 2|Okay]]
 ===
 
-Knowledge Bases 2: Let’s see an example. Blogger “Maynard” wants to explain daily news in light of economic theory.
+Blogs 2: So, Canopy would let an author organize all of their views in one place.
+- Each reader would get a customized trail through many points, like a conversation with the author.
+- The author would only have to write each thing once, but many readers would see each point in different contexts.
+- Canopy would enable new types of larger written work, eg an academic's summary of all the work in their field or discipline, better approximating the experience of having access to the given person.
+===
+> [[Blogs 3|Okay]]
+===
+
+Blogs 3: Let’s see an example. Blogger “Maynard” wants to explain daily news in light of economic theory.
 ===
 > [[Maynard|Okay]]
 > [[Playground#Part 12-5|I'm finished]]

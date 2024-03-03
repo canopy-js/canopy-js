@@ -41,10 +41,17 @@ class Path {
       return [];
     }
 
-    let slashSeparatedUnits = pathString // we don't have to handle / here because simple encoding is sufficient because no browser-swap issue
-      .replace(/(%5C)?%23/g, (match, group) => group ? match : '#')
-      .replace(/%5C%23|%23/g, match => match === '%23' ? '#' : match) // unescaped pounds are path structure
-      .replace(/%5C#/g, '%5C%23') // shouldn't occur but escaped pounds are name characters and will get decoded in name-decoding.
+    let slashSeparatedUnits = pathString
+      .replace(/%5C%5C(%23|#)|%5C(%23|#)|(%23|#)/g, match => {
+        if (match.startsWith('%5C%5C')) return '%5C%5C#'; // this is a name-character escaped backslash followed by path-#
+        if (match.startsWith('%5C')) return '%5C%23'; // this is a name-character #
+        return '#'; // # or %23 are path-#
+      })
+      .replace(/%5C%5C(%2F|\/)|%5C(%2F|\/)|(%2F|\/)/g, match => {
+        if (match.startsWith('%5C%5C')) return '%5C%5C/'; // this is a name-character escaped backslash followed by path-/
+        if (match.startsWith('%5C')) return '%5C%2F'; // this is a name-character /
+        return '/'; // A plain '/' or %2F are path-/
+      })
       .split('/')
       .filter((string) => string !== '');
 
