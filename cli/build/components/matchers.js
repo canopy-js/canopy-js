@@ -31,7 +31,6 @@ const Matchers = [
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
-  // linkedImageMatcher, // linked images are just images in the text of regular/external links
   footnoteMarkerMatcher,
   imageMatcher,
   italicsMatcher,
@@ -65,8 +64,8 @@ function prefixCodeBlockMatcher({ string, startOfLine }) {
   let match = string.match(/^(`((\n|$)| [^\n]*(\n|$)))+/s); // if there is content on the line, we require a space
 
   if (match && startOfLine) {
-    let text = match[0].split(/(?<=^|\n)` ?/).join('');
-    if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
+    let text = [...match[0].matchAll(/^` ?([^\n]*)/gm)].map(m => m[1]).join('\n');
+    // if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
 
     return [
       new CodeBlockToken(text),
@@ -83,7 +82,7 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
   if (match && startOfLine) {
     let text = Array.from(
       match[0]
-        .matchAll(/(?<=^|\n)(?:[><])(?: ([^\n]+)|(?=\n))/g))
+        .matchAll(/(?:^|\n)(?:[><])(?: ([^\n]+)|(?=\n))/g))
         .map(m => m?.[1] || '')
         .join('\n');
 
@@ -302,7 +301,7 @@ function urlMatcher({ string, parserContext }) {
 }
 
 function imageMatcher({ string, parserContext }) {
-  let match = string.match(/^!\[(.*?)]\(([^\s]+)\s*(?:(?<!(?<!\\)\\)["'“”]((?:.(?!" "|” “))+?.)(?<!(?<!\\)\\)["“”](?: (?<!(?<!\\)\\)["“”]((?:.(?!(?<!(?<!\\)\\)["“”]))*..)(?<!(?<!\\)\\)["“”])?)?\)/);
+  let match = string.match(/^!\[((?:\\.|[^\\])*?)\]\(([^\s]+)\s*(?:["'“”]((?:\\.|[^\\"'“”])*?)(?:"|”)(?: ["'“”]((?:\\.|[^\\])*?)["'“”])?)?\)/);
 
   if (match) {
     return [
@@ -316,27 +315,6 @@ function imageMatcher({ string, parserContext }) {
           parserContext
         }
       ), match[0].length
-    ];
-  }
-}
-
-function linkedImageMatcher({ string, parserContext }) {
-  let match = string.match(/^\[!\[([^\]]*)]\(([^\s]+)\s*(?:(?<!(?<!\\)\\)["'“”]((?:.(?!" "|” “))+?.)(?<!(?<!\\)\\)["“”](?: (?<!(?<!\\)\\)["“”]((?:.(?!(?<!(?<!\\)\\)["“”]))*..)(?<!(?<!\\)\\)["“”])?)?\)\]\(([^)]*)\)/);
-
-  if (match) {
-    return [
-      new ImageToken(
-        {
-          alt: match[1],
-          resourceUrl:
-          match[2],
-          title: match[3],
-          caption: match[5] && match[4],
-          anchorUrl: match[5] || match[4],
-          parserContext
-        }
-      ),
-      match[0].length
     ];
   }
 }
