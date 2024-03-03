@@ -65,71 +65,6 @@ function detectTextDirection(text) {
   return rtlDirCheck.test(text) ? 'rtl' : 'ltr';
 }
 
-
-function parseLink(string, parserContext) {
-  let linkMatch = string.match(/^\[\[((?:(?!(?<!(?<!\\)\\)(?:\]\]|\[\[)).)+)\]\]/s);
-  if (!linkMatch) return {};
-  let linkContents = linkMatch[1];
-  let [displayText, targetText, exclusiveDisplayText, exclusiveTargetText] = ['','','',''];
-  let linkFullText = linkMatch[0];
-  let manualDisplayText = false; // did the user set the display text, or is it inferred from the targetText?
-  let exclusiveTargetSyntax = false;
-  let exclusiveDisplaySyntax = false;
-
-  if (linkContents.match(/(?<!(?<!\\)\\)\{/)) {
-    let segments = Array.from(linkContents.matchAll(/((?<!(?<!\\)\\)\{\{?)((?:(?!(?<!(?<!\\)\\)\}).)+)((?<!(?<!\\)\\)\}\}?)|((?:(?!(?<!(?<!\\)\\)[{}]).)+)/gs));
-    segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
-      if (plainText) { // a section of regular text in a link eg [[ABC...
-        displayText += plainText;
-        targetText += plainText;
-      } else {
-        if (openingBraces.length !== closingBraces.length) throw new Error(chalk.red(`Link has unbalanced curly braces: ${linkFullText}\n${parserContext.filePathAndLineNumber}`));
-        manualDisplayText = true;
-
-        if (openingBraces.length === 1) { // eg [[{ ... }]]
-          let pipeSegments = braceContents.split(/(?<!(?<!\\)\\)\|/);
-          if (pipeSegments && pipeSegments.length === 2) { // this is a link text segment such as {A|B}, where A is added to the target text and B is added to the display text
-            targetText += pipeSegments[0];
-            displayText += pipeSegments[1];
-            exclusiveTargetText += pipeSegments[0]; // if we later see an exclusive syntax, retroactively we will have added interpolations to it
-            exclusiveDisplayText += pipeSegments[1];
-          } else { // this is a link text segment such as {A}, which exclusively selects A as the display text
-            exclusiveDisplaySyntax = true;
-            exclusiveDisplayText += braceContents;
-            targetText += braceContents;
-          }
-        }
-
-        if (openingBraces.length === 2) { // for a link like {{A}} which exclusively selects A as the target text
-          exclusiveTargetSyntax = true;
-          exclusiveTargetText += braceContents;
-          displayText += braceContents;
-        }
-      }
-    });
-
-    displayText = exclusiveDisplaySyntax ? exclusiveDisplayText : displayText;
-    targetText = exclusiveTargetSyntax ? exclusiveTargetText : targetText;
-  } else if (linkContents.match(/(?<!(?<!\\)\\)\|/)) { // eg [[A|B]]
-    let segments = linkContents.split(/(?<!(?<!\\)\\)\|/);
-    targetText = segments[0];
-    displayText = segments[1];
-    manualDisplayText = true;
-  } else { // regular link eg [[London]] or [[England#London]]
-    targetText = linkContents;
-  }
-
-  let match = targetText.match(/^((?:(?!(?<!(?<!\\)\\)#).)+)(?:#((?:(?!(?<!(?<!\\)\\)#).)+))?$/s); // Match [[a]] or [[a#b]] or [[number\#3#number\#4]]
-
-  return {
-    linkTarget: (match && match[1])?.replace(/\n/g, ' ').replace(/<[bB][rR]>/g, ' ') || null, // eg "France"
-    linkFragment: (match && match[2])?.replace(/\n/g, ' ').replace(/<[bB][rR]>/g, ' ') || null, // eg "Paris"
-    linkText: manualDisplayText ? displayText : (match && (match[2] || match[1] || null)), // The specified link text, defaulting to subtopic
-    linkFullText,
-    manualDisplayText
-  };
-}
-
 function determineTopicAndSubtopic(linkTarget, linkFragment) {
   let targetTopic, targetSubtopic;
   if (linkFragment) {
@@ -146,4 +81,4 @@ function determineTopicAndSubtopic(linkTarget, linkFragment) {
   };
 }
 
-module.exports = { displaySegment, splitOnPipes, wrapText, detectTextDirection, parseLink, determineTopicAndSubtopic };
+module.exports = { displaySegment, splitOnPipes, wrapText, detectTextDirection, determineTopicAndSubtopic };
