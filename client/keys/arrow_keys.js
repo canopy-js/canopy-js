@@ -3,14 +3,17 @@ import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
+import ScrollableContainer from 'helpers/scrollable_container';
 
 function moveInDirection(direction, options) {
   const currentLinkElement = Link.selection?.element;
 
   if (direction === 'up') {
-    if (!currentLinkElement && Link.visible.length > 1) { // up shouldn't go down but should select a link unless none are visible
+    if (!currentLinkElement /*&& Link.visible.length > 1*/) { // up shouldn't go down but should select a link unless none are visible
       // return Path.rendered.selectALink({ direction: 'up' });
       // Actually do nothing because its the wrong direction
+      // And even if no visible links, we should return because lower code will error with no selection
+      return;
     }
     let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
@@ -383,11 +386,11 @@ function isVisible(element) {
 }
 
 function scrollOrSelect(rect, options) {
-  const amountOfLinkThatMustBeVisibleToSelect = 15;
+  const amountOfLinkThatMustBeVisibleToSelect = -10; // we even let links be a bit over the viewport
 
-  if (rect.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
+  if (rect.top - ScrollableContainer.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth'});
-  } else if (rect.bottom < amountOfLinkThatMustBeVisibleToSelect) {
+  } else if (rect.bottom - ScrollableContainer.top < amountOfLinkThatMustBeVisibleToSelect) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
   } else {
     const link = new Link(rect.element);
