@@ -486,10 +486,16 @@ class Path {
 
   static setPath(newPath, options = {}) {
     if (!(newPath instanceof Path)) throw new Error('newPath must be Path object');
+    if (options.popState) return; // the URL has already changed
 
     let oldPath = Path.url;
     let documentTitle = newPath.lastTopic.mixedCase;
-    let historyApiFunction = ((Path.url.empty || newPath.equals(oldPath)) && !options.pushHistoryState) ? replaceState : pushState;
+
+    let replaceHistoryState = Path.url.empty || newPath.equals(oldPath); // either the old one is bad or the new one is the same
+    if (options.pushHistoryState) replaceHistoryState = false;
+    if (options.replaceHistoryState) replaceHistoryState = true;
+
+    let historyApiFunction = replaceHistoryState ? replaceState : pushState;
     let fullPathString = newPath.productionPathString;
 
     historyApiFunction(
