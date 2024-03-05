@@ -418,7 +418,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
 ===
 - [[Part 1|More]]
-- [[Part 2|Second]]
+- [[Part 2|For later]]
 ===
 
 Part 1:
@@ -432,12 +432,17 @@ Part 2: Our explanation of the Pacific Ocean has extended to include an explanat
 ===
 ![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
-Part 2-1: So, now we see how different explanations starting from different origins can encompass the same material.
+Part 2-1: So, we see that our explanation of the Atlantic Ocean can get included in an explanation of the Pacific Ocean, and vice versa.
 ===
 > [[Part 2-2|Yes]]
 ===
 
-Part 2-2:
+Part 2-2: So, in Canopy, different explanations starting from different origins can encompass the same material.
+===
+> [[Part 2-3|I see]]
+===
+
+Part 2-3:
 Great, now let’s go back to where we were before this tangent.
 ===
 > [[Playground#Part 11|Take me back]]
@@ -447,7 +452,7 @@ Great, now let’s go back to where we were before this tangent.
 * Pacific Ocean: This is an explanation of the Pacific Ocean:
 ===
 - [[Part 1|More]]
-- [[Part 2|Second]]
+- [[Part 2|For later]]
 ===
 
 Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
