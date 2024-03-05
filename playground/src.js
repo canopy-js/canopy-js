@@ -308,7 +308,7 @@ Part 11-3: The answer is, Canopy is a good fit for any domain that is:
 1. Detailed
 2. Broad
 3. Highly-interconnected
-4. Where different users need meaningfully different information from the same corpus
+4. Composed of different parts that are relevant to different users.
 ===
 > [[Part 12|Interesting]]
 ===
