@@ -42,7 +42,7 @@ const displayPathTo = (paragraph, options) => {
   while (paragraph) {
     options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
     visibleParagraphs.push(paragraph);
-    if (paragraph.parentLink) { paragraph.parentLink?.open(); Link.persistLinkSelectionInSession(paragraph.parentLink); } // remember open links of path reference
+    if (paragraph.parentLink) paragraph.parentLink?.open(); // remember open links of path reference
     Link.persistLinkSelectionInSession(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
     paragraph = paragraph.parentParagraph;
   }
