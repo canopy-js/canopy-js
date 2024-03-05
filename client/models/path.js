@@ -446,7 +446,7 @@ class Path {
     let parentParagraph = new Paragraph(parentElement);
     if (!parentParagraph.linkByChild(pathToAppend.firstTopic)) {
       console.error(`Parent element [${parentParagraph.topic.mixedCase}, ${parentParagraph.subtopic.mixedCase}] has no ` +
-        `connecting link to subsequent path segment [${pathToAppend.firstTopic.mixedCase}, ${pathToAppend.firstTopic.mixedCase}]`);
+        `connecting link to subsequent path segment [${pathToAppend.firstTopic.mixedCase}]`);
       return false;
     } else {
       return true;
