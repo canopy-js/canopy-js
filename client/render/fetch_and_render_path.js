@@ -37,14 +37,15 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   promiseCache[pathToParagraphTopic.string] = sectionElementPromise;
 
   let appendingPromise = Promise.all([parentElementPromise, sectionElementPromise]).then(([parentElement, sectionElement]) => {
-    if (!parentElement || !sectionElement) return Promise.resolve();
+    if (!parentElement || !sectionElement) return Promise.resolve(); // null parent eg if appending failed
     if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader.apply(this, headerCache[sectionElement.dataset.topicName])); // regen if necessary
-    if (!Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(); // fail silently, error on tryPrefix
+    if (!Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
     if (!Paragraph.byPath(pathToParagraphTopic)) {
       Paragraph.registerChild(sectionElement, parentElement);
       Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
       Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
     }
+    return Promise.resolve(true);
   });
 
   let subtopicElementPromise = sectionElementPromise.then(sectionElement => { // the subtopic of current topic that is parent of next path segment
@@ -56,9 +57,12 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     }
   });
 
-  let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicElementPromise);
+  let subtopicAfterSubsumptionPromise = Promise.all([appendingPromise, subtopicElementPromise, parentElementPromise]) // n+1's parent waits for path from root
+    .then(([appendingSuccess, subtopicElement]) => appendingSuccess && subtopicElement); //
 
-  return Promise.all([sectionElementPromise, parentElementPromise, childSectionElementPromise, appendingPromise])
+  let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicAfterSubsumptionPromise);
+
+  return Promise.all([sectionElementPromise, childSectionElementPromise, appendingPromise]) // work for this stackframe is finished
     .then(([sectionElement]) => sectionElement);
 }
 

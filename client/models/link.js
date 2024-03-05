@@ -87,7 +87,7 @@ class Link {
     // This is just to make it easier to inspect and debug DOM elements
     // Getters are used instead of properties to allow lazy access for callback-specified links
     if (!this.linkElement) return;
-    this._pathString = this.linkElement.dataset.pathString;
+    this._literalPathString = this.linkElement.dataset.literalPathString;
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
@@ -231,7 +231,7 @@ class Link {
 
   get literalPath() {
     if (this.isLocal) return Path.forSegment(this.enclosingTopic, this.targetSubtopic);
-    if (this.isGlobal) return Path.for(this.element.dataset.pathString); // this will have to change for path links which can have multiple segments
+    if (this.isGlobal) return Path.for(this.element.dataset.literalPathString); // this will have to change for path links which can have multiple segments
     return null;
   }
 
@@ -243,7 +243,8 @@ class Link {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
       relativeLinkNumber: link.relativeLinkNumber,
-      previewPathString: link.previewPath.string // on initial page load we need the paragraph path to call updateView before we have a link to use
+      previewPathString: link.previewPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
+      targetUrl: linkElement.dataset.targetUrl
     };
   }
 
@@ -251,9 +252,9 @@ class Link {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
     if (!enclosingParagraph) { throw new Error("Link selection data refers to non-existant link", object); }
-    let link = enclosingParagraph.linkBySelector(
-      (link, i) => link.element.dataset.text === object.text &&
-        i === object.relativeLinkNumber
+    let link = enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
+      (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
+        (link.isExternal && link.element.dataset.targetUrl === object.targetUrl)
     );
 
     return link && link.element || null;
@@ -528,7 +529,7 @@ class Link {
   }
 
   get urlPath() {
-    if (this.cycle || this.isPathReference || this.externalLink) return this.enclosingPath;
+    if (this.cycle || this.externalLink || this.isPathReference) return this.enclosingPath; // path references display target but keep URL
     if (this.isLocal || this.isSimpleGlobal) return this.inlinePath;
   }
 
@@ -542,7 +543,7 @@ class Link {
   execute(options = {}) {
     options = { scrollDirect: true, ...options };
 
-    if (!options.renderOnly) Link.persistLinkSelection(this); // even if another link gets selected, this link was last touched within paragraph
+    if (!options.renderOnly) Link.persistLinkSelectionInSession(this); // even if execution selects different link, this link was last touched within paragraph
 
     if (this.isExternal) {
       return window.open(this.element.href, '_blank'); // external links must open in new tab

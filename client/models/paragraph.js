@@ -170,10 +170,8 @@ class Paragraph {
   }
 
   get parentLink() {
-    // if (this.sectionElement.parentNode === canopyContainer) { return null; }
     if (this.parentNode === canopyContainer) { return null; } // with shadow dom can't assume section element is attached
 
-    if (!this.parentParagraph) debugger;
     if (this.parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
       return Link.selection; // when selected link is path reference and so is one of the open links also
     }
@@ -342,7 +340,7 @@ class Paragraph {
     childParagraph.parentNode = parentElement; // including canopyContainer, to reassemble DOM later
   }
 
-  static registerSubtopics(sectionElement) {
+  static registerSubtopics(sectionElement) { // take a rendered tree and register all nodes and adjacencies
     Array.from(sectionElement.querySelectorAll('.canopy-section'))
       .forEach(sectionElement => {
         Paragraph.registerNode(sectionElement)
