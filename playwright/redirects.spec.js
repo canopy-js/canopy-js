@@ -46,11 +46,11 @@ test.describe('Redirects', () => {
     await page.goto('/United_States/New_York/Mars');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');
-    await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /United_States/New_York/Mars');
-    await expect(consoleLogs).toContainEqual('[log] Trying:  /United_States/New_York');
+    await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York/Mars');
+    await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York');
   });
 
-  test('For an invalid path adjacency it tries subpaths', async ({ page }) => {
+  test('For an invalid path topic adjacency it tries subpaths', async ({ page }) => {
     page.off("console", logBrowserErrors);
     let consoleLogs = [];
 
@@ -60,8 +60,23 @@ test.describe('Redirects', () => {
     await page.goto('/United_States/New_York/New_Jersey'); // valid topic but no link from New York -> New Jersey
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');
-    await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /United_States/New_York/New_Jersey');
-    await expect(consoleLogs).toContainEqual('[log] Trying:  /United_States/New_York');
+    await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York/New_Jersey');
+    await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York');
+  });
+
+  test('For an invalid path subtopic adjacency it tries subpaths', async ({ page }) => { // if registered orphans, it would fail on addToDom's parentNode call
+    page.off("console", logBrowserErrors);
+    let consoleLogs = [];
+
+    page.on("console", (message) => {
+      consoleLogs.push(`[${message.type()}] ${message.text()}`);
+    })
+    await page.goto('/United_States/New_York#Southern_border/United_States'); // valid topic but no link from New_York#Southern_border -> New Jersey
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border');
+    await expect(consoleLogs).toContainEqual('[error] Parent element [New York, Southern border] has no connecting link to subsequent path segment [United States]');
+    await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York#Southern_border/United_States');
+    await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York#Southern_border');
   });
 
   test('For an invalid single-element path it redirects to default topic', async ({ page }) => {
@@ -74,7 +89,7 @@ test.describe('Redirects', () => {
     await page.goto('/Mars');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
-    await expect(consoleLogs).toContainEqual('[error] No section element found for path:  /Mars');
+    await expect(consoleLogs).toContainEqual('[error] No section element found for path: /Mars');
     await expect(consoleLogs).toContainEqual('[error] No path prefixes remain to try. Redirecting to default topic: /United_States');
   });
 });

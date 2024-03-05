@@ -8,7 +8,7 @@ function registerPopStateListener() {
     history.scrollRestoration = 'manual';
   }
 
-  history.replaceState(history.state, document.title, window.location.href); // no-op call to trigger pop state event firing
+  history.replaceState(history.state, document.title, window.location.href); // no-op call to put initial path in history API
 
   window.addEventListener('popstate', (e) => {
     let linkSelection = e?.state?.linkSelection ? new Link(e?.state?.linkSelection) : null;

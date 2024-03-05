@@ -15,7 +15,7 @@ const requestJson = (topic) => {
         preloadImages(json);
         return json;
       });
-    }).catch(() => {
+    }).catch((e) => {
       REQUEST_CACHE[topic.mixedCase] = undefined; // in case error is connectivity related & will work again later
       return Promise.reject(new Error(`Unable to find topic file: "${topic.requestFileName}"`));
     });
