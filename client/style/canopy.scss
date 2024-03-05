@@ -36,7 +36,7 @@
   }
 
   section {
-    margin-top: 30px;
+    margin-top: 25px;
   }
 
   p {
@@ -279,7 +279,7 @@
     flex-direction: column;
     align-items: center; /* This centers the rows within the container */
     margin: 0 auto;
-    padding-top: 10px;
+    //padding-top: 10px;
 
     .canopy-table-list-row {
       display: flex;
@@ -448,11 +448,11 @@
     }
 
     &:not(:first-child) {
-      margin-top: 15px;
+      margin-top: 25px; // has to be in sync with size between section elements for button-paragraph sequences
     }
 
     &:not(:last-child) {
-      margin-bottom: 15px;
+      margin-bottom: 25px;
     }
   }
 
