@@ -53,10 +53,10 @@ function tryPathPrefix(path, displayOptions) {
   console.error("No section element found for path: ", path.string);
   if (path.length > 1) {
     console.log("Trying: ", path.withoutLastSegment.string);
-    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'instant'});
+    return displayPath(path.withoutLastSegment, null, {scrollStyle: 'instant', replaceHistoryState: true });
   } else if(!displayOptions.defaultRedirect) {
     console.error("No path prefixes remain to try. Redirecting to default topic: " + Path.default);
-    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'instant' });
+    return updateView(Path.default, null, { defaultRedirect: true, scrollStyle: 'instant', replaceHistoryState: true });
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
@@ -249,12 +249,6 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.scrollStyle === 'instant') return false;
 
-  let firstDestinationElementYRelative = ((options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect).top;
-  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
-  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
-  let scrollDistanceUp =  firstDestinationElementYAbsolute - ScrollableContainer.currentScroll;
-  let longDistanceUp = firstDestinationElementYRelative < -20 || (scrollDistanceUp < -0.6 * ScrollableContainer.visibleHeight); // must be negative ie up
-
   let twoStepChange = Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
@@ -263,6 +257,15 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
     && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
     && !linkToSelect.equals(Link.selection.parentLink);
+
+  let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect;
+  let firstDestinationElementYRelative = firstDestinationElement.top;
+  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
+  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
+  let scrollDistanceUp = firstDestinationScrollYAbsolute - ScrollableContainer.currentScroll;
+  let bigDistanceUp = -0.6 * ScrollableContainer.visibleHeight;
+  let distanceToFirstDestinationVeryLarge = scrollDistanceUp < bigDistanceUp; // must be negative ie up
+  let longDistanceUp = distanceToFirstDestinationVeryLarge; // we no longer check if top element is off screen, because either dist-large or two-step
 
   return twoStepChange || longDistanceUp;
 }

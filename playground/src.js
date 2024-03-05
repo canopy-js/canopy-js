@@ -27,7 +27,7 @@ canopyContainer.id = '_canopy';
 scrollableContainer.appendChild(canopyContainer);
 
 let newBulkFileString = localStorage.getItem('data') || defaultText();
-
+if (window.location.hostname === 'localhost') newBulkFileString = defaultText();
 localStorage.setItem('data', newBulkFileString);
 
 editor.value = newBulkFileString;
@@ -191,7 +191,7 @@ Part 6-2-B:
 
 Part 6-2-C: Welcome to this other part!
 ===
-> [[Part 7|Continue]]
+> [[Part 7|Thanks]]
 ===
 
 Part 7: Why might you use Canopy?
@@ -267,7 +267,7 @@ Part 9: Canopy allows you to build explanations out of reusable components.
 > [[Part 9-1|What does that mean?]]
 ===
 
-Part 9-1: Here are two explanations that reference the same concept:
+Part 9-1: Here are two explanations that reuse an explanation same concept:
 - [[Carbon]]
 - [[Nitrogen]]
 ===
@@ -278,13 +278,13 @@ Carbon: Carbon is a [[chemical element]] that has the symbol \`C\` and the numbe
 
 Nitrogen: Nitrogen is a [[chemical element]] that has the symbol \`N\` and the number 7.
 
-Part 10: Great! Now lets see how entirely different explanations  can end up using the same content.
+Part 10: Great! Now let’s see how entirely different explanations can end up using the same content.
 ===
 > [[Part 10-1|Ok]]
 ===
 
-Part 10-1: Here is an explanation of the [[Atlantic Ocean]].
-- Try *holding the option or alt key* and clicking the link above.
+Part 10-1: Try *holding the option or alt key* and clicking the link below.
+- Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
 ===
 > [[Part 11|I'm finished]]
 ===
@@ -315,46 +315,40 @@ Part 11-3: The answer is, Canopy is a good fit for any domain that is:
 
 Part 12: Lets see some examples.
 ===
-> [[Part 12-2|Okay]]
+> [[Part 12-1|Okay]]
 ===
 
-Part 12-2: *Example 1/7:* Canopy might be a good fit for interconnected historical information.
+Part 12-1: *Example 1/6:* Canopy might be a good fit for interconnected geographic and historical information.
 ===
-> [[World Wars|Let’s see]]
+> [[Cities|Let’s see]]
+> [[Part 12-2|Next]]
+===
+
+Part 12-2: *Example 2/6:* Another application area is documenting large software projects.
+===
+> [[MailerApp|Let’s see]]
 > [[Part 12-3|Next]]
 ===
 
-Part 12-3: *Example 2/7:* Another application area is documenting large software projects.
+Part 12-3: *Example 3/6:* Canopy could also be useful for large personal writing projects.
 ===
-> [[MailerApp|Let’s see]]
+> [[Blogs|Let’s see]]
 > [[Part 12-4|Next]]
 ===
 
-Part 12-4: *Example 3/7:* Canopy could also be useful for large personal writing projects.
+Part 12-4: *Example 4/6:* Canopy could be useful for “merging” the points made in various primary sources.
 ===
-> [[Blogs|More]]
+> [[Noise pollution law|Let’s see]]
 > [[Part 12-5|Next]]
 ===
 
-Part 12-5: *Example 4/7:* Canopy could be useful for “merging” the points made in various primary sources.
+Part 12-5: *Example 5/6:* Canopy could be used for memorization.
 ===
-> [[Noise pollution law|Let’s see]]
+> [[Memorization|Let’s see]]
 > [[Part 12-6|Next]]
 ===
 
-Part 12-6: *Example 5/7:* Canopy could be used to organize information about cities.
-===
-> [[Cities|Let’s see]]
-> [[Part 12-7|Next]]
-===
-
-Part 12-7: *Example 6/7:* Canopy could be used for memorization.
-===
-> [[Memorization|Let’s see]]
-> [[Part 12-8|Next]]
-===
-
-Part 12-8: *Example 7/7:* Canopy could be used as a tool in libraries.
+Part 12-6: *Example 6/6:* Canopy could be used as a tool in libraries.
 ===
 > [[Libraries|Let’s see]]
 > [[Part 13|Finish]]
@@ -422,40 +416,49 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 [Oceans]
 
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
-- (The *second* time you see this text, click [[Part 10-3|here]].)
 ===
-> [[Part 10-1|Click here first]]
+- [[Part 1|More]]
+- [[Part 2|Second]]
+===
+
+Part 1:
+Click the following link:
+- The Atlantic ocean connects via the Panama Canal to the [[{Pacific Ocean}#Part 1]]
+![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
+
+Part 2: Our explanation of the Pacific Ocean has extended to include an explanation of the Atlantic on the same page.
+===
+> [[Part 2-1|Wow!]]
 ===
 ![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
-Part 10-1: The Atlantic ocean connects via the Panama Canal to the [[Pacific Ocean]].
-- Try clicking the link above normally.
-
-Part 10-3: We went in a circle and ended up back where we started!
+Part 2-1: So, now we see how different explanations starting from different origins can encompass the same material.
 ===
-> [[Part 10-4|Wow!]]
+> [[Part 2-2|Yes]]
 ===
 
-Part 10-4: Explanations starting from different points can end up covering the same material!
-- Click the button below for a dramatic return to our original location:
+Part 2-2:
+Great, now let’s go back to where we were before this tangent.
 ===
-> [[Playground#Part 11|Great, now take me back]]
+> [[Playground#Part 11|Take me back]]
 ===
 
 
-* Pacific Ocean: Now we have begun an explanation of the Pacific Ocean:
-![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Atlantic Ocean" "Credit Wikipedia")
+* Pacific Ocean: This is an explanation of the Pacific Ocean:
 ===
-> [[Part 10-2|Great!]]
+- [[Part 1|More]]
+- [[Part 2|Second]]
 ===
 
-Part 10-2: Now lets start the explanation from [[Pacific Ocean]].
-- The *second time* you see this, click [[Part 10-3|here]]
-- Try clicking the above link *holding alt or option*.
+Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
+- Now, click the following link *while holding the option or alt key*
+- We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
+![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 
-Part 10-3: The Pacific ocean connects via the Panama Canal to the [[Atlantic Ocean]].
-- Try clicking that link normally.
-
+Part 2: Now we’re reading a new explanation, starting from the Pacific Ocean this time.
+Click the following link *normally*:
+- The Pacific Ocean connects via the Panama Canal to the [[{Atlantic Ocean}#Part 2]]
+![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 
 [NYC]
 
@@ -562,15 +565,17 @@ Townsville is considering a law to ban noise pollution.
 ===
 
 Arguments for the law: Residents of Townsville have put forward various arguments for a noise pollution law.
-- One suggested benefit of the ban regarded [[economics]].
-- Another benefit mentioned regarded [[assemblies]].
+===
+- [[Economics]]
+- [[Assemblies]]
+===
 
 Economics:
 One benefit of the legislation mentioned involves economics:
 - Mr. Cunningham lists economic productivity resulting from greater sleep as an argument for the law.
-  - However, Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
-  - Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
-  - The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
+- Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
+- Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
+- The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
 ===
 > [[Playground#Part 12-6|Finished]]
 ===
@@ -578,23 +583,25 @@ One benefit of the legislation mentioned involves economics:
 Assemblies:
 One benefit of the legislation mentioned involves assemblies:
 - Mr Cunningham mentions disruption of family meals and communal gatherings.
-  - That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
-  - The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
+- That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
+- The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
 ===
 > [[Playground#Part 12-6|Finished]]
 ===
 
 Arguments against the law: Residents of Townsville have put forward various arguments against a noise pollution law.
 Residents of Townsville have put forward various arguments against a noise pollution law.
-- One argument against the law regarded [[restriction of freedom]].
-- Another argument against the law regarded [[town culture]].
+===
+- [[Restriction of freedom]]
+- [[Town culture]]
+===
 
 Restriction of freedom:
 One argument raised against the proposal is that it restricts the freedom of town residents:
 - Ms. Jamaica mentions that the law might create a precedent for regulating the private lives of Townsville residents.
-  - Mr. Orangutan opines that the small size of Townsville makes spiraling regulation less likely.
-  - Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
-  - Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
+- Mr. Orangutan opines that the small size of Townsville makes spiraling regulation less likely.
+- Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
+- Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
 ===
 > [[Playground#Part 12-6|Finished]]
 ===
@@ -627,14 +634,14 @@ Time of day: Residents of Townsville have debated what time the noise pollution 
 All-day ban:
 Some Townsville residents support an all-day noise ban:
 - Mr Cunningham suggested that the ban should cover all times of day.
-  - This was because some people work night shifts and sleep during the day.
-  - Additionally, Mr. Cunningham lists family meals and communal gatherings as a reason for the ban, and these occur at various times requiring a broad ban.
+- This was because some people work night shifts and sleep during the day.
+- Additionally, Mr. Cunningham lists family meals and communal gatherings as a reason for the ban, and these occur at various times requiring a broad ban.
 
 Late-night-only ban:
 Some Townsville residents support only a late-night noise ban:
 - Ms. Jamaica opposed any ban, but suggested a compromise of a ban covering only 11PM-5AM.
-  - This would satisfy some of Mr. Cunningham's concern for disrupted sleep.
-  - However, this would not assuage his concerns about noise disrupting family meals and communal get-togethers.
+- This would satisfy some of Mr. Cunningham's concern for disrupted sleep.
+- However, this would not assuage his concerns about noise disrupting family meals and communal get-togethers.
 ===
 > [[Playground#Part 12-6|Finished]]
 ===
@@ -646,38 +653,6 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 ===
 > [[Playground#Part 12-6|Finished]]
 ===
-
-[World Wars]
-
-* World wars:
-For example:
-- [[World War I]]
-- [[World War II]]
-===
-> [[Playground#Part 12-3|Finished]]
-===
-
-World War I: World War I was a conflict that lasted from 1914–1918.
-===
-- [[Results of WWI]]
-===
-
-Results of WWI: The Treaty of Versailles which forced Germany to accept blame and financial obligations for the war, is cited as one of the [[#causes of WWII]]
-===
-> [[Playground#Part 12-3|Finished]]
-===
-
-World War II: World War II was a conflict that lasted from 1939-1945.
-===
-- [[Causes of WWII]]
-===
-
-Causes of WWII: A prime cause of WWII was the Treaty of Versailles, which heavily penalized Germany for its participation in WWI.
-- The Treaty of Versailles was one of the major [[#results of WWI]]
-===
-> [[Playground#Part 12-3|Finished]]
-===
-
 
 [Blogs]
 
@@ -831,12 +806,12 @@ Here are examples in the news of supply and demand:
 > [[Memorization 2|How so?]]
 ===
 
-Memorization 2: This is because spatial memory is one of the strongest forms of memory, and Canopy organizes large quantities of information in spatial relation.
+Memorization 2: Well, spatial memory is one of the strongest forms of memory.
 ===
-> [[Memorization 3|How so?]]
+> [[Memorization 3|Okay]]
 ===
 
-Memorization 3: Because Canopy organizes information in trees, millions of ideas can be visually presented within seven steps from one another.
+Memorization 3: And, because Canopy organizes information in trees, many ideas can be visually presented in a single spatial display.
 ===
 > [[Memorization 4|Let’s see an example]]
 ===
@@ -849,7 +824,7 @@ Memorization 4: Let's try to remember some information, first without Canopy, an
 
 Without Canopy:
 Please try to remember the following emoji sequence:<br><br>
-<div style="font-size: 80px">☃️🌹⭐️🐠🧳☂️🕶🐶🦋👖🧣🧤🧦🩴🎒👟👑🎓🧢💍</div>
+<div style="font-size: 80px">☃️🌹⭐️🐠💍☂️🕶🐶🦋🧢🧣🧤🧦🩴</div>
 ===
 > [[Without Canopy 2|That’s hard]]
 ===
@@ -860,40 +835,42 @@ Without Canopy 2: Okay, well try it with Canopy.
 ===
 
 With Canopy: Let’s divide the emojis into “spatial” subcategories.
-|[[A|<div style="font-size: 60px">☃️</div>]]|[[B|<div style="font-size: 60px">🌹</div>]]|
-|[[C|<div style="font-size: 60px">⭐️</div>]]|[[D|<div style="font-size: 60px">🐠</div>]]|
+|[[A|<div style="font-size: 60px">☃️</div>]]|[[B|<div style="font-size: 60px">🐶</div>]]|
 
 A:
-|<div style="font-size: 80px">🧳</div>|<div style="font-size: 80px">☂️</div>|
-|<div style="font-size: 80px">🕶</div>|<div style="font-size: 80px">🐶</div>|
+|[[A1|<div style="font-size: 60px">🌹</div>]]|[[A2|<div style="font-size: 60px">⭐️</div>]]|
+
+A1:
+|<div style="font-size: 60px">🐠</div>|<div style="font-size: 60px">💍</div>|
+Does that seem easier?
+===
+> [[Canopy Memorization|A bit]]
+===
+
+A2:
+|<div style="font-size: 60px">☂️</div>|<div style="font-size: 60px">🕶</div>|
 Does that seem easier?
 ===
 > [[Canopy Memorization|A bit]]
 ===
 
 B:
-|<div style="font-size: 80px">🦋</div>|<div style="font-size: 80px">👖</div>|
-|<div style="font-size: 80px">🧣</div>|<div style="font-size: 80px">🧤</div>|
+|[[B1|<div style="font-size: 60px">🦋</div>]]|[[B2|<div style="font-size: 60px">🧢</div>]]|
+
+B1:
+|<div style="font-size: 60px">🧣</div>|<div style="font-size: 60px">🧤</div>|
 Does that seem easier?
 ===
 > [[Canopy Memorization|A bit]]
 ===
 
-C:
-|<div style="font-size: 80px">🧦</div>|<div style="font-size: 80px">🩴</div>|
-|<div style="font-size: 80px">🎒</div>|<div style="font-size: 80px">👟</div>|
+B2:
+|<div style="font-size: 60px">🧦</div>|<div style="font-size: 60px">🩴</div>|
 Does that seem easier?
 ===
 > [[Canopy Memorization|A bit]]
 ===
 
-D:
-|<div style="font-size: 80px">👑</div>|<div style="font-size: 80px">🎓</div>|
-|<div style="font-size: 80px">🧢</div>|<div style="font-size: 80px">💍</div>|
-Does that seem easier?
-===
-> [[Canopy Memorization|A bit]]
-===
 
 * Canopy Memorization: Well it’s still going to be work, but memorizing spatially related information is definitely easier than memorizing a regular list.
 ===
@@ -901,9 +878,14 @@ Does that seem easier?
 ===
 
 Part 2: When reading information in Canopy, information is presented spatially as a network of small bite-sized ideas.
-- This makes it easier to internalize and recall, and to find something again later.
 ===
-> [[Playground#Part 12-8|Got it]]
+> [[Part 3|Ok]]
+===
+
+Part 3:
+This makes it easier to internalize and recall, and to find something again later.
+===
+> [[Playground#Part 12-6|Got it]]
 ===
 
 [Libraries]
@@ -911,7 +893,7 @@ Part 2: When reading information in Canopy, information is presented spatially a
 * Libraries: Let’s look at an example.
 ===
 - [[Science]]
-- [[News]]
+- [[History]]
 - [[Lifestyle]]
 ===
 
@@ -927,82 +909,87 @@ Neuroscience:
 
 Brain Regions:
 ===
-- [[Amygdala]]
+- [[Hypothalamus]]
 ===
 
-Amygdala:
+Hypothalamus:
 ===
-- [[Functions of Amygdala]]
-===
-
-Functions of Amygdala:
-===
-- [[Amygdala as Pain Center]]
+- [[{Behaviors} of Hypothalamus]]
 ===
 
-Amygdala as Pain Center:
-The Amygdala is involved in pain perception.
-- So much so, it is even active in the experience of social pain [[(Dewall 2010)]].
-
-* News:
+Behaviors of Hypothalamus:
 ===
-- [[Academic News]]
+- [[{Role }of Hypothalamus {in Sleep}]]
 ===
 
-Academic News:
+Role of Hypothalamus in Sleep:
+The hypothalamus has a large role in sleep:
+- It receives light information from the retina.
+- When enough time has passed without seeing bright light, the hypothalamus causes the release of melatonin from the pineal gland.
+- This mechanism was documented in [[Moore{|,} 1974]].
+
+* History:
 ===
-- [[Recent Publications]]
+- [[History of Academia]]
 ===
 
-Recent Publications:
+History of Academia:
+===
+- [[Historical Publications]]
+===
+
+Historical Publications:
 ===
 - [[Psychology Publications]]
 ===
 
 Psychology Publications:
 ===
-- [[Psychological Science journal]]
+- [[Brain Research journal]]
 ===
 
-Psychological Science journal:
+Brain Research journal:
 ===
-- [[Psychological Science {July 2010}]]
+- [[Brain Research {May 1974}]]
 ===
 
-Psychological Science July 2010:
-The July 2010 issue of the Association for Psychological Science's “Psychological Science” journal included:
-- [[Dewall 2010|Dewall et al: Acetaminophen reduces social pain: behavioral and neural evidence]]
+Brain Research May 1974:
+The May 1974 issue of publisher Elsevier’s “Brain Research” journal included:
+- [[Moore 1974|Moore and Klein: Visual pathways and the central neural control of a circadian rhythm in pineal serotonin N-acetyltransferase activity]]
 
 
 * Lifestyle:
 ===
-- [[Lifehacks]]
+- [[Health]]
 ===
 
-Lifehacks:
+Health:
 ===
-- [[Dealing with negative emotions]]
-===
-
-Dealing with negative emotions:
-===
-- [[Dealing with social rejection]]
+- [[Sleep]]
 ===
 
-Dealing with social rejection:
-Most individuals will experience social rejection at various points in life.
-- Social rejection produces pain similar to physical pain.
-- Long-term solutions involve finding supportive social groups and increasing personal resilience.
-- In the short-term, research has shown that pain killers like acetaminophen used in moderation can reduce even socially-caused pain [[(Dewall 2010)]].
-
-
-* Dewall 2010: Appearing in _Psychological Science_ July 2010, C Nathan Dewall and coauthors published “Acetaminophen reduces social pain: behavioral and neural evidence.” [(Link)](https://pubmed.ncbi.nlm.nih.gov/20548058)
-<br><br>Abstract:
-> Pain, whether caused by physical injury or social rejection, is an inevitable part of life. These two types of pain-physical and social-may rely on some of the same behavioral and neural mechanisms that register pain-related affect. To the extent that these pain processes overlap, acetaminophen, a physical pain suppressant that acts through central (rather than peripheral) neural mechanisms, may also reduce behavioral and neural responses to social rejection.
-> In two experiments, participants took acetaminophen or placebo daily for 3 weeks. Doses of acetaminophen reduced reports of social pain on a daily basis (Experiment 1). We used functional magnetic resonance imaging to measure participants' brain activity (Experiment 2), and found that acetaminophen reduced neural responses to social rejection in brain regions previously associated with distress caused by social pain and the affective component of physical pain (dorsal anterior cingulate cortex, anterior insula).
-> Thus, acetaminophen reduces behavioral and neural responses associated with the pain of social rejection, demonstrating substantial overlap between social and physical pain.
+Sleep:
 ===
-> [[Libraries|Try different path]]
+- [[Sleep Tips]]
+===
+
+Sleep Tips:
+===
+- [[Reducing light]]
+===
+
+Reducing light:
+One of the most impactful things a person can do to improve sleep is to reduce exposure to light close to bedtime.
+- This is because bright light causes the hypothalamus to inhibit melatonin release.
+- This mechanism was first described in [[Moore 1974]].
+
+* Moore 1974: Appearing in _Elsevier’s_ May 1974 edition of the journal _Brain Research_, Robert Y. Moore and David C. Klein published “Visual pathways and the central neural control of a circadian rhythm in pineal serotonin N-acetyltransferase activity” [(Link)](https://www.sciencedirect.com/science/article/abs/pii/0006899374901887)
+<br><br>
+The study documented how the hypothalamus detects darkness via the retina and causes the pineal gland to release precursors to melatonin.
+<br>Abstract:
+> The pineal enzyme, serotonin N-acetyltransferase, exhibits a circadian rhythm of activity with nocturnal levels 15–30 times greater than those observed during a light period in the rat. This rhythm has been shown to be under visual control mediated by the sympathetic innervation to the pineal. The present study examined the participation of visual pathways and other central mechanisms in the regulation of pineal serotonin N-acetyltransferase activity. Following destruction of all visual pathways by blinding, the rhythm in enzyme activity is no longer controlled by the pattern of diurnal lighting and becomes free-running. Destruction of the primary optic tracts, the accessory optic tracts, or both of these components of the central retinal projection together, does not alter visual entrainment of the enzyme rhythm. In the absence of these pathways the only central retinal projection known to exist is a retinohypothalamic pathway branching directly off the optic chiasm to terminate bilaterally in the suprachiasmatic hypothalamic nuclei.
+===
+> [[Libraries|Try again]]
 > [[Playground#Part 13|Finish]]
 ===
 

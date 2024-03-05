@@ -31,7 +31,7 @@ class Reference {
   }
 
   get hasPipe() {
-    return !!this.fullText.match(/(^|[^\\])\|/);
+    return !!this.fullText.match(/^(?:\\.|[^\\])*\|/);
   }
 
   parseDisplayAndTarget() {
@@ -90,7 +90,7 @@ class Reference {
   handleSingleBrace(contents) {
     const match = contents.match(/((?:\\.|[^\\|])*?)\|((?:\\.|[^\\|])*?)$/);
 
-    if (match?.[1]) { // ie "A|B" or "A|" or "|A"
+    if (match) { // ie "A|B" or "A|" or "|A"
       this.targetText += match[1];
       this.displayText += match[2];
       this.exclusiveTargetText += match[1];
@@ -110,8 +110,8 @@ class Reference {
 
 
   parsePipeReference() {
-    const [target, display, extra] = [...this.contents.matchAll(/((?:\\.|[^\/])+?)(?:\||$)/g)].map(match => match[1]);
-    if (extra) throw `Link ${this.fullText} parsed as pipe but has more than two segments`;
+    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw `Reference has too many pipes: ${this.fullText}`
+    const [_, target, display] = [...this.contents.match(/((?:\\.|[^\\])+?)\|((?:\\.|[^\\])+?)$/)];
     this.targetText = target;
     this.displayText = display;
   }

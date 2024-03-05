@@ -28,20 +28,26 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
   document.title = pathToDisplay.lastTopic.mixedCase;
 
-  let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, [], options);
+  let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, options);
   pathToDisplay.paragraph.addSelectionClass();
-  setTimeout(() => visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show());
   setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
-  return options.noScroll ? Promise.resolve() : scrollPage(linkToSelect, options);
+  return (options.noScroll ? Promise.resolve() : scrollPage(linkToSelect, options)).then(() =>
+    visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show()
+  );
 };
 
-const displayPathTo = (paragraph, visibleParagraphs, options) => {
-  options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
-  visibleParagraphs.push(paragraph);
-  if (paragraph.isRoot) return visibleParagraphs;
-  if (paragraph.parentLink) { paragraph.parentLink?.open(); Link.persistLinkSelectionInSession(paragraph.parentLink); } // remember open links of path reference
-  Link.persistLinkSelectionInSession(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
-  return displayPathTo(paragraph.parentParagraph, visibleParagraphs, options);
+const displayPathTo = (paragraph, options) => {
+  let visibleParagraphs = [];
+
+  while (paragraph) {
+    options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
+    visibleParagraphs.push(paragraph);
+    if (paragraph.parentLink) paragraph.parentLink?.open(); // remember open links of path reference
+    Link.persistLinkSelectionInSession(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
+    paragraph = paragraph.parentParagraph;
+  }
+
+  return visibleParagraphs;
 }
 
 export default displayPath;
