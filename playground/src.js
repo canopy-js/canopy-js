@@ -212,149 +212,83 @@ Part 7-3: You won't see any!
 > [[Part 8|What else can it do?]]
 ===
 
-Part 8: Canopy can help you create very large explanations.
+Part 8: Let’s use Canopy to reuse content across different explanations.
 ===
-> [[Part 8-1|What do you mean?]]
-===
-
-Part 8-1: Each paragraph here can mention several other ideas, like this:
-- [[Idea \\#1]], [[idea \\#2]], [[idea \\#3]], [[idea \\#4]].
-===
-> [[Part 8-2|Okay]]
+> [[Part 8-1|Okay]]
 ===
 
-Idea #1: This is the first idea!
-
-Idea #2: This is the second idea!
-
-Idea #3: This is the third idea!
-
-Idea #4: This is the fourth idea!
-
-Part 8-2: And, each path can go very deep, like this: [[{idea \\#1}-2]]
-
-Idea #1-2: And [[{idea \\#2}-2]]
-
-Idea #2-2: And [[{idea \\#3}-2]]
-
-Idea #3-2: And [[{idea \\#4}-2]]
-
-Idea #4-2: That's very deep!
-===
-> [[Part 8-3|Okay]]
-===
-
-Part 8-3: So:
-- Lets say each paragraph mentions four other ideas
-- And, lets say a user can burrow down seven paragraphs in any direction
-- How many paragraphs would that be total?
-===
-> [[Part 8-4|How many?]]
-===
-
-Part 8-4: That would be over 1,000,000 paragraphs!
-===
-> [[Part 8-5|That's a lot!]]
-===
-
-Part 8-5: It is! Now you can see how Canopy might help you organize very large explanations.
-===
-> [[Part 9|What else does it do?]]
-===
-
-Part 9: Canopy allows you to build explanations out of reusable components.
-===
-> [[Part 9-1|What does that mean?]]
-===
-
-Part 9-1: Here are two explanations that reuse an explanation same concept:
-- [[Carbon]]
-- [[Nitrogen]]
-===
-> [[Part 10|I'm finished]]
-===
-
-Carbon: Carbon is a [[chemical element]] that has the symbol \`C\` and the number 6.
-
-Nitrogen: Nitrogen is a [[chemical element]] that has the symbol \`N\` and the number 7.
-
-Part 10: Great! Now let’s see how entirely different explanations can end up using the same content.
-===
-> [[Part 10-1|Ok]]
-===
-
-Part 10-1: Try *holding the option or alt key* and clicking the link below.
+Part 8-1: Try *holding the option or alt key* and clicking the link below.
 - Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
 ===
-> [[Part 11|I'm finished]]
+> [[Part 9|I'm finished]]
 ===
 
-Part 11: *Welcome back!* See, we've returned to where we started before all that Oceans business.
+Part 9: *Welcome back!* See, we've returned to where we started before all that Oceans business.
 ===
-> [[Part 11-1|Great!]]
-===
-
-Part 11-1: So, now you've seen the main feature set of Canopy.
-===
-> [[Part 11-2|Correct]]
+> [[Part 9-1|Great!]]
 ===
 
-Part 11-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
+Part 9-1: So, now you've seen the main feature set of Canopy.
 ===
-> [[Part 11-3|True]]
+> [[Part 9-2|Correct]]
 ===
 
-Part 11-3: The answer is, Canopy is a good fit for any domain that is:
+Part 9-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
+===
+> [[Part 9-3|True]]
+===
+
+Part 9-3: The answer is, Canopy is a good fit for any domain that is:
 1. Detailed
 2. Broad
 3. Highly-interconnected
 4. Composed of different parts that are relevant to different users.
 ===
-> [[Part 12|Interesting]]
+> [[Part 10|Interesting]]
 ===
 
-Part 12: Lets see some examples.
+Part 10: Lets see some examples.
 ===
-> [[Part 12-1|Okay]]
+> [[Part 10-1|Okay]]
 ===
 
-Part 12-1: *Example 1/6:* Canopy might be a good fit for interconnected geographic and historical information.
+Part 10-1: *Example 1/6:* Canopy might be a good fit for interconnected geographic and historical information.
 ===
 > [[Cities|Let’s see]]
-> [[Part 12-2|Next]]
+> [[Part 10-2|Next]]
 ===
 
-Part 12-2: *Example 2/6:* Another application area is documenting large software projects.
+Part 10-2: *Example 2/6:* Another application area is documenting large software projects.
 ===
 > [[MailerApp|Let’s see]]
-> [[Part 12-3|Next]]
+> [[Part 10-3|Next]]
 ===
 
-Part 12-3: *Example 3/6:* Canopy could also be useful for large personal writing projects.
+Part 10-3: *Example 3/6:* Canopy could also be useful for large personal writing projects.
 ===
 > [[Blogs|Let’s see]]
-> [[Part 12-4|Next]]
+> [[Part 10-4|Next]]
 ===
 
-Part 12-4: *Example 4/6:* Canopy could be useful for “merging” the points made in various primary sources.
+Part 10-4: *Example 4/6:* Canopy could be useful for “merging” the points made in various primary sources.
 ===
 > [[Noise pollution law|Let’s see]]
-> [[Part 12-5|Next]]
+> [[Part 10-5|Next]]
 ===
 
-Part 12-5: *Example 5/6:* Canopy could be used for memorization.
+Part 10-5: *Example 5/6:* Canopy could be used for memorization.
 ===
 > [[Memorization|Let’s see]]
-> [[Part 12-6|Next]]
+> [[Part 10-6|Next]]
 ===
 
-Part 12-6: *Example 6/6:* Canopy could be used as a tool in libraries.
+Part 10-6: *Example 6/6:* Canopy could be used as a tool in libraries.
 ===
 > [[Libraries|Let’s see]]
-> [[Part 13|Finish]]
+> [[Part 11|Finish]]
 ===
 
-Part 13: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
+Part 11: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
 
 [MailerApp]
 
@@ -371,7 +305,7 @@ History: MailCorp's history includes the [[1998 BigCorpCustomer Feature Request]
 1998 BigCorpCustomer Feature Request:
 On May 1st 1998 BigCorpCustomer asked to be able to send emails, and so we decided to implement the [[{#|}{{message scheduling}} feature]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10-4|Done]]
 ===
 
 Features: A major feature of MailerApp is [[message scheduling]].
@@ -380,7 +314,7 @@ Message scheduling: Message scheduling is when a user logs in to the app, create
 - This functionality is implemented using a [[#sending queue]]
 - The message scheduling functionality was designed in response to the [[#1998 BigCorpCustomer Feature Request]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10-4|Done]]
 ===
 
 Patterns: The app uses certain design patterns to produce the feature set.
@@ -391,7 +325,7 @@ Sending queue: MailerApp uses a “sending queue” to allow a user to schedule 
 - The queue must be checked periodically to see if there are unsent messages, and to send them.
 - These concepts are implemented in the using [[#SendWorker class]] and the [[#PendingMessages database table]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10-4|Done]]
 ===
 
 Code: The code base has a [[\`SendWorker\` class]], and a [[\`PendingMessages\` database table]].
@@ -400,7 +334,7 @@ SendWorker class: The \`SendWorker\` class periodically checks the \`PendingMess
 - The \`SendWorker\` class relies on the [[#PendingMessages database table]].
 - The \`SendWorker\` class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10-4|Done]]
 ===
 
 PendingMessages database table: There is a \`PendingMessages\` database table:
@@ -409,7 +343,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 - The PendingMessages table is used by the [[#SendWorker class]]
 - The SendWorker class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10-4|Done]]
 ===
 
 
@@ -445,7 +379,7 @@ Part 2-2: So, in Canopy, different explanations starting from different origins 
 Part 2-3:
 Great, now let’s go back to where we were before this tangent.
 ===
-> [[Playground#Part 11|Take me back]]
+> [[Playground#Part 9|Take me back]]
 ===
 
 
@@ -486,7 +420,7 @@ Click the following link *normally*:
 * Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]].
 - Jefferson Market library is housed in the repurposed building of [[Jefferson Market Courthouse]].
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 11|Finish]]
 ===
 
 * Midtown Manhattan: Midtown is a major neighborhood in Manhattan with various landmarks.
@@ -505,7 +439,7 @@ Click the following link *normally*:
 - The stadium was built by architect Stanford White.
 - Madison Square Garden was also the site of [[Stanford White's death]].
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 11|Finish]]
 ===
 
 * Stanford White’s death:
@@ -515,7 +449,7 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 - The trial was held in [[Jefferson Market Courthouse]].
 - The story was adapted to novel and stage as Ragtime.
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 11|Finish]]
 ===
 
 * Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
@@ -533,7 +467,7 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 Let’s take all the points these articles make and merge them into one tree.
 ===
 > [[Noise pollution tree|See merger]]
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Op-ed #1: This is op-ed #1, written by Coolidge Cunningham.
@@ -582,7 +516,7 @@ One benefit of the legislation mentioned involves economics:
 - Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
 - The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Assemblies:
@@ -591,7 +525,7 @@ One benefit of the legislation mentioned involves assemblies:
 - That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
 - The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Arguments against the law: Residents of Townsville have put forward various arguments against a noise pollution law.
@@ -608,7 +542,7 @@ One argument raised against the proposal is that it restricts the freedom of tow
 - Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
 - Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Town culture:
@@ -629,7 +563,7 @@ Volume: Residents of Townsville have debated the ideal maximum volume of a noise
   - This was due to the suggestion that there aren't enough police to enforce a wider ban.
 - Ms. Jamaica opposed a ban of any volume.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Time of day: Residents of Townsville have debated what time the noise pollution law should be active.
@@ -648,7 +582,7 @@ Some Townsville residents support only a late-night noise ban:
 - This would satisfy some of Mr. Cunningham's concern for disrupted sleep.
 - However, this would not assuage his concerns about noise disrupting family meals and communal get-togethers.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 Seasons:
@@ -656,7 +590,7 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 - Mr. Cunningham who supports a strong ban nevertheless only thinks one is necessary during the summer tourist season.
 - Mr. Orangutan adds a reason for a summer-specific ban, namely that a ban in springtime might impede the loud but necessary agricultural harvest.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10-6|Finished]]
 ===
 
 [Blogs]
@@ -681,7 +615,7 @@ Blogs 2: So, Canopy would let an author organize all of their views in one place
 Blogs 3: Let’s see an example. Blogger “Maynard” wants to explain daily news in light of economic theory.
 ===
 > [[Maynard|Okay]]
-> [[Playground#Part 12-5|I'm finished]]
+> [[Playground#Part 10-5|I'm finished]]
 ===
 
 * Maynard: Welcome to Maynard's Canopy blog, "The Main Yard."
@@ -890,7 +824,7 @@ Part 2: When reading information in Canopy, information is presented spatially a
 Part 3:
 This makes it easier to internalize and recall, and to find something again later.
 ===
-> [[Playground#Part 12-6|Got it]]
+> [[Playground#Part 10-6|Got it]]
 ===
 
 [Libraries]
@@ -995,7 +929,7 @@ The study documented how the hypothalamus detects darkness via the retina and ca
 > The pineal enzyme, serotonin N-acetyltransferase, exhibits a circadian rhythm of activity with nocturnal levels 15–30 times greater than those observed during a light period in the rat. This rhythm has been shown to be under visual control mediated by the sympathetic innervation to the pineal. The present study examined the participation of visual pathways and other central mechanisms in the regulation of pineal serotonin N-acetyltransferase activity. Following destruction of all visual pathways by blinding, the rhythm in enzyme activity is no longer controlled by the pattern of diurnal lighting and becomes free-running. Destruction of the primary optic tracts, the accessory optic tracts, or both of these components of the central retinal projection together, does not alter visual entrainment of the enzyme rhythm. In the absence of these pathways the only central retinal projection known to exist is a retinohypothalamic pathway branching directly off the optic chiasm to terminate bilaterally in the suprachiasmatic hypothalamic nuclei.
 ===
 > [[Libraries|Try again]]
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 11|Finish]]
 ===
 
 [Chemistry]
