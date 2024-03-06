@@ -217,7 +217,7 @@ Part 8: Let’s use Canopy to reuse content across different explanations.
 > [[Part 8-1|Okay]]
 ===
 
-Part 8-1: Try *holding the option or alt key* and clicking the link below.
+Part 8-1: Try holding the *option or alt key* and clicking the link below.
 - Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
 ===
 > [[Part 9|I'm finished]]
@@ -390,7 +390,7 @@ Great, now let’s go back to where we were before this tangent.
 ===
 
 Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
-- Now, click the following link *while holding the option or alt key*
+- Now, click the following link while holding the *option or alt* key.
 - We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
 ![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 
