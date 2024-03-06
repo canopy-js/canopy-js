@@ -107,7 +107,7 @@ function renderGlobalLink(token, renderContext) {
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
 
-  linkElement.dataset.pathString = token.pathString; // convert to mixed-case
+  linkElement.dataset.literalPathString = token.pathString; // convert to mixed-case
   linkElement.path = token.path; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
@@ -151,6 +151,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.dataset.text = token.text;
   linkElement.setAttribute('href', token.url); // validation should have been done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
+  linkElement.dataset.targetUrl = token.url;
 
   setTimeout(() => {
     if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');

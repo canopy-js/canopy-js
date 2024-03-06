@@ -444,7 +444,7 @@ class Path {
     if (parentElement === canopyContainer) return true;
 
     let parentParagraph = new Paragraph(parentElement);
-    if (!parentParagraph.linkByChild(pathToAppend.firstTopic)) {
+    if (!parentParagraph.linkByChild(pathToAppend.firstTopic)) { // this can happen eg if a live project is edited eg a-> [c->] b
       console.error(`Parent element [${parentParagraph.topic.mixedCase}, ${parentParagraph.subtopic.mixedCase}] has no ` +
         `connecting link to subsequent path segment [${pathToAppend.firstTopic.mixedCase}]`);
       return false;
