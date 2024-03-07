@@ -47,11 +47,6 @@ class Path {
         if (match.startsWith('%5C')) return '%5C%23'; // this is a name-character #
         return '#'; // # or %23 are path-#
       })
-      .replace(/%5C%5C(%2F|\/)|%5C(%2F|\/)|(%2F|\/)/g, match => {
-        if (match.startsWith('%5C%5C')) return '%5C%5C/'; // this is a name-character escaped backslash followed by path-/
-        if (match.startsWith('%5C')) return '%5C%2F'; // this is a name-character /
-        return '/'; // A plain '/' or %2F are path-/
-      })
       .split('/')
       .filter((string) => string !== '');
 
