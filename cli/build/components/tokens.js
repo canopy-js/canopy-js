@@ -349,7 +349,6 @@ function StrikethroughToken(text, parserContext, _, previousCharacter) {
 module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
-
   TextToken,
   ExternalLinkToken,
   ImageToken,

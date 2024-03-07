@@ -27,7 +27,7 @@ canopyContainer.id = '_canopy';
 scrollableContainer.appendChild(canopyContainer);
 
 let newBulkFileString = localStorage.getItem('data') || defaultText();
-if (window.location.hostname === 'localhost') newBulkFileString = defaultText();
+if (['localhost', '127.0.0.1'].includes(window.location.hostname)) newBulkFileString = defaultText();
 localStorage.setItem('data', newBulkFileString);
 
 editor.value = newBulkFileString;
@@ -112,7 +112,7 @@ function rebuildCanopy(edit) {
 function defaultText() {
   return `[Canopy/Playground]
 
-* Playground: This is a demo of Canopy.js, a library for creating interactive explanations.
+* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. ([Github](https://github.com/canopy-js/canopy-js)<! >)
 ![Canopy.js Logo](./logo.png)
 ===
 > [[Part 2|Okay]]
@@ -212,149 +212,83 @@ Part 7-3: You won't see any!
 > [[Part 8|What else can it do?]]
 ===
 
-Part 8: Canopy can help you create very large explanations.
+Part 8: Let’s use Canopy to reuse content across different explanations.
 ===
-> [[Part 8-1|What do you mean?]]
-===
-
-Part 8-1: Each paragraph here can mention several other ideas, like this:
-- [[Idea \\#1]], [[idea \\#2]], [[idea \\#3]], [[idea \\#4]].
-===
-> [[Part 8-2|Okay]]
+> [[Part 8-1|Okay]]
 ===
 
-Idea #1: This is the first idea!
-
-Idea #2: This is the second idea!
-
-Idea #3: This is the third idea!
-
-Idea #4: This is the fourth idea!
-
-Part 8-2: And, each path can go very deep, like this: [[{idea \\#1}-2]]
-
-Idea #1-2: And [[{idea \\#2}-2]]
-
-Idea #2-2: And [[{idea \\#3}-2]]
-
-Idea #3-2: And [[{idea \\#4}-2]]
-
-Idea #4-2: That's very deep!
-===
-> [[Part 8-3|Okay]]
-===
-
-Part 8-3: So:
-- Lets say each paragraph mentions four other ideas
-- And, lets say a user can burrow down seven paragraphs in any direction
-- How many paragraphs would that be total?
-===
-> [[Part 8-4|How many?]]
-===
-
-Part 8-4: That would be over 1,000,000 paragraphs!
-===
-> [[Part 8-5|That's a lot!]]
-===
-
-Part 8-5: It is! Now you can see how Canopy might help you organize very large explanations.
-===
-> [[Part 9|What else does it do?]]
-===
-
-Part 9: Canopy allows you to build explanations out of reusable components.
-===
-> [[Part 9-1|What does that mean?]]
-===
-
-Part 9-1: Here are two explanations that reuse an explanation same concept:
-- [[Carbon]]
-- [[Nitrogen]]
-===
-> [[Part 10|I'm finished]]
-===
-
-Carbon: Carbon is a [[chemical element]] that has the symbol \`C\` and the number 6.
-
-Nitrogen: Nitrogen is a [[chemical element]] that has the symbol \`N\` and the number 7.
-
-Part 10: Great! Now let’s see how entirely different explanations can end up using the same content.
-===
-> [[Part 10-1|Ok]]
-===
-
-Part 10-1: Try *holding the option or alt key* and clicking the link below.
+Part 8-1: Try holding the *option or alt key* and clicking the link below.
 - Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
 ===
-> [[Part 11|I'm finished]]
+> [[Part 9|I'm finished]]
 ===
 
-Part 11: *Welcome back!* See, we've returned to where we started before all that Oceans business.
+Part 9: *Welcome back!* See, we've returned to where we started before all that Oceans business.
 ===
-> [[Part 11-1|Great!]]
-===
-
-Part 11-1: So, now you've seen the main feature set of Canopy.
-===
-> [[Part 11-2|Correct]]
+> [[Part 9-1|Great!]]
 ===
 
-Part 11-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
+Part 9-1: So, now you've seen the main feature set of Canopy.
 ===
-> [[Part 11-3|True]]
+> [[Part 9-2|Correct]]
 ===
 
-Part 11-3: The answer is, Canopy is a good fit for any domain that is:
+Part 9-2: So, you’re probably thinking, “Amazing! But, what would I actually use this for?”
+===
+> [[Part 9-3|True]]
+===
+
+Part 9-3: The answer is, Canopy is a good fit for any domain that is:
 1. Detailed
 2. Broad
 3. Highly-interconnected
-4. Composed of different parts that are relevant to different users.
+4. Differently relevant to different users
 ===
-> [[Part 12|Interesting]]
-===
-
-Part 12: Lets see some examples.
-===
-> [[Part 12-1|Okay]]
+> [[Part 10|Interesting]]
 ===
 
-Part 12-1: *Example 1/6:* Canopy might be a good fit for interconnected geographic and historical information.
+Part 10: Lets see some examples.
+===
+> [[Part 10 Cities|Okay]]
+===
+
+Part 10 Cities: *Example 1/6:* Canopy might be a good fit for interconnected geographic and historical information.
 ===
 > [[Cities|Let’s see]]
-> [[Part 12-2|Next]]
+> [[Part 10 Software|Next]]
 ===
 
-Part 12-2: *Example 2/6:* Another application area is documenting large software projects.
+Part 10 Software: *Example 2/6:* Another application area is documenting large software projects.
 ===
 > [[MailerApp|Let’s see]]
-> [[Part 12-3|Next]]
+> [[Part 10 Blogs|Next]]
 ===
 
-Part 12-3: *Example 3/6:* Canopy could also be useful for large personal writing projects.
+Part 10 Blogs: *Example 3/6:* Canopy could also be useful for large personal writing projects.
 ===
 > [[Blogs|Let’s see]]
-> [[Part 12-4|Next]]
+> [[Part 10 Mergers|Next]]
 ===
 
-Part 12-4: *Example 4/6:* Canopy could be useful for “merging” the points made in various primary sources.
+Part 10 Mergers: *Example 4/6:* Canopy could be useful for “merging” the points made in various primary sources.
 ===
 > [[Noise pollution law|Let’s see]]
-> [[Part 12-5|Next]]
+> [[Part 10 Memorization|Next]]
 ===
 
-Part 12-5: *Example 5/6:* Canopy could be used for memorization.
+Part 10 Memorization: *Example 5/6:* Canopy could be used for memorization.
 ===
 > [[Memorization|Let’s see]]
-> [[Part 12-6|Next]]
+> [[Part 10 Libraries|Next]]
 ===
 
-Part 12-6: *Example 6/6:* Canopy could be used as a tool in libraries.
+Part 10 Libraries: *Example 6/6:* Canopy could be used as a tool in libraries.
 ===
 > [[Libraries|Let’s see]]
-> [[Part 13|Finish]]
+> [[Part 11|Finish]]
 ===
 
-Part 13: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
+Part 11: 👋 That's all for now! Click here to [learn more about Canopy.js](https://github.com/canopy-js/canopy-js) or get in touch at \`hello at canopyjs dot org\`.
 
 [MailerApp]
 
@@ -371,7 +305,7 @@ History: MailCorp's history includes the [[1998 BigCorpCustomer Feature Request]
 1998 BigCorpCustomer Feature Request:
 On May 1st 1998 BigCorpCustomer asked to be able to send emails, and so we decided to implement the [[{#|}{{message scheduling}} feature]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10 Blogs|Done]]
 ===
 
 Features: A major feature of MailerApp is [[message scheduling]].
@@ -380,7 +314,7 @@ Message scheduling: Message scheduling is when a user logs in to the app, create
 - This functionality is implemented using a [[#sending queue]]
 - The message scheduling functionality was designed in response to the [[#1998 BigCorpCustomer Feature Request]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10 Blogs|Done]]
 ===
 
 Patterns: The app uses certain design patterns to produce the feature set.
@@ -391,7 +325,7 @@ Sending queue: MailerApp uses a “sending queue” to allow a user to schedule 
 - The queue must be checked periodically to see if there are unsent messages, and to send them.
 - These concepts are implemented in the using [[#SendWorker class]] and the [[#PendingMessages database table]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10 Blogs|Done]]
 ===
 
 Code: The code base has a [[\`SendWorker\` class]], and a [[\`PendingMessages\` database table]].
@@ -400,7 +334,7 @@ SendWorker class: The \`SendWorker\` class periodically checks the \`PendingMess
 - The \`SendWorker\` class relies on the [[#PendingMessages database table]].
 - The \`SendWorker\` class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10 Blogs|Done]]
 ===
 
 PendingMessages database table: There is a \`PendingMessages\` database table:
@@ -409,7 +343,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 - The PendingMessages table is used by the [[#SendWorker class]]
 - The SendWorker class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 12-4|Done]]
+> [[Playground#Part 10 Blogs|Done]]
 ===
 
 
@@ -445,7 +379,7 @@ Part 2-2: So, in Canopy, different explanations starting from different origins 
 Part 2-3:
 Great, now let’s go back to where we were before this tangent.
 ===
-> [[Playground#Part 11|Take me back]]
+> [[Playground#Part 9|Take me back]]
 ===
 
 
@@ -456,7 +390,7 @@ Great, now let’s go back to where we were before this tangent.
 ===
 
 Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
-- Now, click the following link *while holding the option or alt key*
+- Now, click the following link while holding the *option or alt* key:
 - We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
 ![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 
@@ -483,10 +417,12 @@ Click the following link *normally*:
 - [[Jefferson Market Library]]
 ===
 
-* Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]].
-- Jefferson Market library is housed in the repurposed building of [[Jefferson Market Courthouse]].
+* Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]]
+![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
+- Jefferson Market Library is housed in the former Jefferson Market Courthouse, situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
+- Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 10 Software|Finish]]
 ===
 
 * Midtown Manhattan: Midtown is a major neighborhood in Manhattan with various landmarks.
@@ -505,24 +441,18 @@ Click the following link *normally*:
 - The stadium was built by architect Stanford White.
 - Madison Square Garden was also the site of [[Stanford White's death]].
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 10 Software|Finish]]
 ===
 
 * Stanford White’s death:
 In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 - This was due to White’s relationship with Shaw’s wife Evelyn Nesbit.
 - The attack occurred on the roof of the [[{{second Madison Square Garden}} building]].
-- The trial was held in [[Jefferson Market Courthouse]].
+- The trial was held in [[Jefferson Market {Library|Courthouse}]].
 - The story was adapted to novel and stage as Ragtime.
 ===
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 10 Software|Finish]]
 ===
-
-* Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
-![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
-- Jefferson Market Courthouse had jurisdiction over crimes occurring in [[Midtown Manhattan]].
-- Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
-
 
 [Noise Pollution]
 
@@ -533,7 +463,7 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 Let’s take all the points these articles make and merge them into one tree.
 ===
 > [[Noise pollution tree|See merger]]
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Libraries|Finished]]
 ===
 
 Op-ed #1: This is op-ed #1, written by Coolidge Cunningham.
@@ -577,21 +507,46 @@ Arguments for the law: Residents of Townsville have put forward various argument
 
 Economics:
 One benefit of the legislation mentioned involves economics:
+- [[Some discussed improved sleep as an economic boon]].
+- [[Some worried a noise ban would disrupt the harvest]].
+
+Some discussed improved sleep as an economic boon:
+Some commentators discussed how a noise ban might improve the economy through improved sleep:
 - Mr. Cunningham lists economic productivity resulting from greater sleep as an argument for the law.
-- Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
-- Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
-- The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
+- On the other hand, Ms. Jamaica pointed out that affected persons can wear earplugs, protecting sleep without a ban.
+- Additionally, the 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
-Assemblies:
-One benefit of the legislation mentioned involves assemblies:
-- Mr Cunningham mentions disruption of family meals and communal gatherings.
-- That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
-- The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
+Some worried a noise ban would disrupt the harvest:
+Some commentators worried a noise ban would disrupt the harvest:
+- Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
+===
+
+
+Assemblies:
+One benefit of a noise ban involves assemblies:
+- [[Mr. Cunningham argues a noise ban would reduce disruption of family meals and communal gatherings]].
+
+Mr\\. Cunningham argues a noise ban would reduce disruption of family meals and communal gatherings:
+According to Mr. Cunningham, a noise ban would improve family meals and communal gatherings.
+- [[What about Ms. Jamaica's earplug suggestion?]]
+- [[What about Ms. Jamaica's late-night compromise ban?]]
+
+What about Ms\\. Jamaica's earplug suggestion?
+Ms\\. Jamaica had suggested earplugs instead of a noise ban.
+- However, that wouldn't really work for family meals and communal gatherings.
+- So, Mr. Cunningham’s case is a unique reason for a noise ban that earplugs wouldn’t help with.
+
+What about Ms\\. Jamaica's late-night compromise ban?
+Ms\\. Jamaica had suggested a ban of noise only from 11PM-5AM.
+- However, such a ban during the late night wouldn't help very much with the family meals and communal gatherings that Mr Cunningham is discussing.
+- So, Mr. Cunningham’s case is a unique reason for a general noise ban that a late-night ban wouldn’t help with.
+===
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
 Arguments against the law: Residents of Townsville have put forward various arguments against a noise pollution law.
@@ -603,18 +558,30 @@ Residents of Townsville have put forward various arguments against a noise pollu
 
 Restriction of freedom:
 One argument raised against the proposal is that it restricts the freedom of town residents:
-- Ms. Jamaica mentions that the law might create a precedent for regulating the private lives of Townsville residents.
+- Ms. Jamaica mentioned that the law might create a precedent for regulating the private lives of Townsville residents.
+- [[Others find this concern unlikely]].
+- [[Others dispute the degree of the imposition on freedoms]]
+
+Others find this concern unlikely:
+Various other commentators are unconcerned that a noise ban would spiral into greater regulation:
 - Mr. Orangutan opines that the small size of Townsville makes spiraling regulation less likely.
 - Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
-- Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
+===
+
+Others dispute the degree of the imposition on freedoms:
+Mr\\. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms in the first place.
+===
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
 Town culture:
 One argument raised against the proposal is that public music playing produces a distinctive town culture:
-- Ms. Jamaica makes such an argument in her op-ed.
-  - Mr. Orangutan suggests that public music-playing is not necessary to have a distinctive town culture due to the town's many other qualities.
+- [[Ms. Jamaica makes such an argument in her op-ed]].
+
+Ms\\. Jamaica makes such an argument in her op-ed:
+Mr\\. Orangutan however suggests that public music-playing is not necessary to have a distinctive town culture due to the town's many other qualities.
 
 Discussion of details: The residents of Townsville have argued about the details of the noise pollution law.
 ===
@@ -629,7 +596,7 @@ Volume: Residents of Townsville have debated the ideal maximum volume of a noise
   - This was due to the suggestion that there aren't enough police to enforce a wider ban.
 - Ms. Jamaica opposed a ban of any volume.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
 Time of day: Residents of Townsville have debated what time the noise pollution law should be active.
@@ -648,7 +615,7 @@ Some Townsville residents support only a late-night noise ban:
 - This would satisfy some of Mr. Cunningham's concern for disrupted sleep.
 - However, this would not assuage his concerns about noise disrupting family meals and communal get-togethers.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
 Seasons:
@@ -656,24 +623,15 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 - Mr. Cunningham who supports a strong ban nevertheless only thinks one is necessary during the summer tourist season.
 - Mr. Orangutan adds a reason for a summer-specific ban, namely that a ban in springtime might impede the loud but necessary agricultural harvest.
 ===
-> [[Playground#Part 12-6|Finished]]
+> [[Playground#Part 10 Memorization|Finished]]
 ===
 
 [Blogs]
 
-Blogs: The concept of a personal blog has become very common.
-- However, an author may make the same point many times.
-- Additionally, certain useful points might not merit a full article.
-- Also, certain topic connections may be too dense to capture in an article.
-- Finally, the author may have more to say than fits in a book.
-===
-> [[Blogs 2|Okay]]
-===
-
-Blogs 2: So, Canopy would let an author organize all of their views in one place.
-- Each reader would get a customized trail through many points, like a conversation with the author.
-- The author would only have to write each thing once, but many readers would see each point in different contexts.
-- Canopy would enable new types of larger written work, eg an academic's summary of all the work in their field or discipline, better approximating the experience of having access to the given person.
+Blogs: Canopy would let an author organize all their views in one place.
+- Each reader would get a customized path through the content.
+- The author can include smaller and more tangential points than prose articles would allow.
+- The overall work could be much larger than an article or book.
 ===
 > [[Blogs 3|Okay]]
 ===
@@ -681,7 +639,7 @@ Blogs 2: So, Canopy would let an author organize all of their views in one place
 Blogs 3: Let’s see an example. Blogger “Maynard” wants to explain daily news in light of economic theory.
 ===
 > [[Maynard|Okay]]
-> [[Playground#Part 12-5|I'm finished]]
+> [[Playground#Part 10 Mergers|I'm finished]]
 ===
 
 * Maynard: Welcome to Maynard's Canopy blog, "The Main Yard."
@@ -890,7 +848,7 @@ Part 2: When reading information in Canopy, information is presented spatially a
 Part 3:
 This makes it easier to internalize and recall, and to find something again later.
 ===
-> [[Playground#Part 12-6|Got it]]
+> [[Playground#Part 10 Libraries|Got it]]
 ===
 
 [Libraries]
@@ -995,7 +953,7 @@ The study documented how the hypothalamus detects darkness via the retina and ca
 > The pineal enzyme, serotonin N-acetyltransferase, exhibits a circadian rhythm of activity with nocturnal levels 15–30 times greater than those observed during a light period in the rat. This rhythm has been shown to be under visual control mediated by the sympathetic innervation to the pineal. The present study examined the participation of visual pathways and other central mechanisms in the regulation of pineal serotonin N-acetyltransferase activity. Following destruction of all visual pathways by blinding, the rhythm in enzyme activity is no longer controlled by the pattern of diurnal lighting and becomes free-running. Destruction of the primary optic tracts, the accessory optic tracts, or both of these components of the central retinal projection together, does not alter visual entrainment of the enzyme rhythm. In the absence of these pathways the only central retinal projection known to exist is a retinohypothalamic pathway branching directly off the optic chiasm to terminate bilaterally in the suprachiasmatic hypothalamic nuclei.
 ===
 > [[Libraries|Try again]]
-> [[Playground#Part 13|Finish]]
+> [[Playground#Part 11|Finish]]
 ===
 
 [Chemistry]
