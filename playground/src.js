@@ -420,7 +420,7 @@ Click the following link *normally*:
 * Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]].
 - Jefferson Market library is housed in the repurposed building of [[Jefferson Market Courthouse]].
 ===
-> [[Playground#Part 11|Finish]]
+> [[Playground#Part 10-3|Finish]]
 ===
 
 * Midtown Manhattan: Midtown is a major neighborhood in Manhattan with various landmarks.
@@ -439,7 +439,7 @@ Click the following link *normally*:
 - The stadium was built by architect Stanford White.
 - Madison Square Garden was also the site of [[Stanford White's death]].
 ===
-> [[Playground#Part 11|Finish]]
+> [[Playground#Part 10-3|Finish]]
 ===
 
 * Stanford White’s death:
@@ -449,7 +449,7 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 - The trial was held in [[Jefferson Market Courthouse]].
 - The story was adapted to novel and stage as Ragtime.
 ===
-> [[Playground#Part 11|Finish]]
+> [[Playground#Part 10-3|Finish]]
 ===
 
 * Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
