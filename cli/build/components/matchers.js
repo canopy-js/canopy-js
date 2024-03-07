@@ -32,11 +32,11 @@ const Matchers = [
   localReferenceMatcher,
   globalReferenceMatcher,
   footnoteMarkerMatcher,
-  imageMatcher,
   italicsMatcher,
   boldMatcher,
   codeSnippetMatcher,
   strikeThroughMatcher,
+  imageMatcher,
   hyperlinkMatcher,
   urlMatcher
 ];
@@ -280,7 +280,7 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[(.+)\](?:\(([^ ]*)\))/);
+  let match = string.match(/^\[((?:\\.|!\[(?:\\.|[^\\])+?\)|[^\\])+?)\](?:\(((?:\\[^ ]|[^\\ ])+))\)/); // non-greedy unless text looks like nested image
   if (match) {
     let [_, text, url] = match;
     return [
@@ -301,7 +301,7 @@ function urlMatcher({ string, parserContext }) {
 }
 
 function imageMatcher({ string, parserContext }) {
-  let match = string.match(/^!\[((?:\\.|[^\\])*?)\]\(([^\s]+)\s*(?:["'“”]((?:\\.|[^\\"'“”])*?)(?:"|”)(?: ["'“”]((?:\\.|[^\\])*?)["'“”])?)?\)/);
+  let match = string.match(/^!\[((?:\\.|[^\\])*?)\]\((\S+?)\s*(?:["'“”]((?:\\.|[^\\"'“”])*?)(?:"|”)(?: ["'“”]((?:\\.|[^\\])*?)["'“”])?)?\)/);
 
   if (match) {
     return [
