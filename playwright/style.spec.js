@@ -177,10 +177,15 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
     await expect(page).toHaveURL('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
 
+    // Wait for the element and punctuation to be available in the DOM
+    await page.waitForSelector('.canopy-selected-section a');
+    await page.waitForSelector('.canopy-selected-section a + span');
+
+    // Now retrieve the element handles
     const elementHandle = await page.$('.canopy-selected-section a');
     const punctuationHandle = await page.$('.canopy-selected-section a + span');
 
-    // Get the bounding box of the element and the punctuation
+    // Assuming the element handles are now not null, get their bounding boxes
     const elementBox = await elementHandle.boundingBox();
     const punctuationBox = await punctuationHandle.boundingBox();
 
