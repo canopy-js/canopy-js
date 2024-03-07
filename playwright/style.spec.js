@@ -213,6 +213,53 @@ test.describe('Inline entities', () => {
     expect(arrowContent).toContain(expectedArrowCharacter);
   });
 
+  test('It handles hyperlink special cases', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Hyperlink_special_cases');
+    await expect(page.locator('.canopy-selected-section')).toContainText("These are hyperlink special cases:");
+
+    /*
+    Hyperlink special cases:
+    - This is a [link](http://google.com)
+    - This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
+    - This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+    - This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+    - This is a nested image red herring [![abc](https://en.wikipedia.org/)
+    - This is a parenthases wrapped link ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
+    - This is seemingly a link in a link [[link](http://google.com)](http://google.com) - text is lazy, URL is greedy
+    */
+
+    // Assert the total number of links
+    await expect(page.locator('.canopy-selected-section a')).toHaveCount(9);
+
+    // Asserting each link with href and either text or image content
+    const links = [
+      { href: 'http://google.com', text: 'link' },
+      { href: 'http://google.com', text: 'link 1' },
+      { href: 'http://google.com', text: 'link 2' },
+      { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico'] },
+      { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico', 'https://en.wikipedia.org/favicon.ico'] },
+      { href: 'https://en.wikipedia.org/', text: '![abc' },
+      { href: 'http://google.com)', text: 'link' },
+      { href: 'http://google.com', text: 'link' },
+      { href: 'http://google.com)](http://google.com', text: '[link' }
+    ];
+
+    links.forEach((link, i) => {
+      const linkLocator = page.locator('.canopy-selected-section a').nth(i);
+      expect(linkLocator).toHaveAttribute('href', link.href);
+
+      if (link.text) {
+        // Assert text content for non-image links
+        expect(linkLocator).toContainText(link.text);
+      } else if (link.images) {
+        // Assert image content for links that wrap images
+        link.images.forEach((src, j) => {
+          expect(linkLocator.locator('img').nth(j)).toHaveAttribute('src', src);
+        });
+      }
+    });
+  });
+
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
     await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText.trim())).toEqual('Text. This is a test. Text.'); // no newlines between html element and following text
