@@ -305,7 +305,7 @@ History: MailCorp's history includes the [[1998 BigCorpCustomer Feature Request]
 1998 BigCorpCustomer Feature Request:
 On May 1st 1998 BigCorpCustomer asked to be able to send emails, and so we decided to implement the [[{#|}{{message scheduling}} feature]]
 ===
-> [[Playground#Part 10-4|Done]]
+> [[Playground#Part 10-3|Done]]
 ===
 
 Features: A major feature of MailerApp is [[message scheduling]].
@@ -314,7 +314,7 @@ Message scheduling: Message scheduling is when a user logs in to the app, create
 - This functionality is implemented using a [[#sending queue]]
 - The message scheduling functionality was designed in response to the [[#1998 BigCorpCustomer Feature Request]]
 ===
-> [[Playground#Part 10-4|Done]]
+> [[Playground#Part 10-3|Done]]
 ===
 
 Patterns: The app uses certain design patterns to produce the feature set.
@@ -325,7 +325,7 @@ Sending queue: MailerApp uses a “sending queue” to allow a user to schedule 
 - The queue must be checked periodically to see if there are unsent messages, and to send them.
 - These concepts are implemented in the using [[#SendWorker class]] and the [[#PendingMessages database table]]
 ===
-> [[Playground#Part 10-4|Done]]
+> [[Playground#Part 10-3|Done]]
 ===
 
 Code: The code base has a [[\`SendWorker\` class]], and a [[\`PendingMessages\` database table]].
@@ -334,7 +334,7 @@ SendWorker class: The \`SendWorker\` class periodically checks the \`PendingMess
 - The \`SendWorker\` class relies on the [[#PendingMessages database table]].
 - The \`SendWorker\` class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 10-4|Done]]
+> [[Playground#Part 10-3|Done]]
 ===
 
 PendingMessages database table: There is a \`PendingMessages\` database table:
@@ -343,7 +343,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 - The PendingMessages table is used by the [[#SendWorker class]]
 - The SendWorker class is part of the implementation of the app's [[#sending queue]]
 ===
-> [[Playground#Part 10-4|Done]]
+> [[Playground#Part 10-3|Done]]
 ===
 
 
@@ -420,7 +420,7 @@ Click the following link *normally*:
 * Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]].
 - Jefferson Market library is housed in the repurposed building of [[Jefferson Market Courthouse]].
 ===
-> [[Playground#Part 10-3|Finish]]
+> [[Playground#Part 10-2|Finish]]
 ===
 
 * Midtown Manhattan: Midtown is a major neighborhood in Manhattan with various landmarks.
@@ -439,7 +439,7 @@ Click the following link *normally*:
 - The stadium was built by architect Stanford White.
 - Madison Square Garden was also the site of [[Stanford White's death]].
 ===
-> [[Playground#Part 10-3|Finish]]
+> [[Playground#Part 10-2|Finish]]
 ===
 
 * Stanford White’s death:
@@ -449,14 +449,16 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 - The trial was held in [[Jefferson Market Courthouse]].
 - The story was adapted to novel and stage as Ragtime.
 ===
-> [[Playground#Part 10-3|Finish]]
+> [[Playground#Part 10-2|Finish]]
 ===
 
 * Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
 ![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
 - Jefferson Market Courthouse had jurisdiction over crimes occurring in [[Midtown Manhattan]].
 - Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
-
+===
+> [[Playground#Part 10-2|Finish]]
+===
 
 [Noise Pollution]
 
@@ -516,7 +518,7 @@ One benefit of the legislation mentioned involves economics:
 - Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
 - The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 Assemblies:
@@ -525,7 +527,7 @@ One benefit of the legislation mentioned involves assemblies:
 - That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
 - The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 Arguments against the law: Residents of Townsville have put forward various arguments against a noise pollution law.
@@ -542,7 +544,7 @@ One argument raised against the proposal is that it restricts the freedom of tow
 - Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
 - Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 Town culture:
@@ -563,7 +565,7 @@ Volume: Residents of Townsville have debated the ideal maximum volume of a noise
   - This was due to the suggestion that there aren't enough police to enforce a wider ban.
 - Ms. Jamaica opposed a ban of any volume.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 Time of day: Residents of Townsville have debated what time the noise pollution law should be active.
@@ -582,7 +584,7 @@ Some Townsville residents support only a late-night noise ban:
 - This would satisfy some of Mr. Cunningham's concern for disrupted sleep.
 - However, this would not assuage his concerns about noise disrupting family meals and communal get-togethers.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 Seasons:
@@ -590,7 +592,7 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 - Mr. Cunningham who supports a strong ban nevertheless only thinks one is necessary during the summer tourist season.
 - Mr. Orangutan adds a reason for a summer-specific ban, namely that a ban in springtime might impede the loud but necessary agricultural harvest.
 ===
-> [[Playground#Part 10-6|Finished]]
+> [[Playground#Part 10-5|Finished]]
 ===
 
 [Blogs]
@@ -615,7 +617,7 @@ Blogs 2: So, Canopy would let an author organize all of their views in one place
 Blogs 3: Let’s see an example. Blogger “Maynard” wants to explain daily news in light of economic theory.
 ===
 > [[Maynard|Okay]]
-> [[Playground#Part 10-5|I'm finished]]
+> [[Playground#Part 10-4|I'm finished]]
 ===
 
 * Maynard: Welcome to Maynard's Canopy blog, "The Main Yard."
