@@ -112,7 +112,7 @@ function rebuildCanopy(edit) {
 function defaultText() {
   return `[Canopy/Playground]
 
-* Playground: This is a demo of Canopy.js, a library for creating interactive explanations.
+* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. ([Github](https://github.com/canopy-js/canopy-js)\\)
 ![Canopy.js Logo](./logo.png)
 ===
 > [[Part 2|Okay]]
@@ -390,7 +390,7 @@ Great, now let’s go back to where we were before this tangent.
 ===
 
 Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
-- Now, click the following link while holding the *option or alt* key.
+- Now, click the following link while holding the *option or alt* key:
 - We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
 ![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 

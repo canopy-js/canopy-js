@@ -47,6 +47,8 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlinks');
     await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('link icon special cases');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline HTML');
@@ -61,11 +63,9 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('link icon special cases');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('links in right-to-left text');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('links in mixed direction text');
   });
 
   test('Navigating right-to-left links', async ({ page }) => {
