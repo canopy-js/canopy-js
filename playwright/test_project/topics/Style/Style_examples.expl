@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
-Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
+Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
 
 Style characters: There is [[italic text]], [[bold text]], [[strike-through text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 
@@ -291,6 +291,16 @@ This is a [link link link link link link link link link link link link link link
 
 Hyperlinks:
 This is a [link](http://google.com).
+
+Hyperlink special cases:
+These are hyperlink special cases:
+- This is a [link](http://google.com)
+- This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
+- This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+- This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+- This is a nested image red herring [![abc](https://en.wikipedia.org/)
+- This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
+- This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
 
 Inline HTML: Text. <b> This is a test.</b> Text.
 
