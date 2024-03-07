@@ -16,7 +16,7 @@ import { canopyContainer } from 'helpers/getters';
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!linkToSelect) linkToSelect = pathToDisplay.paragraph?.parentLink; // always select link?
   if (shouldAnimate(pathToDisplay, linkToSelect, options)) return animatePathChange(pathToDisplay, linkToSelect, options);
-  if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw 'linkToSelect argument is not on given pathToDisplay';
+  if (linkToSelect && !pathToDisplay.includes(linkToSelect.enclosingPath)) throw `${linkToSelect} is not on path ${pathToDisplay}`;
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
 
   resetDom(pathToDisplay);
