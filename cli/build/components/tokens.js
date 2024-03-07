@@ -50,7 +50,7 @@ function GlobalReferenceToken(
 
 function ExternalLinkToken(url, text, parserContext) {
   this.type = 'external';
-  this.url = url || text;
+  this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
   this.text = text || url;
   if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
