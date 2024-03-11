@@ -456,8 +456,9 @@
     }
   }
 
-  .canopy-image {
-    display: block;
+  .canopy-image-container {
+    display: flex;
+    justify-content: center;
     object-fit: cover;
 
     &:not(:last-child) {
@@ -471,34 +472,35 @@
       display: block;
     }
 
-    img {
-      display: block;
-      max-width: 100%;
-      width: auto;
-      margin: 0 auto;
-    }
+    .canopy-image {
+      img {
+        display: block;
+        max-width: 100%;
+        width: auto;
+      }
 
-    span.canopy-image-caption {
-      margin: 0px auto;
-      width: 100%;
-      padding: 6px 6px;
-      text-align: left;
-      display: block;
-      font-size: 16px;
-      line-height: 18px;
-      color: #595959;
-      background-color: white;
-
-      a {
+      span.canopy-image-caption {
+        margin: 0px auto;
+        width: 100%;
+        padding: 6px 0px;
+        text-align: left;
+        display: block;
+        font-size: 16px;
+        line-height: 18px;
         color: #595959;
-      }
+        background-color: white;
 
-      a.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after { // need to beat specificity of general definition
-        content: ''; // no ➹ icon for links in image captions because usually they'll be external
-      }
+        a {
+          color: #595959;
+        }
 
-      span {
-        display: inline;
+        a.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after { // need to beat specificity of general definition
+          content: ''; // no ➹ icon for links in image captions because usually they'll be external
+        }
+
+        span {
+          display: inline;
+        }
       }
     }
   }
