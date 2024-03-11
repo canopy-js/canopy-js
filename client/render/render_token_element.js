@@ -166,14 +166,19 @@ function renderExternalLink(token, renderContext) {
 }
 
 function renderImage(token, renderContext) {
-  let divElement = document.createElement('DIV');
-  divElement.classList.add('canopy-image');
+  // Outer container
+  let outerDivElement = document.createElement('DIV');
+  outerDivElement.classList.add('canopy-image-container');
+
+  // Inner container (existing divElement)
+  let innerDivElement = document.createElement('DIV');
+  innerDivElement.classList.add('canopy-image');
 
   let imageElement = document.createElement('IMG');
   imageElement.setAttribute('src', token.resourceUrl);
   imageElement.setAttribute('decoding', 'async'); // don't wait for image decode to update selected link on change
 
-  divElement.appendChild(imageElement);
+  innerDivElement.appendChild(imageElement); // Append the image to the inner container
 
   if (token.title) {
     imageElement.setAttribute('title', token.title);
@@ -182,7 +187,7 @@ function renderImage(token, renderContext) {
   if (token.caption) {
     let spanElement = document.createElement('SPAN');
     spanElement.classList.add('canopy-image-caption');
-    divElement.appendChild(spanElement);
+    innerDivElement.appendChild(spanElement); // Append the caption to the inner container
 
     token.tokens.forEach(subtoken => {
       let subtokenElement = renderTokenElement(subtoken, renderContext);
@@ -196,7 +201,9 @@ function renderImage(token, renderContext) {
 
   handleDelayedImageLoad(imageElement, renderContext);
 
-  return divElement;
+  outerDivElement.appendChild(innerDivElement); // Append the inner container to the outer container
+
+  return outerDivElement; // Return the outer container
 }
 
 function handleDelayedImageLoad(imageElement, renderContext) { // we don't know how big the image will be, and don't want the load to disrupt viewport

@@ -454,7 +454,6 @@ In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 
 * Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
 ![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
-- Jefferson Market Courthouse had jurisdiction over crimes occurring in [[Midtown Manhattan]].
 - Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
 ===
 > [[Playground#Part 10 Software|Finish]]
@@ -597,19 +596,10 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 
 [Blogs]
 
-Blogs: The concept of a personal blog has become very common.
-- However, an author may make the same point many times.
-- Additionally, certain useful points might not merit a full article.
-- Also, certain topic connections may be too dense to capture in an article.
-- Finally, the author may have more to say than fits in a book.
-===
-> [[Blogs 2|Okay]]
-===
-
-Blogs 2: So, Canopy would let an author organize all of their views in one place.
-- Each reader would get a customized trail through many points, like a conversation with the author.
-- The author would only have to write each thing once, but many readers would see each point in different contexts.
-- Canopy would enable new types of larger written work, eg an academic's summary of all the work in their field or discipline, better approximating the experience of having access to the given person.
+Blogs: Canopy would let an author organize all their views in one place.
+- Each reader would get a customized path through the content.
+- The author can include smaller and more tangential points than prose articles would allow.
+- The overall work could be much larger than an article or book.
 ===
 > [[Blogs 3|Okay]]
 ===
