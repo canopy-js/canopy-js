@@ -345,7 +345,7 @@ class ParserContext {
     this.pathsReferenced.forEach(([pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic]) => {
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
         [...pathString.matchAll(/(?:\\.|[^\/])+/g)].map(match => match[0]).map(segmentString => {
-          let [currentTopic, currentSubtopic] = segmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).slice(1).map(m => m && Topic.fromUrl(m));
+          let [currentTopic, currentSubtopic] = Topic.parseUrlSegment(segmentString);
 
           if (!this.topicExists(currentTopic)) {
             throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] contains nonexistent topic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
