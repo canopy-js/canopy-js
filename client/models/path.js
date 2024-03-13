@@ -44,7 +44,7 @@ class Path {
     let slashSeparatedUnits = pathString
       .replace(/%5C%5C(%23|#)|%5C(%23|#)|(%23|#)/g, match => {
         if (match.startsWith('%5C%5C')) return '%5C%5C#'; // this is a name-character escaped backslash followed by path-#
-        if (match.startsWith('%5C')) return '%5C%23'; // this is a name-character #
+        if (match.startsWith('%5C')) return '%5C#'; // this is a name-character #
         return '#'; // # or %23 are path-#
       })
       .split('/')
@@ -52,19 +52,10 @@ class Path {
 
     slashSeparatedUnits = Path.fixOrphanSubtopics(pathString, slashSeparatedUnits);
 
-    let array = slashSeparatedUnits.map((slashSeparatedUnit) => {
-      // Capture two groups: (letters)#(optional_more_letters)
-      let match = slashSeparatedUnit.match(/((?:\\#|[^#])*)(?:#(.*))?/); // divide on unescaped #
-      return [
-        match[1] || match[2] || null,
-        match[2] || match[1] || null,
-      ];
-    }).filter((segment) => segment[0] !== null);
-
-    array = array.map(([topicString, subtopicString]) => [
-      Topic.fromUrl(topicString),
-      Topic.fromUrl(subtopicString)
-    ]);
+    let array = slashSeparatedUnits.map((segmentString) => {
+      let [topic, subtopic] = Topic.parseUrlSegment(segmentString);
+      return [topic, subtopic || topic];
+    }).filter(segment => segment[0]);
 
     this.stringToArrayCache[pathString] = array;
 
