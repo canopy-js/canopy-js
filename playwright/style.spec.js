@@ -435,6 +435,12 @@ test.describe('Block entities', () => {
 
   test('It creates nested lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Lists');
+
+    const textSelector = `*:not(li) >> text="Dr. So and so called."`; // ensure not part of a list item
+    await expect(page.locator(textSelector)).toBeVisible(); // Assert that the text is present and not part of a list item
+    const listItemSelector = `li >> text="So and so called"`; // Additional check to ensure the text is not part of a bullet in a list
+    await expect(page.locator(listItemSelector)).toHaveCount(0);
+
     await expect(await page.locator('.canopy-selected-section > .canopy-paragraph > ol').evaluate((element) => element.type)).toEqual('1');
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li >> text="This"').nth(0)).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li >> text="Is"')).toHaveCount(1);

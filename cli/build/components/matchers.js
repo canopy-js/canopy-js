@@ -97,7 +97,7 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
 }
 
 function outlineMatcher({ string, parserContext, startOfLine }) {
-  let match = string.match(/^(\s*(([A-Za-z0-9+*-]{1,3}\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
+  let match = string.match(/^(\s*(((?:[0-9+*-]{1,3}|[a-zA-Z])\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
 
   if (match && startOfLine) {
     return [
