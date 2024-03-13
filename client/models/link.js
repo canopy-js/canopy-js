@@ -407,7 +407,7 @@ class Link {
   }
 
   get firstChild() {
-    return this.childParagraph?.firstLink;
+    return this.childParagraph?.links.filter(link => !link.element.closest('.canopy-image-caption'))[0];
   }
 
   firstChildOf(otherLink) {
@@ -447,7 +447,7 @@ class Link {
     }
 
     const rect = this.element.getBoundingClientRect();
-    return rect.top < 0;
+    return rect.top < ScrollableContainer.top;
   }
 
   isBelowViewport() {
@@ -456,7 +456,7 @@ class Link {
     }
 
     const rect = this.element.getBoundingClientRect();
-    const viewportHeight = ScrollableContainer.innerHeight;
+    const viewportHeight = ScrollableContainer.visibleHeight;
     return rect.bottom > viewportHeight;
   }
 
