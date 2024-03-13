@@ -209,8 +209,14 @@ function renderImage(token, renderContext) {
 function handleDelayedImageLoad(imageElement, renderContext) { // we don't know how big the image will be, and don't want the load to disrupt viewport
   let originalHeight = imageElement.style.height;
   let originalOpacity = imageElement.style.opacity;
+  let originalWidth = imageElement.style.width;
+  if (imageElement.closest('.canopy-image')) var originalContainerWidth = imageElement.closest('.canopy-image').style.width;
+
   imageElement.style.setProperty('height', '500px'); // big because empty space getting replaced with content looks better than content with content
+  imageElement.style.setProperty('width', '100%');
   imageElement.style.setProperty('opacity', '0');
+  if (imageElement.closest('.canopy-image')) imageElement.closest('.canopy-image').style.setProperty('width', '100%');
+
   setTimeout(() => { // after 200 ms add gray box but not before then to avoid flash
     if (!imageElement.complete) (imageElement.closest('.canopy-image')||imageElement).style.setProperty('background-color', '#f5f5f5')
   }, 200)
@@ -219,8 +225,12 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
     (getScrollInProgress() || Promise.resolve()).then(() => { // if there is a scroll in progress, wait for it to complete.
       let focusedElement = ScrollableContainer.focusedElement;
       let oldBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
+
       imageElement.style.setProperty('height', originalHeight);
+      imageElement.style.setProperty('width', originalWidth);
       imageElement.style.setProperty('opacity', originalOpacity);
+      if (imageElement.closest('.canopy-image')) imageElement.closest('.canopy-image').style.setProperty('width', originalContainerWidth);
+
       imageElement.closest('.canopy-image')?.style.setProperty('background-color', 'transparent') // remove gray placeholder
       let newBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
       let diff = newBottomOfCurrentParagraph - oldBottomOfCurrentParagraph

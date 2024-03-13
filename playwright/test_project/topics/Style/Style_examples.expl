@@ -218,6 +218,7 @@ Script tags:
  <div id="123">ABC</div>
 
 Lists:
+Dr. So and so called.
 1. This
 2. Is
   a. a
@@ -299,8 +300,8 @@ These are hyperlink special cases:
 - This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
 - This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
 - This is a nested image red herring [![abc](https://en.wikipedia.org/)
-- This is a parenthases wrapped link ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
-- This is seemingly a link in a link [[link](http://google.com)](http://google.com) - text is lazy, URL is greedy
+- This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
+- This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
 
 Inline HTML: Text. <b> This is a test.</b> Text.
 

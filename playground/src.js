@@ -27,7 +27,7 @@ canopyContainer.id = '_canopy';
 scrollableContainer.appendChild(canopyContainer);
 
 let newBulkFileString = localStorage.getItem('data') || defaultText();
-if (window.location.hostname === 'localhost') newBulkFileString = defaultText();
+if (['localhost', '127.0.0.1'].includes(window.location.hostname)) newBulkFileString = defaultText();
 localStorage.setItem('data', newBulkFileString);
 
 editor.value = newBulkFileString;
@@ -417,8 +417,10 @@ Click the following link *normally*:
 - [[Jefferson Market Library]]
 ===
 
-* Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]].
-- Jefferson Market library is housed in the repurposed building of [[Jefferson Market Courthouse]].
+* Jefferson Market Library: Jefferson Market library is a library in [[Greenwich village]]
+![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
+- Jefferson Market Library is housed in the former Jefferson Market Courthouse, situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
+- Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
 ===
 > [[Playground#Part 10 Software|Finish]]
 ===
@@ -446,15 +448,8 @@ Click the following link *normally*:
 In 1906 Archetect Stanford White was shot by Harry Kendall Thaw.
 - This was due to White’s relationship with Shaw’s wife Evelyn Nesbit.
 - The attack occurred on the roof of the [[{{second Madison Square Garden}} building]].
-- The trial was held in [[Jefferson Market Courthouse]].
+- The trial was held in [[Jefferson Market {Library|Courthouse}]].
 - The story was adapted to novel and stage as Ragtime.
-===
-> [[Playground#Part 10 Software|Finish]]
-===
-
-* Jefferson Market Courthouse: Jefferson Market Courthouse was a city court situated at 10th Street and 6th Avenue on the border of Greenwich Village, Manhattan.
-![Jefferson Market Courthouse](https://www.nypap.org/wp-content/uploads/2016/04/JeffersonMarketCourthouse.jpg "Jefferson Market Courthouse" "1960, Cervin Robinson / Library of Congress, [Source](https://www.nypap.org/preservation-history/jefferson-market-courthouse/)")
-- Jefferson Market Courthouse was the location of "the trial of the century" judicating [[Stanford White's death|the death of architect Stanford White]].
 ===
 > [[Playground#Part 10 Software|Finish]]
 ===
@@ -512,19 +507,44 @@ Arguments for the law: Residents of Townsville have put forward various argument
 
 Economics:
 One benefit of the legislation mentioned involves economics:
+- [[Some discussed improved sleep as an economic boon]].
+- [[Some worried a noise ban would disrupt the harvest]].
+
+Some discussed improved sleep as an economic boon:
+Some commentators discussed how a noise ban might improve the economy through improved sleep:
 - Mr. Cunningham lists economic productivity resulting from greater sleep as an argument for the law.
-- Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
-- Additionally, Ms. Jamaica points out that affected persons can wear earplugs, protecting sleep without a ban.
-- The 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
+- On the other hand, Ms. Jamaica pointed out that affected persons can wear earplugs, protecting sleep without a ban.
+- Additionally, the 11PM-5AM compromise mentioned by Ms. Jamaica might be sufficient to handle sleep-related concerns.
 ===
 > [[Playground#Part 10 Memorization|Finished]]
 ===
 
+Some worried a noise ban would disrupt the harvest:
+Some commentators worried a noise ban would disrupt the harvest:
+- Mr. Orangutan points out that a broad noise ban might impede necessary agricultural work during the local harvest.
+===
+> [[Playground#Part 10 Memorization|Finished]]
+===
+
+
 Assemblies:
-One benefit of the legislation mentioned involves assemblies:
-- Mr Cunningham mentions disruption of family meals and communal gatherings.
-- That would be an issue for which Ms. Jamaica's suggestion of earlugs would not suffice.
-- The 11PM-5AM compromise mentioned by Ms. Jamaica would not help for such get-togethers.
+One benefit of a noise ban involves assemblies:
+- [[Mr. Cunningham argues a noise ban would reduce disruption of family meals and communal gatherings]].
+
+Mr\\. Cunningham argues a noise ban would reduce disruption of family meals and communal gatherings:
+According to Mr. Cunningham, a noise ban would improve family meals and communal gatherings.
+- [[What about Ms. Jamaica's earplug suggestion?]]
+- [[What about Ms. Jamaica's late-night compromise ban?]]
+
+What about Ms\\. Jamaica's earplug suggestion?
+Ms\\. Jamaica had suggested earplugs instead of a noise ban.
+- However, that wouldn't really work for family meals and communal gatherings.
+- So, Mr. Cunningham’s case is a unique reason for a noise ban that earplugs wouldn’t help with.
+
+What about Ms\\. Jamaica's late-night compromise ban?
+Ms\\. Jamaica had suggested a ban of noise only from 11PM-5AM.
+- However, such a ban during the late night wouldn't help very much with the family meals and communal gatherings that Mr Cunningham is discussing.
+- So, Mr. Cunningham’s case is a unique reason for a general noise ban that a late-night ban wouldn’t help with.
 ===
 > [[Playground#Part 10 Memorization|Finished]]
 ===
@@ -538,18 +558,30 @@ Residents of Townsville have put forward various arguments against a noise pollu
 
 Restriction of freedom:
 One argument raised against the proposal is that it restricts the freedom of town residents:
-- Ms. Jamaica mentions that the law might create a precedent for regulating the private lives of Townsville residents.
+- Ms. Jamaica mentioned that the law might create a precedent for regulating the private lives of Townsville residents.
+- [[Others find this concern unlikely]].
+- [[Others dispute the degree of the imposition on freedoms]]
+
+Others find this concern unlikely:
+Various other commentators are unconcerned that a noise ban would spiral into greater regulation:
 - Mr. Orangutan opines that the small size of Townsville makes spiraling regulation less likely.
 - Mr. Orangutan mentions that close resident-police relationships also makes the concern less pressing.
-- Mr. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms.
+===
+> [[Playground#Part 10 Memorization|Finished]]
+===
+
+Others dispute the degree of the imposition on freedoms:
+Mr\\. Cunningham suggests that a narrow holiday-season ban would not be such a restriction on freedoms in the first place.
 ===
 > [[Playground#Part 10 Memorization|Finished]]
 ===
 
 Town culture:
 One argument raised against the proposal is that public music playing produces a distinctive town culture:
-- Ms. Jamaica makes such an argument in her op-ed.
-- Mr. Orangutan suggests that public music-playing is not necessary to have a distinctive town culture due to the town's many other qualities.
+- [[Ms. Jamaica makes such an argument in her op-ed]].
+
+Ms\\. Jamaica makes such an argument in her op-ed:
+Mr\\. Orangutan however suggests that public music-playing is not necessary to have a distinctive town culture due to the town's many other qualities.
 
 Discussion of details: The residents of Townsville have argued about the details of the noise pollution law.
 ===

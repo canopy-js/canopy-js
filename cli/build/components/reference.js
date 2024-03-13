@@ -197,7 +197,7 @@ class Reference {
 
   get pathString() {
     return [...this.displayPathString.matchAll(/(?:\\.|[^\\\/])+?(?:#(?:\\.|[^\\\/])+?)?(?:(?=\/|$))/g)].map(match => match[0]).map(segmentString => {
-      let [topic, subtopic] = segmentString.match(/((?:[^#\/\\]|\\.)*)(?:[#]((?:[^#\/\\]|\\.)*))?/).slice(1).map(m => m && Topic.fromExpl(m));
+      let [topic, subtopic] = segmentString.match(/((?:[^#\/\\]|\\.)*)(?:[#]((?:[^#\/\\]|\\.)*))?/).slice(1).map(m => m && Topic.fromReference(m));
       return (this.parserContext.getOriginalTopic(topic)||topic).url + // gives us original display version
         (subtopic ? ('#' + ((this.parserContext.getOriginalSubtopic(topic, subtopic)||subtopic).url)) : '');
     }).join('/');

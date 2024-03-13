@@ -222,19 +222,18 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlink_special_cases');
     await expect(page.locator('.canopy-selected-section')).toContainText("These are hyperlink special cases:");
 
-    /*
-    Hyperlink special cases:
-    - This is a [link](http://google.com)
-    - This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
-    - This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
-    - This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
-    - This is a nested image red herring [![abc](https://en.wikipedia.org/)
-    - This is a parenthases wrapped link ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
-    - This is seemingly a link in a link [[link](http://google.com)](http://google.com) - text is lazy, URL is greedy
-    */
-
     // Assert the total number of links
-    await expect(page.locator('.canopy-selected-section a')).toHaveCount(9);
+    await expect(page.locator('.canopy-selected-section a')).toHaveCount(12);
+
+    // These are hyperlink special cases:
+    // - This is a [link](http://google.com)
+    // - This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
+    // - This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+    // - This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+    // - This is a nested image red herring [![abc](https://en.wikipedia.org/)
+    // - This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
+    // - This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
+
 
     // Asserting each link with href and either text or image content
     const links = [
@@ -243,10 +242,13 @@ test.describe('Inline entities', () => {
       { href: 'http://google.com', text: 'link 2' },
       { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico'] },
       { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico', 'https://en.wikipedia.org/favicon.ico'] },
-      { href: 'https://en.wikipedia.org/', text: '![abc' },
-      { href: 'http://google.com)', text: 'link' },
-      { href: 'http://google.com', text: 'link' },
-      { href: 'http://google.com)](http://google.com', text: '[link' }
+      { href: 'https://en.wikipedia.org/', text: '![abc' }, // red herring
+      { href: 'http://google.com)', text: 'link' }, // paren wrapped link #1
+      { href: 'http://google.com)', text: 'link' }, // paren wrapped link #2
+      { href: 'http://google.com', text: 'link' }, // paren wrapped link #3
+      { href: 'http://google.com)](http://google.com', text: '[link' }, // unsuccessful link within link
+      { href: 'http://google.com', text: '[link](http://google.com)' }, // Successful link containing link
+      { href: 'http://google.com)', text: 'http://google.com)' } // Successful link inside link, but URL not markdown due to preserved escape \]
     ];
 
     links.forEach((link, i) => {
@@ -433,6 +435,12 @@ test.describe('Block entities', () => {
 
   test('It creates nested lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Lists');
+
+    const textSelector = `*:not(li) >> text="Dr. So and so called."`; // ensure not part of a list item
+    await expect(page.locator(textSelector)).toBeVisible(); // Assert that the text is present and not part of a list item
+    const listItemSelector = `li >> text="So and so called"`; // Additional check to ensure the text is not part of a bullet in a list
+    await expect(page.locator(listItemSelector)).toHaveCount(0);
+
     await expect(await page.locator('.canopy-selected-section > .canopy-paragraph > ol').evaluate((element) => element.type)).toEqual('1');
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li >> text="This"').nth(0)).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li >> text="Is"')).toHaveCount(1);

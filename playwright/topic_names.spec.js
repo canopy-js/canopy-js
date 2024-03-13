@@ -79,7 +79,7 @@ test.describe('Topic names', () => {
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
-    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop");
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C#1_gift_shop");
     await expect(page.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
 
     const [newPage] = await Promise.all([
@@ -89,14 +89,14 @@ test.describe('Topic names', () => {
       })
     ]);
 
-    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop");
+    await expect(newPage).toHaveURL("United_States/New_York/Martha's_Vineyard/The_world's_%5C#1_gift_shop");
     await expect(newPage.locator('h1:visible')).toHaveText("United States");
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await expect(newPage.locator('text=This is a great gift shop >> visible=true')).toHaveCount(1);
   });
 
   test('it renders everything properly for topics with question marks', async ({ page, context }) => {
-    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%5C%231_gift_shop`);
+    await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%5C#1_gift_shop`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");

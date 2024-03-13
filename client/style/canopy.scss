@@ -494,6 +494,10 @@
           color: #595959;
         }
 
+        a.canopy-selected-link {
+          background-color: #c9ccff; // extra dark so it is noticible
+        }
+
         a.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after { // need to beat specificity of general definition
           content: ''; // no ➹ icon for links in image captions because usually they'll be external
         }
