@@ -5,7 +5,8 @@ const nodeExternals = require('webpack-node-externals');
 module.exports = {
   entry: {
     canopy: './client/canopy.js',
-    playground: './playground/src.js'
+    playground: './playground/src.js',
+    rebuild_canopy: './client/rebuild_canopy.js'
   },
   output: {
     filename: '[name].js',
