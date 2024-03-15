@@ -1,4 +1,5 @@
 import './playground.scss';
+import rebuildCanopy from '../client/rebuild_canopy';
 
 let playgroundContainer = document.createElement('DIV');
 playgroundContainer.id = 'playground-container';
@@ -9,14 +10,16 @@ editorContainer.id = 'editor-container';
 playgroundContainer.appendChild(editorContainer);
 
 let editor = document.createElement('TEXTAREA');
-editor.id = 'editor'; // Added class
+editor.id = 'editor';
 editorContainer.appendChild(editor);
 
 let consoleElement = document.createElement('DIV');
 consoleElement.id = 'console';
 editorContainer.appendChild(consoleElement);
 consoleElement.innerText = defaultConsoleText();
-function defaultConsoleText() { return 'Edit the text area and then deselect to rebuild project. Delete text to restore default.';}
+function defaultConsoleText() {
+  return 'Edit the text area and then deselect to rebuild project. Delete text to restore default.';
+}
 
 let scrollableContainer = document.createElement('DIV');
 scrollableContainer.id = 'scrollable-container';
@@ -28,84 +31,34 @@ scrollableContainer.appendChild(canopyContainer);
 
 let newBulkFileString = localStorage.getItem('data') || defaultText();
 if (['localhost', '127.0.0.1'].includes(window.location.hostname)) newBulkFileString = defaultText();
-localStorage.setItem('data', newBulkFileString);
 
 editor.value = newBulkFileString;
-editor.addEventListener('blur', (e) => setTimeout(() => rebuildCanopy(!!e)));
+editor.addEventListener('blur', (e) => setTimeout(() => tryBuild()));
+
 editor.addEventListener('focus', () => {
   if (consoleElement.classList.contains('error')) return;
   consoleElement.innerText = defaultConsoleText();
 });
 
-let BulkFileParser = require('../cli/bulk/bulk_file_parser');
-let Topic = require('../cli/shared/topic');
-import REQUEST_CACHE from 'requests/request_cache';
 fetch = (url) => console.log(`Fetch request for '${url}' canceled by plaground`) || Promise.reject();
-let Block = require('../cli/shared/block');
-let Path; // calls getters before _canopy element is ready
 
-rebuildCanopy(); // initial build
+tryBuild();
 
-function rebuildCanopy(edit) {
-  Array.from(canopyContainer.children).forEach(child => {
-    if (child.tagName === 'SECTION' || child.tagName === 'H1') {
-      canopyContainer.removeChild(child);
-    }
-  });
+function tryBuild() {
+  editor.value = editor.value || defaultText();
+  localStorage.setItem('data', editor.value);
+
+  consoleElement.classList.remove('error');
+  consoleElement.innerText = defaultConsoleText();
 
   try {
-    editor.value = editor.value || defaultText();
-    localStorage.setItem('data', editor.value);
-    let bulkFileParser = new BulkFileParser(editor.value);
-    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
-    defaultTopicKey ||= editor.value.split('\n').map(line => Block.for(line.match(/^\*?\*? ?(.*)/)[1]).key).find(key => key);
-    let defaultTopic = Topic.for(defaultTopicKey);
-
-    canopyContainer.dataset.defaultTopic = defaultTopic.mixedCase;
-    canopyContainer.dataset.hashUrls = true;
-    canopyContainer.dataset.projectPathPrefix = '';
-
-    let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
-
-    let directoriesToEnsure, filesToWrite;
-    ({ directoriesToEnsure, filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, null, defaultTopicKey));
-    consoleElement.classList.remove('error');
-    consoleElement.innerText = '';
-
-    if (edit) { // Remove old data
-      for (let key in REQUEST_CACHE) {
-        if (REQUEST_CACHE.hasOwnProperty(key)) {
-          delete REQUEST_CACHE[key];
-        }
-      }
-    }
-
-    // Copy new data into the cache
-    Object.keys(filesToWrite).forEach(filePath => {
-      let { displayTopicName } = JSON.parse(filesToWrite[filePath]);
-      REQUEST_CACHE[Topic.for(displayTopicName).mixedCase] = Promise.resolve(JSON.parse(filesToWrite[filePath]));
-    });
-
-    // New data might invalidate old URL
-    Path = require('models/path').default;
-    let path = Path.for(window.location.hash.slice(2));
-    let firstTopic = path.firstTopic;
-
-    if (firstTopic && !REQUEST_CACHE.hasOwnProperty(firstTopic.mixedCase)) { // URL invalid
-      history.replaceState(null, null, location.pathname + location.search); // clear fragment
-    }
-
-    if (edit) Path.initial.display({ scrollStyle: 'instant' });
-
-    consoleElement.innerText = defaultConsoleText();
-
-    require('../client/canopy.js');
+    rebuildCanopy(editor.value);
   } catch(e) {
     consoleElement.innerText = e.message;
     consoleElement.classList.add('error');
-    canopyContainer.innerHTML = '<h1> Error </h1>'
-    history.replaceState(null, null, location.pathname + location.search); // clear fragment in case of invalid URL
-    return;
+    canopyContainer.innerHTML = '<h1> Error </h1>';
+    scrollableContainer.scrollTo({ top: 0 });
+    console.error(e);
   }
 }
 
@@ -356,7 +309,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 ===
 
 Part 1:
-Click the following link:
+*Click the following link:*
 - The Atlantic ocean connects via the Panama Canal to the [[{Pacific Ocean}#Part 1]]
 ![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
