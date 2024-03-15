@@ -212,7 +212,7 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
   let originalWidth = imageElement.style.width;
   if (imageElement.closest('.canopy-image')) var originalContainerWidth = imageElement.closest('.canopy-image').style.width;
 
-  imageElement.style.setProperty('height', '500px'); // big because empty space getting replaced with content looks better than content with content
+  imageElement.style.setProperty('height', ScrollableContainer.visibleHeight + 'px'); // big so that content changing doesn't cause flash
   imageElement.style.setProperty('width', '100%');
   imageElement.style.setProperty('opacity', '0');
   if (imageElement.closest('.canopy-image')) imageElement.closest('.canopy-image').style.setProperty('width', '100%');

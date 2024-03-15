@@ -481,6 +481,14 @@ Once you have a Github repo for your Canopy project, you can add premade Github 
 
 At the moment there are plugin scripts available for Sublime Text that facilitate editing large bulk files, available in the [sublime repo](https://github.com/canopy-js/sublime). Resources for other editors may be added at a later point.
 
+### Live Rebuilding ###
+
+Canopy can be given a bulk file and build the site live in the browser.
+
+The `rebuildCanopy` function is in `dist/rebuild_canopy.js`. Running that code will put a `rebuildCanopy` function on the window object which other scripts can use to create and update the Canopy site. `rebuildCanopy` takes one bulk file string argument. (See earlier `bulk mode` docs for the format of the bulk string.)
+
+For an example of how to use the `rebuildCanopy` function you can see the playground code, `playground/src.js`.
+
 ## Development
 
 For development, clone the repo and run
