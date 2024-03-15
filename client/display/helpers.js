@@ -253,7 +253,7 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
     && !Path.rendered.siblingOf(pathToDisplay)
-    && !linkToSelect || !linkToSelect.siblingOf(Link.selection)
+    && (!linkToSelect || !linkToSelect.siblingOf(Link.selection))
     && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
     && !linkToSelect.equals(Link.selection.parentLink);
@@ -300,8 +300,8 @@ function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
 
   // Define the viewport height thresholds for the element to be considered within the desired vertical range
-  const topThreshold = window.innerHeight * 0.1;
-  const bottomThreshold = window.innerHeight * 0.4;
+  const topThreshold = ScrollableContainer.visibleHeight * 0.1;
+  const bottomThreshold = ScrollableContainer.visibleHeight * 0.4;
 
   // Check if the entire element is within the 5% to 50% range of the viewport
   // The top of the element should be below the top threshold (5% mark)
