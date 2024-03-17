@@ -1,12 +1,9 @@
 // Take a bulk string and build or rebuilt the #_canopy element.
 
-let BulkFileParser = require('../cli/bulk/bulk_file_parser');
 let Topic = require('../cli/shared/topic');
 import REQUEST_CACHE from 'requests/request_cache';
-let Block = require('../cli/shared/block');
-let Path; // we have to wait because Path calls getters before the _canopy element is ready
 
-function rebuildCanopy (bulkFileString) {
+function rebuild (bulkFileString) {
   if (!bulkFileString) throw new Error('No bulk file string given');
   let canopyContainer = document.querySelector('#_canopy'); // run after DOM set up
 
@@ -17,14 +14,16 @@ function rebuildCanopy (bulkFileString) {
       }
     });
 
+    let BulkFileParser = require('../cli/bulk/bulk_file_parser');
     let bulkFileParser = new BulkFileParser(bulkFileString);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
+    let Block = require('../cli/shared/block');
     defaultTopicKey ||= bulkFileString.split('\n').map(line => Block.for(line.match(/^\*?\*? ?(.*)/)[1]).key).find(key => key);
     let defaultTopic = Topic.for(defaultTopicKey);
 
     canopyContainer.dataset.defaultTopic = defaultTopic.mixedCase;
     canopyContainer.dataset.hashUrls = true;
-    canopyContainer.dataset.projectPathPrefix = '';
+    canopyContainer.dataset.projectPathPrefix = canopyContainer.dataset.projectPathPrefix || '';
 
     let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
 
@@ -44,7 +43,7 @@ function rebuildCanopy (bulkFileString) {
     });
 
     // New data might invalidate old URL
-    Path = require('models/path').default;
+    let Path = require('models/path').default;
     let path = Path.for(window.location.hash.slice(2));
     let firstTopic = path.firstTopic;
 
@@ -61,10 +60,10 @@ function rebuildCanopy (bulkFileString) {
     }
   } catch(e) {
     history.replaceState(null, null, location.pathname + location.search); // clear fragment in case of invalid URL
+    let ScrollableContainer = require('helpers/scrollable_container').default;
+    ScrollableContainer.scrollTo({ top: 0 });
     throw e;
   }
 }
 
-window.rebuildCanopy = rebuildCanopy;
-
-export default rebuildCanopy;
+export { rebuild };

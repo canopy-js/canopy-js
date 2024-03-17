@@ -356,7 +356,7 @@ function isVerticallyOverlapping(rect1, rect2) {
 }
 
 function isInViewportVertically(rectObject) {
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const viewportHeight = ScrollableContainer.visibleHeight;
 
   // Check if the top or the bottom of the rectangle is within the viewport
   return (
