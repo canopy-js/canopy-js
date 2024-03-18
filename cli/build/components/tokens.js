@@ -92,16 +92,16 @@ function HtmlToken(html, parserContext) {
     const isEscaped = match.startsWith('\\') || match.includes('\\{', 1) || match.includes('\\}', match.length - 3);
 
     if (isEscaped) {
-      // If the sequence or any curly brace is escaped, return the sequence without the leading backslash
       return match.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1])
     } else {
-      // If not escaped, process the match
+      const initialCurlyBraces = 2; // ie "{{"[[Error-causing link]]}}
+
       this.tokenInsertions.push(
         parseText({
           text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
           parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(offset).split('\n').length)
-            .incrementCharacterNumber(html.slice(offset).split('\n').slice(-1)[0].length)
+            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g).length)
+            .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
         })
       );
 

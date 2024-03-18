@@ -263,6 +263,7 @@ function renderHtmlElement(token, renderContext) {
   });
 
   divElement.classList.add('canopy-raw-html');
+
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
     handleDelayedImageLoad(imageElement, renderContext);
   });
@@ -540,13 +541,6 @@ function renderTableList(token, renderContext) {
     // so we assume it's 0 or handle it according to your use case.
     return mainWidth + (isNaN(afterWidth) ? 0 : afterWidth);
   }
-}
-
-function renderHtmlBlock(token) {
-  let htmlContainer = document.createElement('DIV');
-  htmlContainer.innerHTML = token.html;
-  htmlContainer.classList.add('canopy-raw-html');
-  return htmlContainer;
 }
 
 function renderFootnoteLines(footnoteLinesToken, renderContext) {
