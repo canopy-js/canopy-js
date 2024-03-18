@@ -203,7 +203,7 @@ It will produce the following website:
 
 The topic paragraph can reference several subtopics, which in turn can reference several other subtopics, forming a tree. To maintain this tree structure, each subtopic can only be referenced by one "parent" paragraph.
 
-(If you want to have two references to a given subtopic from different subtopics of that topic, you can make the target subtopic a topic proper, or use the "import reference" functionality described below.)
+(If you want to have two references to a given subtopic from different subtopics of that topic, you can make the target subtopic a topic proper, or use the "path reference" functionality described below.)
 
 #### Global References
 
@@ -300,7 +300,7 @@ If an exclusive syntax is used multiple times, the instances will be concatenate
 
 You can remember the order of the interpolation syntax by thinking of every `{x|y}` unit as being a microcosm of the simple link syntax ie `[[Target name|Display text]]` where the text before the pipe is the real target and the text after is the display text.
 
-Explicit import reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`. If you write \[\[A#B]], Canopy knows to make the display text `B` and not the literal `A#B`, but if you use any custom syntax, you are responsible for making the target evaluate to `A#B` and the display text evaluate to the correct substring, because `#` characters in the display text will be interpreted literally and displayed.
+Path reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`. If you write \[\[A#B]], Canopy knows to make the display text `B` and not the literal `A#B`, but if you use any custom syntax, you are responsible for making the target evaluate to `A#B` and the display text evaluate to the correct substring, because `#` characters in the display text will be interpreted literally and displayed.
 
 ### Using Markup
 
@@ -392,6 +392,17 @@ This text is *bold*, _italic_, `code snippet`, ~strike through~.
 #### HTML ####
 ````
 This is text with some <b> HTML </b> mixed in.
+````
+Tokens can be inserted into HTML:
+
+````
+<div style="background-color: green">
+  This is a link: {{[[New York]]}}
+</div>
+<div>
+  These are not: \{{[[New York]]}} {\{[[New York]]}} {{[[New York]]\}} {{[[New York]]}\}
+</div>
+
 ````
 ### Using Bulk Mode
 

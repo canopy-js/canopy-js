@@ -137,7 +137,7 @@ function tableListMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function htmlMatcher({ string }) {
+function htmlMatcher({ string, parserContext }) {
   let fragments = string.match(/(<[^>]+>|((?!<[^>]+>).)*)/gs);
   let result = null;
 
@@ -168,7 +168,7 @@ function htmlMatcher({ string }) {
 
       if (singleTag || balancedFirstTag) {
         result = result || [
-        new HtmlToken(match[0]),
+        new HtmlToken(match[0], parserContext),
           match[0].length
         ];
       }
@@ -183,7 +183,7 @@ function htmlEntityMatcher({ string, parserContext }) {
 
   if (match) {
     return [
-      new HtmlToken(match[0]),
+      new HtmlToken(match[0], parserContext),
       match[0].length
     ];
   }
