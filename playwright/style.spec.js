@@ -416,6 +416,15 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section a')).toHaveCount(1);
   });
 
+  test('It allows insertions of tokens into html blocks', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#HTML_blocks_with_insertions');
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html')).toHaveCount(2);
+
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York');
+
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(1)).toHaveText('These are not: {{[[New York]]}} {{[[New York]]}} {{[[New York]]}} {{[[New York]]}}');
+  });
+
   test('It creates HTML entities', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#HTML_entities');
     await expect(page.locator('.canopy-selected-section')).toHaveText("I like M&M's.");
