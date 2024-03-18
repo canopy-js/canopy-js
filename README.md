@@ -393,6 +393,17 @@ This text is *bold*, _italic_, `code snippet`, ~strike through~.
 ````
 This is text with some <b> HTML </b> mixed in.
 ````
+Tokens can be inserted into HTML:
+
+````
+<div style="background-color: green">
+  This is a link: {{[[New York]]}}
+</div>
+<div>
+  These are not: \{{[[New York]]}} {\{[[New York]]}} {{[[New York]]\}} {{[[New York]]}\}
+</div>
+
+````
 ### Using Bulk Mode
 
 It can become tedious to create `expl` files manually, so the CLI has a feature called "bulk mode" which allows the user to create and edit many topic files by editing a single "bulk file" representing part or all of their project files. A bulk file might look like this:
