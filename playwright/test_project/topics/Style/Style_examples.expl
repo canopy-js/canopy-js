@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], and [[lists]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
 
@@ -197,6 +197,14 @@ HTML blocks:
 <b></b>[[New York]]<b></b> These are two separate HTML tags
 
 HTML entities: I like M&amp;M's.
+
+HTML blocks with insertions:
+<div style="background-color: green">
+  This is a link: {{[[New York]]}}
+</div>
+<div>
+  These are not: \{{[[New York]]}} {\{[[New York]]}} {{[[New York]]\}} {{[[New York]]}\}
+</div>
 
 Run-on tag HTML blocks:
 <img class="picture"

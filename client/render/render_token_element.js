@@ -252,7 +252,18 @@ function renderHtmlElement(token, renderContext) {
   let divElement = document.createElement('DIV');
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);
+
+  Array.from(divElement.querySelectorAll('.canopy-html-insertion')).forEach((placeholderDiv) => {
+      let replacementIndex = placeholderDiv.dataset.replacementNumber;
+      let tokens = token.tokenInsertions[replacementIndex];
+      tokens.forEach(token => {
+        let element = renderTokenElement(token, renderContext);
+        placeholderDiv.appendChild(element);
+      });
+  });
+
   divElement.classList.add('canopy-raw-html');
+
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
     handleDelayedImageLoad(imageElement, renderContext);
   });
@@ -530,13 +541,6 @@ function renderTableList(token, renderContext) {
     // so we assume it's 0 or handle it according to your use case.
     return mainWidth + (isNaN(afterWidth) ? 0 : afterWidth);
   }
-}
-
-function renderHtmlBlock(token) {
-  let htmlContainer = document.createElement('DIV');
-  htmlContainer.innerHTML = token.html;
-  htmlContainer.classList.add('canopy-raw-html');
-  return htmlContainer;
 }
 
 function renderFootnoteLines(footnoteLinesToken, renderContext) {

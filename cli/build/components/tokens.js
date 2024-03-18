@@ -80,9 +80,34 @@ function FootnoteMarkerToken(superscript) {
   this.text = superscript;
 }
 
-function HtmlToken(html) {
+function HtmlToken(html, parserContext) {
   this.type = 'html_element';
-  this.html = html;
+  this.tokenInsertions = [];
+
+  // Match sequences with optional backslashes before any of the curly braces
+  const regex = /\\?\{\\?\{([^{}]+)\\?\}\\?\}/g;
+
+  this.html = html.replace(regex, (match, content, offset) => {
+    // Determine if the sequence is escaped based on the presence of backslashes
+    const isEscaped = match.startsWith('\\') || match.includes('\\{', 1) || match.includes('\\}', match.length - 3);
+
+    if (isEscaped) {
+      return match.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1])
+    } else {
+      const initialCurlyBraces = 2; // ie "{{"[[Error-causing link]]}}
+
+      this.tokenInsertions.push(
+        parseText({
+          text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
+          parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true })
+            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g).length)
+            .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
+        })
+      );
+
+      return `<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
+    }
+  });
 }
 
 function CodeBlockToken(text) {

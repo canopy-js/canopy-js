@@ -1588,6 +1588,21 @@ test('it gives correct line and character number for errors in lists', () => {
     ));
 });
 
+test('it gives correct line and character number for errors HTML inclusion', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho:
+    <div style="background-color: green">
+      This is a link to a non-existent topic: {{[[Nebraska]]}}
+    </div>` + '\n',
+  };
+
+  expect(
+    () => jsonForProjectDirectory(explFileData, null, 'Idaho', {})
+  ).toThrow(chalk.red(
+    dedent`Error: Reference \"[[Nebraska]]\" in subtopic [Idaho, Idaho] contains nonexistent topic [Nebraska].
+    topics/Idaho/Idaho.expl:3:45`
+    ));
+});
 
 test('it does not throw error for redundantly defined subtopics that are not subsumed', () => {
   let explFileData = {
