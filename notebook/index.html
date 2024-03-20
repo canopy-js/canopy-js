@@ -4,7 +4,9 @@
 </head>
 <body>
   <div id="_canopy"></div>
-  <h1 id="loading">Loading...</h1>
+  <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 50px;">
+    <div> Loading... </div>
+  </div>
   <script>
     function initializeDropbox() {
       const token = localStorage.getItem('canopy-notebook-access-token');
@@ -13,7 +15,23 @@
         return;
       }
 
-      let initialContents = `[Notebook]\n\n* Notebook: This is my notebook. Here is an [[idea]].\n\nIdea: This is the idea!\n`;
+      let initialContents = `[Notebook]
+
+      * Notebook: Welcome to my notebook!
+      ===
+      - [[Ideas]]
+      - [[Plans]]
+      - [[Opinions]]
+      ===
+
+      Ideas: Here are some ideas!
+
+      Plans: Here are some plans!
+
+      Opinions: Here are some opinions!
+      `;
+
+      initialContents = initialContents.split('\n').map(line => line.trim()).join('\n');
 
       var dbx = new Dropbox.Dropbox({ accessToken: token });
       const filePath = '/notebook.txt';
