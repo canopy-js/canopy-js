@@ -27,7 +27,7 @@
           console.error('File does not exist or error occurred:', error);
 
           // Check if the error is due to an expired token
-          if (error.status === 401 || error.error?.error_summary.includes('expired_access_token')) {
+          if (error.status === 401 || error.error?.error_summary?.includes('expired_access_token')) {
             redirectToAuth();
           }
 
@@ -52,7 +52,7 @@
 
     function redirectToAuth() {
       localStorage.removeItem('canopy-notebook-access-token');
-      window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=${encodeURIComponent(window.location.href)}`;
+      window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=${encodeURIComponent(window.location.host)}`;
     }
 
     // Check for access token in URL fragment
