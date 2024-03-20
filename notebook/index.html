@@ -1,11 +1,68 @@
 <head>
+  <script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
+  <script src="rebuild_canopy.js"></script>
 </head>
 <body>
   <script>
-    if (window.location.hash) {
+    function initializeDropbox() {
+      const token = localStorage.getItem('canopy-notebook-access-token');
+      if (!token) {
+        redirectToAuth();
+        return;
+      }
+
+      let initialContents = `[Notebook]\n\n* Notebook: This is my notebook. Here is an [[idea]].\n\nIdea: This is the idea!\n`;
+
+      var dbx = new Dropbox.Dropbox({ accessToken: token });
+      const filePath = '/notebook.txt';
+
+      // Check if the file exists
+      dbx.filesGetMetadata({ path: filePath })
+        .then(response => {
+          console.log('File exists:', response);
+          window.Canopy.rebuild(response);
+        })
+        .catch(error => {
+          const errorSummary = error.error?.error_summary || error;
+          console.error('File does not exist or error occurred:', error);
+
+          // Check if the error is due to an expired token
+          if (error.status === 401 || error.error?.error_summary.includes('expired_access_token')) {
+            redirectToAuth();
+          }
+
+          if (error.status === 409) {  // 409 error indicates not found, so create the file
+            // Create the file if it doesn't exist
+            dbx.filesUpload({
+              path: filePath,
+              contents: initialContents,  // You can set this to an empty string if you want the file to be empty
+              mode: { '.tag': 'add' },  // 'add' means the upload will fail if the file exists
+              autorename: false,
+              mute: true
+            })
+            .then(uploadResponse => {
+              console.log('File created:', uploadResponse);
+            })
+            .catch(uploadError => {
+              console.error('Error creating file:', uploadError);
+            });
+          }
+        });
+    }
+
+    function redirectToAuth() {
+      localStorage.removeItem('canopy-notebook-access-token');
+      window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=${encodeURIComponent(window.location.href)}`;
+    }
+
+    // Check for access token in URL fragment
+    if (window.location.hash.startsWith('#access_token=')) {
       const token = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
+      localStorage.setItem('canopy-notebook-access-token', token);
+      window.location.hash = '';
+      initializeDropbox();
     } else {
-      window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=https://notebook.canopyjs.org`;
+      initializeDropbox();
     }
   </script>
 </body>
