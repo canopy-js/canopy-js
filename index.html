@@ -4,6 +4,7 @@
 </head>
 <body>
   <div id="_canopy"></div>
+  <h1 id="loading">Loading...</h1>
   <script>
     function initializeDropbox() {
       const token = localStorage.getItem('canopy-notebook-access-token');
@@ -26,6 +27,7 @@
           reader.onload = function() {
             var text = reader.result;
             try {
+              document.querySelector('#loading').remove();
               window.Canopy.rebuild(text);
             } catch(e) {
               displayError(e?.message || e);
