@@ -17,14 +17,20 @@
       const filePath = '/notebook.txt';
 
       // Check if the file exists
-      dbx.filesGetMetadata({ path: filePath })
+      dbx.filesDownload({ path: filePath })
         .then(response => {
-          console.log('File exists:', response);
-          try {
-            window.Canopy.rebuild(response);
-          } catch(e) {
-            displayError(e.message || e)
-          }
+          // Convert the file blob to text
+          var blob = response.result.fileBlob;
+          var reader = new FileReader();
+          reader.onload = function() {
+            var text = reader.result;
+            try {
+              window.Canopy.rebuild(text);
+            } catch(e) {
+              displayError(e?.message || e);
+            }
+          };
+          reader.readAsText(blob);
         })
         .catch(error => {
           const errorSummary = error.error?.error_summary || error;
@@ -46,7 +52,7 @@
             })
             .then(uploadResponse => {
               console.log('File created:', uploadResponse);
-
+              window.Canopy.rebuild(initialContents);
             })
             .catch(uploadError => {
               console.error('Error creating file:', uploadError);
