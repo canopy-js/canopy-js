@@ -35,7 +35,9 @@ jobs:
           git checkout -b notebook || git checkout notebook
 
           # Pull the latest changes from the remote notebook branch, resetting your local changes to match
-          git fetch origin notebook
+          if ! git fetch origin notebook; then
+            git push -u origin notebook
+          fi
           git reset --hard origin/notebook || true  # The '|| true' ensures the script continues even if the branch is already up-to-date
 
           # Remove all files in the current branch and copy the new build files
