@@ -1,0 +1,52 @@
+name: Build Notebook
+on:
+  push:
+    branches:
+      - main
+jobs:
+  tests:
+    uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - run: npm install
+      - run: npm run build-prod
+      - run: |
+          mkdir ../notebook-deploy
+          cp dist/rebuild_canopy.js ../notebook-deploy/
+          cp dist/_rebuild_canopy.js.map ../notebook-deploy/
+          cp notebook/index.html ../notebook-deploy/
+          cp notebook/favicon.ico ../notebook-deploy/
+          cp notebook/google_analytics_tag.txt ../notebook-deploy/
+      - run: |
+          set -ex
+          rev=$(git rev-parse --short HEAD)
+
+          git config --global user.email "canopyjs@gmail.com"
+          git config --global user.name "Canopy JS"
+
+          # Checkout the notebook branch, or create it if it doesn't exist
+          git checkout -b notebook || git checkout notebook
+
+          # Pull the latest changes from the remote notebook branch, resetting your local changes to match
+          git fetch origin notebook
+          git reset --hard origin/notebook || true  # The '|| true' ensures the script continues even if the branch is already up-to-date
+
+          # Remove all files in the current branch and copy the new build files
+          rm -rf *
+          cp -r ../notebook-deploy/* .
+
+          cat ./google_analytics_tag.txt >> index.html
+
+          # Stage all changes, commit, and force push to the notebook branch
+          git add -A
+          git commit -m "Playground built at ${rev}" --allow-empty
+          git push -u origin notebook --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
