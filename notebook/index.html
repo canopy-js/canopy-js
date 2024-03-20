@@ -1,0 +1,145 @@
+<head>
+  <script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
+  <script src="rebuild_canopy.js"></script>
+</head>
+<body>
+  <div id="_canopy"></div>
+  <div id="auth-landing-page" style="display: none; text-align: center; padding: 20px; width: 50%; margin: auto;">
+    <h1>Canopy Notebook</h1>
+    <p style="font-size: 30px; margin: auto; margin-bottom: 15px;">
+      To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebook.
+    </p>
+    <p style="font-size: 30px; margin: auto; margin-bottom: 40px;">
+      The app will only receive access to a folder called <code style="font-size: 27px; background-color: #f4f4f4; padding: 2px 4px; border-radius: 4px;">/Apps/canopy-notebook</code>. Only you can see your notebook.
+    </p>
+    <button id="auth-botton" style="float: right">Authorize with Dropbox</button>
+  </div>
+  <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 50px;">
+    <div> Loading... </div>
+  </div>
+  <script>
+    document.title = 'Notebook';
+
+    function initializeDropbox() {
+      const token = localStorage.getItem('canopy-notebook-access-token');
+      if (!token) {
+        redirectToAuth();
+        return;
+      }
+
+      let initialContents = `[Notebook]
+
+        * Notebook: Welcome to your Canopy notebook!
+        - You can edit this file in \`Dropbox/Apps/canopy-notebook\`.
+        - Find more instructions on [the project's Github readme](https://github.com/canopy-js/canopy-js)
+        ===
+        - [[Ideas]]
+        - [[Plans]]
+        - [[Opinions]]
+        ===
+
+        * Ideas: Here are some ideas!
+        - [[Idea 1]]
+        - [[Idea 2]]
+
+        Idea 1: Here is idea 1!
+
+        Idea 2: Here is idea 2!
+
+        * Plans: Here are some plans!
+
+        * Opinions: Here are some opinions!
+        `;
+
+      initialContents = initialContents.split('\n').map(line => line.trim()).join('\n');
+
+      var dbx = new Dropbox.Dropbox({ accessToken: token });
+      const filePath = '/notebook.txt';
+
+      // Check if the file exists
+      dbx.filesDownload({ path: filePath })
+        .then(response => {
+          // Convert the file blob to text
+          var blob = response.result.fileBlob;
+          var reader = new FileReader();
+          reader.onload = function() {
+            var text = reader.result;
+            try {
+              document.querySelector('#loading').remove();
+              window.Canopy.rebuild(text);
+            } catch(e) {
+              displayError(e?.message || e);
+            }
+          };
+          reader.readAsText(blob);
+        })
+        .catch(error => {
+          const errorSummary = error.error?.error_summary || error;
+          console.error('File does not exist or error occurred:', error);
+
+          // Check if the error is due to an expired token
+          if (error.status === 401 || error.error?.error_summary?.includes('expired_access_token')) {
+            redirectToAuth();
+          }
+
+          if (error.status === 409) {  // 409 error indicates not found, so create the file
+            // Create the file if it doesn't exist
+            dbx.filesUpload({
+              path: filePath,
+              contents: initialContents,  // You can set this to an empty string if you want the file to be empty
+              mode: { '.tag': 'add' },  // 'add' means the upload will fail if the file exists
+              autorename: false,
+              mute: true
+            })
+            .then(uploadResponse => {
+              console.log('File created:', uploadResponse);
+              window.Canopy.rebuild(initialContents);
+            })
+            .catch(uploadError => {
+              console.error('Error creating file:', uploadError);
+            });
+          }
+        });
+    }
+
+    function displayError(string) {
+      let canopyContainer = document.querySelector('#_canopy');
+      let errorDiv = document.createElement('DIV');
+      errorDiv.innerText = string;
+      errorDiv.style.cssText = `
+        font-size: 1.5em; /* Make the font larger */
+        text-align: center; /* Center the text */
+        width: 80%; /* Make the width narrower than the full width */
+        margin: 0 auto; /* Center the div horizontally */
+        padding: 20px; /* Add some padding */
+        box-sizing: border-box; /* Include padding in the width */
+        color: red; /* Make the text color red to indicate an error */
+      `;
+      canopyContainer.appendChild(errorDiv);
+    }
+
+    function redirectToAuth() {
+      // Display the landing page
+      document.getElementById('auth-landing-page').style.display = 'block';
+      document.getElementById('loading').style.display = 'none';
+
+      // Setup the event listener for the authorization button
+      document.getElementById('auth-botton').addEventListener('click', function() {
+        localStorage.removeItem('canopy-notebook-access-token');
+        window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=${encodeURIComponent('https://notebook.canopyjs.org')}`;
+      });
+    }
+
+    // If an access token is found in the URL fragment
+    if (window.location.hash.startsWith('#access_token=')) {
+      const token = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
+      localStorage.setItem('canopy-notebook-access-token', token);
+      window.location.hash = '';
+      initializeDropbox(); // Initialize Dropbox if the token is found
+    } else if (localStorage.getItem('canopy-notebook-access-token')) {
+      initializeDropbox(); // Initialize Dropbox if a token is already stored
+    } else {
+      redirectToAuth(); // Display the landing page if no token is found
+    }
+  </script>
+</body>
