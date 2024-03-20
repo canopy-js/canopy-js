@@ -1,0 +1,20 @@
+<head>
+</head>
+<body>
+  <script>
+    if (window.location.hash) {
+      const token = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
+    } else {
+      window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=notebook.canopyjs.org`;
+    }
+  </script>
+</body>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4E2NPT43G2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4E2NPT43G2');
+</script>

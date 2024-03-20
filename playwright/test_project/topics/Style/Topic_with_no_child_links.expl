@@ -1,1 +1,0 @@
-Topic with no child links: This paragraph has no child links, so an attempt to select a default link with a link selector callback will fail.
