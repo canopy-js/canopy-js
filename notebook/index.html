@@ -4,15 +4,15 @@
 </head>
 <body>
   <div id="_canopy"></div>
-  <div id="auth-landing-page" style="display: none; text-align: center; padding: 20px;">
+  <div id="auth-landing-page" style="display: none; text-align: center; padding: 20px; width: 50%;">
     <h1>Canopy Notebook</h1>
-    <p style="width: 50%; font-size: 30px; margin: auto;">
-      To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebooks.
+    <p style="font-size: 30px; margin: auto; margin-bottom: 15px;">
+      To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebook.
     </p>
-    <p style="width: 50%; font-size: 30px; margin: auto;">
-      We only access files created by Canopy Notebook and respect your privacy.
+    <p style="font-size: 30px; margin: auto; margin-bottom: 40px;">
+      The app will only receive access to your Canopy notebook file.
     </p>
-    <button id="auth-botton">Authorize with Dropbox</button>
+    <button id="auth-botton" style="float: right">Authorize with Dropbox</button>
   </div>
   <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 50px;">
     <div> Loading... </div>
@@ -34,11 +34,11 @@
       - [[Opinions]]
       ===
 
-      Ideas: Here are some ideas!
+      * Ideas: Here are some ideas!
 
-      Plans: Here are some plans!
+      * Plans: Here are some plans!
 
-      Opinions: Here are some opinions!
+      * Opinions: Here are some opinions!
       `;
 
       initialContents = initialContents.split('\n').map(line => line.trim()).join('\n');
