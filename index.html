@@ -4,6 +4,14 @@
 </head>
 <body>
   <div id="_canopy"></div>
+  <div id="auth-landing-page" style="display: none; text-align: center; padding: 20px;">
+    <h1>Welcome to Canopy Notebook!</h1>
+    <p>
+      To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebooks.
+      We only access files created by Canopy Notebook and respect your privacy.
+    </p>
+    <button id="auth-botton">Authorize with Dropbox</button>
+  </div>
   <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 50px;">
     <div> Loading... </div>
   </div>
@@ -92,11 +100,11 @@
 
     function redirectToAuth() {
       // Display the landing page
-      document.getElementById('authLandingPage').style.display = 'block';
+      document.getElementById('auth-landing-page').style.display = 'block';
       document.getElementById('loading').style.display = 'none';
 
       // Setup the event listener for the authorization button
-      document.getElementById('authButton').addEventListener('click', function() {
+      document.getElementById('auth-botton').addEventListener('click', function() {
         localStorage.removeItem('canopy-notebook-access-token');
         window.location.href = `https://www.dropbox.com/oauth2/authorize?client_id=6otnsgo3fpejjz3&response_type=token&redirect_uri=${encodeURIComponent('https://notebook.canopyjs.org')}`;
       });
