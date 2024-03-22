@@ -10,7 +10,7 @@
       To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebook.
     </p>
     <p style="font-size: 30px; margin: auto; margin-bottom: 40px;">
-      The app will only receive access to your Canopy notebook.
+      The app will only receive access to a folder called <code>/Apps/canopy-notebook/</code>.
     </p>
     <button id="auth-botton" style="float: right">Authorize with Dropbox</button>
   </div>
@@ -96,7 +96,15 @@
       let canopyContainer = document.querySelector('#_canopy');
       let errorDiv = document.createElement('DIV');
       errorDiv.innerText = string;
-      console.error(string);
+      errorDiv.style.cssText = `
+        font-size: 1.5em; /* Make the font larger */
+        text-align: center; /* Center the text */
+        width: 80%; /* Make the width narrower than the full width */
+        margin: 0 auto; /* Center the div horizontally */
+        padding: 20px; /* Add some padding */
+        box-sizing: border-box; /* Include padding in the width */
+        color: red; /* Make the text color red to indicate an error */
+      `;
       canopyContainer.appendChild(errorDiv);
     }
 
