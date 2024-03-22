@@ -10,7 +10,7 @@
       To start using Canopy Notebook, we need permission to access your Dropbox to store and manage your notebook.
     </p>
     <p style="font-size: 30px; margin: auto; margin-bottom: 40px;">
-      The app will only receive access to a folder called <code>/Apps/canopy-notebook/</code>.
+      The app will only receive access to a folder called <code>/Apps/canopy-notebook/</code>. Only you can see your notebook.
     </p>
     <button id="auth-botton" style="float: right">Authorize with Dropbox</button>
   </div>
@@ -27,19 +27,21 @@
 
       let initialContents = `[Notebook]
 
-      * Notebook: Welcome to my notebook!<br><br>You can edit this file in \`Dropbox/Apps/canopy-notebook\`.
-      ===
-      - [[Ideas]]
-      - [[Plans]]
-      - [[Opinions]]
-      ===
+        * Notebook: Welcome to my notebook!
+        - You can edit this file in \`Dropbox/Apps/canopy-notebook\`.
+        - Find more instructions on [the project's Github readme](https://github.com/canopy-js/canopy-js)
+        ===
+        - [[Ideas]]
+        - [[Plans]]
+        - [[Opinions]]
+        ===
 
-      * Ideas: Here are some ideas!
+        Ideas: Here are some ideas!
 
-      * Plans: Here are some plans!
+        Plans: Here are some plans!
 
-      * Opinions: Here are some opinions!
-      `;
+        Opinions: Here are some opinions!
+        `;
 
       initialContents = initialContents.split('\n').map(line => line.trim()).join('\n');
 
