@@ -18,6 +18,8 @@
     <div> Loading... </div>
   </div>
   <script>
+    document.title = 'Notebook';
+
     function initializeDropbox() {
       const token = localStorage.getItem('canopy-notebook-access-token');
       if (!token) {
