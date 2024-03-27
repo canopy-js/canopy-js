@@ -283,7 +283,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
     || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
-  let firstTargetRatio = targetElement.tagName === 'A' ? 0.2 : 0.2; // paragraphs should be higher to be focused than links
+  let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
       {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
