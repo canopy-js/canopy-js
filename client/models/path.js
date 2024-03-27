@@ -263,6 +263,11 @@ class Path {
     return candidatePath;
   }
 
+  firstDestination(otherPath) { // going from this to otherPath, the first destination in animation
+    if (this.overlap(otherPath) && !this.includes(otherPath) && !otherPath.includes(this)) return this.overlap(otherPath);
+    return otherPath;
+  }
+
   subsetOf(otherPath) { // this is subset of otherPath
     return otherPath.includes(this) &&
       !this.equals(otherPath); // unlike #includes, which accepts a self-match

@@ -258,9 +258,9 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
     && !linkToSelect.equals(Link.selection.parentLink);
 
-  let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? pathToDisplay.paragraph : linkToSelect;
+  let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? Path.rendered.firstDestination(pathToDisplay).paragraph : linkToSelect;
   let firstDestinationElementYRelative = firstDestinationElement.top;
-  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert back to viewport
+  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert
   let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
   let scrollDistanceUp = firstDestinationScrollYAbsolute - ScrollableContainer.currentScroll;
   let bigDistanceUp = -0.6 * ScrollableContainer.visibleHeight;
