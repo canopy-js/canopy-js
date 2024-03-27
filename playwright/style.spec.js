@@ -358,6 +358,7 @@ test.describe('Block entities', () => {
 
   test('It allows table lists', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_lists");
 
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(4);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-pill')).toHaveCount(2);
