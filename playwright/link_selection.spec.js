@@ -71,6 +71,14 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
   });
 
+  test('Subtopics from previous renders are accessible', async ({ page, browserName }) => { // cached subtopics can be recalled by fetchAndRenderPath
+    await page.goto('/United_States/New_Jersey'); // load New_Jersey#Northern_border and cache it
+    await expect(page).toHaveURL("/United_States/New_Jersey");
+
+    await page.goto('/United_States/New_Jersey#Northern_border/New_York#Southern_border'); // load New_Jersey#Northern_border from cache as parent for New_York
+    await expect(page).toHaveURL("/United_States/New_Jersey#Northern_border/New_York#Southern_border");
+  });
+
   test('Last link selections are preferred when going down', async ({ page, browserName }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('h1:visible')).toHaveText('United States');

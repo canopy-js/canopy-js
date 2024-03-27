@@ -39,7 +39,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   let appendingPromise = Promise.all([parentElementPromise, sectionElementPromise]).then(([parentElement, sectionElement]) => {
     if (!parentElement || !sectionElement) return Promise.resolve(); // null parent eg if appending failed
     if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader.apply(this, headerCache[sectionElement.dataset.topicName])); // regen if necessary
-    if (!Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
+    if (parentElement !== canopyContainer && !Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
     if (!Paragraph.byPath(pathToParagraphTopic)) {
       Paragraph.registerChild(sectionElement, parentElement);
       Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
@@ -53,7 +53,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     if (remainingPath.firstSubtopic.mixedCase === sectionElement.dataset.topicName) {
       return sectionElement;
     } else {
-      return sectionElement.querySelector(`section[data-subtopic-name="${remainingPath.firstSubtopic.cssMixedCase}"]`);
+      return sectionElement.querySelector(`section[data-subtopic-name="${remainingPath.firstSubtopic.cssMixedCase}"]`) || // on first render still attached
+        Paragraph.byPath(pathToParagraph)?.sectionElement; // subsequent renders detached and cached
     }
   });
 

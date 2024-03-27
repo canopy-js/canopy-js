@@ -59,7 +59,7 @@ class Reference {
   }
 
   parseCurlyBraceReference() {
-    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^\/{}])+)/gs;
+    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^{}])+)/gs;
     const segments = Array.from(this.contents.matchAll(regex));
 
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {

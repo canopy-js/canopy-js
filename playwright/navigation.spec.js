@@ -779,6 +779,7 @@ test.describe('Navigation', () => {
   test('Redirecting to default topic replaces history state', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page).toHaveURL('/United_States/New_York');
+    await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto('/'); // when this gets forwarded to United_States, it should replace the history state not add
     await expect(page).toHaveURL('United_States');
     await page.goBack();
