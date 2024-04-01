@@ -297,12 +297,73 @@ function renderBlockQuote(token, renderContext) {
     blockQuoteElement.appendChild(subtokenElement);
   });
 
-  Array.from(blockQuoteElement.querySelectorAll('br')).forEach(breakTagElement => {
-    let spanElement = document.createElement('span');
-    spanElement.classList.add('canopy-blockquote-breaktag');
-    breakTagElement.parentNode.insertBefore(spanElement, breakTagElement);
-    breakTagElement.remove();
+  // Clone blockQuoteElement for manipulation
+  let clone = blockQuoteElement.cloneNode(true);
+
+  // Convert all text nodes in the clone to single character spans
+  function wrapEachLetterInSpan(element) {
+    [...element.querySelectorAll('*')].forEach(parentElement => {
+      [...parentElement.childNodes].forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.length > 1) {
+          const text = node.textContent;
+          const parent = node.parentNode;
+          const fragment = document.createDocumentFragment();
+          for (let char of text) {
+            const span = document.createElement('span');
+            span.classList.add('canopy-blockquote-character');
+            span.textContent = char;
+            fragment.appendChild(span);
+          }
+
+          parent.replaceChild(fragment, node);
+        }
+      });
+    });
+  }
+
+  wrapEachLetterInSpan(clone);
+
+  // Temporarily append clone to the DOM for measurement
+  clone.style.visibility = 'hidden';
+  clone.style.position = 'absolute';
+
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(clone);
+
+  // Check direction consistency among characters in the clone
+  let wraps = false;
+  let direction = null; // neutral
+
+  [...clone.querySelectorAll('span.canopy-blockquote-character, BR')].forEach((element, index, elements) => {
+    if (element.tagName === 'BR') {
+      direction = null;
+    } else { // The element is a span
+      let elementRect = element.getBoundingClientRect();
+      let previousElement = elements[index - 1];
+      let previousRect = elements[index - 1]?.getBoundingClientRect();
+
+      if (previousElement && previousElement.tagName !== 'BR') {
+        if (direction === null) {
+          direction = elementRect.right > previousRect.right ? 1 : -1;
+        } else {
+          wraps = wraps || (elementRect.right > previousRect.right ? 1 : -1) !== direction; // direction is not the same
+        }
+      }
+    }
   });
+
+  // Remove clone from DOM after measurement
+  tempParagraphElement.removeChild(clone);
+
+  if (wraps) {
+    blockQuoteElement.querySelectorAll('br').forEach(br => {
+      let paddedSpan = document.createElement('SPAN');
+      paddedSpan.className = 'canopy-blockquote-breaktag';
+      br.parentNode.replaceChild(paddedSpan, br);
+    });
+  }
 
   return blockQuoteElement;
 }

@@ -381,12 +381,21 @@ test.describe('Block entities', () => {
 
   test('It creates block quotes', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Block_quotes');
-    await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
+
+    await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
     await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
       `This is a block quote that has two lines\n` +
       `This is the second line`
     );
+
+    // Test for short blockquote where BR should remain
+    const shortQuoteBR = await page.locator('.canopy-selected-section blockquote:first-of-type br');
+    await expect(shortQuoteBR).toHaveCount(1); // Assuming there's one BR in the short quote
+
+    // Test for long blockquote where BR should be replaced
+    const longQuotePaddingSpan = await page.locator('.canopy-selected-section blockquote:last-of-type .canopy-blockquote-breaktag');
+    await expect(longQuotePaddingSpan).toHaveCount(1); // Assuming BR gets replaced by one special span
   });
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
@@ -398,15 +407,23 @@ test.describe('Block entities', () => {
 
   test('It creates RTL block quotes', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#RTL_block_quotes');
-    await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
-    await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
+    await expect(await page.innerText('.canopy-selected-section blockquote:first-of-type')).toEqual(
       `המילים האלה\n` +
       `הן מימין לשמאל`
     );
 
-    await expect(await page.locator('.canopy-selected-section blockquote')).toHaveAttribute('dir', 'rtl');
+    // Check the direction attribute is 'rtl'
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type')).toHaveAttribute('dir', 'rtl');
 
+    // Check for unchanged BR in short RTL blockquote
+    const shortQuoteBR = page.locator('.canopy-selected-section blockquote[dir="rtl"]:first-of-type br');
+    await expect(shortQuoteBR).toHaveCount(1);
+
+    // Check for replaced BR in long RTL blockquote with the special span
+    const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-breaktag');
+    await expect(longQuotePaddingSpan).toHaveCount(1);
   });
 
   test('It creates multi-line html blocks', async ({ page }) => {
