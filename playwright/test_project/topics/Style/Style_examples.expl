@@ -171,6 +171,9 @@ This is regular text.
 > This is a block quote that has two lines
 > This is the second line
 More text.
+This is text that wraps
+> This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps. This is text that wraps.
+> This is the second line. This is the second line. This is the second line. This is the second line. This is the second line. This is the second line. This is the second line. This is the second line.
 
 Block quotes with multi-line links:
 This is regular text.
@@ -185,6 +188,9 @@ This is regular text.
 < המילים האלה
 < הן מימין לשמאל
 More text.
+This is text that wraps:
+< המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה המילים האלה
+< הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל הן מימין לשמאל
 
 HTML blocks:
 <figure>

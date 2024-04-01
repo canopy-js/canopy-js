@@ -8,6 +8,11 @@ import { generateHeader } from 'render/helpers';
 let promiseCache = {};
 let headerCache = {};
 
+function invalidateFetchAndRenderCache() {
+  promiseCache = {};
+  headerCache = {};
+}
+
 const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   if (remainingPath.length === 0) return Promise.resolve();
 
@@ -67,4 +72,4 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     .then(([sectionElement]) => sectionElement);
 }
 
-export default fetchAndRenderPath;
+export { fetchAndRenderPath, invalidateFetchAndRenderCache };

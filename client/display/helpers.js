@@ -77,7 +77,7 @@ function scrollPage(link, options) {
   canopyContainer.dataset.initialLoad = options.initialLoad;
 
   if (!link) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  let maxScrollRatio = behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
+  let maxScrollRatio = Infinity; //behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
   let minDiff = 75; //(maxScrollRatio === Infinity) ? null : 75;
 
   if (scrollToParagraph) {

@@ -51,6 +51,9 @@ function rebuild (bulkFileString) {
       history.replaceState(null, null, location.pathname + location.search); // clear fragment
     }
 
+    require('render/fetch_and_render_path').invalidateFetchAndRenderCache();
+    require('models/paragraph').default.paragraphsByPath = {};
+
     require('./canopy.js');
 
     if (window.location.hash) {
