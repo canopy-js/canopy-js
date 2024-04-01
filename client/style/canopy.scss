@@ -69,6 +69,11 @@
 
   a.canopy-selectable-link {
     text-decoration: underline #DDDDDD;
+
+    &.canopy-linked-image { // ie the caption text etc
+      text-decoration: none; //override browser default for a tags
+    }
+
     color: black;
     cursor: pointer;
 
