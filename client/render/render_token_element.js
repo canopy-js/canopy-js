@@ -334,13 +334,10 @@ function renderBlockQuote(token, renderContext) {
 
   // Check direction consistency among characters in the clone
   let wraps = false;
-
-  // Determine the direction of the text
   let direction = null; // neutral
 
   [...clone.querySelectorAll('span.canopy-blockquote-character, BR')].forEach((element, index, elements) => {
     if (element.tagName === 'BR') {
-      console.log('hit BR');
       direction = null;
     } else { // The element is a span
       let elementRect = element.getBoundingClientRect();
@@ -351,11 +348,9 @@ function renderBlockQuote(token, renderContext) {
         if (direction === null) {
           direction = elementRect.right > previousRect.right ? 1 : -1;
         } else {
-          wraps = wraps || (elementRect.right > previousRect.right ? 1 : -1) !== direction; // direction is same
+          wraps = wraps || (elementRect.right > previousRect.right ? 1 : -1) !== direction; // direction is not the same
         }
       }
-      console.log(direction, element, elementRect?.right, elements[index - 1], previousRect?.right, wraps)
-      // console.log(element, wraps)
     }
   });
 
