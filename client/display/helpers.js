@@ -82,7 +82,7 @@ function scrollPage(link, options) {
 
   if (scrollToParagraph) {
     return scrollElementToPosition(link.childParagraph.paragraphElement,
-      {targetRatio: 0.3, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
+      {targetRatio: 0.4, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
   } else { // scroll to link
     const linkElement = link?.element;
     if (linkElement) {
