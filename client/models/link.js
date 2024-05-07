@@ -48,8 +48,7 @@ class Link {
       return this.linkElement
     } else if (this.metadataObject) {
       this.element = Link.elementFromMetadata(this.metadata);
-      if (!this.linkElement) throw new Error('Metadata refered to non-existant link');
-      return this.linkElement;
+      if (!this.linkElement) return null;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
       if (!link) throw new Error('Link selector callback provided no link');
