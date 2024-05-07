@@ -10,6 +10,7 @@ function generateHeader(topicTokens, displayTopicName) {
   let headerElement = document.createElement('h1');
   headerElement.dataset.topicName = topic.mixedCase;
   headerElement.style.display = 'none';
+  headerElement.classList.add('canopy-header');
 
   topicTokens.forEach(token => {
     let element = renderTokenElement(token);

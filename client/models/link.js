@@ -48,8 +48,7 @@ class Link {
       return this.linkElement
     } else if (this.metadataObject) {
       this.element = Link.elementFromMetadata(this.metadata);
-      if (!this.linkElement) throw new Error('Metadata refered to non-existant link');
-      return this.linkElement;
+      if (!this.linkElement) return null;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
       if (!link) throw new Error('Link selector callback provided no link');
@@ -72,15 +71,18 @@ class Link {
   }
 
   get top() {
+    if (!this.element) return null;
     return this.element.getBoundingClientRect().top;
   }
 
   get bottom() {
+    if (!this.element) return null;
     return this.element.getBoundingClientRect().bottom;
   }
 
   get innerText() {
-    return this.element.innerText;
+    if (!this.element) return null;
+    return this.element?.innerText;
   }
 
   transferDataset() {
@@ -98,6 +100,7 @@ class Link {
     return this.literalPath.lastTopic;
   }
   get targetSubtopic() {
+    if (!this.element) return Topic.fromMixedCase(this.metadataObject.targetSubtopicString);
     if (this.isLocal) return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
     return this.literalPath.lastSubtopic;
   }
@@ -106,6 +109,7 @@ class Link {
     return this.literalPath.firstTopic;
   }
   get childSubtopic() {
+    if (!this.element) return Topic.fromMixedCase(this.metadataObject.targetSubtopicString);
     if (this.isLocal) return Topic.fromMixedCase(this.element.dataset.targetSubtopic);
     return this.literalPath.firstSubtopic;
   }
@@ -135,7 +139,7 @@ class Link {
   }
 
   get enclosingSectionElement() {
-    return this.element.parentNode.closest('.canopy-section');
+    return this.element?.parentNode.closest('.canopy-section');
   }
 
   get sectionElement() {
@@ -143,7 +147,7 @@ class Link {
   }
 
   get enclosingParagraphElement() {
-    return this.element.parentNode.closest('.canopy-paragraph');
+    return this.element?.parentNode.closest('.canopy-paragraph');
   }
 
   get parentParagraphElement() {
@@ -151,6 +155,7 @@ class Link {
   }
 
   get enclosingParagraph() {
+    if (!this.enclosingSectionElement) return null;
     return new Paragraph(this.enclosingSectionElement);
   }
 
@@ -231,7 +236,7 @@ class Link {
 
   get literalPath() {
     if (this.isLocal) return Path.forSegment(this.enclosingTopic, this.targetSubtopic);
-    if (this.isGlobal) return Path.for(this.element.dataset.literalPathString); // this will have to change for path links which can have multiple segments
+    if (this.isGlobal) return Path.for((this.element?.dataset||this.metadataObject).literalPathString);
     return null;
   }
 
@@ -244,17 +249,20 @@ class Link {
       text: linkElement.dataset.text,
       relativeLinkNumber: link.relativeLinkNumber,
       previewPathString: link.previewPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
-      targetUrl: linkElement.dataset.targetUrl
+      targetUrl: linkElement.dataset.targetUrl,
+      targetTopicString: linkElement.dataset.targetTopic,
+      targetSubtopicString: linkElement.dataset.targetSubtopic,
+      literalPathString: linkElement.dataset.literalPathString
     };
   }
 
   static elementFromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
-    if (!enclosingParagraph) { throw new Error("Link selection data refers to non-existant link", object); }
+    if (!enclosingParagraph) { console.error("Link selection data refers to non-existant link", object); console.trace(); }
     let link = enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
       (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
-        (link.isExternal && link.element.dataset.targetUrl === object.targetUrl)
+        (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)
     );
 
     return link && link.element || null;
@@ -319,19 +327,20 @@ class Link {
   }
 
   get topicParagraph() {
+    if (!this.element) return null;
     return new Paragraph(this.element.parentNode.closest('.canopy-topic-section'));
   }
 
   get selected() {
-    return this.element.classList.includes('canopy-selected-link');
+    return this.element?.classList.includes('canopy-selected-link');
   }
 
   open() {
-    this.element.classList.add('canopy-open-link');
+    this.element?.classList.add('canopy-open-link');
   }
 
   get isOpen() {
-    return this.element.classList.contains('canopy-open-link');
+    return this.element?.classList.contains('canopy-open-link');
   }
 
   get isClosed() {
@@ -343,7 +352,7 @@ class Link {
   }
 
   get isSelected() {
-    return this.element.classList.contains('canopy-selected-link');
+    return this.element?.classList.contains('canopy-selected-link');
   }
 
   get isGlobal() {
@@ -367,7 +376,7 @@ class Link {
   }
 
   get isInDom() {
-    return !!this.element.closest('#_canopy');
+    return !!this.element?.closest('#_canopy');
   }
 
   get isExternal() {
@@ -407,7 +416,7 @@ class Link {
   }
 
   get firstChild() {
-    return this.childParagraph?.links.filter(link => !link.element.closest('.canopy-image-caption'))[0];
+    return this.childParagraph?.links.filter(link => !link.element?.closest('.canopy-image-caption'))[0];
   }
 
   firstChildOf(otherLink) {
@@ -415,6 +424,7 @@ class Link {
   }
 
   get isOffScreen() {
+    if (!this.element) return null;
     const rect = this.element.getBoundingClientRect();
     const viewportHeight = ScrollableContainer.visibleHeight;
     return rect.top < 0 || rect.bottom > viewportHeight;
@@ -469,6 +479,7 @@ class Link {
   }
 
   get isFocused() {
+    if (!this.element) return null;
     const rect = this.element.getBoundingClientRect();
 
     // Get the viewport height
@@ -580,6 +591,7 @@ class Link {
   }
 
   get onPage() {
+    if (!this.element) return null;
     const style = window.getComputedStyle(this.element);
 
     return (
@@ -596,7 +608,7 @@ class Link {
 
   static updateSelectionClass(linkToSelect) {
     Array.from(document.querySelectorAll('a.canopy-selected-link')).forEach(link => link.classList.remove('canopy-selected-link'));
-    if (linkToSelect) linkToSelect.element.classList.add('canopy-selected-link');
+    if (linkToSelect) linkToSelect.element?.classList.add('canopy-selected-link');
   }
 
   static persistLinkSelection(linkToSelect) {
