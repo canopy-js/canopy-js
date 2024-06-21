@@ -348,7 +348,7 @@ class ParserContext {
           let [currentTopic, currentSubtopic] = Topic.parseUrlSegment(segmentString);
 
           if (!this.topicExists(currentTopic)) {
-            throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] contains nonexistent topic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
+            throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
