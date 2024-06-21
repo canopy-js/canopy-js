@@ -11,6 +11,8 @@ import requestJson from 'requests/request_json';
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
     return renderTextToken(token);
+  } else if (token.type === 'text-line') {
+    return renderTextLineToken(token, renderContext);
   } else if (token.type === 'local') {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
@@ -54,9 +56,19 @@ function renderTokenElement(token, renderContext) {
 
 function renderTextToken(token) {
   let spanElement = document.createElement('SPAN');
+  spanElement.classList.add('canopy-text-span');
   spanElement.innerText = token.text;
-
   return spanElement;
+}
+
+function renderTextLineToken(token, renderContext) {
+  let divElement = document.createElement('DIV');
+  divElement.classList.add('canopy-text-line');
+  token.tokens.forEach(innerToken => {
+    let childElement = renderTokenElement(innerToken, renderContext);
+    divElement.appendChild(childElement);
+  });
+  return divElement;
 }
 
 function renderLocalLink(token, renderContext) {
