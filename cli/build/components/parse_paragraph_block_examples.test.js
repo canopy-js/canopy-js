@@ -11,9 +11,18 @@ test('it parses a text block', () => {
 
   expect(tokens).toEqual([
     {
-      type: 'text',
-      text: 'This is a line. This is also a line.',
-    }
+       "tokens": [
+        {
+           "text": "This is a line.",
+           "type": "text",
+        },
+       ],
+       "type": "text-line",
+     },
+    {
+     "text": "This is also a line.",
+      "type": "text",
+    },
   ]);
 });
 
