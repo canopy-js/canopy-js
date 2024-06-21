@@ -14,12 +14,13 @@ function parseText({ text, parserContext }) {
     let result;
 
     for (let j = 0; j < Matchers.length; j++) {
+      let startOfText = text[i - 1] === undefined && !parserContext.insideToken;
       let startOfLine =
         (text[i - 1] === "\n") || // really is start of new line
-        (text[i - 1] === undefined && !parserContext.insideToken); // start of text when not parsing token within token ie start of paragraph
+        (startOfText); // start of text when not parsing token within token ie start of paragraph
 
 
-      result = Matchers[j]({ string, parserContext, index: i, previousCharacter: text[i - 1], startOfLine });
+      result = Matchers[j]({ string, parserContext, index: i, previousCharacter: text[i - 1], startOfLine, startOfText });
 
       if (result) {
         let [token, length] = result;

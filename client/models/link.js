@@ -259,7 +259,7 @@ class Link {
   static elementFromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
-    if (!enclosingParagraph) { console.error("Link selection data refers to non-existant link", object); console.trace(); }
+    if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); console.trace(); }
     let link = enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
       (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
         (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)

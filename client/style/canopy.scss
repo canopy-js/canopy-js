@@ -146,8 +146,8 @@
 
 /////////////////////////////////////////////
 
-  span.canopy-text-span {
-    display: block;
+  div.canopy-text-line:not(:last-child) {
+    margin-bottom: 10px;
   }
 
   hr.canopy-footnote-rule {

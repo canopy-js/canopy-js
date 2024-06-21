@@ -15,7 +15,8 @@ let {
   ItalicsToken,
   BoldToken,
   InlineCodeSnippetToken,
-  StrikethroughToken
+  StrikethroughToken,
+  TextLineToken
 } = require('./tokens');
 
 const Matchers = [
@@ -38,7 +39,8 @@ const Matchers = [
   strikeThroughMatcher,
   imageMatcher,
   hyperlinkMatcher,
-  urlMatcher
+  urlMatcher,
+  textLineMatcher
 ];
 
 let Topic = require('../../shared/topic');
@@ -396,6 +398,24 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
       match[0].length - match?.[2].length
     ];
   }
+}
+
+function textLineMatcher({ string, parserContext, startOfLine, startOfText }) { // When parsing text tokens, group by line
+  let match = string.match(/^((?:[^\\\n]|\\.)+)(?:\n|$)/);
+  if (parserContext.insideToken) return false;
+  if (parserContext.buffer) return false;
+  let matchIsAllText = startOfText && match[0].length === string.length;
+
+  if (match && startOfLine && !matchIsAllText) { // don't let a text line be the full text
+    return [
+      new TextLineToken(
+        match[1],
+        parserContext
+      ),
+      match[0].length
+    ];
+  }
+
 }
 
 module.exports = Matchers;
