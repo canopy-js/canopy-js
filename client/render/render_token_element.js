@@ -450,7 +450,7 @@ function renderTableList(token, renderContext) {
   if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
   if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
 
-  let SizesByArea = ['quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
+  let SizesByArea = ['eigth-pill', 'quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
 
   let cellElements = token.items.map((cellObject, cellIndex) => {
@@ -559,6 +559,7 @@ function renderTableList(token, renderContext) {
   if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
   if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
   if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
+  if (SizesByArea[tableListSizeIndex].includes('eigth')) rowSize = 8;
 
   // Create the first row
   let tableRowElement = createNewRow();
