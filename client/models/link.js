@@ -27,6 +27,7 @@ class Link {
   }
 
   equals(otherLink) {
+    if (!(otherLink instanceof Link)) throw new Error('Argument must be of type link');
     return this.element === otherLink.element;
   }
 
@@ -47,8 +48,9 @@ class Link {
     if (this.linkElement) {
       return this.linkElement
     } else if (this.metadataObject) {
-      this.element = Link.elementFromMetadata(this.metadata);
+      this.linkElement = Link.elementFromMetadata(this.metadata);
       if (!this.linkElement) return null;
+      return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
       if (!link) throw new Error('Link selector callback provided no link');
@@ -699,13 +701,12 @@ class Link {
   static lastSelectionOfParagraph(paragraph) {
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
     if (lastSelectionsOfParagraph[paragraph.path]) {
-      //console.log('Found', lastSelectionsOfParagraph[paragraph.path], 'as last selection of ', paragraph.path)
       return new Link(lastSelectionsOfParagraph[paragraph.path]);
     }
   }
 
   get isLastSelection() {
-    return !!Link.lastSelectionOfParagraph(this.enclosingParagraph)?.equals(this);
+    return Link.lastSelectionOfParagraph(this.enclosingParagraph)?.equals(this); // trigger DOM check
   }
 
   static get visible() {

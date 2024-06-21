@@ -419,7 +419,7 @@ class Path {
   }
 
   static get initial() {
-    if (Path.url.present && Link.savedSelection && Link.savedSelection.element) {
+    if (Path.url.present && Link.savedSelection) { // page doesn't exist yet so can't validate selection
       return Link.savedSelection.previewPath;
     } else if (Path.url.empty) {
       return Path.default;
