@@ -360,7 +360,8 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_lists");
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(4);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-eigth-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-card')).toHaveCount(1);
