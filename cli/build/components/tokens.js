@@ -5,13 +5,21 @@ function parseText(options) {
   return require('./parse_text')(options); // avoid circular dependency
 }
 
-function TextToken(text, preserveNewlines) {
-  if (!preserveNewlines) {
-    text = text.replace('\n', ' ');
-  }
-
+function TextToken(text) {
   this.text = text;
   this.type = 'text';
+}
+
+function TextLineToken(text, parserContext) {
+  this.tokens = parseText({ 
+    text, 
+    parserContext: parserContext.clone({ 
+      preserveNewlines: true, 
+      insideToken: true
+    }) 
+  });
+
+  this.type = 'text-line';
 }
 
 function LocalReferenceToken(
@@ -375,6 +383,7 @@ module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
   TextToken,
+  TextLineToken,
   ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,

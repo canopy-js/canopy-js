@@ -19,19 +19,19 @@ test.beforeEach(async ({ page }) => {
 test.describe('Text styles', () => {
   test('Underscores create italic text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Italic_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is text with italics. This is multiple italicized words, and this is italics within a word, but th_is is no_thing. This is an italic table cell.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is text with italics. This is multiple italicized words, and this is italics within a word, but th_is is no_thing.This is an italic table cell.");
     await expect(page.locator('.canopy-selected-section i')).toHaveCount(4);
   });
 
   test('Asterisks create bold text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Bold_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text. This is a bold sentence which can contain spaces because the asterisks are on the edges of the words, whereas this is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character. This is a bold table cell.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text. This is a bold sentence which can contain spaces because the asterisks are on the edges of the words, whereas this is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.This is a bold table cell.");
     await expect(page.locator('.canopy-selected-section b')).toHaveCount(4);
   });
 
   test('Tildes create strike-through text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Strike-through_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is strike through text. So is this. And this. Bu~t not thi~s. This is a struck through table cell.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is strike through text. So is this. And this. Bu~t not thi~s.This is a struck through table cell.");
     await expect(page.locator('.canopy-selected-section s')).toHaveCount(4);
   });
 
@@ -85,7 +85,7 @@ test.describe('Text styles', () => {
 test.describe('Inline entities', () => {
   test('It creates images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Images');
-    await expect(page.locator('.canopy-selected-section p > span:has-text("This is a picture of jelly fish.")')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section p span:has-text("This is a picture of jelly fish.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Jelly \"Fish\" - W. Carter");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
@@ -97,7 +97,7 @@ test.describe('Inline entities', () => {
 
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
-    await expect(page.locator('.canopy-selected-section p > span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section p span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Frog \"link\" - Rushenb");
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
@@ -360,7 +360,8 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Table_lists');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_lists");
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(4);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-eigth-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-pill')).toHaveCount(2);
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-card')).toHaveCount(1);

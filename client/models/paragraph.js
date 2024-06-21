@@ -364,7 +364,7 @@ class Paragraph {
   }
 
   static get contentLoaded() {
-    return !!document.querySelector('h1'); // this is a proxy for whether the first render has occured yet
+    return !!document.querySelector('h1.canopy-header'); // this is a proxy for whether the first render has occured yet
   }
 
   static for(element) {

@@ -146,8 +146,8 @@
 
 /////////////////////////////////////////////
 
-  span.canopy-text-span {
-    display: block;
+  div.canopy-text-line {
+    margin-bottom: 10px;
   }
 
   hr.canopy-footnote-rule {
@@ -407,6 +407,12 @@
         left: 6px;
         top: 2px;
       }
+    }
+
+    &.canopy-eigth-pill .canopy-table-list-cell {
+      width: calc(750px/8 - 10px); // divide by divisor then account for 5px margin on both sides
+      padding: 9px;
+      height: 50px;
     }
 
     &.canopy-quarter-pill .canopy-table-list-cell {

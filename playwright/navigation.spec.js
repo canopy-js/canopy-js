@@ -692,8 +692,8 @@ test.describe('Navigation', () => {
 
     // Function to get the text content including ::after content for a link
     const getTextIncludingAfter = async (selector) => {
-      const element = await page.$(selector);
-      const elementText = await element.textContent();
+      const element = await page.waitForSelector(selector);
+      const elementText = await element.evaluate(node => node.textContent);
       const afterContent = await page.evaluate(el => {
         const style = window.getComputedStyle(el, '::after');
         return style.content;
