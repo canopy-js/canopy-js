@@ -81,8 +81,10 @@ function scrollPage(link, options) {
   let minDiff = 75; //(maxScrollRatio === Infinity) ? null : 75;
 
   if (scrollToParagraph) {
+    let paragraphPercent = link.childParagraph.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    let targetRatio = paragraphPercent > .4 ? .15 : 0.4;
     return scrollElementToPosition(link.childParagraph.paragraphElement,
-      {targetRatio: 0.4, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
+      {targetRatio, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
   } else { // scroll to link
     const linkElement = link?.element;
     if (linkElement) {
@@ -272,15 +274,15 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
 
 function animatePathChange(newPath, linkToSelect, options = {}) {
   // We do not want the content the user is looking at to appear or disappear.
-  // Case #1: If we are animating upward motion, we want to move up first, then remove lower content.
+  // Case #1: If we are animating upward motion, we want to move up first, then remove lower content (below)
   // Case #2: If we are animating downward motion, we want to add lower content, then scroll to that content, which is done in scrollPage
   // Case #3: Upward followed by downward motion, so we do #1 followed by #2 (below)
 
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect?.onPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
-    || /*overlapPath.parentLink?.element ||*/ overlapPath.paragraph?.paragraphElement;
+  let targetElement = (linkToSelect?.onPage && !strictlyUpward && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
+    || overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
   let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
