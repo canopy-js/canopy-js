@@ -27,11 +27,11 @@ class Reference {
   }
 
   get hasCurlyBraces() {
-    return !!this.fullText.match(/(^|[^\\])\{/);
+    return !!this.contents.match(/(^|[^\\])\{/);
   }
 
   get hasPipe() {
-    return !!this.fullText.match(/^(?:\\.|[^\\])*\|/);
+    return !!this.contents.match(/^(?:\\.|[^\\])+\|/); // requires text before and after pipe
   }
 
   parseDisplayAndTarget() {
