@@ -480,5 +480,10 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li > ol > li > ul > li >> text="with"')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li > ol > li > ul > li >> text="unordered elements also."')).toHaveCount(1)
   });
+
+  test('It creates multi-line text', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Multi-line_text');
+    await expect(page.locator('.canopy-selected-section .canopy-text-line')).toHaveCount(3);
+  });
 });
 

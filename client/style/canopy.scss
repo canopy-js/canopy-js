@@ -146,7 +146,7 @@
 
 /////////////////////////////////////////////
 
-  div.canopy-text-line {
+  div.canopy-text-line:not(:last-child) {
     margin-bottom: 10px;
   }
 
@@ -411,7 +411,7 @@
 
     &.canopy-eigth-pill .canopy-table-list-cell {
       width: calc(750px/8 - 10px); // divide by divisor then account for 5px margin on both sides
-      padding: 9px;
+      padding: 11px; // make it a little harder to qualify
       height: 50px;
     }
 

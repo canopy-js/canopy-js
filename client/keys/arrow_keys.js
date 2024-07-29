@@ -476,7 +476,10 @@ function commonAncestorIsContainer(element, currentLinkElement) {
     let tempAncestor2 = ancestor2;
     while (tempAncestor2 !== null) {
       if (ancestor1 === tempAncestor2) {
-        return ['DIV', 'TABLE', 'TR'].includes(ancestor1.tagName); // these containers imply links are not in free-form wrapped text
+        console.log(ancestor1)
+        return ['TABLE', 'TR'].includes(ancestor1.tagName) || // these containers imply links are not in free-form wrapped text
+          ancestor1.classList.contains('canopy-table-list') ||
+          ancestor1.classList.contains('canopy-table-row');
       }
       tempAncestor2 = tempAncestor2.parentElement;
     }

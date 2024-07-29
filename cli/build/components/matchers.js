@@ -400,12 +400,13 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
   }
 }
 
-function textLineMatcher({ string, parserContext }) { // When parsing text tokens, group by line
-  let match = string.match(/^((?:[^\\\n]|\\.)+)\n/);
+function textLineMatcher({ string, parserContext, startOfLine, startOfText }) { // When parsing text tokens, group by line
+  let match = string.match(/^((?:[^\\\n]|\\.)+)(?:\n|$)/);
   if (parserContext.insideToken) return false;
   if (parserContext.buffer) return false;
+  let matchIsAllText = startOfText && match[0].length === string.length;
 
-  if (match) {
+  if (match && startOfLine && !matchIsAllText) { // don't let a text line be the full text
     return [
       new TextLineToken(
         match[1],
