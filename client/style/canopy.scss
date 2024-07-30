@@ -12,13 +12,13 @@
 
   font-family: "Times New Roman", Times, serif;
 
-  h1 {
+  h1.canopy-header {
     text-align: center;
     margin: auto;
     margin-top: 20px;
   }
 
-  hr {
+  hr.canopy-hr {
     width: 120px;
     display: block;
     height: 1px;
@@ -32,14 +32,14 @@
   }
 
   section.canopy-topic-section {
-    margin-top: 30px;
+    margin-top: 32px; // has to match .canopy-topic-section hr + p
   }
 
-  section {
-    margin-top: 25px;
+  section.canopy-section {
+    margin-top: 32px;
   }
 
-  p {
+  p.canopy-paragraph {
     overflow: visible; // In case external link icon is at end of line
     font-size: 21px;
     max-width: 750px;
@@ -53,16 +53,68 @@
   }
 
   .canopy-topic-section hr + p {
-    margin-top: 24px; // 25px minus 1px bar thickness
+    margin-top: 31px; // 35px minus 1px bar thickness
   }
 
-  code {
+  code.canopy-code-block {
     font-family: 'Courier New', Courier, monospace; /* Monospaced font for code */
     background-color: #eee; /* Light background to highlight code */
     padding: 2px 4px; /* Small padding around the code */
     border-radius: 3px; /* Optional: rounded corners */
     border: .5px solid #ddd; /* Optional: light border */
     color: #5a5a5a; /* Subtle dark gray color for the code text, less harsh than black */
+  }
+
+  // Tool tip
+
+  .canopy-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+
+    .canopy-tooltip-icon {
+      font-size: 11px;
+    }
+
+    .canopy-tooltiptext {
+      visibility: hidden;
+      width: 140px;
+      background-color: white;
+      color: black;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid black;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 105%;
+      margin-left: 10px;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 14px;
+    }
+
+    &:hover .canopy-tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  .canopy-linebreak-span:not(:last-child)::after {
+    content: "";
+    display: block;
+    height: 0;
+  }
+
+  // ie text container not nested inside another token
+  p.canopy-paragraph > .canopy-text-container > .canopy-linebreak-span:not(:last-child)::after {
+    padding-bottom: 12px;
+  }
+
+  p.canopy-paragraph > .canopy-text-container {
+    margin-top: 10px;
   }
 
 ///////////// Link styles /////////////////
@@ -145,10 +197,6 @@
   }
 
 /////////////////////////////////////////////
-
-  div.canopy-text-line:not(:last-child) {
-    margin-bottom: 10px;
-  }
 
   hr.canopy-footnote-rule {
     width: 750px;
@@ -459,7 +507,7 @@
     }
 
     &:not(:first-child) {
-      margin-top: 25px; // has to be in sync with size between section elements for button-paragraph sequences
+      margin-top: 18px; // has to be in sync with size between section elements for button-paragraph sequences
     }
 
     &:not(:last-child) {

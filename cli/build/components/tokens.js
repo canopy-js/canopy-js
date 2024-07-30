@@ -379,6 +379,17 @@ function StrikethroughToken(text, parserContext, _, previousCharacter) {
   });
 }
 
+function ToolTipToken(text, openingBrace, parserContext) {
+  this.type = 'tool_tip';
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({ 
+      insideToken: true, 
+      noLinks: true
+    }).incrementCharacterNumber(openingBrace.length) //'{!' or '{! '
+  });
+}
+
 module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
@@ -397,5 +408,6 @@ module.exports = {
   ItalicsToken,
   BoldToken,
   InlineCodeSnippetToken,
+  ToolTipToken,
   StrikethroughToken
 };

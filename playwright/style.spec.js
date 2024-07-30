@@ -280,6 +280,18 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-footnote-span')).toHaveText('1. This is that footnote.');
   });
 
+  test('It creates tooltips', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tooltips');
+
+    await expect(page.locator('.canopy-selected-section')).toContainText('This is text.');
+
+    await page.hover('.canopy-tooltip');
+
+    const tooltipText = page.locator('.canopy-tooltip .canopy-tooltiptext');
+    await expect(tooltipText).toBeVisible();
+    await expect(tooltipText).toHaveText('Here is a tooltip');
+  });
+
   test('Special link examples', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_links');
     await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York, and to new york, and to \"New\" \'York\', and to the city of New York, and to the city of dew cork, and to the city that is new, and the city of newest york.");

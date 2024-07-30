@@ -16,6 +16,7 @@ let {
   BoldToken,
   InlineCodeSnippetToken,
   StrikethroughToken,
+  ToolTipToken,
   TextLineToken
 } = require('./tokens');
 
@@ -40,7 +41,7 @@ const Matchers = [
   imageMatcher,
   hyperlinkMatcher,
   urlMatcher,
-  textLineMatcher
+  toolTipMatcher
 ];
 
 let Topic = require('../../shared/topic');
@@ -204,6 +205,8 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 
 function localReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext;
+
+  if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
 
   let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
@@ -241,7 +244,10 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
 function globalReferenceMatcher({ string, parserContext }) {
   let { currentTopic, currentSubtopic } = parserContext;
+
+  if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  
   let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
   if (!reference.valid) return;
   let pathString = reference.pathString;
@@ -396,6 +402,20 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
         parserContext
       ),
       match[0].length - match?.[2].length
+    ];
+  }
+}
+
+function toolTipMatcher({ string, parserContext }) {
+  let match = string.match(/^(\{\!\s)((?:[^\\]|\\.)+)\}/s);
+  if (match) {
+    return [
+      new ToolTipToken(
+        match[2],
+        match[1],
+        parserContext
+      ),
+      match[0].length
     ];
   }
 }
