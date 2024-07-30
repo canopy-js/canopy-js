@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], and [[multi-line text]]
 
-Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
+Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], and [[links in mixed direction text]].
 
 Style characters: There is [[italic text]], [[bold text]], [[strike-through text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 
@@ -327,6 +327,9 @@ Inline HTML: Text. <b> This is a test.</b> Text.
 Footnotes:
 This is regular text with a footnote[^1].
 [^1]: This is that footnote.
+
+Tooltips:
+This is text.{! Here is a tooltip}
 
 Special links: This is a link to [[(New) York]], and to [[new york]], and to [["New" 'York']], and to [[the city of {{New York}}]], and to the city of [[{new|dew} {york|cork}]], and to the city that is [[{new} York]], and the city of [[New York|newest york]].
 

@@ -49,6 +49,8 @@ function renderTokenElement(token, renderContext) {
     return renderItalicText(token, renderContext);
   } else if (token.type === 'inline_code') {
     return renderInlineCodeText(token, renderContext);
+  } else if (token.type === 'tool_tip') {
+    return renderToolTip(token, renderContext);
   } else {
     throw `Unhandled token type: ${token.type}`
   }
@@ -668,6 +670,24 @@ function renderInlineCodeText(token, renderContext) {
   let element = document.createElement('CODE');
   element.innerText = token.text;
   return element;
+}
+
+function renderToolTip(token, renderContext) {
+  let tooltipSpan = document.createElement('sup');
+  tooltipSpan.className = 'canopy-tooltip';
+  tooltipSpan.textContent = 'ⓘ';
+
+  // Create the tooltip text span
+  var tooltipTextSpan = document.createElement('span');
+  tooltipTextSpan.className = 'canopy-tooltiptext';
+  token.tokens.forEach(subtoken => {
+    let subtokenElement = renderTokenElement(subtoken, renderContext);
+    tooltipTextSpan.appendChild(subtokenElement);
+  });
+
+  // Append the tooltip text span to the tooltip span
+  tooltipSpan.appendChild(tooltipTextSpan);
+  return tooltipSpan;
 }
 
 export default renderTokenElement;

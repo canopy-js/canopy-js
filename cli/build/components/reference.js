@@ -235,7 +235,7 @@ class Reference {
     return this.targetText;
   }
 
-  static candidateSubstring(string) {
+  static candidateSubstring(string) { // eg '[[abc]] and then more text' -> '[[abc]]'
     return string.match(/^\[\[((?:\\.|[^\\])+?)\]\]/)?.[0] || '';
   }
 
