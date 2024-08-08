@@ -140,4 +140,4 @@ function isActiveElementTextInput() {
     return false; // Active element is not a text input or textarea
 }
 
-export default registerKeyListeners;
+registerKeyListeners();
