@@ -28,4 +28,4 @@ function registerPopStateListener() {
   });
 }
 
-export default registerPopStateListener;
+registerPopStateListener();
