@@ -11,8 +11,6 @@ import requestJson from 'requests/request_json';
 function renderTokenElement(token, renderContext) {
   if (token.type === 'text') {
     return renderTextToken(token);
-  } else if (token.type === 'text-line') {
-    return renderTextLineToken(token, renderContext);
   } else if (token.type === 'local') {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext);
@@ -57,20 +55,35 @@ function renderTokenElement(token, renderContext) {
 }
 
 function renderTextToken(token) {
+  if (token.text.includes('\n')) {
+    let spans = [];
+    token.text.split('\n').filter(Boolean).forEach((textSegment, index, segments) => {
+      let spanElement = document.createElement('SPAN');
+      spanElement.classList.add('canopy-text-span');
+      spanElement.innerText = textSegment;
+      spans.push(spanElement);
+
+      if (index !== segments.length - 1) {
+        let lineBreakSpan = document.createElement('SPAN');
+        lineBreakSpan.classList.add('canopy-linebreak-span');
+        spans.push(lineBreakSpan);
+      }
+    });
+
+    if (token.container) {
+      let textContainer = document.createElement('div');
+      textContainer.classList.add('canopy-text-container');
+      spans.forEach(span => textContainer.appendChild(span));
+      return [textContainer];
+    } else {
+      return spans;
+    }
+  }
+
   let spanElement = document.createElement('SPAN');
   spanElement.classList.add('canopy-text-span');
   spanElement.innerText = token.text;
-  return spanElement;
-}
-
-function renderTextLineToken(token, renderContext) {
-  let divElement = document.createElement('DIV');
-  divElement.classList.add('canopy-text-line');
-  token.tokens.forEach(innerToken => {
-    let childElement = renderTokenElement(innerToken, renderContext);
-    divElement.appendChild(childElement);
-  });
-  return divElement;
+  return [spanElement];
 }
 
 function renderLocalLink(token, renderContext) {
@@ -298,6 +311,7 @@ function renderCodeBlock(token) {
   preElement.appendChild(codeBlockElement);
 
   codeBlockElement.innerText = token.text;
+  codeBlockElement.classList.add('canopy-code-block')
 
   return preElement;
 }
@@ -349,16 +363,19 @@ function renderBlockQuote(token, renderContext) {
   // Check direction consistency among characters in the clone
   let wraps = false;
   let direction = null; // neutral
+  let parentSpan;
 
   [...clone.querySelectorAll('span.canopy-blockquote-character, BR')].forEach((element, index, elements) => {
-    if (element.tagName === 'BR') {
+    parentSpan = parentSpan || element.closest('.canopy-text-span');
+    if (parentSpan !== element.closest('.canopy-text-span')) { // we switched spans ie linebreak
       direction = null;
     } else { // The element is a span
       let elementRect = element.getBoundingClientRect();
       let previousElement = elements[index - 1];
       let previousRect = elements[index - 1]?.getBoundingClientRect();
+      let previousParentSpan = previousElement?.closest('.canopy-text-span');
 
-      if (previousElement && previousElement.tagName !== 'BR') {
+      if (previousElement && previousParentSpan === parentSpan) { // don't compare first letter to last of last line
         if (direction === null) {
           direction = elementRect.right > previousRect.right ? 1 : -1;
         } else {
@@ -673,9 +690,13 @@ function renderInlineCodeText(token, renderContext) {
 }
 
 function renderToolTip(token, renderContext) {
-  let tooltipSpan = document.createElement('sup');
-  tooltipSpan.className = 'canopy-tooltip';
-  tooltipSpan.textContent = 'ⓘ';
+  let tooltipContainerSpan = document.createElement('span');
+  tooltipContainerSpan.className = 'canopy-tooltip';
+
+  let tooltipIcon = document.createElement('sup');
+  tooltipIcon.textContent = 'ⓘ';
+  tooltipIcon.classList.add('canopy-tooltip-icon');
+  tooltipContainerSpan.appendChild(tooltipIcon);
 
   // Create the tooltip text span
   var tooltipTextSpan = document.createElement('span');
@@ -686,8 +707,14 @@ function renderToolTip(token, renderContext) {
   });
 
   // Append the tooltip text span to the tooltip span
-  tooltipSpan.appendChild(tooltipTextSpan);
-  return tooltipSpan;
+  tooltipContainerSpan.appendChild(tooltipTextSpan);
+  return tooltipContainerSpan;
+}
+
+function renderLineBreak() {
+  let lineBreakSpan = document.createElement('SPAN');
+  lineBreakSpan.classList.add('canopy-linebreak-span');
+  return lineBreakSpan;
 }
 
 export default renderTokenElement;

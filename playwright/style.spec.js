@@ -397,13 +397,11 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
-    await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `This is a block quote that has two lines\n` +
-      `This is the second line`
-    );
+    await expect(page.locator('.canopy-selected-section blockquote span.canopy-text-span')).toHaveCount(2);
 
-    // Test for short blockquote where BR should remain
-    const shortQuoteBR = await page.locator('.canopy-selected-section blockquote:first-of-type br');
+    // Test for short blockquote which shouldn't get padding
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-blockquote-breaktag')).toHaveCount(0);
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-linebreak-span')).toHaveCount(1);
     await expect(shortQuoteBR).toHaveCount(1); // Assuming there's one BR in the short quote
 
     // Test for long blockquote where BR should be replaced
