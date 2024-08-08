@@ -59,10 +59,10 @@ class FileSystemChange {
 }
 
 function messageComparator(messageA, messageB) {
-  let directoryPathA = messageA.match(/(topics\/[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // the directory path
-  let directoryPathB = messageB.match(/(topics\/[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[1]; // (?!\w*\.) = exclude the file name
-  let fullPathA = messageA.match(/(topics\/[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[0];
-  let fullPathB = messageB.match(/(topics\/[^ .\x1B]+)(?!\w*\.)(\/\w+\.expl)?/)[0];
+  let directoryPathA = messageA.match(/(topics\/?[^ .\x1B]*)(?!\w*\.)(\/\w+\.expl)?/)[1]; // the directory path
+  let directoryPathB = messageB.match(/(topics\/?[^ .\x1B]*)(?!\w*\.)(\/\w+\.expl)?/)[1]; // (?!\w*\.) = exclude the file name
+  let fullPathA = messageA.match(/(topics\/?[^ .\x1B]*)(?!\w*\.)(\/\w+\.expl)?/)[0];
+  let fullPathB = messageB.match(/(topics\/?[^ .\x1B]*)(?!\w*\.)(\/\w+\.expl)?/)[0];
 
   if (messageA.includes('Deleted') && !messageB.includes('Deleted')) { // Deletions should come before creations
     return -1;
