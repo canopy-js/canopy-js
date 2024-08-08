@@ -7,7 +7,7 @@ function parseParagraph(text, parserContext) {
   parserContext.paragraphText = text; // to determine global reference of import reference
   parserContext.paragraphReferences = []; // to determine global reference of import reference
 
-  tokens = parseText({ text, parserContext, preserveNewlines: false, recursive: false });
+  tokens = parseText({ text, parserContext, recursive: false });
 
   return tokens;
 }

@@ -10,24 +10,10 @@ test('it parses a text block', () => {
   let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
-    {
-       "type": "text-line",
-       "tokens": [
-          { 
-            "text": "This is a line.",
-            "type": "text",
-          }
-        ]
-     },
-     { 
-       "type": "text-line",
-       "tokens": [
-         {
-           "text": "This is also a line.",
-           "type": "text",
-         }
-       ]
-     },
+    { 
+      "text": "This is a line.\nThis is also a line.",
+      "type": "text",
+    }
   ]);
 });
 
