@@ -1,10 +1,15 @@
-import Path from 'models/path';
-import Topic from '../../../cli/shared/topic';
-
+jest.clearAllMocks();
 jest.mock('../../helpers/getters', () => ({
   __esModule: true,
-  canopyContainer: []
+  canopyContainer: [],
+  defaultTopicJson: jest.fn(() => '{}'),
+  defaultTopic: jest.fn(() => 'someDefaultTopic'), 
+  projectPathPrefix: jest.fn(() => 'someDefaultTopic'), 
+  hashUrls: jest.fn(() => 'someDefaultTopic')
 }));
+
+import Path from 'models/path';
+import Topic from '../../../cli/shared/topic';
 
 test('just topic', () => {
   const pathString = '/Topic';

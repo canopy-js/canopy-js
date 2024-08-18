@@ -365,6 +365,13 @@ This is text with a footnote[^1].
 [^1]: This is the footnote.
 ````
 
+#### Tool tips ####
+````
+This is text.{!This is a tool tip message}
+````
+
+Optional space after `!` is ignored.
+
 #### Images ####
 
 ```

@@ -10,18 +10,6 @@ function TextToken(text) {
   this.type = 'text';
 }
 
-function TextLineToken(text, parserContext) {
-  this.tokens = parseText({ 
-    text, 
-    parserContext: parserContext.clone({ 
-      preserveNewlines: true, 
-      insideToken: true
-    }) 
-  });
-
-  this.type = 'text-line';
-}
-
 function LocalReferenceToken(
   targetTopic,
   targetSubtopic,
@@ -32,7 +20,7 @@ function LocalReferenceToken(
 ) {
   this.text = text;
   this.type = 'local';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -49,7 +37,7 @@ function GlobalReferenceToken(
 ) {
   this.text = text;
   this.type = 'global';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
   this.pathString = pathString;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
@@ -63,7 +51,7 @@ function ExternalLinkToken(url, text, parserContext) {
   if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
-    this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true }) });
+    this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ insideToken: true }) });
   }
 }
 
@@ -77,7 +65,7 @@ function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext
   this.title = (title||'').split('\\\\').map(s => s.replace(/\\/g, '')).join('') || null; // title is not tokenized so escaping must be done manually
   this.tokens = parseText({
     text: caption || '',
-    parserContext: parserContext.clone({ preserveNewlines: false, insideToken: true }) });
+    parserContext: parserContext.clone({ insideToken: true }) });
   this.altText = alt || null;
   this.caption = caption;
   this.anchorUrl = anchorUrl || null;
@@ -107,7 +95,7 @@ function HtmlToken(html, parserContext) {
       this.tokenInsertions.push(
         parseText({
           text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
-          parserContext: parserContext.clone({ preserveNewlines: true, insideToken: true })
+          parserContext: parserContext.clone({ insideToken: true })
             .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g).length)
             .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
         })
@@ -129,7 +117,6 @@ function BlockQuoteToken(text, direction, parserContext) {
   this.tokens = parseText({
     text,
     parserContext: parserContext.clone({
-      preserveNewlines: true,
       insideToken: true,
       linePrefixSize: 2 // ie "> "
     }).incrementCharacterNumber('> '.length)
@@ -154,7 +141,6 @@ function OutlineToken(text, parserContext) {
     let tokensOfLine = parseText({
       text: lineContents,
       parserContext: parserContext.clone({
-        preserveNewlines: false,
         insideToken: true
       }).incrementLineAndResetCharacterNumber(lineIndex).incrementCharacterNumber(initialWhitespace.length + ordinal.length + postOrdinalCharacters.length)
     });
@@ -240,7 +226,6 @@ function TableToken(text, parserContext) {
             tokens: parseText({
               text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
               parserContext: parserContext.clone({
-                preserveNewlines: null,
                 insideToken: true,
               })
               .incrementLineAndResetCharacterNumber(lineNumber) // we want error messages to know how far into the table we are
@@ -317,7 +302,6 @@ function TableListToken(text, parserContext) {
       tokens: parseText({
         text: item.text.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
         parserContext: parserContext.clone({
-          preserveNewlines: null,
           insideToken: true,
         })
         .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the table list are we, line number plus initial delimiter
@@ -339,7 +323,6 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
     let footnoteTokens = parseText({
       text,
       parserContext: parserContext.clone({
-        preserveNewlines: null,
         insideToken: true }).incrementCharacterNumber('['+ superscript + ']:'.length)
     });
 
@@ -379,11 +362,21 @@ function StrikethroughToken(text, parserContext, _, previousCharacter) {
   });
 }
 
+function ToolTipToken(text, openingBrace, parserContext) {
+  this.type = 'tool_tip';
+  this.tokens = parseText({
+    text,
+    parserContext: parserContext.clone({ 
+      insideToken: true, 
+      noLinks: true
+    }).incrementCharacterNumber(openingBrace.length) //'{!' or '{! '
+  });
+}
+
 module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
   TextToken,
-  TextLineToken,
   ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
@@ -397,5 +390,6 @@ module.exports = {
   ItalicsToken,
   BoldToken,
   InlineCodeSnippetToken,
+  ToolTipToken,
   StrikethroughToken
 };

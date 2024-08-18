@@ -3,7 +3,7 @@ import Paragraph from 'models/paragraph';
 import Link from 'models/link';
 import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
-import renderTokenElement from 'render/render_token_element';
+import renderTokenElements from 'render/render_token_element';
 
 function renderDomTree(topic, subtopic, renderContext) {
   let { paragraphsBySubtopic } = renderContext;
@@ -20,8 +20,8 @@ function renderDomTree(topic, subtopic, renderContext) {
   renderContext.currentSubtopic = subtopic;
 
   tokensOfParagraph.forEach((token) => {
-    let element = renderTokenElement(token, renderContext);
-    paragraph.paragraphElement.appendChild(element);
+    let elements = renderTokenElements(token, renderContext);
+    elements.forEach(element => paragraph.paragraphElement.appendChild(element));
   });
 
   return sectionElement;
@@ -67,7 +67,9 @@ function createSectionElement(topic, subtopic, renderContext) {
   let tokens = paragraphsBySubtopic[topic.mixedCase];
 
   if (topic.mixedCase === subtopic.mixedCase) {
-    if (pathDepth > 0 && tokens.length > 0) sectionElement.prepend(document.createElement('hr'));
+    let hr = document.createElement('hr')
+    hr.classList.add('canopy-hr');
+    if (pathDepth > 0 && tokens.length > 0) sectionElement.prepend(hr);
     sectionElement.classList.add('canopy-topic-section');
   }
 

@@ -16,10 +16,12 @@ let {
   BoldToken,
   InlineCodeSnippetToken,
   StrikethroughToken,
+  ToolTipToken,
   TextLineToken
 } = require('./tokens');
 
 const Matchers = [
+  escapedNewlineMatcher,
   escapedCharacterMatcher,
   fenceCodeBlockMatcher,
   prefixCodeBlockMatcher,
@@ -40,7 +42,7 @@ const Matchers = [
   imageMatcher,
   hyperlinkMatcher,
   urlMatcher,
-  textLineMatcher
+  toolTipMatcher
 ];
 
 let Topic = require('../../shared/topic');
@@ -204,6 +206,8 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 
 function localReferenceMatcher({ string, parserContext, index }) {
   let { currentTopic, currentSubtopic } = parserContext;
+
+  if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
 
   let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
@@ -241,7 +245,10 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
 function globalReferenceMatcher({ string, parserContext }) {
   let { currentTopic, currentSubtopic } = parserContext;
+
+  if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  
   let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
   if (!reference.valid) return;
   let pathString = reference.pathString;
@@ -260,13 +267,18 @@ function globalReferenceMatcher({ string, parserContext }) {
 }
 
 function escapedCharacterMatcher({ string, parserContext }) {
-  let match = string.match(/^\\(.)/);
+  let match = string.match(/^\\(.)/s);
   if (match) {
     parserContext.buffer += match[1];
 
     return [null, match[0].length]
-  } else {
-    return null;
+  }
+}
+
+function escapedNewlineMatcher({ string, parserContext }) {
+  let match = string.match(/^\\\n/s);
+  if (match) {
+    return [null, match[0].length]
   }
 }
 
@@ -400,22 +412,18 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
   }
 }
 
-function textLineMatcher({ string, parserContext, startOfLine, startOfText }) { // When parsing text tokens, group by line
-  let match = string.match(/^((?:[^\\\n]|\\.)+)(?:\n|$)/);
-  if (parserContext.insideToken) return false;
-  if (parserContext.buffer) return false;
-  let matchIsAllText = startOfText && match[0].length === string.length;
-
-  if (match && startOfLine && !matchIsAllText) { // don't let a text line be the full text
+function toolTipMatcher({ string, parserContext }) {
+  let match = string.match(/^(\{\!\s)((?:[^\\]|\\.)+)\}/s);
+  if (match) {
     return [
-      new TextLineToken(
+      new ToolTipToken(
+        match[2],
         match[1],
         parserContext
       ),
       match[0].length
     ];
   }
-
 }
 
 module.exports = Matchers;

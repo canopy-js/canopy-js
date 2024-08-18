@@ -25,7 +25,7 @@ function parseText({ text, parserContext }) {
       if (result) {
         let [token, length] = result;
         if (result[0]) { // escapedCharacterMatcher doesn't return a token but adds to buffer
-          if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
+          if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
           parserContext.buffer = '';
           tokens.push(token);
 
@@ -46,7 +46,7 @@ function parseText({ text, parserContext }) {
     if (characters[i] === '\n') parserContext.incrementLineAndResetCharacterNumber();
   }
 
-  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.preserveNewlines));
+  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
 
   return tokens;
 }

@@ -280,6 +280,18 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-footnote-span')).toHaveText('1. This is that footnote.');
   });
 
+  test('It creates tooltips', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tooltips');
+
+    await expect(page.locator('.canopy-selected-section')).toContainText('This is text.');
+
+    await page.hover('.canopy-tooltip');
+
+    const tooltipText = page.locator('.canopy-tooltip .canopy-tooltiptext');
+    await expect(tooltipText).toBeVisible();
+    await expect(tooltipText).toHaveText('Here is a tooltip');
+  });
+
   test('Special link examples', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_links');
     await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York, and to new york, and to \"New\" \'York\', and to the city of New York, and to the city of dew cork, and to the city that is new, and the city of newest york.");
@@ -385,17 +397,14 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
-    await expect(await page.innerText('.canopy-selected-section blockquote')).toEqual(
-      `This is a block quote that has two lines\n` +
-      `This is the second line`
-    );
+    // Test for short blockquote which shouldn't get padding
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type span.canopy-text-span')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-blockquote-padded-linebreak')).toHaveCount(0);
+    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-linebreak-span')).toHaveCount(1);
 
-    // Test for short blockquote where BR should remain
-    const shortQuoteBR = await page.locator('.canopy-selected-section blockquote:first-of-type br');
-    await expect(shortQuoteBR).toHaveCount(1); // Assuming there's one BR in the short quote
-
-    // Test for long blockquote where BR should be replaced
-    const longQuotePaddingSpan = await page.locator('.canopy-selected-section blockquote:last-of-type .canopy-blockquote-breaktag');
+    // Test for long blockquote where \n should get padding
+    await expect(page.locator('.canopy-selected-section blockquote:last-of-type span.canopy-text-span')).toHaveCount(2);
+    const longQuotePaddingSpan = await page.locator('.canopy-selected-section blockquote:last-of-type .canopy-blockquote-padded-linebreak');
     await expect(longQuotePaddingSpan).toHaveCount(1); // Assuming BR gets replaced by one special span
   });
 
@@ -410,21 +419,27 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#RTL_block_quotes');
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
-    await expect(await page.innerText('.canopy-selected-section blockquote:first-of-type')).toEqual(
-      `המילים האלה\n` +
-      `הן מימין לשמאל`
-    );
-
     // Check the direction attribute is 'rtl'
     await expect(page.locator('.canopy-selected-section blockquote:first-of-type')).toHaveAttribute('dir', 'rtl');
 
-    // Check for unchanged BR in short RTL blockquote
-    const shortQuoteBR = page.locator('.canopy-selected-section blockquote[dir="rtl"]:first-of-type br');
-    await expect(shortQuoteBR).toHaveCount(1);
+    // No padded linebreak in short text block quote
+    await expect(
+      page.locator('.canopy-selected-section blockquote[dir="rtl"]:first-of-type .canopy-blockquote-padded-linebreak')
+    ).toHaveCount(0);
 
-    // Check for replaced BR in long RTL blockquote with the special span
-    const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-breaktag');
+    // Assert that .canopy-line-break has a calculated padding-bottom of 0
+     const lineBreakElement = page.locator('.canopy-selected-section blockquote[dir="rtl"]:first-of-type .canopy-linebreak-span');
+     const paddingBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).paddingBottom);
+     expect(paddingBottom).toBe('0px');
+
+    // Yes padded linebreak in short text block quote
+    const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-padded-linebreak');
     await expect(longQuotePaddingSpan).toHaveCount(1);
+
+    // Assert that .canopy-line-break has a calculated padding-bottom of 10
+     const lineBreakElement2 = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-linebreak-span');
+     const paddingBottom2 = await lineBreakElement2.evaluate(el => getComputedStyle(el).paddingBottom);
+     expect(paddingBottom2).toBe('8px');
   });
 
   test('It creates multi-line html blocks', async ({ page }) => {
@@ -481,9 +496,61 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li > ol > li > ul > li >> text="unordered elements also."')).toHaveCount(1)
   });
 
-  test('It creates multi-line text', async ({ page }) => {
+  test('It creates multi-line text with correct alignment', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Multi-line_text');
-    await expect(page.locator('.canopy-selected-section .canopy-text-line')).toHaveCount(3);
-  });
+
+    const paragraph = page.locator('.canopy-selected-section > .canopy-paragraph');
+    const linebreakSpans = paragraph.locator('.canopy-linebreak-span');
+    await expect(linebreakSpans).toHaveCount(6);
+
+    // Assert placement of each line break
+    const expectedTextBeforeLineBreaks = [
+      'This is some text.',
+      // skipped because not directly before linebreak
+      '.',
+      'ר-ט-ל טקסט',
+      'This is some text.',
+      'ר-ט-ל טקסט',
+      'This is some text.',
+      'ר-ט-ל טקסט'
+    ];
+
+    for (let i = 0; i < await linebreakSpans.count(); i++) {
+      const previousText = await linebreakSpans.nth(i).evaluate(el => el.previousElementSibling?.textContent.trim() || '');
+      expect(previousText).toBe(expectedTextBeforeLineBreaks[i]);
+    }
+
+    // Assert that each Hebrew element is on the right side of the screen
+    const hebrewSpans = paragraph.locator('span').filter({
+      hasText: 'ר-ט-ל טקסט'
+    });
+
+    for (let i = 0; i < await hebrewSpans.count(); i++) {
+      const span = hebrewSpans.nth(i);
+
+      // Get the bounding box of the span
+      const boundingBox = await span.boundingBox();
+      expect(boundingBox).not.toBeNull();
+      
+      // Assert that the span is closer to the right side of the viewport
+      expect(boundingBox.x + boundingBox.width / 2).toBeGreaterThan(page.viewportSize().width / 2);
+    }
+
+    // Assert that each English element is on the left side of the screen
+    const englishSpans = paragraph.locator('span').filter({
+      hasText: text => text.match(/^[A-Za-z0-9]/)
+    });
+
+    for (let i = 0; i < await englishSpans.count(); i++) {
+      const span = englishSpans.nth(i);
+
+      // Get the bounding box of the span
+      const boundingBox = await span.boundingBox();
+      expect(boundingBox).not.toBeNull();
+      
+      // Assert that the span is closer to the left side of the viewport
+      expect(boundingBox.x + boundingBox.width / 2).toBeLessThan(page.viewportSize().width / 2);
+    }
+  });  
 });
 

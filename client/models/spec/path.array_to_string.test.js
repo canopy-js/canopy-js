@@ -1,10 +1,15 @@
-import Topic from '../../../cli/shared/topic';
-import Path from 'models/path';
-
+jest.clearAllMocks();
 jest.mock('../../helpers/getters', () => ({
   __esModule: true,
-  canopyContainer: []
+  canopyContainer: [],
+  defaultTopicJson: jest.fn(() => '{}'),
+  defaultTopic: jest.fn(() => 'someDefaultTopic'), 
+  projectPathPrefix: jest.fn(() => 'project'), 
+  hashUrls: jest.fn(() => 'true')
 }));
+
+import Topic from '../../../cli/shared/topic';
+import Path from 'models/path';
 
 test('Topic and subtopic', () => {
   const array = [[new Topic('Topic'), new Topic('Subtopic')]];

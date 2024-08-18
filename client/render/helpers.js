@@ -1,5 +1,5 @@
 import Topic from '../../cli/shared/topic';
-import renderTokenElement from './render_token_element';
+import renderTokenElements from './render_token_element';
 
 function generateHeader(topicTokens, displayTopicName) {
   let topic = new Topic(displayTopicName);
@@ -13,8 +13,8 @@ function generateHeader(topicTokens, displayTopicName) {
   headerElement.classList.add('canopy-header');
 
   topicTokens.forEach(token => {
-    let element = renderTokenElement(token);
-    headerElement.appendChild(element);
+    let elements = renderTokenElements(token);
+    elements.forEach(element => headerElement.appendChild(element));
   });
 
   return headerElement
