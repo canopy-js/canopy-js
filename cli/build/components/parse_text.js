@@ -46,7 +46,7 @@ function parseText({ text, parserContext }) {
     if (characters[i] === '\n') parserContext.incrementLineAndResetCharacterNumber();
   }
 
-  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer, parserContext.insideToken));
+  if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
 
   return tokens;
 }

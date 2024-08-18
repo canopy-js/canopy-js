@@ -43,6 +43,12 @@ class Paragraph {
   display() {
     this.sectionElement.style.display = 'block';
     this.sectionElement.style.opacity = '100%';
+
+    // Fixes firefox unicode bug
+    this.paragraphElement.style.unicodeBidi = 'unset';
+    requestAnimationFrame(() => {
+      this.paragraphElement.style.unicodeBidi = 'plaintext';
+    });
   }
 
   get element() {

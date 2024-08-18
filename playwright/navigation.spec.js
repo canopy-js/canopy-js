@@ -70,7 +70,7 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('links in right-to-left text');
   });
 
-  test('Navigating right-to-left links', async ({ page }) => {
+  test('Navigating right-to-left links', async ({ page, browserName }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_in_right-to-left_text');
     await expect(page.locator('.canopy-selected-section')).toContainText("זוהי פסקה של טקסט");
     await page.locator('body').press('Enter');
@@ -84,7 +84,7 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
     await page.locator('body').press('ArrowUp');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שני');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
   });

@@ -5,10 +5,9 @@ function parseText(options) {
   return require('./parse_text')(options); // avoid circular dependency
 }
 
-function TextToken(text, insideToken) {
+function TextToken(text) {
   this.text = text;
   this.type = 'text';
-  this.container = !insideToken;
 }
 
 function LocalReferenceToken(
