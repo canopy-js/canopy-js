@@ -55,35 +55,32 @@ function renderTokenElements(token, renderContext) {
 }
 
 function renderTextToken(token) {
-  if (token.text.includes('\n')) {
-    let spans = [];
-    token.text.split('\n').filter(Boolean).forEach((textSegment, index, segments) => {
-      let spanElement = document.createElement('SPAN');
-      spanElement.classList.add('canopy-text-span');
-      spanElement.innerText = textSegment;
-      spans.push(spanElement);
+  let spans = [];
 
-      if (index !== segments.length - 1) {
-        let lineBreakSpan = document.createElement('SPAN');
-        lineBreakSpan.classList.add('canopy-linebreak-span');
-        spans.push(lineBreakSpan);
-      }
-    });
-
-    if (token.container) {
-      let textContainer = document.createElement('div');
-      textContainer.classList.add('canopy-text-container');
-      spans.forEach(span => textContainer.appendChild(span));
-      return [textContainer];
-    } else {
-      return spans;
-    }
+  if (!token.text.includes('\n')) {
+    let spanElement = document.createElement('SPAN');
+    spanElement.classList.add('canopy-text-span');
+    spanElement.innerText = token.text;
+    return [spanElement]
   }
 
-  let spanElement = document.createElement('SPAN');
-  spanElement.classList.add('canopy-text-span');
-  spanElement.innerText = token.text;
-  return [spanElement];
+  token.text.split('\n').forEach((textSegment, index, segments) => {
+    if (textSegment) {
+      let spanElement = document.createElement('SPAN');
+      spanElement.classList.add('canopy-text-span');
+
+      spanElement.innerText = textSegment;
+      spans.push(spanElement);
+    }
+
+    if (index !== segments.length - 1) { // even if no text segment, insert linebreak
+      let lineBreakSpan = document.createElement('SPAN');
+      lineBreakSpan.classList.add('canopy-linebreak-span');
+      spans.push(lineBreakSpan);
+    }
+  });
+
+  return spans;
 }
 
 function renderLocalLink(token, renderContext) {
@@ -284,8 +281,8 @@ function renderHtmlElement(token, renderContext) {
       let replacementIndex = placeholderDiv.dataset.replacementNumber;
       let tokens = token.tokenInsertions[replacementIndex];
       tokens.forEach(token => {
-        let element = renderTokenElements(token, renderContext);
-        placeholderDiv.appendChild(element);
+        let elements = renderTokenElements(token, renderContext);
+        elements.forEach(element => placeholderDiv.appendChild(element));
       });
   });
 
@@ -365,7 +362,7 @@ function renderBlockQuote(token, renderContext) {
   let direction = null; // neutral
   let parentSpan;
 
-  [...clone.querySelectorAll('span.canopy-blockquote-character, BR')].forEach((element, index, elements) => {
+  [...clone.querySelectorAll('span.canopy-blockquote-character')].forEach((element, index, elements) => {
     parentSpan = parentSpan || element.closest('.canopy-text-span');
     if (parentSpan !== element.closest('.canopy-text-span')) { // we switched spans ie linebreak
       direction = null;
@@ -389,8 +386,8 @@ function renderBlockQuote(token, renderContext) {
   tempParagraphElement.removeChild(clone);
 
   if (wraps) {
-    blockQuoteElement.querySelectorAll('.canopy-linebreak-span').forEach(span => {
-      span.classList.add('canopy-blockquote-breaktag');
+    blockQuoteElement.querySelectorAll('.canopy-linebreak-span').forEach((span, i, all) => {
+      span.classList.add('canopy-blockquote-padded-linebreak'); // there is no terminal linebreak so we pad all
     });
   }
 
@@ -703,6 +700,7 @@ function renderToolTip(token, renderContext) {
   // Create the tooltip text span
   var tooltipTextSpan = document.createElement('span');
   tooltipTextSpan.className = 'canopy-tooltiptext';
+  tooltipTextSpan.dir = 'auto';
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => tooltipTextSpan.appendChild(subtokenElement));

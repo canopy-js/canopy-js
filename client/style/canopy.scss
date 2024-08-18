@@ -10,7 +10,7 @@
   padding-bottom: calc(100vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
-  font-family: "Times New Roman", Times, serif;
+  font-family: "Times New Roman", Times, serif; // good default and standardizes layout for browser tests
 
   h1.canopy-header {
     text-align: center;
@@ -28,7 +28,7 @@
   }
 
   h1 + section.canopy-topic-section {
-    margin-top: 20px;
+    margin-top: 30px;
   }
 
   section.canopy-topic-section {
@@ -37,6 +37,11 @@
 
   section.canopy-section {
     margin-top: 32px;
+    unicode-bidi: unset;
+  }
+
+  .canopy-topic-section hr + p {
+    margin-top: 27px;
   }
 
   p.canopy-paragraph {
@@ -50,6 +55,7 @@
     font-weight: 400;
 
     position: relative; // to allow absolute children
+    unicode-bidi: plaintext; // to allow lines in different directions
   }
 
   .canopy-topic-section hr + p {
@@ -102,19 +108,14 @@
     }
   }
 
-  .canopy-linebreak-span:not(:last-child)::after {
-    content: "";
+  // Text
+  .canopy-text-span {
+    display: inline;
+  }
+
+  .canopy-linebreak-span {
     display: block;
-    height: 0;
-  }
-
-  // ie text container not nested inside another token
-  p.canopy-paragraph > .canopy-text-container > .canopy-linebreak-span:not(:last-child)::after {
-    padding-bottom: 12px;
-  }
-
-  p.canopy-paragraph > .canopy-text-container {
-    margin-top: 10px;
+    padding-bottom:10px;
   }
 
 ///////////// Link styles /////////////////
@@ -167,7 +168,7 @@
         font-size: 9px;
         white-space: nowrap;
         position: relative;
-        margin-right: -2px;
+        margin-right: -6px;
       }
     }
 
@@ -175,6 +176,7 @@
       content: '➹';
       top: 2px;
       left: 2px;
+      text-decoration: none;
     }
 
     &.canopy-path-reference:not(.canopy-table-list-link-cell)::after {
@@ -187,12 +189,14 @@
       content: '↩';
       top: 2px;
       left: 0px;
+      text-decoration: none;
     }
 
     &.canopy-lateral-cycle-link:not(.canopy-table-list-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
       content: '↪';
       top: 2px;
       left: 0px;
+      text-decoration: none;
     }
   }
 
@@ -249,8 +253,12 @@
       text-decoration: underline #D3D3D3;
     }
 
-    .canopy-blockquote-breaktag { // we replace break tags to be able to give them padding
-      padding-top: 7px;
+    .canopy-linebreak-span {
+      padding-bottom: 0px; // unset default
+    }
+
+    .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
+      padding-bottom: 8px;
       display: block;
     }
   }
