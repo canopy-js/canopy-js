@@ -430,7 +430,9 @@ test.describe('Block entities', () => {
     // Assert that .canopy-line-break has a calculated padding-bottom of 0
      const lineBreakElement = page.locator('.canopy-selected-section blockquote[dir="rtl"]:first-of-type .canopy-linebreak-span');
      const paddingBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).paddingBottom);
+     const marginBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).marginBottom);
      expect(paddingBottom).toBe('0px');
+     expect(marginBottom).toBe('0px');
 
     // Yes padded linebreak in short text block quote
     const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-padded-linebreak');
@@ -439,7 +441,9 @@ test.describe('Block entities', () => {
     // Assert that .canopy-line-break has a calculated padding-bottom of 10
      const lineBreakElement2 = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-linebreak-span');
      const paddingBottom2 = await lineBreakElement2.evaluate(el => getComputedStyle(el).paddingBottom);
-     expect(paddingBottom2).toBe('8px');
+     const marginBottom2 = await lineBreakElement2.evaluate(el => getComputedStyle(el).marginBottom);
+     expect(paddingBottom2).toBe('0px');
+     expect(marginBottom2).toBe('8px');
   });
 
   test('It creates multi-line html blocks', async ({ page }) => {
