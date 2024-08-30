@@ -556,5 +556,11 @@ test.describe('Block entities', () => {
       expect(boundingBox.x + boundingBox.width / 2).toBeLessThan(page.viewportSize().width / 2);
     }
   });  
+
+  test('It creates disabled links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Disabled_links');
+    await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
+    await expect(page.locator('a.canopy-disabled-link.canopy-table-list-link-cell')).toHaveCount(1);
+  });
 });
 
