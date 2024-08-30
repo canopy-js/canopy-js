@@ -200,6 +200,15 @@
     }
   }
 
+  a.canopy-disabled-link {
+    color: #000000;
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.4;
+    text-decoration: none;
+    background-color: #e3dfdf;
+  }
+
 /////////////////////////////////////////////
 
   hr.canopy-footnote-rule {
@@ -459,9 +468,17 @@
       }
 
       &.canopy-path-reference .canopy-table-list-content-container::after {
-        content: ' ⇲';
+        content: ' ↘';
         left: 6px;
         top: 2px;
+      }
+
+      &.canopy-disabled-link {
+        background-color: #FFFFFF;
+        color: #000000;
+        cursor: not-allowed;
+        opacity: 0.4;
+        pointer-events: none;
       }
     }
 
