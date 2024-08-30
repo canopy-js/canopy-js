@@ -44,6 +44,15 @@ function GlobalReferenceToken(
   parserContext.paragraphReferences.push(this);
 }
 
+function DisabledReferenceToken(
+  text,
+  parserContext
+) {
+  this.text = text;
+  this.type = 'disabled_reference';
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+}
+
 function ExternalLinkToken(url, text, parserContext) {
   this.type = 'external';
   this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
@@ -376,6 +385,7 @@ function ToolTipToken(text, openingBrace, parserContext) {
 module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
+  DisabledReferenceToken,
   TextToken,
   ExternalLinkToken,
   ImageToken,

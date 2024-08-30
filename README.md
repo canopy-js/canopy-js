@@ -302,6 +302,27 @@ You can remember the order of the interpolation syntax by thinking of every `{x|
 
 Path reference syntax ie `[[A#B]]` can be used in conjunction with any of these syntaxes, you would just need to make the "target" name end up as `A#B`. If you write \[\[A#B]], Canopy knows to make the display text `B` and not the literal `A#B`, but if you use any custom syntax, you are responsible for making the target evaluate to `A#B` and the display text evaluate to the correct substring, because `#` characters in the display text will be interpreted literally and displayed.
 
+#### Disabled References ####
+
+Often a person will want to make a skeleton of a Canopy site by creating links to content that does not yet exist.
+
+To facilitate this, Canopy has a disabled link syntax:
+
+```
+States: 
+===
+- [[New York]]
+- [![New Jersey]]
+===
+```
+
+or
+
+```
+Bob:
+Bob is a nice person who lives in \[!\[New Jersey]]
+```
+
 ### Using Markup
 
 Usual markdown-style styling is generally available.

@@ -96,30 +96,28 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   function handleFinish({deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList}) {
-    try {
-      options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
-      let originalSelectionFileSet = originalSelectedFilesList ?
-        fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
-      let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-      if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
+    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    let originalSelectionFileSet = originalSelectedFilesList ?
+      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
+    let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
+    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
-      let bulkFileParser = new BulkFileParser(newBulkFileString);
-      let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
-      if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
+    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
+    if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 
-      let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
-      let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
-      let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
+    let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+    let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
 
-      fileSystemManager.deleteOriginalSelectionFile();
-      let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
-      if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
-      if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
+    fileSystemManager.deleteOriginalSelectionFile();
+    let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
+    if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
+    if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
 
-      fileSystemManager.execute(fileSystemChange, options.logging);
-      if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
-      new DefaultTopic(); // Error in case the person changed the default topic file name
-    } catch(e) {console.error(e); console.trace();}
+    fileSystemManager.execute(fileSystemChange, options.logging);
+    if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
+    new DefaultTopic(); // Error in case the person changed the default topic file name
   }
 
   let normalMode = !options.start && !options.finish && !options.sync;
@@ -141,7 +139,7 @@ const bulk = async function(selectedFileList, options = {}) {
   if (options.sync) {
     if (fs.existsSync(options.bulkFileName) && options.useExisting) { // if the user has a bulk file from a previous session
       log(chalk.magenta(`Canopy bulk sync: Reconstructing topic files from prior bulk file ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-      handleFinish({ deleteBulkFile: false });
+      logOrWriteError(() => handleFinish({ deleteBulkFile: false }));
     } else {
       setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
     }

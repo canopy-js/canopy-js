@@ -17,8 +17,8 @@ function renderTokenElements(token, renderContext) {
   } else if (token.type === 'global') {
     Path.for(token.pathString).topicArray.map(topic => requestJson(topic)); // eager load
     return renderGlobalLink(token, renderContext);
-  } else if (token.type === 'import') {
-    return renderImportLink(token, renderContext);
+  } else if (token.type === 'disabled_reference') {
+    return renderDisabledLink(token, renderContext);
   } else if (token.type === 'external') {
     return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
@@ -165,6 +165,40 @@ function renderGlobalLink(token, renderContext) {
   });
 
   return [linkElement]
+}
+
+function renderDisabledLink(token, renderContext) {
+  let linkElement = document.createElement('a');
+  //linkElement.classList.add('canopy-selectable-link');
+  // linkElement.dataset.targetTopic = token.targetTopic;
+  // linkElement.targetTopic = token.targetTopic; // helpful for debugger
+  // linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  // linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
+  // linkElement.dataset.enclosingTopic = token.enclosingTopic;
+  // linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  // linkElement.dataset.text = token.text;
+
+  token.tokens.forEach(subtoken => {
+    let subtokenElements = renderTokenElements(subtoken, renderContext);
+    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+  });
+
+  // let callback = onLinkClick(new Link(linkElement));
+
+  // linkElement.addEventListener(
+  //   'click',
+  //   callback
+  // );
+
+  // linkElement._CanopyClickHandler = callback;
+
+  linkElement.classList.add('canopy-disabled-link');
+  linkElement.dataset.type = 'disabled';
+
+  // let targetTopic = new Topic(token.targetTopic);
+  // let targetSubtopic = new Topic(token.targetSubtopic);
+  // linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
+  return [linkElement];
 }
 
 function renderExternalLink(token, renderContext) {
@@ -588,6 +622,7 @@ function renderTableList(token, renderContext) {
   if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
   if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
   if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
+  if (SizesByArea[tableListSizeIndex].includes('eigth')) rowSize = 8;
 
   // Create the first row
   let tableRowElement = createNewRow();

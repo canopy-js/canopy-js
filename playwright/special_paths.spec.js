@@ -48,6 +48,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -110,6 +111,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -184,6 +186,7 @@ test.describe('Special paths', () => {
     await expect(newPage).toHaveURL('http://localhost:3005/test/#/United_States/New_York/Style_examples');
 
     // Project path prefix gets added to image tokens
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });

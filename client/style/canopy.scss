@@ -10,7 +10,7 @@
   padding-bottom: calc(100vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
-  font-family: "Times New Roman", Times, serif;
+  font-family: "Times New Roman", Times, serif; // good default and standardizes layout for browser tests
 
   h1.canopy-header {
     text-align: center;
@@ -109,14 +109,13 @@
   }
 
   // Text
-
   .canopy-text-span {
     display: inline;
   }
 
   .canopy-linebreak-span {
     display: block;
-    padding-bottom:10px;
+    margin-bottom:10px;
   }
 
 ///////////// Link styles /////////////////
@@ -135,10 +134,10 @@
       outline:0;
     }
 
-    &.canopy-open-link {
+    &.canopy-open-link:not(.canopy-table-link) {
       // text-shadow: .8px 0px 0px #000000;
       text-decoration: underline;
-      background-color: #F3F3F3;
+      background-color: #ecebeb;
     }
 
     &:hover {
@@ -156,14 +155,14 @@
         display: inline;
         white-space: normal;
         margin-right: 1px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
-        padding-right: 4px;
+        padding-right: 7px;
       }
 
-//      &:not(.canopy-table-list-link-cell):last-child::after { // This is causing <br> tags not to be shrunk in tables
-//        content: ' ';
-//        font-size: 3px;
-//        white-space: nowrap;
-//      }
+//    &:not(.canopy-table-list-link-cell):last-child::after { // This is causing <br> tags not to be shrunk in tables
+//      content: ' ';
+//      font-size: 3px;
+//      white-space: nowrap;
+//    }
 
       &:not(.canopy-table-list-link-cell)::after {
         font-size: 9px;
@@ -176,12 +175,12 @@
     &.canopy-external-link:not(.canopy-table-list-link-cell):not(.canopy-linked-image)::after {
       content: '➹';
       top: 2px;
-      left: 2px;
+      left: 1px;
       text-decoration: none;
     }
 
     &.canopy-path-reference:not(.canopy-table-list-link-cell)::after {
-      content: '⇲';
+      content: '↳';
       top: 1px;
       left: 1.5px;
     }
@@ -199,6 +198,15 @@
       left: 0px;
       text-decoration: none;
     }
+  }
+
+  a.canopy-disabled-link {
+    color: #000000;
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.4;
+    text-decoration: none;
+    background-color: #e3dfdf;
   }
 
 /////////////////////////////////////////////
@@ -254,12 +262,16 @@
       text-decoration: underline #D3D3D3;
     }
 
+    a.canopy-selectable-link.canopy-open-link {
+      background-color: #e3e1e1;
+    }
+
     .canopy-linebreak-span {
-      padding-bottom: 0px; // unset default
+      margin-bottom: 0px; // unset default
     }
 
     .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
-      padding-bottom: 8px;
+      margin-bottom: 8px;
       display: block;
     }
   }
@@ -413,7 +425,7 @@
       }
 
       &.canopy-open-link:not(.canopy-selected-link) {
-        background-color: #F3F3F3;
+        background-color: #edecec
       }
 
       &:hover:not(.canopy-selected-link), // selected link style overrides hover
@@ -460,9 +472,17 @@
       }
 
       &.canopy-path-reference .canopy-table-list-content-container::after {
-        content: ' ⇲';
+        content: ' ↳';
         left: 6px;
         top: 2px;
+      }
+
+      &.canopy-disabled-link {
+        background-color: #FFFFFF;
+        color: #000000;
+        cursor: not-allowed;
+        opacity: 0.4;
+        pointer-events: none;
       }
     }
 

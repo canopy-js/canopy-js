@@ -20,7 +20,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
   resetDom(pathToDisplay);
   Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
-  try { linkToSelect?.element } catch { linkToSelect.eraseLinkData(); return updateView(pathToDisplay, null, options); }
+  if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }
   Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // before link.select because selection cache by current URL
   Link.persistLinkSelection(linkToSelect); // if null, persists deselect
   Link.updateSelectionClass(linkToSelect); // if null, removes previous selection's class
