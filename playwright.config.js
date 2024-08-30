@@ -116,7 +116,8 @@ const config = {
     }
   ],
 
-  globalTeardown: './playwright/global_teardown.js'
+  globalTeardown: './playwright/global_teardown.js',
+  globalSetup: './playwright/global_setup.js'
 };
 
 module.exports = config;
