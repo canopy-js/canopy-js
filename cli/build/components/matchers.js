@@ -1,6 +1,7 @@
 let {
   LocalReferenceToken,
   GlobalReferenceToken,
+  DisabledReferenceToken,
   TextToken,
   ExternalLinkToken,
   ImageToken,
@@ -34,6 +35,7 @@ const Matchers = [
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
+  disabledReferenceMatcher,
   footnoteMarkerMatcher,
   italicsMatcher,
   boldMatcher,
@@ -141,11 +143,11 @@ function tableListMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function htmlMatcher({ string, parserContext }) {
+function htmlMatcher({ string, parserContext, startOfLine }) {
   let fragments = string.match(/(<[^>]+>|((?!<[^>]+>).)*)/gs);
   let result = null;
 
-  fragments.forEach((fragment, index) => { // Look at eg <a><b><c> then <a><b> then <a> for balanced fragment
+  fragments.forEach((_, index) => { // Look at eg <a><b><c> then <a><b> then <a> for balanced fragment
     let segment = fragments.slice(0, fragments.length - index).join('');
 
     let match = segment.match(/^<([^<> ]+)[^<>]*>(.*<[^>]+>)?/s);
@@ -170,10 +172,13 @@ function htmlMatcher({ string, parserContext }) {
 
       }, 1) === 0); // if we end with zero having never hit zero in between, the outer tag is balanced eg <b><b></b></b> and not <b></b><b></b>
 
+
       if (singleTag || balancedFirstTag) {
+        let terminalNewlineLength = (startOfLine && string[segment.length] === '\n') ? '\n'.length : 0;
+
         result = result || [
         new HtmlToken(match[0], parserContext),
-          match[0].length
+          match[0].length + terminalNewlineLength
         ];
       }
     }
@@ -264,6 +269,21 @@ function globalReferenceMatcher({ string, parserContext }) {
       parserContext
     ), reference.fullText.length
   ];
+}
+
+function disabledReferenceMatcher({ string, parserContext }) {
+  let match = string.match(/^\[!\[(?:\\.|(?!]]).)+]]/s);
+
+  if (match) {
+    let { currentTopic, currentSubtopic } = parserContext;
+    let reference = Reference.for('[[' + match[0].slice('[!['.length), currentTopic, parserContext);
+
+    return [new DisabledReferenceToken(
+      reference.displayText,
+      parserContext
+    ),
+    match[0].length];
+  }
 }
 
 function escapedCharacterMatcher({ string, parserContext }) {
@@ -413,7 +433,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function toolTipMatcher({ string, parserContext }) {
-  let match = string.match(/^(\{\!\s)((?:[^\\]|\\.)+)\}/s);
+  let match = string.match(/^ ?(\{\!\s?)((?:[^\\]|\\.)+)\}/s);
   if (match) {
     return [
       new ToolTipToken(
