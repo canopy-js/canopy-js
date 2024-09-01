@@ -78,6 +78,8 @@ function scrollPage(link, options) {
   if (!link) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
   let maxScrollRatio = Infinity; //behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
   let minDiff = 75; //(maxScrollRatio === Infinity) ? null : 75;
+  if (link?.childParagraph?.paragraphElement?.offsetHeight === 0) return scrollElementToPosition(link.element, // highlight table cell
+    {targetRatio: 0.25, Infinity, minDiff, behavior, side: 'top', direction});
 
   if (scrollToParagraph) {
     let paragraphPercent = link.childParagraph.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
@@ -292,7 +294,7 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
     .then(() => linkToSelect?.select({noScroll: true, noAnimate: true, ...options}) || newPath.display({noScroll: true, noAnimate: true, ...options}))
     .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))
     .then(() => !strictlyUpward && !elementIsFocused(newPath.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
-      newPath.paragraph.paragraphElement,
+      (newPath.paragraph.paragraphElement.offsetHeight > 0 ? newPath.paragraph.paragraphElement : linkToSelect.element), // highlight cell
       {targetRatio: 0.24, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
     );
 }
