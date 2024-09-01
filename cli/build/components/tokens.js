@@ -289,7 +289,9 @@ function TableListToken(text, parserContext) {
 
   const allRightAligned = items.every(item => item[3] === '>');
   const allLeftAligned = items.every(item => item[3] === '<');
-  this.alignment = allRightAligned ? 'right' : (allLeftAligned ? 'left' : null);
+  const mixedAlignment = items.some(item => item[3] === '<') && items.some(item => item[3] === '>');
+
+  this.alignment = allRightAligned ? 'right' : (allLeftAligned ? 'left' : (mixedAlignment ? 'mixed' : null));
 
   items = items.map(item => {
     if (item[2]) { // It has an ordinal, so it's some sort of list.
@@ -308,6 +310,7 @@ function TableListToken(text, parserContext) {
       list: item.list,
       hidden: item.text.includes('\\x'),
       ordinal: item.ordinal,
+      alignment: this.alignment === 'mixed' ? item.alignment : undefined,
       tokens: parseText({
         text: item.text.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
         parserContext: parserContext.clone({

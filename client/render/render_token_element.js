@@ -511,6 +511,7 @@ function renderTableList(token, renderContext) {
 
   if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
   if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
+  if (token.alignment === 'mixed') tableListElement.classList.add('canopy-align-mixed');
 
   let SizesByArea = ['eigth-pill', 'quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
@@ -532,15 +533,17 @@ function renderTableList(token, renderContext) {
         while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
         tableCellElement = tokenElement;
         tableCellElement.appendChild(contentContainer);
-        tableCellElement.addEventListener('dragstart', function(event) {
-          event.preventDefault();
-        });
+        tableCellElement.addEventListener('dragstart', e => e.preventDefault());
       } else {
         cellObject.tokens.forEach(token => {
           tokenElements.forEach(tokenElement => contentContainer.appendChild(tokenElement));
         });
         tableCellElement.appendChild(contentContainer);
       }      
+
+      if (cellObject.alignment || token.alignment) { // apply alignment to specific cells
+        tableCellElement.classList.add(`canopy-table-list-cell-${cellObject.alignment || token.alignment}-aligned`);
+      }
     });
 
     if (cellObject.list) {

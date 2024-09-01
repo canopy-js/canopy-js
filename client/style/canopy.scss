@@ -90,7 +90,7 @@
       text-align: center;
       border-radius: 6px;
       border: 1px solid black;
-      padding: 5px;
+      padding: 10px;
       position: absolute;
       z-index: 1;
       top: 50%;
@@ -115,7 +115,7 @@
 
   .canopy-linebreak-span {
     display: block;
-    margin-bottom:10px;
+    margin-bottom:12px;
   }
 
 ///////////// Link styles /////////////////
@@ -248,15 +248,18 @@
 
     &[dir="rtl"] {
       border-right: 0.25em solid lightgray;
-      margin-right: 10px;
+/*      margin-right: 10px;*/
     }
 
     &[dir="ltr"] {
       border-left: 0.25em solid lightgray;
-      margin-left: 10px;
+/*      margin-left: 10px;*/
     }
 
-    margin: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 
     a.canopy-selectable-link {
       text-decoration: underline #D3D3D3;
@@ -353,12 +356,13 @@
     flex-direction: column;
     align-items: center; /* This centers the rows within the container */
     margin: 0 auto;
-    //padding-top: 10px;
+    gap: 10px;
 
     .canopy-table-list-row {
       display: flex;
       justify-content: center;
       box-sizing: border-box;
+      gap: 10px;
     }
 
     &.canopy-align-right {
@@ -372,13 +376,24 @@
       align-items: flex-start;
     }
 
+    &.canopy-align-mixed {
+      align-items: normal;
+    }
+
+    &:not(:first-child) {
+      margin-top: 25px; // has to be in sync with size between section elements for button-paragraph sequences
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 25px;
+    }
+
     .canopy-table-list-cell {
       display: flex;
       flex-direction: row; /* Arrange items horizontally */
       flex-wrap: wrap; /* Allow items to wrap within the cell */
       justify-content: center; /* Center content horizontally */
       align-items: center; /* Center content vertically */
-      margin: 5px;
       border: 1px solid black;
       border-radius: 0px;
       box-sizing: border-box;
@@ -387,6 +402,14 @@
       text-align: center; /* This will center the text inside the flex items */
       align-self: stretch; /* Stretch the child items to fill the cell's width */
       white-space: normal; /* Allow the text to wrap */
+
+      &.canopy-table-list-cell-left-aligned {
+        margin-right: auto;
+      }
+
+      &.canopy-table-list-cell-right-aligned {
+        margin-left: auto;
+      }
 
       .canopy-table-list-content-container {
         display: inline;
@@ -471,6 +494,10 @@
         content: ' ↪';
       }
 
+      &.canopy-lateral-cycle-link.canopy-table-list-cell-left-aligned .canopy-table-list-content-container::after { // override direction
+        content: ' ↩'; // hard-coding special case of back and forth buttons
+      }
+
       &.canopy-path-reference .canopy-table-list-content-container::after {
         content: ' ↳';
         left: 6px;
@@ -487,60 +514,52 @@
     }
 
     &.canopy-eigth-pill .canopy-table-list-cell {
-      width: calc(750px/8 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 70px)/8); // take total width, subtract gaps, and divide by total number
       padding: 11px; // make it a little harder to qualify
       height: 50px;
     }
 
     &.canopy-quarter-pill .canopy-table-list-cell {
-      width: calc(750px/4 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 30px)/4); // take total width, subtract gaps, and divide by total number
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-third-pill .canopy-table-list-cell {
-      width: calc(750px/3 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 20px)/3); // take total width, subtract gaps, and divide by total number
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-half-pill .canopy-table-list-cell {
-      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 10px)/2); // take total width, subtract gaps, and divide by total number
       padding: 9px;
       height: 50px;
     }
 
     &.canopy-quarter-card .canopy-table-list-cell {
-      width: calc(750px/4 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 30px)/4); // take total width, subtract gaps, and divide by total number
       height: 95px;
       padding: 15px;
     }
 
     &.canopy-third-card .canopy-table-list-cell {
-      width: calc(750px/3 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 20px)/3); // take total width, subtract gaps, and divide by total number
       height: 120px;
       padding: 15px;
     }
 
     &.canopy-half-tube .canopy-table-list-cell {
-      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 10px)/2); // take total width, subtract gaps, and divide by total number
       height: 160px;
       padding: 30px;
     }
 
     &.canopy-half-card .canopy-table-list-cell {
-      width: calc(750px/2 - 10px); // divide by divisor then account for 5px margin on both sides
+      width: calc((750px - 10px)/2); // take total width, subtract gaps, and divide by total number
       height: 265px;
       min-height: 160px;
       padding: 30px;
-    }
-
-    &:not(:first-child) {
-      margin-top: 18px; // has to be in sync with size between section elements for button-paragraph sequences
-    }
-
-    &:not(:last-child) {
-      margin-bottom: 25px;
     }
   }
 
