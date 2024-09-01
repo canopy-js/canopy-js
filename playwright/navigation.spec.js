@@ -3,6 +3,14 @@ const { test, expect } = require('@playwright/test');
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
 
+  await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
+    route.fulfill({
+      status: 200,
+      contentType: 'image/png',
+      body: '' // Empty image or placeholder content
+    });
+  });
+
   await page.goto('/United_States');
   await expect(page).toHaveURL("United_States");
   await page.evaluate(() => localStorage.clear()); // get rid of old link selections
