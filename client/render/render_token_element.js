@@ -144,11 +144,13 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
-
+  let callback = onLinkClick(link);
   linkElement.addEventListener(
     'click',
-    onLinkClick(link)
+    callback
   );
+
+  linkElement._CanopyClickHandler = callback;
 
   if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
