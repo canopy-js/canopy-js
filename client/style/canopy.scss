@@ -325,7 +325,8 @@
 
     td.canopy-table-link-cell {
       cursor: pointer;
-      user-select: none;
+      user-select: text;
+/*      user-select: none;*/ // let user select text from link
 
       a.canopy-selectable-link {
         text-decoration: none;

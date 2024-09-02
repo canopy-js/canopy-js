@@ -99,14 +99,17 @@ function renderLocalLink(token, renderContext) {
     subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
   });
 
-  let callback = onLinkClick(new Link(linkElement));
+  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
+    e.preventDefault();
+  });
 
+
+  let callback = onLinkClick(new Link(linkElement));
+  linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener(
     'click',
     callback
   );
-
-  linkElement._CanopyClickHandler = callback;
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
