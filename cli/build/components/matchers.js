@@ -433,7 +433,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function toolTipMatcher({ string, parserContext }) {
-  let match = string.match(/^ ?(\{\!\s?)((?:[^\\]|\\.)+)\}/s);
+  let match = string.match(/^ ?(\{\!\s?)((?:[^\\}]|\\.)+)\}/s);
   if (match) {
     return [
       new ToolTipToken(
