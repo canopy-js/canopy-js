@@ -331,22 +331,36 @@
       a.canopy-selectable-link {
         text-decoration: none;
         text-shadow: none;
+        background-color: #ffffff00; //clear
+      
+        &:has(.canopy-selected-link) {
+          background-color: #edeefc;
+        }
+
+        &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+          background-color: #F3F3F3;
+        }
+
+        &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
+        &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
+          background-color: #f5f6fe;
+
+          .canopy-selected-link {
+              background-color: #f5f6fe;
+          }
+        }
       }
 
-      &:has(.canopy-selected-link) {
-        background-color: #edeefc;
-      }
-
-      &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-        background-color: #F3F3F3;
-      }
-
-      &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
-      &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-        background-color: #f5f6fe;
-
-        .canopy-selected-link {
-            background-color: #f5f6fe;
+      &:has(a.canopy-disabled-link) {
+        background-color: #ffffff00; //clear
+        color: #000000;
+        cursor: not-allowed;
+        opacity: 0.4;
+        pointer-events: none;
+        a.canopy-disabled-link {
+          background-color: #ffffff00; //clear
+          text-decoration: none;
+          text-shadow: none;
         }
       }
     }

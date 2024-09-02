@@ -459,8 +459,11 @@ function renderList(listNodeObjects, renderContext) {
 }
 
 function renderTable(token, renderContext) {
+  const WIDTH_STANDARDIZE_MIN = 60;
+  const HEIGHT_STANDARDIZE_MIN = 50;
+
   let tableElement = document.createElement('TABLE');
-  tableElement.setAttribute('dir', 'instant');
+  tableElement.setAttribute('dir', 'auto');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
@@ -472,20 +475,25 @@ function renderTable(token, renderContext) {
         (cellObject) => {
           let tableCellElement = document.createElement('TD');
           if (cellObject.hidden) tableCellElement.classList.add('hidden');
+          if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
+          if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
 
           cellObject.tokens.forEach(
             (token) => {
               let tokenElements = renderTokenElements(token, renderContext);
 
               tokenElements.forEach(tokenElement => {
-                if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
-                if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
-
-                if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+                const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
+                if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
-                  tokenElement.classList.add('canopy-table-link');
+                  setTimeout(() => tokenElement.parentNode.querySelector('a').classList.add('canopy-table-link'));
                   tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
                   tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
+
+                  if (tokenElement.classList.contains('canopy-disabled-link')) {
+                    tokenElement.classList.remove('canopy-disabled-link');
+                    tableCellElement.classList.add('canopy-disabled-link');
+                  }
                 }
 
                 tableCellElement.appendChild(tokenElement);
@@ -501,6 +509,34 @@ function renderTable(token, renderContext) {
       tableElement.appendChild(tableRowElement);
     }
   );
+
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(tableElement);
+
+  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+  tempParagraphElement.appendChild(tableElement);
+  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
+    let clsp = tableCellElement.getAttribute('colspan');
+    let rwsp = tableCellElement.getAttribute('rowspan');
+    if (!clsp && tableCellElement.offsetWidth > sizes.widest) sizes.widest = tableCellElement.offsetWidth;
+    if (!clsp && tableCellElement.offsetWidth < sizes.narrowest) sizes.narrowest = tableCellElement.offsetWidth;
+    if (!rwsp && tableCellElement.offsetHeight > sizes.tallest) sizes.tallest = tableCellElement.offsetHeight;
+    if (!rwsp && tableCellElement.offsetHeight < sizes.shortest) sizes.shortest = tableCellElement.offsetHeight;  
+  });
+
+  if (sizes.widest - sizes.narrowest < WIDTH_STANDARDIZE_MIN) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.width = sizes.widest + 'px'; })
+  }
+
+  if (sizes.tallest - sizes.shortest < HEIGHT_STANDARDIZE_MIN) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.height = sizes.tallest + 'px'; })
+  }
+
+  canopyContainer.removeChild(tempSectionElement);
+  tempParagraphElement.removeChild(tableElement);
+
   return [tableElement];
 }
 
@@ -558,13 +594,10 @@ function renderTableList(token, renderContext) {
     return tableCellElement;
   });
 
-  let tempParagraphElement = document.createElement('p');
-  tempParagraphElement.classList.add('canopy-paragraph');
-  let tempSectionElement = document.createElement('section');
-  tempSectionElement.classList.add('canopy-section');
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
   let tempRowElement = createNewRow();
   canopyContainer.appendChild(tempSectionElement);
-  tempSectionElement.appendChild(tempParagraphElement);
   tempParagraphElement.appendChild(tableListElement);
   tableListElement.appendChild(tempRowElement);
 
