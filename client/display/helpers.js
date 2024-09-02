@@ -282,13 +282,16 @@ function animatePathChange(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect?.onPage && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
+  let targetElement = (linkToSelect?.onPage && !strictlyUpward && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
     || overlapPath.paragraph?.paragraphElement;
-  // let targetElement = (linkToSelect?.onPage && !strictlyUpward && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
-  //   || overlapPath.paragraph?.paragraphElement;
 
   let minDiff = options.noMinDiff ? null : 75;
   let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
+
+  if (previousPath.includes(newPath)) { // ie for cycle reduction
+    firstTargetRatio = 0.45;
+    targetElement = overlapPath.paragraph?.paragraphElement;
+  }
 
   return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
       {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
