@@ -460,7 +460,7 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
-  tableElement.setAttribute('dir', 'instant');
+  tableElement.setAttribute('dir', 'auto');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
@@ -486,6 +486,11 @@ function renderTable(token, renderContext) {
                   tokenElement.classList.add('canopy-table-link');
                   tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
                   tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
+
+                  if (tokenElement.classList.contains('canopy-disabled-link')) {
+                    tokenElement.classList.remove('canopy-disabled-link');
+                    tableCellElement.classList.add('canopy-disabled-link');
+                  }
                 }
 
                 tableCellElement.appendChild(tokenElement);
@@ -501,6 +506,34 @@ function renderTable(token, renderContext) {
       tableElement.appendChild(tableRowElement);
     }
   );
+
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(tableElement);
+
+  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+  tempParagraphElement.appendChild(tableElement);
+  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
+    let clsp = tableCellElement.getAttribute('colspan');
+    let rwsp = tableCellElement.getAttribute('rowspan');
+    if (!clsp && tableCellElement.offsetWidth > sizes.widest) sizes.widest = tableCellElement.offsetWidth;
+    if (!clsp && tableCellElement.offsetWidth < sizes.narrowest) sizes.narrowest = tableCellElement.offsetWidth;
+    if (!rwsp && tableCellElement.offsetHeight > sizes.tallest) sizes.tallest = tableCellElement.offsetHeight;
+    if (!rwsp && tableCellElement.offsetHeight < sizes.shortest) sizes.shortest = tableCellElement.offsetHeight;  
+  });
+
+  if (sizes.widest - sizes.narrowest < 50) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.width = sizes.widest + 'px'; })
+  }
+
+  if (sizes.tallest - sizes.shortest < 50) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.height = sizes.tallest + 'px'; })
+  }
+
+  canopyContainer.removeChild(tempSectionElement);
+  tempParagraphElement.removeChild(tableElement);
+
   return [tableElement];
 }
 
@@ -558,13 +591,10 @@ function renderTableList(token, renderContext) {
     return tableCellElement;
   });
 
-  let tempParagraphElement = document.createElement('p');
-  tempParagraphElement.classList.add('canopy-paragraph');
-  let tempSectionElement = document.createElement('section');
-  tempSectionElement.classList.add('canopy-section');
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
   let tempRowElement = createNewRow();
   canopyContainer.appendChild(tempSectionElement);
-  tempSectionElement.appendChild(tempParagraphElement);
   tempParagraphElement.appendChild(tableListElement);
   tableListElement.appendChild(tempRowElement);
 

@@ -349,6 +349,14 @@
             background-color: #f5f6fe;
         }
       }
+
+      &.canopy-disabled-link {
+        background-color: #FFFFFF;
+        color: #000000;
+        cursor: not-allowed;
+        opacity: 0.4;
+        pointer-events: none;
+      }
     }
   }
 
