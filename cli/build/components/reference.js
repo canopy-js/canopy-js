@@ -205,7 +205,8 @@ class Reference {
 
   get displayPathString() {
     if (this.soloPoundSign) { //eg [#], short for topic subtopic
-      return `${this.enclosingTopic.mixedCase}#${this.enclosingTopic.mixedCase}`;
+      let enclosingTopicMixedCase = this.enclosingTopic.mixedCase.replace(/([^\\])\//g, '$1\\/');
+      return `${enclosingTopicMixedCase}#${enclosingTopicMixedCase}`;
     }
 
     if (this.localReference) { // eg [[X]] where X is a subtopic of current topic
