@@ -387,10 +387,6 @@ function renderBlockQuote(token, renderContext) {
 
   wrapEachLetterInSpan(clone);
 
-  // Temporarily append clone to the DOM for measurement
-  clone.style.visibility = 'hidden';
-  clone.style.position = 'absolute';
-
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   canopyContainer.appendChild(tempSectionElement);
@@ -401,17 +397,17 @@ function renderBlockQuote(token, renderContext) {
   let direction = null; // neutral
   let parentSpan;
 
-  [...clone.querySelectorAll('span.canopy-blockquote-character')].forEach((element, index, elements) => {
-    parentSpan = parentSpan || element.closest('.canopy-text-span');
-    if (parentSpan !== element.closest('.canopy-text-span')) { // we switched spans ie linebreak
+  [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element, index, elements) => {
+    // if (blockQuoteElement.innerText.includes('abcdef')) debugger;
+    if (element.classList.contains('canopy-linebreak-span')) { // we switched spans ie linebreak
       direction = null;
-    } else { // The element is a span
+    } else { // The element is a character span
       let elementRect = element.getBoundingClientRect();
       let previousElement = elements[index - 1];
       let previousRect = elements[index - 1]?.getBoundingClientRect();
       let previousParentSpan = previousElement?.closest('.canopy-text-span');
 
-      if (previousElement && previousParentSpan === parentSpan) { // don't compare first letter to last of last line
+      if (previousElement && !previousElement.classList.contains('canopy-linebreak-span')) { // don't compare first letter to last of last line
         if (direction === null) {
           direction = elementRect.right > previousRect.right ? 1 : -1;
         } else {
