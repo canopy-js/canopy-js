@@ -237,6 +237,10 @@ class Path {
     return resultPath;
   }
 
+  get containsBackCycle() {
+    return this.reduce().subsetOf(this.enclosingPath);
+  }
+
   static introducesNewCycle(parentPath, literalPath) {
     if (literalPath.reduce().length < literalPath.length) return true; // unlikely but technically this introduces cycle
 
