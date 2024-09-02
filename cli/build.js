@@ -66,6 +66,7 @@ function build(options = {}) {
   if (!manualHtml) {
     let favicon = fs.existsSync(`assets/favicon.ico`);
     let customCss = fs.existsSync(`assets/custom.css`) && fs.readFileSync(`assets/custom.css`);
+    let customJs = fs.existsSync(`assets/custom.js`) && fs.readFileSync(`assets/custom.js`);
     let customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
     let customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
     let customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
@@ -79,6 +80,7 @@ function build(options = {}) {
       <meta charset="utf-8">` +
       // dedent`${customCss ? `<link rel="stylesheet" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/custom.css">\n` : ''}` + // async loading
       dedent`${customCss ? `<style>\n${fs.readFileSync(`assets/custom.css`)}\n</style>` : ''}` +
+      dedent`${customJs ? `<script>\n${fs.readFileSync(`assets/custom.js`)}\n</script>` : ''}` +
       dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js" defer></script>` + "\n" + // we want custom css to have loaded before table list size eval
       dedent`${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">\n` : ''}` +
       // dedent`<link rel="prefetch" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous" fetchpriority="low">` + '\n' +
