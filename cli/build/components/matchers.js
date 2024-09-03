@@ -188,7 +188,7 @@ function htmlMatcher({ string, parserContext, startOfLine }) {
 }
 
 function htmlEntityMatcher({ string, parserContext }) {
-  let match = string.match(/^&.+;/s);
+  let match = string.match(/^&[a-zA-Z]+;/s);
 
   if (match) {
     return [
@@ -433,7 +433,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function toolTipMatcher({ string, parserContext }) {
-  let match = string.match(/^ ?(\{\!\s?)((?:[^\\]|\\.)+)\}/s);
+  let match = string.match(/^ ?(\{\!\s?)((?:[^\\}]|\\.)+)\}/s);
   if (match) {
     return [
       new ToolTipToken(

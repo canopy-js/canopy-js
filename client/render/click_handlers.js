@@ -5,6 +5,8 @@ import Link from 'models/link';
 function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
+    if (textIsSelected()) return // disqualify drags
+
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
     let redirect = e.altKey;
     let inlineCycles = e.shiftKey;
@@ -33,6 +35,11 @@ function onLinkClick(link) {
       noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles
     });
   }
+}
+
+function textIsSelected() {
+  const selection = window.getSelection();
+  return selection && selection.rangeCount > 0 && !selection.isCollapsed;
 }
 
 export { onLinkClick };

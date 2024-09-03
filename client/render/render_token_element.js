@@ -99,14 +99,17 @@ function renderLocalLink(token, renderContext) {
     subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
   });
 
-  let callback = onLinkClick(new Link(linkElement));
+  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
+    e.preventDefault();
+  });
 
+
+  let callback = onLinkClick(new Link(linkElement));
+  linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener(
     'click',
     callback
   );
-
-  linkElement._CanopyClickHandler = callback;
 
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
@@ -141,11 +144,13 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
-
+  let callback = onLinkClick(link);
   linkElement.addEventListener(
     'click',
-    onLinkClick(link)
+    callback
   );
+
+  linkElement._CanopyClickHandler = callback;
 
   if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
 
@@ -382,10 +387,6 @@ function renderBlockQuote(token, renderContext) {
 
   wrapEachLetterInSpan(clone);
 
-  // Temporarily append clone to the DOM for measurement
-  clone.style.visibility = 'hidden';
-  clone.style.position = 'absolute';
-
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   canopyContainer.appendChild(tempSectionElement);
@@ -396,17 +397,17 @@ function renderBlockQuote(token, renderContext) {
   let direction = null; // neutral
   let parentSpan;
 
-  [...clone.querySelectorAll('span.canopy-blockquote-character')].forEach((element, index, elements) => {
-    parentSpan = parentSpan || element.closest('.canopy-text-span');
-    if (parentSpan !== element.closest('.canopy-text-span')) { // we switched spans ie linebreak
+  [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element, index, elements) => {
+    // if (blockQuoteElement.innerText.includes('abcdef')) debugger;
+    if (element.classList.contains('canopy-linebreak-span')) { // we switched spans ie linebreak
       direction = null;
-    } else { // The element is a span
+    } else { // The element is a character span
       let elementRect = element.getBoundingClientRect();
       let previousElement = elements[index - 1];
       let previousRect = elements[index - 1]?.getBoundingClientRect();
       let previousParentSpan = previousElement?.closest('.canopy-text-span');
 
-      if (previousElement && previousParentSpan === parentSpan) { // don't compare first letter to last of last line
+      if (previousElement && !previousElement.classList.contains('canopy-linebreak-span')) { // don't compare first letter to last of last line
         if (direction === null) {
           direction = elementRect.right > previousRect.right ? 1 : -1;
         } else {
@@ -459,7 +460,7 @@ function renderList(listNodeObjects, renderContext) {
 
 function renderTable(token, renderContext) {
   let tableElement = document.createElement('TABLE');
-  tableElement.setAttribute('dir', 'instant');
+  tableElement.setAttribute('dir', 'auto');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
 
   token.rows.forEach(
@@ -485,6 +486,11 @@ function renderTable(token, renderContext) {
                   tokenElement.classList.add('canopy-table-link');
                   tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
                   tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
+
+                  if (tokenElement.classList.contains('canopy-disabled-link')) {
+                    tokenElement.classList.remove('canopy-disabled-link');
+                    tableCellElement.classList.add('canopy-disabled-link');
+                  }
                 }
 
                 tableCellElement.appendChild(tokenElement);
@@ -500,6 +506,34 @@ function renderTable(token, renderContext) {
       tableElement.appendChild(tableRowElement);
     }
   );
+
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(tableElement);
+
+  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+  tempParagraphElement.appendChild(tableElement);
+  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
+    let clsp = tableCellElement.getAttribute('colspan');
+    let rwsp = tableCellElement.getAttribute('rowspan');
+    if (!clsp && tableCellElement.offsetWidth > sizes.widest) sizes.widest = tableCellElement.offsetWidth;
+    if (!clsp && tableCellElement.offsetWidth < sizes.narrowest) sizes.narrowest = tableCellElement.offsetWidth;
+    if (!rwsp && tableCellElement.offsetHeight > sizes.tallest) sizes.tallest = tableCellElement.offsetHeight;
+    if (!rwsp && tableCellElement.offsetHeight < sizes.shortest) sizes.shortest = tableCellElement.offsetHeight;  
+  });
+
+  if (sizes.widest - sizes.narrowest < 50) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.width = sizes.widest + 'px'; })
+  }
+
+  if (sizes.tallest - sizes.shortest < 50) {
+    [...tableElement.querySelectorAll('td')].forEach(td => {td.style.height = sizes.tallest + 'px'; })
+  }
+
+  canopyContainer.removeChild(tempSectionElement);
+  tempParagraphElement.removeChild(tableElement);
+
   return [tableElement];
 }
 
@@ -511,6 +545,7 @@ function renderTableList(token, renderContext) {
 
   if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
   if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
+  if (token.alignment === 'mixed') tableListElement.classList.add('canopy-align-mixed');
 
   let SizesByArea = ['eigth-pill', 'quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
@@ -532,15 +567,17 @@ function renderTableList(token, renderContext) {
         while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
         tableCellElement = tokenElement;
         tableCellElement.appendChild(contentContainer);
-        tableCellElement.addEventListener('dragstart', function(event) {
-          event.preventDefault();
-        });
+        tableCellElement.addEventListener('dragstart', e => e.preventDefault());
       } else {
         cellObject.tokens.forEach(token => {
           tokenElements.forEach(tokenElement => contentContainer.appendChild(tokenElement));
         });
         tableCellElement.appendChild(contentContainer);
       }      
+
+      if (cellObject.alignment || token.alignment) { // apply alignment to specific cells
+        tableCellElement.classList.add(`canopy-table-list-cell-${cellObject.alignment || token.alignment}-aligned`);
+      }
     });
 
     if (cellObject.list) {
@@ -554,13 +591,10 @@ function renderTableList(token, renderContext) {
     return tableCellElement;
   });
 
-  let tempParagraphElement = document.createElement('p');
-  tempParagraphElement.classList.add('canopy-paragraph');
-  let tempSectionElement = document.createElement('section');
-  tempSectionElement.classList.add('canopy-section');
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
   let tempRowElement = createNewRow();
   canopyContainer.appendChild(tempSectionElement);
-  tempSectionElement.appendChild(tempParagraphElement);
   tempParagraphElement.appendChild(tableListElement);
   tableListElement.appendChild(tempRowElement);
 

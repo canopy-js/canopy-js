@@ -382,6 +382,47 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-card')).toHaveCount(1);
   });
 
+  test('It allows directional table lists', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Directional_table_lists');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Directional_table_lists");
+
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    const tableLists = await page.locator('.canopy-table-list');
+
+    // Check alignment for buttons in the first container
+    const firstContainerButtons = await tableLists.nth(0).locator('.canopy-table-list-cell');
+    const button1 = await firstContainerButtons.nth(0); // left-most link should be right aligned
+    const boundingBox1 = await button1.boundingBox();
+    expect(boundingBox1.x).toBeGreaterThan(viewportWidth / 2);
+
+    // Check alignment for buttons in the second container
+    const secondContainerButtons = await tableLists.nth(1).locator('.canopy-table-list-cell');
+    const button2 = await secondContainerButtons.nth(1); // right-most link should be left aligned
+    const boundingBox2 = await button2.boundingBox();
+
+    // Assert that each button is on the left half of the screen
+    expect(boundingBox2.x + boundingBox2.width).toBeLessThan(viewportWidth / 2);
+
+    // Check alignment for buttons in the third container
+    const thirdContainerButtons = await tableLists.nth(2).locator('.canopy-table-list-cell');
+
+    // Assert that the first button is left-aligned
+    const firstButton = await thirdContainerButtons.nth(0);
+    const firstBoundingBox = await firstButton.boundingBox();
+    expect(firstBoundingBox.x + firstBoundingBox.width).toBeLessThan(viewportWidth / 2);
+
+    // Assert that the second button is right-aligned
+    const secondButton = await thirdContainerButtons.nth(1);
+    const secondBoundingBox = await secondButton.boundingBox();
+    expect(secondBoundingBox.x).toBeGreaterThan(viewportWidth / 2);
+
+    // Verify the ::after content for buttons in the third container
+    await expect(await thirdContainerButtons.nth(0).locator('.canopy-table-list-content-container')
+      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↩"'); // special case where we flip arrow
+    await expect(await thirdContainerButtons.nth(1).locator('.canopy-table-list-content-container')
+      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↪"');
+  });
+
   test('It creates multi-line code blocks', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Code_blocks');
     await expect(page.locator('.canopy-selected-section code')).toHaveCount(1);

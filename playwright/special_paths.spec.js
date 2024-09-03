@@ -10,6 +10,14 @@ if (platform === 'darwin') {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
+    route.fulfill({
+      status: 200,
+      contentType: 'image/png',
+      body: '' // Empty image or placeholder content
+    });
+  });
+  
   page.on("console", (message) => {
     if (message.type() === "error") {
       console.error(message.text());
@@ -48,7 +56,10 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
-    await page.waitForLoadState('networkidle');
+    await Promise.race([
+      page.waitForLoadState('networkidle'), // Wait for network idle
+      page.waitForTimeout(3000) // Timeout after 3000ms
+    ]);
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -111,7 +122,10 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
-    await page.waitForLoadState('networkidle');
+    await Promise.race([
+      page.waitForLoadState('networkidle'), // Wait for network idle
+      page.waitForTimeout(3000) // Timeout after 3000ms
+    ]);
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -186,7 +200,10 @@ test.describe('Special paths', () => {
     await expect(newPage).toHaveURL('http://localhost:3005/test/#/United_States/New_York/Style_examples');
 
     // Project path prefix gets added to image tokens
-    await page.waitForLoadState('networkidle');
+    await Promise.race([
+      page.waitForLoadState('networkidle'), // Wait for network idle
+      page.waitForTimeout(3000) // Timeout after 3000ms
+    ]);
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });

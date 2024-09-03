@@ -571,7 +571,7 @@ class Link {
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display({ scrollToParagraph: true, ...options});
+      return this.inlinePath.reduce().display(options);
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down

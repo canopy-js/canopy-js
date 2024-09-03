@@ -347,7 +347,8 @@ class ParserContext {
           let [currentTopic, currentSubtopic] = Topic.parseUrlSegment(segmentString);
 
           if (!this.topicExists(currentTopic)) {
-            throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}`));
+            let punctuationWarning = currentTopic.mixedCase.match(/[.,:;]/) ? '\nWarning: Using punctuation like [.,;:] terminates a paragraph key.' : '';
+            throw new Error(chalk.red(`Error: Reference "${referenceString}" in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
