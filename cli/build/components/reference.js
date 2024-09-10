@@ -182,6 +182,7 @@ class Reference {
 
   get firstSubtopic() {
     let subtopicString = this.pathString.match(/^(?:\\.|[^\/])+?#((?:\\.|[^\/])+?)(?:\/.*)?$/)?.[1];
+    subtopicString = subtopicString || this.firstTopic.mixedCase;
     return subtopicString ? Topic.fromUrl(subtopicString) :  null;
   }
 

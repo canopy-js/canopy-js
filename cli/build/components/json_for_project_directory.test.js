@@ -1447,7 +1447,7 @@ test('it errors when path segments are not connected', () => {
 
   expect(
     () => jsonForProjectDirectory(explFileData, null, 'Idaho', {})
-  ).toThrow(chalk.red(dedent`Error: Global reference "[[USA/Idaho#Boise]]" contains invalid adjacency.
+  ).toThrow(chalk.red(dedent`Error: Global reference "[[USA/Idaho#Boise]]" contains invalid adjacency:
     [USA, USA] does not reference [Idaho]
     topics/Wyoming/Wyoming.expl:1:52`));
 });
