@@ -208,14 +208,19 @@ test.describe('Inline entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
     await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
-    // Check if the ::after pseudo-element of the link contains the arrow character
-    const arrowContent = await page.locator('.canopy-selected-section a').evaluate(element => {
-      const afterContent = window.getComputedStyle(element, '::after').getPropertyValue('content');
-      return afterContent;
+
+    // Check if the ::after pseudo-element of the link has the background image set
+    const afterStyles = await page.locator('.canopy-selected-section a').evaluate(element => {
+      const afterElementStyles = window.getComputedStyle(element, '::after');
+      return {
+        backgroundImage: afterElementStyles.getPropertyValue('background-image'),
+      };
     });
 
-    const expectedArrowCharacter = '➹';
-    expect(arrowContent).toContain(expectedArrowCharacter);
+    // Expected background image for the ::after pseudo-element (part of the SVG)
+    const expectedBackgroundImage = 'url("data:image/svg+xml;base64,'; // Start of the base64 encoded SVG
+
+    expect(afterStyles.backgroundImage).toContain(expectedBackgroundImage);
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {
