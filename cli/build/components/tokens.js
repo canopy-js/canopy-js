@@ -115,7 +115,7 @@ function HtmlToken(html, parserContext) {
         parseText({
           text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
           parserContext: parserContext.clone({ insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g).length)
+            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
             .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
         })
       );
