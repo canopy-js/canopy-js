@@ -53,6 +53,16 @@ function DisabledReferenceToken(
   this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
 }
 
+function FragmentReferenceToken(
+  text,
+  parserContext
+) {
+  this.text = text;
+  this.type = 'fragment_reference';
+  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+}
+
+
 function ExternalLinkToken(url, text, parserContext) {
   this.type = 'external';
   this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
@@ -389,6 +399,7 @@ module.exports = {
   LocalReferenceToken,
   GlobalReferenceToken,
   DisabledReferenceToken,
+  FragmentReferenceToken,
   TextToken,
   ExternalLinkToken,
   ImageToken,

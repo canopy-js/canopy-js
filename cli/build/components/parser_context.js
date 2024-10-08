@@ -25,6 +25,7 @@ class ParserContext {
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
       this.pathsReferenced = []; // a list of paths referenced in global references to validate
       this.globalReferencesBySubtopic = {}; // for each topic#subtopic combo, what global references / path references exist?
+      this.fragmentReferenceSubtopics = {}; // per topic, a list of subtopics added by fragment references
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
@@ -237,6 +238,19 @@ class ParserContext {
       lineNumber: this.lineNumber,
       characterNumber: this.characterNumber
     };
+  }
+
+  registerFragmentReference(reference) {
+    this.fragmentReferenceSubtopics[this.currentTopic.caps] = this.fragmentReferenceSubtopics[this.currentTopic.caps] || [];
+    this.fragmentReferenceSubtopics[this.currentTopic.caps].push(reference.targetAsTopic);
+  }
+
+  addFragmentReferenceSubtopics(callback) {
+    if (this.fragmentReferenceSubtopics[this.currentTopic.caps]) {
+      this.fragmentReferenceSubtopics[this.currentTopic.caps].forEach(fragmentReferenceTargetTopic => {
+        callback(fragmentReferenceTargetTopic); // caller will know how to add topics to json object
+      });
+    }
   }
 
   registerSubsumptionConditionalError(errorString) {

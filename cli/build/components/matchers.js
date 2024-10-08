@@ -2,6 +2,7 @@ let {
   LocalReferenceToken,
   GlobalReferenceToken,
   DisabledReferenceToken,
+  FragmentReferenceToken,
   TextToken,
   ExternalLinkToken,
   ImageToken,
@@ -36,6 +37,7 @@ const Matchers = [
   localReferenceMatcher,
   globalReferenceMatcher,
   disabledReferenceMatcher,
+  fragmentReferenceMatcher,
   footnoteMarkerMatcher,
   italicsMatcher,
   boldMatcher,
@@ -279,6 +281,27 @@ function disabledReferenceMatcher({ string, parserContext }) {
     let reference = Reference.for('[[' + match[0].slice('[!['.length), currentTopic, parserContext);
 
     return [new DisabledReferenceToken(
+      reference.displayText,
+      parserContext
+    ),
+    match[0].length];
+  }
+}
+
+function fragmentReferenceMatcher({ string, parserContext }) {
+  let match = string.match(/^\[#\[(?:\\.|(?!]]).)+]]/s);
+
+  if (match) {
+    let { currentTopic, currentSubtopic } = parserContext;
+    let reference = Reference.for('[[' + match[0].slice('[#['.length), currentTopic, parserContext);
+
+    parserContext.registerFragmentReference(reference);
+
+    return [new LocalReferenceToken(
+      currentTopic.mixedCase,
+      reference.targetAsTopic.mixedCase,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
       reference.displayText,
       parserContext
     ),

@@ -25,6 +25,7 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
 
   parserContext.validateRedundantLocalReferences();
   parserContext.throwSubsumptionConditionalErrors();
+  parserContext.addFragmentReferenceSubtopics(subtopic => { paragraphsBySubtopic[subtopic.mixedCase] = [] });
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,

@@ -19,6 +19,8 @@ function renderTokenElements(token, renderContext) {
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'disabled_reference') {
     return renderDisabledLink(token, renderContext);
+  } else if (token.type === 'fragment_reference') {
+    return renderFragmentReference(token, renderContext);
   } else if (token.type === 'external') {
     return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
@@ -203,6 +205,42 @@ function renderDisabledLink(token, renderContext) {
   // let targetTopic = new Topic(token.targetTopic);
   // let targetSubtopic = new Topic(token.targetSubtopic);
   // linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
+  return [linkElement];
+}
+
+function renderFragmentReference(token, renderContext) {
+  let linkElement = document.createElement('a');
+  linkElement.classList.add('canopy-selectable-link');
+  linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // helpful for debugger
+  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
+  linkElement.dataset.enclosingTopic = token.enclosingTopic;
+  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  linkElement.dataset.text = token.text;
+
+  token.tokens.forEach(subtoken => {
+    let subtokenElements = renderTokenElements(subtoken, renderContext);
+    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+  });
+
+  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
+    e.preventDefault();
+  });
+
+  let callback = onLinkClick(new Link(linkElement));
+  linkElement._CanopyClickHandler = callback;
+  linkElement.addEventListener(
+    'click',
+    callback
+  );
+
+  linkElement.classList.add('canopy-local-link');
+  linkElement.dataset.type = 'local';
+
+  let targetTopic = new Topic(token.targetTopic);
+  let targetSubtopic = new Topic(token.targetSubtopic);
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
   return [linkElement];
 }
 
