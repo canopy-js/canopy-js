@@ -119,7 +119,7 @@ class Reference {
   get lastPathComponent() {
     if (this.singleTopicWithEmptyFragment) return Reference.textBeforeFragment(this.contents);
     // Regular expression to match the last unescaped slash or hash
-    const match = this.contents.match(/(?:^|[^\\])(?:\\\\)*([\/#])([^\/#]*(?:\\.[^\/#]*)*)$/);
+    const match = this.contents.match(/(?:^|[^\\<])(?:\\\\)*([\/#])([^\/#]*(?:\\.[^\/#]*)*)$/);
     if (match) {
       return match[2]; // Return text after the last unescaped slash or hash
     }
