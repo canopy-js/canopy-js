@@ -68,34 +68,6 @@ const resetDom = (pathToDisplay) => {
   deselectSectionElement();
 }
 
-function scrollPage(link, options) {
-  options = options || {};
-  let behavior = options.scrollStyle || 'smooth';
-  let { scrollToParagraph, direction } = options;
-  canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  canopyContainer.dataset.initialLoad = options.initialLoad;
-
-  if (!link) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  let maxScrollRatio = Infinity; //behavior === 'instant' || scrollToParagraph || options.scrollDirect ? Infinity : 0.75; // no limit on initial load and click
-  let minDiff = 75; //(maxScrollRatio === Infinity) ? null : 75;
-  if (link?.childParagraph?.paragraphElement?.offsetHeight === 0) return scrollElementToPosition(link.element, // highlight table cell
-    {targetRatio: 0.25, Infinity, minDiff, behavior, side: 'top', direction});
-
-  if (scrollToParagraph) {
-    let paragraphPercent = link.childParagraph.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
-    let targetRatio = paragraphPercent > .4 ? .15 : 0.4;
-    return scrollElementToPosition(link.childParagraph.paragraphElement,
-      {targetRatio, maxScrollRatio, minDiff, behavior, side: 'top', direction}); // up on root needs direction
-  } else { // scroll to link
-    const linkElement = link?.element;
-    if (linkElement) {
-      return scrollElementToPosition(linkElement, {targetRatio: 0.3, maxScrollRatio, minDiff, behavior, direction});
-    } else { // root paragraph
-      return scrollElementToPosition(Paragraph.current.sectionElement, {targetRatio: 0, maxScrollRatio, minDiff, behavior, direction});
-    }
-  }
-}
-
 function scrollElementToPosition(element, options) {
   if (!(element instanceof Element)) throw new Error('Argument to scrollElementToPosition must be DOM element');
   let { targetRatio, maxScrollRatio, minDiff, direction, behavior, side } = options;
@@ -106,11 +78,10 @@ function scrollElementToPosition(element, options) {
   let containerPointToPutAtTarget;
   if (side === 'bottom') {
     containerPointToPutAtTarget = elementRect.bottom - ScrollableContainer.top + ScrollableContainer.currentScroll;
-  } else if (side === 'top') {
-    containerPointToPutAtTarget = elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll;
-  } else {
-    side = 'middle';
+  } else if (side === 'middle') {
     containerPointToPutAtTarget = (elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll) + (elementRect.height / 2);
+  } else { // top
+    containerPointToPutAtTarget = elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll;
   }
 
   // Handling large A tags
@@ -123,25 +94,6 @@ function scrollElementToPosition(element, options) {
       containerPointToPutAtTarget = elementRect.top + ScrollableContainer.currentScroll;
     }
   }
-
-  // if (element.tagName === 'P') { // try not to put parent link out of view
-  //   let parentLinkElement = Paragraph.for(element.closest('.canopy-section')).parentLink?.element;
-
-  //   if (parentLinkElement) {
-  //     const parentLinkRect = parentLinkElement.getBoundingClientRect();
-  //     const containerTargetRelativeToViewport = containerPointToPutAtTarget - ScrollableContainer.currentScroll;
-  //     const parentLinkTopWithinContainer = parentLinkRect.top - ScrollableContainer.top;
-  //     const distanceBetweenLinkAndParagraph = containerPointToPutAtTarget - parentLinkTopWithinContainer - ScrollableContainer.currentScroll;
-  //     const linkFocusPutsParagraphInLowerHalf = distanceBetweenLinkAndParagraph > ScrollableContainer.visibleHeight / 2;
-
-  //     // Check if the parent link goes above the top of the viewport
-  //     if (idealTargetPositionOnVisibleContainer < distanceBetweenLinkAndParagraph && !linkFocusPutsParagraphInLowerHalf) { // link will be off screen
-  //       targetRatio = 0.1;
-  //       idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
-  //       containerPointToPutAtTarget = parentLinkRect.top + ScrollableContainer.currentScroll; // change goal to putting link near top
-  //     }
-  //   }
-  // }
 
   let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
@@ -181,22 +133,6 @@ function scrollElementToPosition(element, options) {
   } else {
     return Promise.resolve(true);
   }
-}
-
-function placeLineAt(y, color) {
-  // Create a new div element to represent the line
-  const line = document.createElement('div');
-
-  // Apply CSS styles to make the div a horizontal line at position y
-  line.style.position = 'absolute';
-  line.style.left = '0';
-  line.style.width = '100%';
-  line.style.height = '2px'; // Line thickness
-  line.style.backgroundColor = color; // Line color
-  line.style.top = `${y}px`;
-
-  // Append the line to the body of the document
-  ScrollableContainer.element.appendChild(line);
 }
 
 let scrollInProgress = null;
@@ -247,16 +183,15 @@ function scrollToWithPromise(options) {
 // However, if we are scrolling far up, or up to a fulcrum point, changing the path, then scrolling down a new path,
 // we will need a "before change" scroll in addition to this "after change" scroll.
 
-function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
+function beforeChangeScrollNeeded(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;
   if (!pathToDisplay.overlap(Path.rendered)) return false;
-  if (options.noScroll || options.noAnimate || options.initialLoad || options.scrollStyle === 'instant') return false;
+  if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return false;
 
   let twoStepChange = Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
-    && !Path.rendered.siblingOf(pathToDisplay)
     && (!linkToSelect || !linkToSelect.siblingOf(Link.selection))
     && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
@@ -274,36 +209,68 @@ function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animat
   return twoStepChange || longDistanceUp;
 }
 
-function animatePathChange(newPath, linkToSelect, options = {}) {
-  // We do not want the content the user is looking at to appear or disappear.
-  // Case #1: If we are animating upward motion, we want to move up first, then remove lower content (below)
-  // Case #2: If we are animating downward motion, we want to add lower content, then scroll to that content, which is done in scrollPage
-  // Case #3: Upward followed by downward motion, so we do #1 followed by #2 (below)
+const LINK_TARGET_RATIO = .25;
+const PARAGRAPH_TARGET_RATIO = .2;
+const BIG_PARAGRAPH_TARGET_RATIO = .05;
 
+function beforeChangeScroll(newPath, linkToSelect, options = {}) {
+  if (!beforeChangeScrollNeeded(newPath, linkToSelect, options)) return Promise.resolve();
+  options.beforeChangeScroll = true;
   let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
-  let strictlyUpward = newPath.subsetOf(previousPath);
-  let targetElement = (linkToSelect?.onPage && !strictlyUpward && linkToSelect?.element) // if moving to visible link target link, otherwise target fulcrum paragraph
-    || overlapPath.paragraph?.paragraphElement;
-
   let minDiff = options.noMinDiff ? null : 75;
-  let firstTargetRatio = targetElement.tagName === 'A' ? 0.3 : 0.2; // paragraphs should be higher to be focused than links
+  let targetElement = previousPath.fulcrumElement(newPath);
+  let targetRatio = targetElement.tagName === 'A' ? LINK_TARGET_RATIO : PARAGRAPH_TARGET_RATIO; // paragraphs should be higher to be focused than links
+  if (targetElement.tagName === 'P' && Paragraph.for(targetElement.parentNode).isBig) targetRatio = BIG_PARAGRAPH_TARGET_RATIO;
 
-  if (previousPath.includes(newPath)) { // ie for cycle reduction
-    firstTargetRatio = 0.45;
-    targetElement = overlapPath.paragraph?.paragraphElement;
-  }
-
-  return (!elementIsFocused(targetElement) ? (scrollElementToPosition(targetElement,
-      {targetRatio: firstTargetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' }
-    ).then(() => new Promise(resolve => setTimeout(resolve, 110)))) : Promise.resolve())
-    .then(() => linkToSelect?.select({noScroll: true, noAnimate: true, ...options}) || newPath.display({noScroll: true, noAnimate: true, ...options}))
-    .then(() => !strictlyUpward && new Promise(resolve => setTimeout(resolve, 150)))
-    .then(() => !strictlyUpward && !elementIsFocused(newPath.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
-      (newPath.paragraph.paragraphElement.offsetHeight > 0 ? newPath.paragraph.paragraphElement : linkToSelect.element), // highlight cell
-      {targetRatio: 0.24, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
-    );
+  return (!elementIsFocused(targetElement) ? 
+    (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
+    .then(() => new Promise(resolve => setTimeout(resolve, 110)))) : Promise.resolve());
 }
+
+function afterChangeScroll(pathToDisplay, linkToSelect, options) {
+  if (options.noScroll) return Promise.resolve();
+  options = options || {};
+  let behavior = options.scrollStyle || 'smooth';
+  let { scrollToParagraph, direction } = options;
+  scrollToParagraph = scrollToParagraph || false;
+  canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
+  canopyContainer.dataset.initialLoad = options.initialLoad;
+  let postChangePause = options.beforeChangeScroll ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
+
+  if (!linkToSelect) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
+  if (linkToSelect.isFragment) return scrollElementToPosition(linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction});
+  let maxScrollRatio = Infinity; // no limit on initial load and click
+  let minDiff = 75;
+
+  if (scrollToParagraph) {
+    return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
+      targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
+      maxScrollRatio,
+      minDiff,
+      behavior, 
+      side: 'top', 
+      direction // up on root needs direction
+    }));
+  } else { // scroll to linkToSelect
+    let targetElement, targetRatio;
+    if (linkToSelect.isIn(pathToDisplay.paragraph) && linkToSelect.enclosingParagraph.fits) {
+      targetElement = linkToSelect.enclosingParagraph.paragraphElement
+      targetRatio = PARAGRAPH_TARGET_RATIO;
+    } else {
+      targetElement = linkToSelect.element;
+      targetRatio = LINK_TARGET_RATIO;
+    }
+
+    return postChangePause.then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
+  }
+}
+
+// Old post-transition code
+// .then(() => !strictlyUpward && !elementIsFocused(pathToDisplay.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
+//       (newPath.paragraph.paragraphElement.offsetHeight > 0 ? newPath.paragraph.paragraphElement : linkToSelect.element), // highlight cell
+//       {targetRatio: 0.24, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
+//     );
 
 function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
@@ -323,10 +290,9 @@ export {
   setHeader,
   resetDom,
   tryPathPrefix,
-  scrollPage,
+  afterChangeScroll,
   scrollElementToPosition,
-  shouldAnimate,
-  animatePathChange,
+  beforeChangeScroll,
   scrollToWithPromise,
   getScrollInProgress
 };

@@ -89,13 +89,16 @@ class Link {
 
   transferDataset() {
     // This is just to make it easier to inspect and debug DOM elements
-    // Getters are used instead of properties to allow lazy access for callback-specified links
     if (!this.linkElement) return;
     this._literalPathString = this.linkElement.dataset.literalPathString;
     this._enclosingTopic = this.linkElement.dataset.enclosingTopic;
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
     this._text = this.linkElement.dataset.text;
+  }
+
+  get text() {
+    return this.linkElement.dataset.text;
   }
 
   get targetTopic() {
@@ -262,12 +265,22 @@ class Link {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
     if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
-    let link = enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
+    
+    let perfectMatch = enclosingParagraph.linkBySelector(
+      (link, i) => (
+        link.isParent && 
+        link.previewPath.string === object.previewPathString &&
+        link.relativeLinkNumber === object.relativeLinkNumber &&
+        link.text === object.text
+      )
+    );
+
+    let link = perfectMatch || enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
       (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
         (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)
     );
 
-    return link && link.element || null;
+    return link?.element || null;
   }
 
   get nextSibling() {
@@ -413,6 +426,11 @@ class Link {
     return this.enclosingParagraph.equals(otherLink.enclosingParagraph);
   }
 
+  isIn(paragraph) {
+    if (!(paragraph instanceof Paragraph)) throw 'Wrong argument type: ' + typeof paragraph;
+    return paragraph.links.map(link => link.element).includes(this.element);
+  }
+
   get hasChildren() {
     return this.childParagraph?.hasLinks;
   }
@@ -423,6 +441,14 @@ class Link {
 
   firstChildOf(otherLink) {
     return !!otherLink.firstChild?.equals(this);
+  }
+
+  get isFragment() {
+    return this.childParagraph?.paragraphElement?.offsetHeight === 0;
+  }
+
+  get childParagraphElement() {
+    return this.childParagraph?.paragraphElement;
   }
 
   get isOffScreen() {
@@ -571,7 +597,7 @@ class Link {
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display(options);
+      return this.inlinePath.reduce().display({ scrollToParagraph: true, ...options });
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
