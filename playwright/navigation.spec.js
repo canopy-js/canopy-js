@@ -138,38 +138,38 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('italic topic names');
   });
 
-  test('Table list links', async ({ page }) => {
+  test('Menu links', async ({ page }) => {
     page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto('/United_States/New_York/Style_examples#Table_list_links');
-    await expect(page.locator('.canopy-selected-section')).toContainText("Table list cell 01");
+    await page.goto('/United_States/New_York/Style_examples#Menu_links');
+    await expect(page.locator('.canopy-selected-section')).toContainText("Menu cell 01");
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 01');
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 05');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 05');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 06');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 06');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 07');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 07');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 08');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 08');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 09');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 09');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 10');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 10');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 11');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 11');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 12');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 12');
     await page.locator('body').press('ArrowRight');
-    await page.waitForSelector('text=table list links', { state: 'visible' });
-    await expect(page.locator('.canopy-selected-link')).toHaveText('Table list cell 01');
+    await page.waitForSelector('text=menu links', { state: 'visible' });
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Menu cell 01');
     await page.locator('body').press('ArrowUp');
 
-    await page.waitForSelector('a:has-text("table list links")', { state: 'visible' });
+    await page.waitForSelector('a:has-text("menu links")', { state: 'visible' });
     const textAfterFirstPress = await page.locator('.canopy-selected-link').textContent(); // Check the text after the first press
-    if (textAfterFirstPress !== "table list links") await page.locator('body').press('ArrowUp'); // small screen might take two presses
+    if (textAfterFirstPress !== "menu links") await page.locator('body').press('ArrowUp'); // small screen might take two presses
 
-    await expect(page.locator('.canopy-selected-link')).toHaveText('table list links');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('menu links');
   });
 });
 

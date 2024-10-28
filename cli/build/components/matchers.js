@@ -12,7 +12,7 @@ let {
   BlockQuoteToken,
   OutlineToken,
   TableToken,
-  TableListToken,
+  MenuToken,
   FootnoteLinesToken,
   ItalicsToken,
   BoldToken,
@@ -139,7 +139,7 @@ function tableListMatcher({ string, parserContext, startOfLine }) {
 
   if (match && startOfLine) {
     return [
-      new TableListToken(match[0], parserContext),
+      new MenuToken(match[0], parserContext),
       match[0].length
     ];
   }

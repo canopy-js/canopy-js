@@ -292,8 +292,8 @@ function TableToken(text, parserContext) {
   cellObjectList.forEach(cellObject => cellObject.merge && (cellObject.merge = true));
 }
 
-function TableListToken(text, parserContext) {
-  this.type = 'table_list';
+function MenuToken(text, parserContext) {
+  this.type = 'menu';
 
   let items = [...text.matchAll(/(?:- ?|(([\w\d]{1,4})\.\s)|([<>]) )([^\n]+)\n/g)];
 
@@ -326,7 +326,7 @@ function TableListToken(text, parserContext) {
         parserContext: parserContext.clone({
           insideToken: true,
         })
-        .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the table list are we, line number plus initial delimiter
+        .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the menu are we, line number plus initial delimiter
         .incrementCharacterNumber('- '.length) // count earlier chars and leading space
       })
     }
@@ -409,7 +409,7 @@ module.exports = {
   BlockQuoteToken,
   OutlineToken,
   TableToken,
-  TableListToken,
+  MenuToken,
   FootnoteLinesToken,
   ItalicsToken,
   BoldToken,

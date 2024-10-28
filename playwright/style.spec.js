@@ -233,20 +233,19 @@ test.describe('Inline entities', () => {
     // These are hyperlink special cases:
     // - This is a [link](http://google.com)
     // - This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
-    // - This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
-    // - This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+    // - This is a nested image [![pic](./_assets/wiki-favicon.ico)](https://en.wikipedia.org/)
+    // - This is a nested double image [![pic](./_assets/wiki-favicon.ico)![pic](./_assets/wiki-favicon.ico)](https://en.wikipedia.org/)
     // - This is a nested image red herring [![abc](https://en.wikipedia.org/)
     // - This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
     // - This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
-
 
     // Asserting each link with href and either text or image content
     const links = [
       { href: 'http://google.com', text: 'link' },
       { href: 'http://google.com', text: 'link 1' },
       { href: 'http://google.com', text: 'link 2' },
-      { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico'] },
-      { href: 'https://en.wikipedia.org/', images: ['https://en.wikipedia.org/favicon.ico', 'https://en.wikipedia.org/favicon.ico'] },
+      { href: 'https://en.wikipedia.org/', images: ['./_assets/wiki-favicon.ico'] },
+      { href: 'https://en.wikipedia.org/', images: ['./_assets/wiki-favicon.ico', './_assets/wiki-favicon.ico'] },
       { href: 'https://en.wikipedia.org/', text: '![abc' }, // red herring
       { href: 'http://google.com)', text: 'link' }, // paren wrapped link #1
       { href: 'http://google.com)', text: 'link' }, // paren wrapped link #2
@@ -373,35 +372,35 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
   });
 
-  test('It allows table lists', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Table_lists');
-    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_lists");
+  test('It allows menus', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Menus');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Menus");
 
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-eigth-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-quarter-card')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-third-card')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-tube')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-table-list.canopy-half-card')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-eigth-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-quarter-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-third-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-pill')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-quarter-card')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-third-card')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-tube')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-card')).toHaveCount(1);
   });
 
-  test('It allows directional table lists', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Directional_table_lists');
-    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Directional_table_lists");
+  test('It allows directional menus', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Directional_menus');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Directional_menus");
 
     const viewportWidth = await page.evaluate(() => window.innerWidth);
-    const tableLists = await page.locator('.canopy-table-list');
+    const tableLists = await page.locator('.canopy-menu');
 
     // Check alignment for buttons in the first container
-    const firstContainerButtons = await tableLists.nth(0).locator('.canopy-table-list-cell');
+    const firstContainerButtons = await tableLists.nth(0).locator('.canopy-menu-cell');
     const button1 = await firstContainerButtons.nth(0); // left-most link should be right aligned
     const boundingBox1 = await button1.boundingBox();
     expect(boundingBox1.x).toBeGreaterThan(viewportWidth / 2);
 
     // Check alignment for buttons in the second container
-    const secondContainerButtons = await tableLists.nth(1).locator('.canopy-table-list-cell');
+    const secondContainerButtons = await tableLists.nth(1).locator('.canopy-menu-cell');
     const button2 = await secondContainerButtons.nth(1); // right-most link should be left aligned
     const boundingBox2 = await button2.boundingBox();
 
@@ -409,7 +408,7 @@ test.describe('Block entities', () => {
     expect(boundingBox2.x + boundingBox2.width).toBeLessThan(viewportWidth / 2);
 
     // Check alignment for buttons in the third container
-    const thirdContainerButtons = await tableLists.nth(2).locator('.canopy-table-list-cell');
+    const thirdContainerButtons = await tableLists.nth(2).locator('.canopy-menu-cell');
 
     // Assert that the first button is left-aligned
     const firstButton = await thirdContainerButtons.nth(0);
@@ -422,9 +421,9 @@ test.describe('Block entities', () => {
     expect(secondBoundingBox.x).toBeGreaterThan(viewportWidth / 2);
 
     // Verify the ::after content for buttons in the third container
-    await expect(await thirdContainerButtons.nth(0).locator('.canopy-table-list-content-container')
+    await expect(await thirdContainerButtons.nth(0).locator('.canopy-menu-content-container')
       .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↩"'); // special case where we flip arrow
-    await expect(await thirdContainerButtons.nth(1).locator('.canopy-table-list-content-container')
+    await expect(await thirdContainerButtons.nth(1).locator('.canopy-menu-content-container')
       .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↪"');
   });
 
@@ -606,7 +605,7 @@ test.describe('Block entities', () => {
   test('It creates disabled links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
-    await expect(page.locator('a.canopy-disabled-link.canopy-table-list-link-cell')).toHaveCount(1);
+    await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
   });
 });
 
