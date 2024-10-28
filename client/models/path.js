@@ -263,6 +263,17 @@ class Path {
     return candidatePath;
   }
 
+  fulcrumElement(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
+    if (this.includes(otherPath) || otherPath.includes(this)) return this.overlap(otherPath).paragraphElement; // fulcrum paragraph 
+    return this.overlapAndNextTopic(otherPath).parentLink.element;
+  }
+
+  overlapAndNextTopic(otherPath) { // path of "this" plus first topic not in otherPath
+    let overlapPath = this.overlap(otherPath);
+    if (this.includes(otherPath)) return null;
+    return overlapPath.intermediaryPathsTo(otherPath)[1];
+  }
+
   firstDestination(otherPath) { // going from this to otherPath, the first destination in animation
     if (this.overlap(otherPath) && !this.includes(otherPath) && !otherPath.includes(this)) return this.overlap(otherPath);
     return otherPath;
@@ -273,10 +284,7 @@ class Path {
       !this.equals(otherPath); // unlike #includes, which accepts a self-match
   }
 
-  intermediaryPaths(otherPath) {
-    if (!this.overlap(otherPath)) return null;
-    if (!this.subsetOf(otherPath)) return null;
-
+  intermediaryPathsTo(otherPath) {
     let result = [];
     let bufferPath = otherPath.clone();
 
@@ -299,12 +307,6 @@ class Path {
     }
 
     return result;
-  }
-
-  siblingOf(otherPath) {
-    return !!(this.parentPath && otherPath.parentPath) && // if either doesn't have a parent it can't have siblings
-      !this.equals(otherPath) && // doesn't count if the paths are the same
-      this.parentPath.equals(otherPath.parentPath);
   }
 
   childOf(otherPath) { // this is child of otherPath
@@ -379,6 +381,10 @@ class Path {
     } else {
       return null;
     }
+  }
+
+  get paragraphElement() {
+    return this.paragraph.paragraphElement;
   }
 
   get parentParagraph() {
