@@ -42,7 +42,7 @@ class Paragraph {
 
   display() {
     this.sectionElement.style.display = 'block';
-    this.sectionElement.style.opacity = '100%';
+    this.sectionElement.style.opacity = '100%'; // prevents early webkit playwright spec bug before fix
 
     // Fixes firefox unicode bug
     this.paragraphElement.style.unicodeBidi = 'unset';
@@ -249,6 +249,16 @@ class Paragraph {
 
   get isInDom() {
     return !!this.sectionElement.closest('div#_canopy');
+  }
+
+  get isBig() {
+    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    return paragraphPercent > .6;
+  }
+
+  get fits() {
+    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    return paragraphPercent < .8;
   }
 
   get top() {
