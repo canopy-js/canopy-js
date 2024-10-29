@@ -243,8 +243,9 @@ function scrollToWithPromise(options) {
   }));
 }
 
-// Different animation cases to handle:
-// - Switching between links in the same paragraph in a two-step animation
+// In general path changes are usually one-step, and so we change the path first, then scroll to the new focus point.
+// However, if we are scrolling far up, or up to a fulcrum point, changing the path, then scrolling down a new path,
+// we will need a "before change" scroll in addition to this "after change" scroll.
 
 function shouldAnimate(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM

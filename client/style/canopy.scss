@@ -121,7 +121,13 @@
 ///////////// Link styles /////////////////
 
   a.canopy-selectable-link {
-    text-decoration: underline #DDDDDD;
+    text-decoration: none;
+    
+    background-color: #FFFFFF;        /* Subtle off-white background */
+    padding-left: 1px;
+    padding-right: 1px;
+    border-radius: 1px;
+    border: 1px solid #dddddd;
 
     &.canopy-linked-image { // ie the caption text etc
       text-decoration: none; //override browser default for a tags
@@ -134,19 +140,17 @@
       outline:0;
     }
 
-    &.canopy-open-link:not(.canopy-table-link):not(.canopy-menu-link-cell) {
-      // text-shadow: .8px 0px 0px #000000;
-      text-decoration: underline;
-      background-color: #ecebeb;
+    &.canopy-open-link:not(.canopy-selected-link):not(.canopy-table-link):not(.canopy-menu-link-cell) {
+      background-color: #edecec
     }
 
     &:hover {
-      text-decoration: underline #000000;
+      background-color: #f5f6fe;
     }
 
     &.canopy-selected-link, &.canopy-selected-link code {
       background-color: #edeefc;
-      text-shadow: 0px 0px 0px #000000;
+      //text-shadow: 0px 0px 0px #000000;
       text-decoration: none;
     }
 
@@ -154,27 +158,22 @@
       &:not(.canopy-menu-link-cell) {
         display: inline;
         white-space: normal;
-        margin-right: 1px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
-        padding-right: 7px;
+        margin-right: 0px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
+        padding-right: 10px;
       }
 
-      //&:not(.canopy-menu-link-cell):last-child::after { // This is causing <br> tags not to be shrunk in tables
-      //  content: ' ';
-      //  font-size: 3px;
-      //  white-space: nowrap;
-      //}
+    &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
+      background-color: #dedede;
+      position: relative;
 
-      &:not(.canopy-menu-link-cell)::after {
-        font-size: 9px;
-        white-space: nowrap;
-        position: relative;
-        margin-right: -8px;
-      }
+      background-color: #f0f0f0; /* Slightly darker background to indicate pressing */
+      border: 1px solid #cccccc;  /* Darker border to enhance the pressed effect */
+      border-radius: 1px;         /* Same border-radius to maintain consistency */
+      unicode-bidi: inherit;      /* Keep same text rendering */
     }
 
     &.canopy-external-link:not(.canopy-menu-link-cell):not(.canopy-linked-image)::after {
       content: '\00a0\00a0\00a0';
-      // display: inline-block;
       font-size: 10px;
       /* Open Iconic Icon Set, MIT License, https://iconduck.com/icons/53818/external-link */
       background-image: url('data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjgiIHZpZXdCb3g9IjAgMCAxMCA4IiB3aWR0aD0iOSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMSAwdjhoOHYtMmgtMXYxaC02di02aDF2LTF6bTQgMCAxLjUgMS41LTIuNSAyLjUgMSAxIDIuNS0yLjUgMS41IDEuNXYtNHoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEsIDApIiAvPgo8L3N2Zz4K');
@@ -211,7 +210,7 @@
     color: #000000;
     pointer-events: none;
     cursor: not-allowed;
-    opacity: 0.4;
+    opacity: 0.7;
     text-decoration: none;
     background-color: #e3dfdf;
   }
@@ -270,10 +269,20 @@
 
     a.canopy-selectable-link {
       text-decoration: underline #D3D3D3;
+
+      //reset button styling
+      background-color: #FFFFFF00;
+      padding-left: 0px;
+      padding-right: 0px;
+      border: none;
+
+      &:hover {
+        text-decoration: underline #000000;
+      }
     }
 
     a.canopy-selectable-link.canopy-open-link {
-      background-color: #e3e1e1;
+      background-color: #c9c9c9;
     }
 
     .canopy-linebreak-span {
@@ -317,8 +326,6 @@
       text-align: center;
       padding: 10px;
 
-      // width: 0%; // this seems to make cells even without expanding table
-
       &.hidden {
         display: none;
       }
@@ -334,11 +341,12 @@
       cursor: pointer;
       user-select: text;
       background-color: #ffffff;
-/*    user-select: none;*/ // let user select text from link
 
       a.canopy-selectable-link {
         text-decoration: none;
         text-shadow: none;
+        background-color: #FFFFFF00;
+        border: none;
       }
       
       &:has(.canopy-selected-link) {
@@ -366,9 +374,10 @@
         pointer-events: none;
 
         a.canopy-disabled-link {
-          background-color: #ffffff;
+          background-color: #FFFFFF00;
           text-decoration: none;
           text-shadow: none;
+          border: none;
         }
       }
     }
@@ -534,7 +543,7 @@
         background-color: #FFFFFF;
         color: #000000;
         cursor: not-allowed;
-        opacity: 0.4;
+        opacity: 0.4; // more than tables because includes border
         pointer-events: none;
       }
     }

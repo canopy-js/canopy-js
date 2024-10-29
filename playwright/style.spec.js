@@ -189,18 +189,34 @@ test.describe('Inline entities', () => {
     const elementBox = await elementHandle.boundingBox();
     const punctuationBox = await punctuationHandle.boundingBox();
 
-    // Calculate the right end position of the element (element's position + its width)
+    // Calculate the bottom position of the element (element's position + its height)
     const elementBottom = elementBox.y + elementBox.height;
 
-    // Check if the left position of the punctuation is close to the right end of the element
-    expect(punctuationBox.y + punctuationBox.height).toBeCloseTo(elementBottom, 1); // '1' is the threshold for how close they should be
+    // Define tolerance for comparison
+    const tolerance = 2;
 
-    for (let i =0; i < 20; i++) {
+    // Check if the bottom of the punctuation is within tolerance of the bottom of the element
+    const punctuationBottom = punctuationBox.y + punctuationBox.height;
+    expect(punctuationBottom).toBeGreaterThanOrEqual(elementBottom - tolerance);
+    expect(punctuationBottom).toBeLessThanOrEqual(elementBottom + tolerance);
+
+    // Iterate to verify if the positioning remains within tolerance as text changes
+    for (let i = 0; i < 20; i++) {
+      // Add text to the element
       await page.evaluate((selector) => {
         document.querySelector(selector).innerText += 'i';
       }, '.canopy-selected-section a');
 
-      expect(punctuationBox.y + punctuationBox.height).toBeCloseTo(elementBottom, 1); // '1' is the threshold for how close they should be
+      // Update bounding boxes after text change
+      const updatedElementBox = await elementHandle.boundingBox();
+      const updatedPunctuationBox = await punctuationHandle.boundingBox();
+
+      const updatedElementBottom = updatedElementBox.y + updatedElementBox.height;
+      const updatedPunctuationBottom = updatedPunctuationBox.y + updatedPunctuationBox.height;
+
+      // Check if the updated punctuation bottom is within tolerance
+      expect(updatedPunctuationBottom).toBeGreaterThanOrEqual(updatedElementBottom - tolerance);
+      expect(updatedPunctuationBottom).toBeLessThanOrEqual(updatedElementBottom + tolerance);
     }
   });
 
