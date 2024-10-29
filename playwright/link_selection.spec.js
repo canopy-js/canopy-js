@@ -79,30 +79,22 @@ test.describe('Link Selection', () => {
     await expect(page).toHaveURL("/United_States/New_Jersey#Northern_border/New_York#Southern_border");
   });
 
-  test('Last link selections are preferred when going down', async ({ page, browserName }) => {
-    await page.goto('/United_States/New_York');
+  test('Last link selections are preferred when going down', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples');
     await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
+
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-section')).toContainText("Martha's Vineyard is a an Island in Massachusetts."); // make sure the entire displayPath render is done before advancing
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page.locator('.canopy-selected-link')).toHaveText('multi-line tokens');
+
     await page.locator('body').press('ArrowUp');
-    await page.waitForSelector('a:has-text("New York")', { state: 'visible' });
-    const textAfterFirstPress = await page.locator('.canopy-selected-link').textContent(); // Check the text after the first press
-    if (textAfterFirstPress !== "New York") await page.locator('body').press('ArrowUp'); // small screen might take two presses
-    await expect(page.locator('.canopy-selected-link')).toHaveText("New York"); // Now, expect the text to be New York
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
+
+    await page.reload();
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
-    await page.locator('body').press('ArrowUp');
-    await page.waitForSelector('a:has-text("New York")', { state: 'visible' });
-    const textAfterFirstPress2 = await page.locator('.canopy-selected-link').textContent(); // Check the text after the first press
-    if (textAfterFirstPress2 !== "New York") await page.locator('body').press('ArrowUp'); // small screen might take two presses
-    const textAfterFirstPress3 = await page.locator('.canopy-selected-link').textContent(); // Check the text after the first press
-    if (textAfterFirstPress3 !== "New York") await page.pause(); // small screen might take two presses
-    await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
-    await page.reload(); // persists even across reload
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
+    await expect(page.locator('.canopy-selected-link')).toHaveText('multi-line tokens');
   });
 });

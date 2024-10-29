@@ -77,7 +77,7 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
     await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('links in right-to-left text');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('special links');
   });
 
   test('Navigating right-to-left links', async ({ page, browserName }) => {

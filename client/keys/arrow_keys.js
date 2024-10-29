@@ -9,12 +9,7 @@ function moveInDirection(direction, options) {
   const currentLinkElement = Link.selection?.element;
 
   if (direction === 'up') {
-    if (!currentLinkElement /*&& Link.visible.length > 1*/) { // up shouldn't go down but should select a link unless none are visible
-      // return Path.rendered.selectALink({ direction: 'up' });
-      // Actually do nothing because its the wrong direction
-      // And even if no visible links, we should return because lower code will error with no selection
-      return;
-    }
+    if (!currentLinkElement) return; // don't select first link because that's "down"
     let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null);
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');
     let currentSelectionLowerRect = getBoundingRectInDirection(currentLinkElement, 'down');
