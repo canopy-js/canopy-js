@@ -16,6 +16,9 @@
     text-align: center;
     margin: auto;
     margin-top: 20px;
+    max-width: 750px;
+    word-break: break-word;
+    hyphens: auto;
   }
 
   hr.canopy-hr {
@@ -42,12 +45,15 @@
 
   .canopy-topic-section hr + p {
     margin-top: 27px;
-  }
+  }//
 
   p.canopy-paragraph {
     overflow: visible; // In case external link icon is at end of line
     font-size: 21px;
     max-width: 750px;
+    overflow-wrap: break-word; // this causes eg table cells to break long lines into rows
+    word-break: break-word; // break before trying to put element on line alone
+    hyphens: auto; // not sure we want this, rather put whole word on next line?
     margin: auto;
 
     line-height: 1.3;
@@ -56,7 +62,7 @@
 
     position: relative; // to allow absolute children
     unicode-bidi: plaintext; // to allow lines in different directions
-  }
+  }//
 
   .canopy-topic-section hr + p {
     margin-top: 31px; // 35px minus 1px bar thickness
@@ -120,57 +126,47 @@
 
 ///////////// Link styles /////////////////
 
-  a.canopy-selectable-link {
+  a.canopy-selectable-link { // even menu and table cells
     text-decoration: none;
-    
-    background-color: #FFFFFF;        /* Subtle off-white background */
-    padding-left: 1px;
-    padding-right: 1px;
-    border-radius: 1px;
-    border: 1px solid #dddddd;
-
-    &.canopy-linked-image { // ie the caption text etc
-      text-decoration: none; //override browser default for a tags
-    }
-
     color: black;
     cursor: pointer;
 
     &:focus {
       outline:0;
     }
+  }
 
-    &.canopy-open-link:not(.canopy-selected-link):not(.canopy-table-link):not(.canopy-menu-link-cell) {
-      background-color: #edecec
-    }
+  a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image) {
+    padding-right: 10px; // following punctuation shouldn't wrap without link
+    margin-right: -10px;
+    
+    .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
+      background-color: #FFFFFF;
+      
+      padding-left: 2px;
+      padding-right: 2px;
 
-    &:hover {
-      background-color: #f5f6fe;
-    }
+      border-radius: 1px;
+      border: 1px solid #dddddd;
 
-    &.canopy-selected-link, &.canopy-selected-link code {
-      background-color: #edeefc;
-      //text-shadow: 0px 0px 0px #000000;
-      text-decoration: none;
-    }
-
-    &.canopy-external-link, &.canopy-back-cycle-link, &.canopy-lateral-cycle-link/*, &.canopy-path-reference*/ {
-      &:not(.canopy-menu-link-cell) {
-        display: inline;
-        white-space: normal;
-        margin-right: 0px; // combined with negative margin on the ::after block to prevent following punctuation from wrapping
-        padding-right: 10px;
-      }
-
-      &:not(.canopy-menu-link-cell)::after {
-        font-size: 9px;
-        white-space: nowrap;
-        position: relative;
-        margin-right: -8px;
+      &:hover {
+        background-color: #f5f6fe;
       }
     }
 
-    &.canopy-external-link:not(.canopy-menu-link-cell):not(.canopy-linked-image)::after {
+    &.canopy-selected-link, &.canopy-selected-link code  {
+      .canopy-link-content-container {
+        background-color: #edeefc;
+        text-decoration: none;
+      }
+    }
+
+    &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
+      background-color: #edecec;
+      position: relative;
+    }
+
+    &.canopy-external-link .canopy-link-content-container::after {
       content: '\00a0\00a0\00a0';
       font-size: 10px;
       /* Open Iconic Icon Set, MIT License, https://iconduck.com/icons/53818/external-link */
@@ -183,24 +179,30 @@
       vertical-align: text-bottom; /* Aligns with text */
     }
 
-    &.canopy-path-reference:not(.canopy-menu-link-cell)::after {
+    &.canopy-path-reference .canopy-link-content-container::after {
       //content: '↳';
       top: 1px;
       left: 1.5px;
+      font-size: 9px;
+      position: relative;
     }
 
-    &.canopy-back-cycle-link:not(.canopy-menu-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+    &.canopy-back-cycle-link .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
       content: '↩';
       top: 2px;
-      left: 0.5px;
+      left: 1px;
       text-decoration: none;
+      font-size: 9px;
+      position: relative;
     }
 
-    &.canopy-lateral-cycle-link:not(.canopy-menu-link-cell)::after { // if it is open, it has been inlined and isn't a cycle
+    &.canopy-lateral-cycle-link .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
       content: '↪';
       top: 2px;
-      left: 0px;
+      left: 1px;
       text-decoration: none;
+      font-size: 9px;
+      position: relative;
     }
   }
 
@@ -211,6 +213,10 @@
     opacity: 0.7;
     text-decoration: none;
     background-color: #e3dfdf;
+  }
+
+  a.canopy-selectable-link.canopy-linked-image {
+    text-decoration: none;
   }
 
 /////////////////////////////////////////////
@@ -345,6 +351,7 @@
         text-shadow: none;
         background-color: #FFFFFF00;
         border: none;
+        padding: 4px; // to force breaking onto multiple lines
       }
       
       &:has(.canopy-selected-link) {
@@ -430,7 +437,11 @@
       padding: 10px; /* Add some padding inside cells */
       text-align: center; /* This will center the text inside the flex items */
       align-self: stretch; /* Stretch the child items to fill the cell's width */
+      
       white-space: normal; /* Allow the text to wrap */
+      overflow-wrap: normal; // we don't want breaking during size evaluation
+      word-break: normal; 
+      hyphens: none;
 
       &.canopy-menu-cell-left-aligned {
         margin-right: auto;
