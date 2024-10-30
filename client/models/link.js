@@ -382,11 +382,11 @@ class Link {
     return this.isGlobal && !this.isPathReference; // a global reference to a single global topic
   }
 
-  get effectivePathReference() { // a path reference which is not a cycle unless the cycle is open and thus functioning as a path reference
-    return this.isPathReference && (!this.cycle || this.inlinedCycleReference);
+  get isEffectivePathReference() { // a path reference which is not a cycle unless the cycle is open and thus functioning as a path reference
+    return this.isPathReference && (!this.cycle || this.isInlinedCycleReference);
   }
 
-  get inlinedCycleReference() { // a cycle reference that has been inlined
+  get isInlinedCycleReference() { // a cycle reference that has been inlined
     return this.introducesNewCycle && this.isOpen;
   }
 
@@ -554,7 +554,7 @@ class Link {
       return this.enclosingPath;
     }
 
-    if (this.isGlobal && this.introducesNewCycle && !this.inlinedCycleReference) { // select the link and display enclosing path
+    if (this.isGlobal && this.introducesNewCycle) { // select the link and display enclosing path
       return this.enclosingPath;
     }
 
