@@ -718,12 +718,12 @@ test.describe('Navigation', () => {
     };
 
     // Get the combined text for the first link
-    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible');
+    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible .canopy-link-content-container');
     // Assert the combined text for the first link
     expect(combinedTextFirstLink).toBe('cafeteria↪');
 
     // Get the combined text for the second link
-    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible');
+    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
     // Assert the combined text for the second link
     expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
   });
