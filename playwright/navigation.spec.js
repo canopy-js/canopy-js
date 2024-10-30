@@ -819,4 +819,30 @@ test.describe('Navigation', () => {
     // after the cycle start, because we should scroll to the lowest common ancestor before changing the selection, not the cycle starting point
     await expect(page.evaluate(() => window.scrollY)).not.toEqual(0);
   });
+
+  // test('It scrolls properly for back buttons', async ({ page, context }) => { // currently this behavior is disabled
+  //   await page.goto('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
+  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
+
+  //   await page.click('a.canopy-back-cycle-link:has-text("Martha\'s Vineyard")');
+  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard');
+
+  //   const link = page.locator('text=southern border');
+
+  //   await expect.poll(async () => {
+  //       // Recalculate link's position relative to the viewport on each poll
+  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
+  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
+  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
+  //       return relativePosition;
+  //   }, { timeout: 5000 }).toBeGreaterThan(0.2);
+
+  //   await expect.poll(async () => {
+  //       // Recalculate link's position relative to the viewport on each poll
+  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
+  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
+  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
+  //       return relativePosition;
+  //   }, { timeout: 5000 }).toBeLessThan(0.3);
+  // });
 });

@@ -321,7 +321,7 @@ class Path {
     if (options?.newTab) return window.open(location.origin + this.string, '_blank');
     if (this.empty) return console.error('Cannot display empty path');
 
-    return updateView(this, this.parentLink, options);
+    return updateView(this, null, options);
   }
 
   selectALink(options = {}) {
