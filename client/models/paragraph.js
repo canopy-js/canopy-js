@@ -264,11 +264,6 @@ class Paragraph {
     }
   }
 
-  select(options = {}) {
-    if (options?.newTab) return window.open(location.origin + this.path.string, '_blank');
-    return updateView(this.path, this.parentLink, options);
-  }
-
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
   }

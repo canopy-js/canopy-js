@@ -528,6 +528,10 @@ class Link {
     return this.introducesNewCycle;
   }
 
+  get backButton() { // ie, a cycle link pointing to the current topic root, which when reduced would take you to the previous path segment
+    return this.literalPath.equals(this.enclosingParagraph.topicPath);
+  }
+
   get introducesNewCycle() {
     if (!this.isGlobal) return false;
     return Path.introducesNewCycle(this.enclosingPath, this.literalPath);
@@ -576,6 +580,8 @@ class Link {
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
+    if (options.scrollToParagraph) return updateView(this.previewPath, null, options);
+
     return updateView(this.previewPath, this, options);
   }
 
@@ -597,7 +603,7 @@ class Link {
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      let backButton = this.literalPath.equals(this.enclosingParagraph.topicPath);
+      if (this.backButton) return this.inlinePath.reduce().parentLink.select({ ...options, scrollToParagraph: false }); //unset from click handler
       return this.inlinePath.reduce().display(options);
     }
 

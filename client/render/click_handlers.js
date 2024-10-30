@@ -35,6 +35,7 @@ function onLinkClick(link) {
       scrollDirect: true,
       selectALink: false,
       pushHistoryState: true,
+      scrollToParagraph: true,
       noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles
     });
   }
