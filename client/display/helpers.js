@@ -216,7 +216,7 @@ const BIG_PARAGRAPH_TARGET_RATIO = .05;
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!beforeChangeScrollNeeded(newPath, linkToSelect, options)) return Promise.resolve();
   options.beforeChangeScroll = true;
-  let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
+  let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let minDiff = options.noMinDiff ? null : 75;
   let targetElement = previousPath.fulcrumElement(newPath);
