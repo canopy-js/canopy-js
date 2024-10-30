@@ -182,7 +182,7 @@ test.describe('Inline entities', () => {
     await page.waitForSelector('.canopy-selected-section a + span');
 
     // Now retrieve the element handles
-    const elementHandle = await page.$('.canopy-selected-section a');
+    const elementHandle = await page.$('.canopy-selected-section a .canopy-link-content-container');
     const punctuationHandle = await page.$('.canopy-selected-section a + span');
 
     // Assuming the element handles are now not null, get their bounding boxes
@@ -205,7 +205,7 @@ test.describe('Inline entities', () => {
       // Add text to the element
       await page.evaluate((selector) => {
         document.querySelector(selector).innerText += 'i';
-      }, '.canopy-selected-section a');
+      }, '.canopy-selected-section a .canopy-link-content-container');
 
       // Update bounding boxes after text change
       const updatedElementBox = await elementHandle.boundingBox();
@@ -226,7 +226,7 @@ test.describe('Inline entities', () => {
     await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
 
     // Check if the ::after pseudo-element of the link has the background image set
-    const afterStyles = await page.locator('.canopy-selected-section a').evaluate(element => {
+    const afterStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container').evaluate(element => {
       const afterElementStyles = window.getComputedStyle(element, '::after');
       return {
         backgroundImage: afterElementStyles.getPropertyValue('background-image'),
