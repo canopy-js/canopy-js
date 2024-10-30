@@ -12,11 +12,11 @@ function onLinkClick(link) {
     let inlineCycles = e.shiftKey;
     let redirectingCycle = link.cycle && !inlineCycles;
 
-    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference) { // close global link
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // close global link
       return link.parentLink?.select({ scrollDirect: true, noAnimate: true }) || Path.root.display({ scrollDirect: true, noAnimate: true });
     }
 
-    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.isPathReference) { // select open link
+    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // select open link
       return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
@@ -24,12 +24,15 @@ function onLinkClick(link) {
       return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
     }
 
+    if (!newTab && !e.altKey && link.isInlinedCycleReference) { // un-inlining an inlined cycle reference
+      return link.select();
+    }
+
     return link.execute({
       newTab,
       redirect: e.altKey,
       inlineCycles: e.shiftKey,
       scrollDirect: true,
-      scrollToParagraph: true,
       selectALink: false,
       pushHistoryState: true,
       noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles

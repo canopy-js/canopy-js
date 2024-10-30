@@ -92,28 +92,10 @@ class Paragraph {
 
   get path() {
     return new Path(this.sectionElement.dataset.pathString);
-    // if (!this.isInDom) debugger;// throw 'Cannot call Paragraph#path until paragraph is appended to DOM.';
-    // let array = [];
-    // let currentElement = this.sectionElement;
-    // let currentParagraph = this;
-    // let currentTopicParagraph = this.topicParagraph;
+  }
 
-    // while (currentElement !== canopyContainer) {
-    //   currentTopicParagraph = currentParagraph.topicParagraph;
-
-    //   array.unshift([
-    //     Topic.fromMixedCase(currentElement.dataset.topicName),
-    //     Topic.fromMixedCase(currentElement.dataset.subtopicName)
-    //   ]);
-
-    //   while (currentElement !== canopyContainer && currentParagraph.topicParagraph.equals(currentTopicParagraph)) {
-    //     currentElement = currentElement.parentNode;
-    //     if (currentElement !== canopyContainer) currentParagraph = new Paragraph(currentElement);
-    //   }
-    // }
-
-
-    // return new Path(array);
+  get topicPath() {
+    return this.path.lastSegment.firstTopicPath;
   }
 
   get pathDown() { // path from the paragraph down the page

@@ -189,15 +189,21 @@ function beforeChangeScrollNeeded(pathToDisplay, linkToSelect, options = {}) { /
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noAnimate || options.initialLoad || options.scrollStyle === 'instant') return false;
 
-  let twoStepChange = Path.rendered.overlap(pathToDisplay)
+  return twoStepChange(pathToDisplay, linkToSelect, options) || longDistanceUp(pathToDisplay, linkToSelect, options);
+}
+
+function twoStepChange(pathToDisplay, linkToSelect, options = {}) {
+  return Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
     && (!linkToSelect || !linkToSelect.siblingOf(Link.selection))
     && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
     && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
-    && !linkToSelect.equals(Link.selection.parentLink);
+    && (!linkToSelect || !linkToSelect.equals(Link.selection.parentLink));
+}
 
-  let firstDestinationElement = (options.scrollToParagraph || !linkToSelect) ? Path.rendered.firstDestination(pathToDisplay).paragraph : linkToSelect;
+function longDistanceUp(pathToDisplay, linkToSelect, options = {}) {
+  let firstDestinationElement = !linkToSelect ? Path.rendered.firstDestination(pathToDisplay).paragraph : linkToSelect;
   let firstDestinationElementYRelative = firstDestinationElement.top;
   let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert
   let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
@@ -206,7 +212,7 @@ function beforeChangeScrollNeeded(pathToDisplay, linkToSelect, options = {}) { /
   let distanceToFirstDestinationVeryLarge = scrollDistanceUp < bigDistanceUp; // must be negative ie up
   let longDistanceUp = distanceToFirstDestinationVeryLarge; // we no longer check if top element is off screen, because either dist-large or two-step
 
-  return twoStepChange || longDistanceUp;
+  return longDistanceUp;
 }
 
 const LINK_TARGET_RATIO = .25;
@@ -216,10 +222,13 @@ const BIG_PARAGRAPH_TARGET_RATIO = .05;
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!beforeChangeScrollNeeded(newPath, linkToSelect, options)) return Promise.resolve();
   options.beforeChangeScroll = true;
-  let previousPath = Link.selection?.effectivePathReference ? Link.selection.enclosingPath : Path.rendered;
+  let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let minDiff = options.noMinDiff ? null : 75;
-  let targetElement = previousPath.fulcrumElement(newPath);
+  let targetElement = twoStepChange(newPath, linkToSelect, options) ? 
+    previousPath.fulcrumElement(newPath) : 
+    (linkToSelect?.element || newPath.paragraphElement);
+
   let targetRatio = targetElement.tagName === 'A' ? LINK_TARGET_RATIO : PARAGRAPH_TARGET_RATIO; // paragraphs should be higher to be focused than links
   if (targetElement.tagName === 'P' && Paragraph.for(targetElement.parentNode).isBig) targetRatio = BIG_PARAGRAPH_TARGET_RATIO;
 
@@ -232,18 +241,17 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   if (options.noScroll) return Promise.resolve();
   options = options || {};
   let behavior = options.scrollStyle || 'smooth';
-  let { scrollToParagraph, direction } = options;
-  scrollToParagraph = scrollToParagraph || false;
+  let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   canopyContainer.dataset.initialLoad = options.initialLoad;
   let postChangePause = options.beforeChangeScroll ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
 
-  if (!linkToSelect) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  if (linkToSelect.isFragment) return scrollElementToPosition(linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction});
+  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
+  if (linkToSelect?.isFragment) return scrollElementToPosition(linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction});
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 75;
 
-  if (scrollToParagraph) {
+  if (!linkToSelect) {
     return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,
