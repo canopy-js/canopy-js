@@ -44,7 +44,7 @@ class Link {
     return this.targetPath.string !== otherPath.string;
   }
 
-  get element () {
+  get element () { // callers should be prepared for null element indicating request that doesn't correspond to current data
     if (this.linkElement) {
       return this.linkElement
     } else if (this.metadataObject) {
@@ -53,8 +53,7 @@ class Link {
       return this.linkElement;
     } else if (this.selectorCallback) {
       let link = this.selectorCallback();
-      if (!link) throw new Error('Link selector callback provided no link');
-      this.element = link.element;
+      this.element = link?.element; // return undefined if not present and let caller handle
       return this.linkElement;
     }
   }
@@ -165,6 +164,7 @@ class Link {
   }
 
   get enclosingPath() {
+    if (!this.metadataObject && !this.enclosingSectionElement) return null; // eg link callback constructor that doesn't resolve
     if (this.metadataObject) return new Path(this.metadataObject.enclosingPathString);
     return this.enclosingParagraph.path;
   }
@@ -528,6 +528,10 @@ class Link {
     return this.introducesNewCycle;
   }
 
+  get backButton() { // ie, a cycle link pointing to the current topic root, which when reduced would take you to the previous path segment
+    return this.literalPath.equals(this.enclosingParagraph.topicPath);
+  }
+
   get introducesNewCycle() {
     if (!this.isGlobal) return false;
     return Path.introducesNewCycle(this.enclosingPath, this.literalPath);
@@ -569,12 +573,14 @@ class Link {
 
   get urlPath() {
     if (this.cycle || this.externalLink || this.isPathReference) return this.enclosingPath; // path references display target but keep URL
-    if (this.isLocal || this.isSimpleGlobal) return this.inlinePath;
+    if (this.isLocal || this.isSimpleGlobal || this.isInlinedCycleReference) return this.inlinePath;
   }
 
   select(options = {}) {
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
+
+    if (options.scrollToParagraph) return updateView(this.previewPath, null, options);
 
     return updateView(this.previewPath, this, options);
   }
@@ -597,12 +603,15 @@ class Link {
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display({ scrollToParagraph: true, ...options });
+      // if (this.backButton) return this.inlinePath.reduce().parentLink.select({ ...options, scrollToParagraph: false }); //unset from click handler
+      return this.inlinePath.reduce().display(options);
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.display({ scrollDirect: true, ...options });
+      return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
+        () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
+      );
     }
 
     return (options.selectALink && this.firstChild || this).select(options);
@@ -663,7 +672,7 @@ class Link {
 
   eraseLinkData() {
     let lastSelectionsOfParagraph = JSON.parse(sessionStorage.getItem('lastSelectionsOfParagraph') || '{}');
-    delete lastSelectionsOfParagraph[this.enclosingPath];
+    if (this.enclosingPath) delete lastSelectionsOfParagraph[this.enclosingPath];
     sessionStorage.setItem('lastSelectionsOfParagraph', JSON.stringify(lastSelectionsOfParagraph));
     if (history?.state?.linkSelection) history.state.linkSelection = null;
   }
