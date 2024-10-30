@@ -19,6 +19,8 @@ function renderTokenElements(token, renderContext) {
     return renderGlobalLink(token, renderContext);
   } else if (token.type === 'disabled_reference') {
     return renderDisabledLink(token, renderContext);
+  } else if (token.type === 'fragment_reference') {
+    return renderFragmentReference(token, renderContext);
   } else if (token.type === 'external') {
     return renderExternalLink(token, renderContext);
   } else if (token.type === 'image') {
@@ -35,8 +37,8 @@ function renderTokenElements(token, renderContext) {
     return renderList(token.topLevelNodes, renderContext);
   } else if (token.type === 'table') {
     return renderTable(token, renderContext)
-  } else if (token.type === 'table_list') {
-    return renderTableList(token, renderContext)
+  } else if (token.type === 'menu') {
+    return renderMenu(token, renderContext)
   } else if (token.type === 'footnote_lines') {
     return renderFootnoteLines(token, renderContext);
   } else if (token.type === 'bold') {
@@ -152,7 +154,7 @@ function renderGlobalLink(token, renderContext) {
 
   linkElement._CanopyClickHandler = callback;
 
-  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for table list space allocation
+  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for menu space allocation
 
   setTimeout(() => { // will run when the paragraph has a parent chain so we can detect cycle types
     if (!link.element) return;
@@ -203,6 +205,42 @@ function renderDisabledLink(token, renderContext) {
   // let targetTopic = new Topic(token.targetTopic);
   // let targetSubtopic = new Topic(token.targetSubtopic);
   // linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
+  return [linkElement];
+}
+
+function renderFragmentReference(token, renderContext) {
+  let linkElement = document.createElement('a');
+  linkElement.classList.add('canopy-selectable-link');
+  linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // helpful for debugger
+  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
+  linkElement.dataset.enclosingTopic = token.enclosingTopic;
+  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
+  linkElement.dataset.text = token.text;
+
+  token.tokens.forEach(subtoken => {
+    let subtokenElements = renderTokenElements(subtoken, renderContext);
+    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+  });
+
+  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
+    e.preventDefault();
+  });
+
+  let callback = onLinkClick(new Link(linkElement));
+  linkElement._CanopyClickHandler = callback;
+  linkElement.addEventListener(
+    'click',
+    callback
+  );
+
+  linkElement.classList.add('canopy-local-link');
+  linkElement.dataset.type = 'local';
+
+  let targetTopic = new Topic(token.targetTopic);
+  let targetSubtopic = new Topic(token.targetSubtopic);
+  linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
   return [linkElement];
 }
 
@@ -459,6 +497,9 @@ function renderList(listNodeObjects, renderContext) {
 }
 
 function renderTable(token, renderContext) {
+  const WIDTH_STANDARDIZE_MIN = 60;
+  const HEIGHT_STANDARDIZE_MIN = 50;
+
   let tableElement = document.createElement('TABLE');
   tableElement.setAttribute('dir', 'auto');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
@@ -472,25 +513,24 @@ function renderTable(token, renderContext) {
         (cellObject) => {
           let tableCellElement = document.createElement('TD');
           if (cellObject.hidden) tableCellElement.classList.add('hidden');
+          if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
+          if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
 
           cellObject.tokens.forEach(
             (token) => {
               let tokenElements = renderTokenElements(token, renderContext);
 
               tokenElements.forEach(tokenElement => {
-                if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
-                if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
-
-                if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+                const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
+                if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
-                  tokenElement.classList.add('canopy-table-link');
-                  tableCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
-                  tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler)
-
-                  if (tokenElement.classList.contains('canopy-disabled-link')) {
-                    tokenElement.classList.remove('canopy-disabled-link');
-                    tableCellElement.classList.add('canopy-disabled-link');
-                  }
+                  setTimeout(() => { // need to wait for .parentNode to exist
+                    let linkElement = tokenElement.parentNode.querySelector('a');
+                    linkElement.classList.add('canopy-table-link');
+                    linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
+                    tableCellElement.addEventListener('click', linkElement._CanopyClickHandler);
+                    // console.log('moved listener from', linkElement, 'to ', tableCellElement, tokenElement._CanopyClickHandler)
+                  });
                 }
 
                 tableCellElement.appendChild(tokenElement);
@@ -523,11 +563,11 @@ function renderTable(token, renderContext) {
     if (!rwsp && tableCellElement.offsetHeight < sizes.shortest) sizes.shortest = tableCellElement.offsetHeight;  
   });
 
-  if (sizes.widest - sizes.narrowest < 50) {
+  if (sizes.widest - sizes.narrowest < WIDTH_STANDARDIZE_MIN) {
     [...tableElement.querySelectorAll('td')].forEach(td => {td.style.width = sizes.widest + 'px'; })
   }
 
-  if (sizes.tallest - sizes.shortest < 50) {
+  if (sizes.tallest - sizes.shortest < HEIGHT_STANDARDIZE_MIN) {
     [...tableElement.querySelectorAll('td')].forEach(td => {td.style.height = sizes.tallest + 'px'; })
   }
 
@@ -537,94 +577,90 @@ function renderTable(token, renderContext) {
   return [tableElement];
 }
 
-function renderTableList(token, renderContext) {
-  let tableListElement = document.createElement('DIV');
-  tableListElement.classList.add('canopy-table-list');
+function renderMenu(token, renderContext) {
+  let menuElement = document.createElement('DIV');
+  menuElement.classList.add('canopy-menu');
 
-  if (token.rtl) tableListElement.dir = 'rtl';
+  if (token.rtl) menuElement.dir = 'rtl';
 
-  if (token.alignment === 'right') tableListElement.classList.add('canopy-align-right');
-  if (token.alignment === 'left') tableListElement.classList.add('canopy-align-left');
-  if (token.alignment === 'mixed') tableListElement.classList.add('canopy-align-mixed');
+  if (token.alignment === 'right') menuElement.classList.add('canopy-align-right');
+  if (token.alignment === 'left') menuElement.classList.add('canopy-align-left');
+  if (token.alignment === 'mixed') menuElement.classList.add('canopy-align-mixed');
 
   let SizesByArea = ['eigth-pill', 'quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
 
   let cellElements = token.items.map((cellObject, cellIndex) => {
-    let tableCellElement = document.createElement('DIV');
-    tableCellElement.classList.add('canopy-table-list-cell');
+    let menuCellElement = document.createElement('DIV');
+    menuCellElement.classList.add('canopy-menu-cell');
     let contentContainer = document.createElement('DIV');
-    contentContainer.classList.add('canopy-table-list-content-container');
+    contentContainer.classList.add('canopy-menu-content-container');
 
-    if (cellObject.hidden) tableCellElement.style.opacity = '0';
+    if (cellObject.hidden) menuCellElement.style.opacity = '0';
 
     let tokenElements = renderTokenElements(cellObject.tokens[0], renderContext);
 
     tokenElements.forEach(tokenElement => {
       if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
-        tokenElement.classList.add('canopy-table-list-cell');
-        tokenElement.classList.add('canopy-table-list-link-cell');
+        tokenElement.classList.add('canopy-menu-cell');
+        tokenElement.classList.add('canopy-menu-link-cell');
         while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
-        tableCellElement = tokenElement;
-        tableCellElement.appendChild(contentContainer);
-        tableCellElement.addEventListener('dragstart', e => e.preventDefault());
+        menuCellElement = tokenElement;
+        menuCellElement.appendChild(contentContainer);
+        menuCellElement.addEventListener('dragstart', e => e.preventDefault());
       } else {
         cellObject.tokens.forEach(token => {
           tokenElements.forEach(tokenElement => contentContainer.appendChild(tokenElement));
         });
-        tableCellElement.appendChild(contentContainer);
+        menuCellElement.appendChild(contentContainer);
       }      
 
       if (cellObject.alignment || token.alignment) { // apply alignment to specific cells
-        tableCellElement.classList.add(`canopy-table-list-cell-${cellObject.alignment || token.alignment}-aligned`);
+        menuCellElement.classList.add(`canopy-menu-cell-${cellObject.alignment || token.alignment}-aligned`);
       }
     });
 
     if (cellObject.list) {
       let ordinalElement = document.createElement('SPAN');
-      ordinalElement.classList.add('canopy-table-list-ordinal');
+      ordinalElement.classList.add('canopy-menu-ordinal');
       ordinalElement.innerHTML = cellObject.ordinal + '.&nbsp;';
       contentContainer.prepend(ordinalElement);
-      tableCellElement.classList.add('canopy-table-list-ordinal-cell');
+      menuCellElement.classList.add('canopy-menu-ordinal-cell');
     }
 
-    return tableCellElement;
+    return menuCellElement;
   });
 
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   let tempRowElement = createNewRow();
   canopyContainer.appendChild(tempSectionElement);
-  tempParagraphElement.appendChild(tableListElement);
-  tableListElement.appendChild(tempRowElement);
+  tempParagraphElement.appendChild(menuElement);
+  menuElement.appendChild(tempRowElement);
 
   for (let i = 0; i < cellElements.length; i++) {
     // try fitting text into boxes and find the minimum cell size that fits
-    let tableCellElement = cellElements[i];
-    tempRowElement.appendChild(tableCellElement);
-    tableCellElement.style.overflow = 'scroll';
+    let menuCellElement = cellElements[i];
+    tempRowElement.appendChild(menuCellElement);
 
-    while(1) {
+    while(true) {
       if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // quarters look better than halves
-      // if (token.items.length < 3 && !token.alignment && tableListSizeIndex < 2) { // even if content isn't big, expand if there aren't so many
-      //   tableListSizeIndex = 2;
-      // }
 
-      tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+      menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let availableWidth = tableCellElement.clientWidth -
-        parseFloat(window.getComputedStyle(tableCellElement).paddingLeft) -
-        parseFloat(window.getComputedStyle(tableCellElement).paddingRight);
+      let availableWidth = menuCellElement.clientWidth -
+        parseFloat(window.getComputedStyle(menuCellElement).paddingLeft) -
+        parseFloat(window.getComputedStyle(menuCellElement).paddingRight);
 
-      let availableHeight = tableCellElement.clientHeight -
-        parseFloat(window.getComputedStyle(tableCellElement).paddingTop) -
-        parseFloat(window.getComputedStyle(tableCellElement).paddingBottom);
+      let availableHeight = menuCellElement.clientHeight -
+        parseFloat(window.getComputedStyle(menuCellElement).paddingTop) -
+        parseFloat(window.getComputedStyle(menuCellElement).paddingBottom);
 
-      let scrollWidth = tableCellElement.firstChild.scrollWidth -
-        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+      let scrollWidth = menuCellElement.firstChild.scrollWidth -
+        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
 
-      let scrollHeight = tableCellElement.firstChild.scrollHeight -
-        parseFloat(window.getComputedStyle(tableCellElement).borderWidth) * 2;
+      let scrollHeight = menuCellElement.firstChild.scrollHeight -
+        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
 
       let tooWide = scrollWidth > availableWidth;
       let tooTall = scrollHeight > availableHeight;
@@ -632,23 +668,22 @@ function renderTableList(token, renderContext) {
       if (!tooWide && !tooTall) break; // fits
       if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
 
-      tableListElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
+      menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
       tableListSizeIndex++;
       i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
     }
-
   }
 
   tempParagraphElement.remove();
   tempRowElement.remove();
   tempSectionElement.remove();
-  tableListElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+  menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
   function createNewRow() {
     let newRow = document.createElement('DIV');
-    newRow.classList.add('canopy-table-list-row');
+    newRow.classList.add('canopy-menu-row');
     if (token.rtl) newRow.dir = 'rtl';
-    tableListElement.appendChild(newRow);
+    menuElement.appendChild(newRow);
     return newRow;
   }
 
@@ -672,18 +707,18 @@ function renderTableList(token, renderContext) {
     }
   }
 
-  if (tableListElement.childNodes.length > 1) { // if there is more than one row
+  if (menuElement.childNodes.length > 1) { // if there is more than one row
     const remainingCells = cellElements.length % rowSize;
     const cellsToAdd = remainingCells > 0 ? rowSize - remainingCells : 0;
     for (let i = 0; i < cellsToAdd; i++) {
       let paddingElement = document.createElement('DIV');
-      paddingElement.classList.add('canopy-table-list-cell');
+      paddingElement.classList.add('canopy-menu-cell');
       paddingElement.style.opacity = '0';
       tableRowElement.appendChild(paddingElement);
     }
   }
 
-  return [tableListElement];
+  return [menuElement];
 
   function getTotalWidthWithAfter(element) {
     // Get the width of the main element

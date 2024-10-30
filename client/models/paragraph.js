@@ -251,6 +251,16 @@ class Paragraph {
     return !!this.sectionElement.closest('div#_canopy');
   }
 
+  get isBig() {
+    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    return paragraphPercent > .6;
+  }
+
+  get fits() {
+    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    return paragraphPercent < .8;
+  }
+
   get top() {
     return this.paragraphElement.getBoundingClientRect().top;
   }

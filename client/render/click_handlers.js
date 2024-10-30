@@ -29,7 +29,7 @@ function onLinkClick(link) {
       redirect: e.altKey,
       inlineCycles: e.shiftKey,
       scrollDirect: true,
-      scrollToParagraph: !link?.isBackCycle,
+      scrollToParagraph: true,
       selectALink: false,
       pushHistoryState: true,
       noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles

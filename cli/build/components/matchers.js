@@ -2,6 +2,7 @@ let {
   LocalReferenceToken,
   GlobalReferenceToken,
   DisabledReferenceToken,
+  FragmentReferenceToken,
   TextToken,
   ExternalLinkToken,
   ImageToken,
@@ -11,7 +12,7 @@ let {
   BlockQuoteToken,
   OutlineToken,
   TableToken,
-  TableListToken,
+  MenuToken,
   FootnoteLinesToken,
   ItalicsToken,
   BoldToken,
@@ -36,6 +37,7 @@ const Matchers = [
   localReferenceMatcher,
   globalReferenceMatcher,
   disabledReferenceMatcher,
+  fragmentReferenceMatcher,
   footnoteMarkerMatcher,
   italicsMatcher,
   boldMatcher,
@@ -137,7 +139,7 @@ function tableListMatcher({ string, parserContext, startOfLine }) {
 
   if (match && startOfLine) {
     return [
-      new TableListToken(match[0], parserContext),
+      new MenuToken(match[0], parserContext),
       match[0].length
     ];
   }
@@ -279,6 +281,27 @@ function disabledReferenceMatcher({ string, parserContext }) {
     let reference = Reference.for('[[' + match[0].slice('[!['.length), currentTopic, parserContext);
 
     return [new DisabledReferenceToken(
+      reference.displayText,
+      parserContext
+    ),
+    match[0].length];
+  }
+}
+
+function fragmentReferenceMatcher({ string, parserContext }) {
+  let match = string.match(/^\[#\[(?:\\.|(?!]]).)+]]/s);
+
+  if (match) {
+    let { currentTopic, currentSubtopic } = parserContext;
+    let reference = Reference.for('[[' + match[0].slice('[#['.length), currentTopic, parserContext);
+
+    parserContext.registerFragmentReference(reference);
+
+    return [new LocalReferenceToken(
+      currentTopic.mixedCase,
+      reference.targetAsTopic.mixedCase,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
       reference.displayText,
       parserContext
     ),

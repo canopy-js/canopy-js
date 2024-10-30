@@ -25,6 +25,7 @@ class ParserContext {
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
       this.pathsReferenced = []; // a list of paths referenced in global references to validate
       this.globalReferencesBySubtopic = {}; // for each topic#subtopic combo, what global references / path references exist?
+      this.fragmentReferenceSubtopics = {}; // per topic, a list of subtopics added by fragment references
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
@@ -239,6 +240,19 @@ class ParserContext {
     };
   }
 
+  registerFragmentReference(reference) {
+    this.fragmentReferenceSubtopics[this.currentTopic.caps] = this.fragmentReferenceSubtopics[this.currentTopic.caps] || [];
+    this.fragmentReferenceSubtopics[this.currentTopic.caps].push(reference.targetAsTopic);
+  }
+
+  addFragmentReferenceSubtopics(callback) {
+    if (this.fragmentReferenceSubtopics[this.currentTopic.caps]) {
+      this.fragmentReferenceSubtopics[this.currentTopic.caps].forEach(fragmentReferenceTargetTopic => {
+        callback(fragmentReferenceTargetTopic); // caller will know how to add topics to json object
+      });
+    }
+  }
+
   registerSubsumptionConditionalError(errorString) {
     this.subsumptionConditionalErrors.push({ // this is an error that should be thrown if the enclosing paragraph is subsumed
       enclosingTopic: this.currentTopic,
@@ -352,7 +366,7 @@ class ParserContext {
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
-            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
+            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference "${referenceString}" of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
           }
 
           if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
@@ -365,7 +379,7 @@ class ParserContext {
           let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
 
           if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
-            throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency.\n` +
+            throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`));
           }

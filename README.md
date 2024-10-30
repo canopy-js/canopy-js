@@ -351,7 +351,7 @@ if (x) y(); //This is a code block
 |  A   | B  | C |   D   |
 ````
 
-#### Table lists ####
+#### Menus ####
 ````
 ===
 - Apples
@@ -363,7 +363,7 @@ if (x) y(); //This is a code block
 ===
 ````
 
-![Table list](./readme/table-list.png)
+![Menu](./readme/menu.png)
 
 #### Block quotes ####
 ````

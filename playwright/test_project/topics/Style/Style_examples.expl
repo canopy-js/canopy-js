@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table lists]], [[table list links]], [[directional table lists]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], and [[multi-line text]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[menus]], [[menu links]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], and [[multi-line text]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], and [[disabled links]].
 
@@ -35,7 +35,7 @@ Tables with omitted cells:
 |---|---|---|-----------|
 | 2 | 4 | 6 | \x |
 
-Table lists:
+Menus:
 For small elements we use a width of 4:
 ===
 - This is 1/4 pill
@@ -120,48 +120,48 @@ Or half-pills for N < 3
 - A
 ===
 
-Table list links:
+Menu links:
 ===
-- [[Table list cell 01]]
-- [[Table list cell 02]]
-- [[Table list cell 03]]
-- [[Table list cell 04]]
-- [[Table list cell 05]]
-- [[Table list cell 06]]
-- [[Table list cell 07]]
-- [[Table list cell 08]]
-- [[Table list cell 09]]
-- [[Table list cell 10]]
-- [[Table list cell 11]]
-- [[Table list cell 12]]
+- [[Menu cell 01]]
+- [[Menu cell 02]]
+- [[Menu cell 03]]
+- [[Menu cell 04]]
+- [[Menu cell 05]]
+- [[Menu cell 06]]
+- [[Menu cell 07]]
+- [[Menu cell 08]]
+- [[Menu cell 09]]
+- [[Menu cell 10]]
+- [[Menu cell 11]]
+- [[Menu cell 12]]
 ===
 
-Table list cell 01:
+Menu cell 01:
 
-Table list cell 02:
+Menu cell 02:
 
-Table list cell 03:
+Menu cell 03:
 
-Table list cell 04:
+Menu cell 04:
 
-Table list cell 05:
+Menu cell 05:
 
-Table list cell 06:
+Menu cell 06:
 
-Table list cell 07:
+Menu cell 07:
 
-Table list cell 08:
+Menu cell 08:
 
-Table list cell 09:
+Menu cell 09:
 
-Table list cell 10:
+Menu cell 10:
 
-Table list cell 11:
+Menu cell 11:
 
-Table list cell 12:
+Menu cell 12:
 
 
-Directional table lists:
+Directional menus:
 Right:
 ===
 > Next 1
@@ -340,8 +340,8 @@ Hyperlink special cases:
 These are hyperlink special cases:
 - This is a [link](http://google.com)
 - This is two links [link 1](http://google.com) [link 2](http://google.com) - don't combine
-- This is a nested image [![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
-- This is a nested double image [![pic](https://en.wikipedia.org/favicon.ico)![pic](https://en.wikipedia.org/favicon.ico)](https://en.wikipedia.org/)
+- This is a nested image [![pic](./_assets/wiki-favicon.ico)](https://en.wikipedia.org/)
+- This is a nested double image [![pic](./_assets/wiki-favicon.ico)![pic](./_assets/wiki-favicon.ico)](https://en.wikipedia.org/)
 - This is a nested image red herring [![abc](https://en.wikipedia.org/)
 - This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
 - This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
@@ -389,5 +389,5 @@ Second left to right link: This is a filler paragraph.
 Disabled links:
 This is a sentence with a [![disabled link]].
 ===
-- [![This is a table list cell with a disabled link]]
+- [![This is a menu cell with a disabled link]]
 ===

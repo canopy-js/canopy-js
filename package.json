@@ -20,7 +20,7 @@
     "@babel/core": "^7.18.2",
     "@babel/eslint-parser": "^7.13.10",
     "@babel/preset-env": "^7.18.2",
-    "@playwright/test": "^1.46.1",
+    "@playwright/test": "^1.48.2",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^28.1.0",
     "babel-loader": "^8.2.5",
