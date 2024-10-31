@@ -64,7 +64,7 @@ class Reference {
 
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
       if (plainText) {
-        this.displayText += plainText;
+        this.displayText += this.findLastPathComponent(plainText); //{|The }Literature/Big Bad Wolf
         this.targetText += plainText;
       } else {
         this.validateBraces(openingBraces, closingBraces);
@@ -118,19 +118,25 @@ class Reference {
 
   get lastPathComponent() {
     if (this.singleTopicWithEmptyFragment) return Reference.textBeforeFragment(this.contents);
+    if (this.soloPoundSign) return null;
+    if (this.soloCaretSign) return null;
     // Regular expression to match the last unescaped slash or hash
-    const match = this.contents.match(/(?:^|[^\\<])(?:\\\\)*([\/#])([^\/#]*(?:\\.[^\/#]*)*)$/);
+    return this.findLastPathComponent(this.contents);
+  }
+
+  findLastPathComponent(string) {
+    const match = string.match(/(?:^|[^\\< ]|\\\\+)([\/#])([^\/#]*(?:\\.[^\/#]*)*)$/);
     if (match) {
       return match[2]; // Return text after the last unescaped slash or hash
+    } else {
+      return string;
     }
-
-    return this.contents; // Return the whole string if no unescaped slash or hash is found
   }
 
   parseSimple() {
     this.targetText = this.contents;
     this.displayText = this.lastPathComponent;
-    if (!this.displayText && this.soloPoundSign) this.displayText = 'Back';
+    if (!this.displayText && (this.soloPoundSign || this.soloCaretSign)) this.displayText = 'Back';
   }
 
   get isPath() {
@@ -156,6 +162,10 @@ class Reference {
 
   get soloPoundSign() {
     return !!(this.targetText === '#');
+  }
+
+  get soloCaretSign() {
+    return !!(this.targetText === '^');
   }
 
   get singleTopicWithEmptyFragment() {
@@ -207,6 +217,13 @@ class Reference {
   get displayPathString() {
     if (this.soloPoundSign) { //eg [#], short for topic subtopic
       let enclosingTopicMixedCase = this.enclosingTopic.mixedCase.replace(/([^\\])\//g, '$1\\/');
+      return `${enclosingTopicMixedCase}#${enclosingTopicMixedCase}`;
+    }
+
+    if (this.soloCaretSign) { //eg [#], short for topic subtopic
+      let enclosingTopicMixedCase = this.enclosingTopic.mixedCase.replace(/([^\\])\//g, '$1\\/');
+      let subtopic = this.parserContext.parentTopicOf(this.parserContext.currentSubtopic);
+      if (!subtopic) throw new Error(`Cannoy use [[^]] syntax for parent declared after reference in expl file.`);
       return `${enclosingTopicMixedCase}#${enclosingTopicMixedCase}`;
     }
 
