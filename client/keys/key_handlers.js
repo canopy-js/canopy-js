@@ -27,7 +27,12 @@ function moveToParent() {
   }
 
   if (parentLink && !parentLink.isVisible) {
-    return scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
+    return scrollElementToPosition(parentLink.element, {targetRatio: 0.3, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'})
+      .then(() => { 
+        if (parentLink.isFocused) {
+          return parentLink.select({ noScroll: true });
+        }
+      });
   }
 
   if (parentLink && parentLink.isVisible) {
@@ -38,11 +43,11 @@ function moveToParent() {
 function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
   let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
 
-  if (firstChild && firstChild.isBelowViewport() && !Link.selection.isPathReference) {
+  if (firstChild && firstChild.isBelowViewport && !Link.selection.isPathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
 
-  if (firstChild && firstChild.isAboveViewport() && !Link.selection.isPathReference) {
+  if (firstChild && firstChild.isAboveViewport && !Link.selection.isPathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth', side: 'bottom'});
   }
 

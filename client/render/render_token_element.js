@@ -540,12 +540,12 @@ function renderTable(token, renderContext) {
                 const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
+                  tableCellElement.classList.add('canopy-arrow-key-container'); // rect to consider for arrow key comparisons
                   setTimeout(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
                     tableCellElement.addEventListener('click', linkElement._CanopyClickHandler);
-                    // console.log('moved listener from', linkElement, 'to ', tableCellElement, tokenElement._CanopyClickHandler)
                   });
                 }
 
