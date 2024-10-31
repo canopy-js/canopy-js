@@ -220,7 +220,7 @@ const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
-  if (!beforeChangeScrollNeeded(newPath, linkToSelect, options)) return Promise.resolve();
+  if (!beforeChangeScrollNeeded(newPath, linkToSelect, options) || options.noScroll) return Promise.resolve();
   options.beforeChangeScroll = true;
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
@@ -245,8 +245,14 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   let postChangePause = options.beforeChangeScroll ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
 
-  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  if (linkToSelect?.isFragment) return scrollElementToPosition(linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction});
+  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(
+    Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
+  );
+
+  if (linkToSelect?.isFragment) return scrollElementToPosition(
+    linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
+  );
+
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 75;
 

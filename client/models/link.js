@@ -479,7 +479,7 @@ class Link {
     return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
   }
 
-  isAboveViewport() {
+  get isAboveViewport() {
     if (!this.element || !this.element.getBoundingClientRect) {
       return false;
     }
@@ -488,7 +488,7 @@ class Link {
     return rect.top < ScrollableContainer.top;
   }
 
-  isBelowViewport() {
+  get isBelowViewport() {
     if (!this.element || !this.element.getBoundingClientRect) {
       return false;
     }
@@ -498,7 +498,7 @@ class Link {
     return rect.bottom > viewportHeight;
   }
 
-  isDistantParent() {
+  get isDistantParent() {
     return this.top + ScrollableContainer.visibleHeight * 0.5 < this.childParagraph.top;
   }
 
@@ -511,11 +511,10 @@ class Link {
     const rect = this.element.getBoundingClientRect();
 
     // Get the viewport height
-    const viewportHeight = ScrollableContainer.innerHeight;
+    const viewportHeight = ScrollableContainer.visibleHeight;
 
-    // Calculate the top 25% and bottom 40% positions of the viewport
-    const topLimit = viewportHeight * 0.25;
-    const bottomLimit = viewportHeight * 0.6;
+    const topLimit = viewportHeight * 0.1;
+    const bottomLimit = viewportHeight * 0.5;
 
     // Check if the element is within the target area
     const overlapsTop = rect.bottom > topLimit;
