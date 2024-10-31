@@ -253,6 +253,10 @@ class ParserContext {
     }
   }
 
+  parentTopicOf(subtopic) {
+    return this.subtopicParents[this.currentTopic.caps][subtopic.caps];
+  }
+
   registerSubsumptionConditionalError(errorString) {
     this.subsumptionConditionalErrors.push({ // this is an error that should be thrown if the enclosing paragraph is subsumed
       enclosingTopic: this.currentTopic,
