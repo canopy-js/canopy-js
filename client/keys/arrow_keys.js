@@ -30,8 +30,8 @@ function moveInDirection(direction, options) {
 
     let lowestHigherRect = candidateRectContainers
       .reduce((lowestHigherRect, newRect) => {
-        let bestLink = Link.for(lowestHigherRect.element);
-        let newLink = Link.for(newRect.element);
+        let bestLink = lowestHigherRect.link;
+        let newLink = newRect.link;
 
         // Prefer parent within higher paragraph
         if (newLink.siblingOf(bestLink) && bestLink.isParentLinkOf(Link.selection.enclosingParagraph)) return lowestHigherRect;
@@ -82,6 +82,7 @@ function moveInDirection(direction, options) {
       .filter(rect => isLower(rect, currentSelectionHigherRect)
         && !isVerticallyOverlapping(rect, currentSelectionHigherRect)
         && isInViewportVertically(rect)
+        && (!Link.selection.isAboveViewport || !Link.selection.siblingOf(rect.link)) // down means return ie switch paragraphs
         && rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
@@ -91,8 +92,8 @@ function moveInDirection(direction, options) {
 
     let highestLowerRect = candidateRectContainers
       .reduce((highestLowerRect, newRect) => {
-        let bestLink = Link.for(highestLowerRect.element);
-        let newLink = Link.for(newRect.element);
+        let bestLink = highestLowerRect.link;
+        let newLink = newRect.link;
 
         // prefer previous selection of paragraph
         if (newLink.isLastSelection && bestLink.siblingOf(newLink)) return newRect;
@@ -114,10 +115,10 @@ function moveInDirection(direction, options) {
           !isVerticallyOverlapping(highestLowerRect, newRect) &&
           !isVerticallyOverlapping(newRect, currentSelectionHigherRect)) return newRect;
 
-        if (isHorizontallyWithin(currentSelectionHigherRect, highestLowerRect)) return highestLowerRect;
-        if (isHorizontallyWithin(currentSelectionHigherRect, newRect)) return newRect;
-        if (isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyWithin(newRect, currentSelectionHigherRect)) return highestLowerRect;
-        if (isHorizontallyWithin(newRect, currentSelectionHigherRect) && !isHorizontallyWithin(highestLowerRect, currentSelectionHigherRect)) return newRect;
+        if (isHorizontallyWithin(currentSelectionLowerRect, highestLowerRect)) return highestLowerRect;
+        if (isHorizontallyWithin(currentSelectionLowerRect, newRect)) return newRect;
+        if (isHorizontallyWithin(highestLowerRect, currentSelectionLowerRect) && !isHorizontallyWithin(newRect, currentSelectionLowerRect)) return highestLowerRect;
+        if (isHorizontallyWithin(newRect, currentSelectionLowerRect) && !isHorizontallyWithin(highestLowerRect, currentSelectionLowerRect)) return newRect;
 
         if (highestLowerRect.element.closest('p.canopy-paragraph') === Link.selection?.targetParagraph?.paragraphElement) { // going down into new paragraph
           if (isHorizontallyOverlapping(highestLowerRect, currentSelectionLowerRect) && !isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) return highestLowerRect;
@@ -381,12 +382,12 @@ function isVisible(element) {
 }
 
 function scrollOrSelect(rect, options) {
-  const amountOfLinkThatMustBeVisibleToSelect = -10; // we even let links be a bit over the viewport
+  const AmountOfLinkThatMustBeVisibleToSelect = -10; // we even let links be a bit over the viewport
 
-  if (rect.top - ScrollableContainer.top > window.innerHeight - amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth'});
-  } else if (rect.bottom - ScrollableContainer.top < amountOfLinkThatMustBeVisibleToSelect) {
-    return scrollElementToPosition(rect.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
+  if (rect.top - ScrollableContainer.top > window.innerHeight - AmountOfLinkThatMustBeVisibleToSelect) {
+    return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 70, direction: 'down', behavior: 'smooth'});
+  } else if (rect.bottom - ScrollableContainer.top < AmountOfLinkThatMustBeVisibleToSelect) {
+    return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 70, direction: 'up', behavior: 'smooth'});
   } else {
     const link = new Link(rect.element);
     return link.select(options);
@@ -434,12 +435,14 @@ function getRectsOfElements(elementArray, currentLinkElement) {
 
   for (const element of elementArray) {
     let elementForRect = element;
-    if (element.parentNode.tagName === 'TD' && element.parentNode.childNodes.length === 1) elementForRect = element.parentNode; // a link in TD should use the TD's borders
+    if (element.closest('.canopy-arrow-key-container')) {
+      elementForRect = element.closest('.canopy-arrow-key-container'); // a single link in TD should use the TD's borders eg
+    }
 
     const subRects = Array.from(elementForRect.getClientRects());
-    let singleRect = { element, text: element.innerText, ...JSON.parse(JSON.stringify(elementForRect.getBoundingClientRect()))};
+    let singleRect = { element, link: Link.for(element), text: element.innerText, ...JSON.parse(JSON.stringify(elementForRect.getBoundingClientRect()))};
 
-    if (commonAncestorIsContainer(element, currentLinkElement)) { // a link in a DIV is one rect unlike links in wrapping text
+    if (element.closest('.canopy-arrow-key-container')) { // a link in a TD eg
       result.push(singleRect);
     } else {
       for (let i = 0; i < subRects.length; i++) { // treat multiple rects of same link as separate candidates
@@ -454,32 +457,14 @@ function getRectsOfElements(elementArray, currentLinkElement) {
           bottom: rect.bottom,
           left: rect.left,
           element: element,
-          text: element.innerText
+          text: element.innerText,
+          link: Link.for(element)
         });
       }
     }
   }
 
   return result;
-}
-
-function commonAncestorIsContainer(element, currentLinkElement) {
-  let ancestor1 = element;
-  let ancestor2 = currentLinkElement;
-
-  while (ancestor1 !== null) {
-    let tempAncestor2 = ancestor2;
-    while (tempAncestor2 !== null) {
-      if (ancestor1 === tempAncestor2) {
-        return ['TABLE', 'TR'].includes(ancestor1.tagName) || // these containers imply links are not in free-form wrapped text
-          ancestor1.classList.contains('canopy-menu') ||
-          ancestor1.classList.contains('canopy-table-row');
-      }
-      tempAncestor2 = tempAncestor2.parentElement;
-    }
-    ancestor1 = ancestor1.parentElement;
-  }
-  return false;
 }
 
 function getBoundingRectInDirection(element, direction) {
@@ -491,19 +476,19 @@ function getBoundingRectInDirection(element, direction) {
 
   switch(direction) {
     case 'left':
-      return { element, ...multipleRects.reduce((leftmostRect, currentRect) => {
+      return { element, link: Link.for(element), ...multipleRects.reduce((leftmostRect, currentRect) => {
         return currentRect.right > leftmostRect.right ? leftmostRect : currentRect;
       })};
     case 'right':
-      return { element, ...multipleRects.reduce((rightmostRect, currentRect) => {
+      return { element, link: Link.for(element), ...multipleRects.reduce((rightmostRect, currentRect) => {
         return currentRect.left < rightmostRect.left ?  rightmostRect : currentRect;
       })};
     case 'up':
-      return { element, ...multipleRects.reduce((uppermostRect, currentRect) => {
+      return { element, link: Link.for(element), ...multipleRects.reduce((uppermostRect, currentRect) => {
         return currentRect.bottom < uppermostRect.bottom ? currentRect : uppermostRect;
       })};
     case 'down':
-      return { element, ...multipleRects.reduce((lowestRect, currentRect) => {
+      return { element, link: Link.for(element), ...multipleRects.reduce((lowestRect, currentRect) => {
         return currentRect.top > lowestRect.top ? currentRect : lowestRect;
       })};
     default:
@@ -511,7 +496,7 @@ function getBoundingRectInDirection(element, direction) {
   }
 
   function linkTextIsOneUnit(linkElement) { // is wrapped text new unit for proximity calculations or is container one unit?
-    return linkElement.closest('p.canopy-paragraph > div') || linkElement.closest('p.canopy-paragraph > table'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
+    return linkElement.closest('.canopy-arrow-key-container'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
   }
 }
 
