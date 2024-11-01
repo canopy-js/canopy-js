@@ -97,7 +97,7 @@ class Link {
   }
 
   get text() {
-    return this.linkElement.dataset.text;
+    return this.linkElement?.dataset?.text || this.metadataObject?.text;
   }
 
   get targetTopic() {

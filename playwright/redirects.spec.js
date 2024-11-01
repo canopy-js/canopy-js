@@ -37,6 +37,11 @@ if (platform === 'darwin') {
 
 test.describe('Redirects', () => {
   test('Empty path redirects to default topic', async ({ page }) => {
+    await Promise.race([
+      page.waitForLoadState('networkidle'), // Wait for network idle to avoid aborted requests
+      page.waitForTimeout(10000)
+    ]);
+
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States');
