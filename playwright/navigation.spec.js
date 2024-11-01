@@ -793,8 +793,10 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('/United_States/New_York');
     await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto('/'); // when this gets forwarded to United_States, it should replace the history state not add
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('United_States');
     await page.goBack();
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/United_States/New_York');
   });
 
