@@ -10,33 +10,45 @@ fi
 current_version=$(jq -r '.version' package.json)
 echo "Current version: $current_version"
 
-# Break the version number into an array (major, minor, patch)
-IFS='.' read -ra ADDR <<< "$current_version"
-major=${ADDR[0]}
-minor=${ADDR[1]}
-patch=${ADDR[2]}
+# Check if a Git tag exists for the current version
+if git rev-parse -q --verify "refs/tags/v$current_version" >/dev/null; then
+    echo "Git tag for version $current_version exists. Proceeding to increment patch version."
 
-# Remove leading zeros if present
-patch=$(echo $patch | sed 's/^0*//')
+    # Break the version number into an array (major, minor, patch)
+    IFS='.' read -ra ADDR <<< "$current_version"
+    major=${ADDR[0]}
+    minor=${ADDR[1]}
+    patch=${ADDR[2]}
 
-# Increment the patch version
-((patch++))
+    # Remove leading zeros if present
+    patch=$(echo $patch | sed 's/^0*//')
 
-# Ensure patch has a leading zero if it is less than 10
-if [ $patch -lt 10 ]; then
-    patch="0$patch"
+    # Increment the patch version
+    ((patch++))
+
+    # Ensure patch has a leading zero if it is less than 10
+    if [ $patch -lt 10 ]; then
+        patch="0$patch"
+    fi
+
+    # New version
+    new_version="$major.$minor.$patch"
+    echo "New version: $new_version"
+
+    # Update package.json with the new version
+    jq --arg new_version "$new_version" '.version=$new_version' package.json > temp.json && mv temp.json package.json
+
+    # Amend the last commit and add the new version tag
+    git add package.json
+    git commit --amend --no-edit
+    git tag -a "v$new_version" -m "$new_version"
+    echo "Updated to version $new_version and tagged commit."
+
+else
+    echo "No existing Git tag found for version $current_version. Tag may have been deleted."
+    echo "Creating a new tag for the current version."
+
+    # Create a new tag for the existing version
+    git tag -a "$current_version" -m "Restoring deleted tag for version $current_version"
+    echo "Restored tag for version $current_version."
 fi
-
-# New version
-new_version="$major.$minor.$patch"
-echo "New version: $new_version"
-
-# Update package.json with the new version
-jq --arg new_version "$new_version" '.version=$new_version' package.json > temp.json && mv temp.json package.json
-
-# Amend the last commit and add the new version tag
-git add package.json
-git commit --amend --no-edit
-git tag -a "$new_version" -m "$new_version"
-
-echo "Updated to version $new_version and tagged commit."
