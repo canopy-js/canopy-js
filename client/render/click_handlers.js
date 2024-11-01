@@ -13,15 +13,15 @@ function onLinkClick(link) {
     let redirectingCycle = link.cycle && !inlineCycles;
 
     if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // close global link
-      return link.parentLink?.select({ scrollDirect: true, noAnimate: true }) || Path.root.display({ scrollDirect: true, noAnimate: true });
+      return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true, noBeforeChangeScroll: true });
     }
 
     if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // select open link
-      return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
+      return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
     }
 
     if (!newTab && !e.altKey && link.isOffScreen && !link.isClosedCycle) { // scroll up to see partially visible link
-      return link.select({ scrollDirect: true, noAnimate: true }); // not scrollToParagraph because returning up to parent link
+      return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
     }
 
     if (!newTab && !e.altKey && link.isInlinedCycleReference) { // un-inlining an inlined cycle reference
@@ -36,7 +36,7 @@ function onLinkClick(link) {
       selectALink: false,
       pushHistoryState: true,
       scrollToParagraph: true,
-      noAnimate: !redirectingCycle // most clicks cause downward movement except redirecting cycles
+      noBeforeChangeScroll: !redirectingCycle // most clicks cause downward movement except redirecting cycles
     });
   }
 }

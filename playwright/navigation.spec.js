@@ -718,12 +718,12 @@ test.describe('Navigation', () => {
     };
 
     // Get the combined text for the first link
-    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible');
+    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible .canopy-link-content-container');
     // Assert the combined text for the first link
     expect(combinedTextFirstLink).toBe('cafeteria↪');
 
     // Get the combined text for the second link
-    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible');
+    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
     // Assert the combined text for the second link
     expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
   });
@@ -820,29 +820,29 @@ test.describe('Navigation', () => {
     await expect(page.evaluate(() => window.scrollY)).not.toEqual(0);
   });
 
-  test('It scrolls properly for back buttons', async ({ page, context }) => {
-    await page.goto('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
-    await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
+  // test('It scrolls properly for back buttons', async ({ page, context }) => { // currently this behavior is disabled
+  //   await page.goto('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
+  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
 
-    await page.click('a.canopy-back-cycle-link:has-text("Martha\'s Vineyard")');
-    await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard');
+  //   await page.click('a.canopy-back-cycle-link:has-text("Martha\'s Vineyard")');
+  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard');
 
-    const link = page.locator('text=southern border');
+  //   const link = page.locator('text=southern border');
 
-    await expect.poll(async () => {
-        // Recalculate link's position relative to the viewport on each poll
-        const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
-        const viewportHeight = await page.evaluate(() => window.innerHeight);
-        const relativePosition = linkTopRelativeToViewport / viewportHeight;
-        return relativePosition;
-    }, { timeout: 5000 }).toBeGreaterThan(0.2);
+  //   await expect.poll(async () => {
+  //       // Recalculate link's position relative to the viewport on each poll
+  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
+  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
+  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
+  //       return relativePosition;
+  //   }, { timeout: 5000 }).toBeGreaterThan(0.2);
 
-    await expect.poll(async () => {
-        // Recalculate link's position relative to the viewport on each poll
-        const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
-        const viewportHeight = await page.evaluate(() => window.innerHeight);
-        const relativePosition = linkTopRelativeToViewport / viewportHeight;
-        return relativePosition;
-    }, { timeout: 5000 }).toBeLessThan(0.3);
-  });
+  //   await expect.poll(async () => {
+  //       // Recalculate link's position relative to the viewport on each poll
+  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
+  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
+  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
+  //       return relativePosition;
+  //   }, { timeout: 5000 }).toBeLessThan(0.3);
+  // });
 });

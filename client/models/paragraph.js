@@ -235,7 +235,7 @@ class Paragraph {
 
   get isBig() {
     let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
-    return paragraphPercent > .6;
+    return paragraphPercent > .75;
   }
 
   get fits() {

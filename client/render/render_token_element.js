@@ -96,9 +96,13 @@ function renderLocalLink(token, renderContext) {
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
 
+  let contentContainer = document.createElement('SPAN');
+  contentContainer.classList.add('canopy-link-content-container');
+  linkElement.appendChild(contentContainer);
+
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
 
   linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
@@ -127,11 +131,15 @@ function renderGlobalLink(token, renderContext) {
 
   let linkElement = document.createElement('a');
 
+  let contentContainer = document.createElement('SPAN');
+  contentContainer.classList.add('canopy-link-content-container');
+  linkElement.appendChild(contentContainer);
+
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
-
+  
   linkElement.classList.add('canopy-global-link');
   linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
@@ -185,9 +193,13 @@ function renderDisabledLink(token, renderContext) {
   // linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   // linkElement.dataset.text = token.text;
 
+  let contentContainer = document.createElement('SPAN');
+  contentContainer.classList.add('canopy-link-content-container');
+  linkElement.appendChild(contentContainer);
+
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
 
   // let callback = onLinkClick(new Link(linkElement));
@@ -258,9 +270,13 @@ function renderExternalLink(token, renderContext) {
     if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
   });
 
+  let contentContainer = document.createElement('SPAN');
+  contentContainer.classList.add('canopy-link-content-container');
+  linkElement.appendChild(contentContainer);
+
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
+    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
 
   return [linkElement];
@@ -524,12 +540,12 @@ function renderTable(token, renderContext) {
                 const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
+                  tableCellElement.classList.add('canopy-arrow-key-container'); // rect to consider for arrow key comparisons
                   setTimeout(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
                     tableCellElement.addEventListener('click', linkElement._CanopyClickHandler);
-                    // console.log('moved listener from', linkElement, 'to ', tableCellElement, tokenElement._CanopyClickHandler)
                   });
                 }
 

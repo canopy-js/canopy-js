@@ -187,7 +187,7 @@ function beforeChangeScrollNeeded(pathToDisplay, linkToSelect, options = {}) { /
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;
   if (!pathToDisplay.overlap(Path.rendered)) return false;
-  if (options.noScroll || options.noAnimate || options.initialLoad || options.scrollStyle === 'instant') return false;
+  if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return false;
 
   return twoStepChange(pathToDisplay, linkToSelect, options) || longDistanceUp(pathToDisplay, linkToSelect, options);
 }
@@ -216,11 +216,11 @@ function longDistanceUp(pathToDisplay, linkToSelect, options = {}) {
 }
 
 const LINK_TARGET_RATIO = .25;
-const PARAGRAPH_TARGET_RATIO = .2;
+const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
-  if (!beforeChangeScrollNeeded(newPath, linkToSelect, options)) return Promise.resolve();
+  if (!beforeChangeScrollNeeded(newPath, linkToSelect, options) || options.noScroll) return Promise.resolve();
   options.beforeChangeScroll = true;
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
@@ -243,22 +243,27 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   let behavior = options.scrollStyle || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  canopyContainer.dataset.initialLoad = options.initialLoad;
   let postChangePause = options.beforeChangeScroll ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
 
-  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' });
-  if (linkToSelect?.isFragment) return scrollElementToPosition(linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction});
+  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(
+    Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
+  );
+
+  if (linkToSelect?.isFragment) return scrollElementToPosition(
+    linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
+  );
+
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 75;
 
-  if (!linkToSelect) {
+  if (!linkToSelect) { // scroll to paragraph
     return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,
       minDiff,
       behavior, 
       side: 'top', 
-      direction // up on root needs direction
+      direction // up on root needs direction to do nothing
     }));
   } else { // scroll to linkToSelect
     let targetElement, targetRatio;
