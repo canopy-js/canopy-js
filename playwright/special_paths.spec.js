@@ -101,6 +101,11 @@ test.describe('Special paths', () => {
   });
 
   test('Project path prefix option is compatible with hash option', async ({ page }, workerInfo) => {
+    await Promise.race([
+      page.waitForLoadState('networkidle'), // Wait for network idle
+      page.waitForTimeout(10000)
+    ]);
+    
     await page.goto('http://localhost:3003');
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States');
 
