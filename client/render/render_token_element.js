@@ -617,8 +617,7 @@ function renderMenu(token, renderContext) {
     let tokenElements = renderTokenElements(cellObject.tokens[0], renderContext);
 
     tokenElements.forEach(tokenElement => {
-      const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
-      if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
+      if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
         tokenElement.classList.add('canopy-menu-cell');
         tokenElement.classList.add('canopy-menu-link-cell');
         while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
