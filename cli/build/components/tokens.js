@@ -20,7 +20,7 @@ function LocalReferenceToken(
 ) {
   this.text = text;
   this.type = 'local';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -37,7 +37,7 @@ function GlobalReferenceToken(
 ) {
   this.text = text;
   this.type = 'global';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
   this.pathString = pathString;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
@@ -50,7 +50,7 @@ function DisabledReferenceToken(
 ) {
   this.text = text;
   this.type = 'disabled_reference';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
 }
 
 function FragmentReferenceToken(
@@ -59,9 +59,12 @@ function FragmentReferenceToken(
 ) {
   this.text = text;
   this.type = 'fragment_reference';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
 }
 
+function convertSpacesToHtml(str) { // eg [[ abc ]] -> [[&nbsp;abc&nbsp;]]
+  return str.replace(/^ +| +$/g, match => '&nbsp;'.repeat(match.length));
+}
 
 function ExternalLinkToken(url, text, parserContext) {
   this.type = 'external';
