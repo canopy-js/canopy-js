@@ -288,7 +288,7 @@
       }
 
       &.canopy-open-link .canopy-link-content-container {
-        background-color: #c9c9c9;
+        background-color: #dedede;
         text-decoration: none;
       }
 
@@ -368,7 +368,7 @@
       }
 
       &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-        background-color: #F3F3F3;
+        background-color: #eae8e8;
       }
 
       &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
@@ -498,7 +498,7 @@
       }
 
       &.canopy-open-link:not(.canopy-selected-link) {
-        background-color: #edecec;
+        background-color: #eae8e8;
       }
 
       &:hover:not(.canopy-selected-link), // selected link style overrides hover
