@@ -22,7 +22,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Link.persistLinkSelection(linkToSelect || pathToDisplay.parentLink); // if null, persists deselect
     Link.updateSelectionClass(linkToSelect || pathToDisplay.parentLink); // if null, removes previous selection's class
     let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
-    document.title = pathToDisplay.lastTopic.mixedCase;
+    document.title = pathToDisplay.pageTitle;
 
     displayPathTo(pathToDisplay.paragraph, options);
     header.show();
