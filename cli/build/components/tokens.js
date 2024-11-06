@@ -20,7 +20,7 @@ function LocalReferenceToken(
 ) {
   this.text = text;
   this.type = 'local';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
   this.targetSubtopic = targetSubtopic;
   this.targetTopic = targetTopic;
   this.enclosingTopic = enclosingTopic;
@@ -37,7 +37,7 @@ function GlobalReferenceToken(
 ) {
   this.text = text;
   this.type = 'global';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
   this.pathString = pathString;
   this.enclosingTopic = enclosingTopic;
   this.enclosingSubtopic = enclosingSubtopic;
@@ -50,7 +50,7 @@ function DisabledReferenceToken(
 ) {
   this.text = text;
   this.type = 'disabled_reference';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
 }
 
 function FragmentReferenceToken(
@@ -59,9 +59,12 @@ function FragmentReferenceToken(
 ) {
   this.text = text;
   this.type = 'fragment_reference';
-  this.tokens = parseText({ text, parserContext: parserContext.clone({ insideToken: true }) });
+  this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
 }
 
+function convertSpacesToHtml(str) { // eg [[ abc ]] -> [[&nbsp;abc&nbsp;]]
+  return str.replace(/^ +| +$/g, match => '&nbsp;'.repeat(match.length));
+}
 
 function ExternalLinkToken(url, text, parserContext) {
   this.type = 'external';
@@ -99,21 +102,20 @@ function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  // Match sequences with optional backslashes before any of the curly braces
-  const regex = /\\?\{\\?\{([^{}]+)\\?\}\\?\}/g;
+  // Updated regex to handle escaped {{ and }} sequences
+  const regex = /(^|[^\\])(\{\{)([^{}\\]*(?:\}(?!\})|\{(?!\{)|[^}{\\])*?[^\\]?)(}})/g;
 
-  this.html = html.replace(regex, (match, content, offset) => {
-    // Determine if the sequence is escaped based on the presence of backslashes
-    const isEscaped = match.startsWith('\\') || match.includes('\\{', 1) || match.includes('\\}', match.length - 3);
+  this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
+    const isEscaped = precedingChar === '\\';
 
-    if (isEscaped) {
-      return match.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1])
+    if (isEscaped || !openingBraces || !closingBraces) {
+      return match;
     } else {
-      const initialCurlyBraces = 2; // ie "{{"[[Error-causing link]]}}
+      const initialCurlyBraces = 2; // i.e., "{{"
 
       this.tokenInsertions.push(
         parseText({
-          text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
+          text: precedingChar + content,
           parserContext: parserContext.clone({ insideToken: true })
             .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
             .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)

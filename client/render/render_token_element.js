@@ -367,6 +367,8 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
 
 function renderHtmlElement(token, renderContext) {
   let divElement = document.createElement('DIV');
+  divElement.classList.add('canopy-raw-html');
+
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);
 
@@ -378,8 +380,6 @@ function renderHtmlElement(token, renderContext) {
         elements.forEach(element => placeholderDiv.appendChild(element));
       });
   });
-
-  divElement.classList.add('canopy-raw-html');
 
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
     handleDelayedImageLoad(imageElement, renderContext);
@@ -513,9 +513,6 @@ function renderList(listNodeObjects, renderContext) {
 }
 
 function renderTable(token, renderContext) {
-  const WIDTH_STANDARDIZE_MIN = 60;
-  const HEIGHT_STANDARDIZE_MIN = 50;
-
   let tableElement = document.createElement('TABLE');
   tableElement.setAttribute('dir', 'auto');
   if (token.rtl) tableElement.setAttribute('dir', 'rtl');
@@ -568,8 +565,11 @@ function renderTable(token, renderContext) {
   canopyContainer.appendChild(tempSectionElement);
   tempParagraphElement.appendChild(tableElement);
 
+  const WIDTH_STANDARDIZE_MIN = 100;
+  const HEIGHT_STANDARDIZE_MIN = 50;
+
   let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
-  tempParagraphElement.appendChild(tableElement);
+
   [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
     let clsp = tableCellElement.getAttribute('colspan');
     let rwsp = tableCellElement.getAttribute('rowspan');
@@ -579,13 +579,21 @@ function renderTable(token, renderContext) {
     if (!rwsp && tableCellElement.offsetHeight < sizes.shortest) sizes.shortest = tableCellElement.offsetHeight;  
   });
 
-  if (sizes.widest - sizes.narrowest < WIDTH_STANDARDIZE_MIN) {
+  if (sizes.widest - sizes.narrowest <= WIDTH_STANDARDIZE_MIN) {
     [...tableElement.querySelectorAll('td')].forEach(td => {td.style.width = sizes.widest + 'px'; })
   }
+  tableElement.dataset.widest = sizes.widest;
+  tableElement.dataset.narrowest = sizes.narrowest;
+  tableElement.dataset.widthDiff = sizes.widest - sizes.narrowest;
+  tableElement.dataset.standardize_width_min = WIDTH_STANDARDIZE_MIN;
 
-  if (sizes.tallest - sizes.shortest < HEIGHT_STANDARDIZE_MIN) {
+  if (sizes.tallest - sizes.shortest <= HEIGHT_STANDARDIZE_MIN) {
     [...tableElement.querySelectorAll('td')].forEach(td => {td.style.height = sizes.tallest + 'px'; })
   }
+  tableElement.dataset.tallest = sizes.tallest;
+  tableElement.dataset.shortest = sizes.shortest;
+  tableElement.dataset.heightDiff = sizes.tallest - sizes.shortest;
+  tableElement.dataset.standardize_height_min = HEIGHT_STANDARDIZE_MIN;
 
   canopyContainer.removeChild(tempSectionElement);
   tempParagraphElement.removeChild(tableElement);

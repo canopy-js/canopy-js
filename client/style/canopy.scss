@@ -162,7 +162,7 @@
     }
 
     &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
-      background-color: #dcdbdb;
+      background-color: #dedede;
       position: relative;
     }
 
@@ -273,23 +273,23 @@
     margin-bottom: 12px;
 
     a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image) {
-      text-decoration: underline #D3D3D3;
-
       .canopy-link-content-container {
         //reset button styling
         background-color: #FFFFFF00;
         padding-left: 0px;
         padding-right: 0px;
         border: none;
+        text-decoration: underline #D3D3D3;
+      }
+
+      &.canopy-open-link .canopy-link-content-container {
+        background-color: #dedede;
+        text-decoration: none;
       }
 
       &:hover {
         text-decoration: underline #000000;
       }
-    }
-
-    a.canopy-selectable-link.canopy-open-link .canopy-link-content-container {
-      background-color: #c9c9c9;
     }
 
     .canopy-linebreak-span {
@@ -334,7 +334,8 @@
       padding: 10px;
 
       &.hidden {
-        display: none;
+        opacity: 0;
+        border: none;
       }
 
       br {
@@ -355,6 +356,7 @@
         background-color: #FFFFFF00;
         border: none;
         padding: 4px; // to force breaking onto multiple lines
+        display: block; // makes link text spacing more regular
       }
       
       &:has(.canopy-selected-link) {
@@ -362,7 +364,7 @@
       }
 
       &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-        background-color: #F3F3F3;
+        background-color: #eae8e8;
       }
 
       &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
@@ -492,7 +494,7 @@
       }
 
       &.canopy-open-link:not(.canopy-selected-link) {
-        background-color: #edecec
+        background-color: #eae8e8;
       }
 
       &:hover:not(.canopy-selected-link), // selected link style overrides hover

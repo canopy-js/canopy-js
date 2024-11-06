@@ -201,6 +201,14 @@ class Path {
     return new Path(this.array.slice());
   }
 
+  get pageTitle() {
+    if (this.firstTopic.mixedCase !== this.lastTopic.mixedCase) {
+      return this.firstTopic.mixedCase + ': ' + this.lastTopic.mixedCase;
+    } else {
+      return this.firstTopic.mixedCase;
+    }
+  }
+
   get cycle() {
     let cycle = null;
 
