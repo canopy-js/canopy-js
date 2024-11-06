@@ -52,7 +52,7 @@
     font-size: 21px;
     max-width: 750px;
     overflow-wrap: break-word; // this causes eg table cells to break long lines into rows
-    word-break: break-word; // break before trying to put element on line alone
+    //word-break: break-word; // this separates words in table cells
     hyphens: auto; // not sure we want this, rather put whole word on next line?
     margin: auto;
 
@@ -132,7 +132,7 @@
     cursor: pointer;
 
     &:focus {
-      outline:0;
+      outline: 0;
     }
   }
 
@@ -162,7 +162,7 @@
     }
 
     &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
-      background-color: #edecec;
+      background-color: #dcdbdb;
       position: relative;
     }
 
@@ -210,9 +210,10 @@
     color: #000000;
     pointer-events: none;
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.5;
     text-decoration: none;
-    background-color: #e3dfdf;
+    border-radius: 1px;
+    border: 1px solid #dddddd;
   }
 
   a.canopy-selectable-link.canopy-linked-image {
@@ -271,21 +272,23 @@
     margin-top: 12px;
     margin-bottom: 12px;
 
-    a.canopy-selectable-link {
+    a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image) {
       text-decoration: underline #D3D3D3;
 
-      //reset button styling
-      background-color: #FFFFFF00;
-      padding-left: 0px;
-      padding-right: 0px;
-      border: none;
+      .canopy-link-content-container {
+        //reset button styling
+        background-color: #FFFFFF00;
+        padding-left: 0px;
+        padding-right: 0px;
+        border: none;
+      }
 
       &:hover {
         text-decoration: underline #000000;
       }
     }
 
-    a.canopy-selectable-link.canopy-open-link {
+    a.canopy-selectable-link.canopy-open-link .canopy-link-content-container {
       background-color: #c9c9c9;
     }
 
@@ -382,6 +385,7 @@
           background-color: #FFFFFF00;
           text-decoration: none;
           text-shadow: none;
+          border: none;
         }
       }
     }
