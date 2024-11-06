@@ -367,6 +367,8 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
 
 function renderHtmlElement(token, renderContext) {
   let divElement = document.createElement('DIV');
+  divElement.classList.add('canopy-raw-html');
+
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);
 
@@ -378,8 +380,6 @@ function renderHtmlElement(token, renderContext) {
         elements.forEach(element => placeholderDiv.appendChild(element));
       });
   });
-
-  divElement.classList.add('canopy-raw-html');
 
   [...divElement.querySelectorAll('img')].forEach((imageElement) => { // if the html contains image tags that haven't loaded yet
     handleDelayedImageLoad(imageElement, renderContext);
