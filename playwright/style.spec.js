@@ -521,7 +521,7 @@ test.describe('Block entities', () => {
 
     await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York');
 
-    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(1)).toHaveText('These are not: {{[[New York]]}} {{[[New York]]}} {{[[New York]]}} {{[[New York]]}}');
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(1)).toHaveText('These are not: \\{{[[New York]]}} {\\{[[New York]]}} {{[[New York]]\\}} {{[[New York]]}\\}');
   });
 
   test('It creates HTML entities', async ({ page }) => {

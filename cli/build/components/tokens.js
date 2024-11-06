@@ -99,28 +99,25 @@ function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  // Match sequences with optional backslashes before any of the curly braces
-  const regex = /\\?\{\\?\{([^{}]+)\\?\}\\?\}/g;
+  // Updated regex to handle escaped {{ and }} sequences
+  const regex = /(^|[^\\])(\{\{)([^{}\\]*(?:\}(?!\})|\{(?!\{)|[^}{\\])*?[^\\]?)(}})/g;
 
-  this.html = html.replace(regex, (match, content, offset) => {
-    // Determine if the sequence is escaped based on the presence of backslashes
-    const isEscaped = match.startsWith('\\') || match.includes('\\{', 1) || match.includes('\\}', match.length - 3);
+  this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
+    const isEscaped = precedingChar === '\\';
 
-    if (isEscaped) {
-      return match.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1])
+    if (isEscaped || !openingBraces || !closingBraces) {
+      return match;
     } else {
-      const initialCurlyBraces = 2; // ie "{{"[[Error-causing link]]}}
-
       this.tokenInsertions.push(
         parseText({
-          text: content.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]),
+          text: content,
           parserContext: parserContext.clone({ insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
-            .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
+            .incrementLineAndResetCharacterNumber(html.slice(0, offset - precedingChar.length).match(/\n/g)?.length || 0)
+            .incrementCharacterNumber(html.slice(0, offset + precedingChar.length).split('\n').slice(-1)[0].length + openingBraces.length)
         })
       );
 
-      return `<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
+      return `${precedingChar}<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
     }
   });
 }
