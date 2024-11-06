@@ -376,7 +376,7 @@ test.describe('Block entities', () => {
 
   test('It accepts table omit syntax', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
-    await expect(page.locator('.canopy-selected-section table td >> visible=true')).toHaveCount(7);
+    await expect(page.locator('.canopy-selected-section table td:not(.hidden) >> visible=true')).toHaveCount(7);
 
     await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
     await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');

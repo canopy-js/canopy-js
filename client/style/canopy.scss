@@ -339,7 +339,8 @@
       padding: 10px;
 
       &.hidden {
-        display: none;
+        opacity: 0;
+        border: none;
       }
 
       br {
