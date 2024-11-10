@@ -111,18 +111,16 @@ function HtmlToken(html, parserContext) {
     if (isEscaped || !openingBraces || !closingBraces) {
       return match;
     } else {
-      const initialCurlyBraces = 2; // i.e., "{{"
-
       this.tokenInsertions.push(
         parseText({
-          text: precedingChar + content,
+          text: content,
           parserContext: parserContext.clone({ insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
-            .incrementCharacterNumber(html.slice(0, offset).split('\n').slice(-1)[0].length + initialCurlyBraces)
+            .incrementLineAndResetCharacterNumber(html.slice(0, offset - precedingChar.length).match(/\n/g)?.length || 0)
+            .incrementCharacterNumber(html.slice(0, offset + precedingChar.length).split('\n').slice(-1)[0].length + openingBraces.length)
         })
       );
 
-      return `<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
+      return `${precedingChar}<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
     }
   });
 }

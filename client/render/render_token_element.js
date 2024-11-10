@@ -7,6 +7,7 @@ import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollPage, imagesLoaded, scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
+import { measureVerticalOverflow, whenInDom } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -85,13 +86,9 @@ function renderTextToken(token) {
   return spans;
 }
 
-function renderLocalLink(token, renderContext) {
+function renderLinkBase(token, renderContext) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.targetTopic = token.targetTopic; // helpful for debugger
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
   linkElement.dataset.enclosingTopic = token.enclosingTopic;
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
@@ -100,75 +97,70 @@ function renderLocalLink(token, renderContext) {
   contentContainer.classList.add('canopy-link-content-container');
   linkElement.appendChild(contentContainer);
 
+  // Append subtoken elements
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
 
-  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
+  // Prevent dragging for easier text selection in tables
+  linkElement.addEventListener('dragstart', (e) => {
     e.preventDefault();
   });
 
+  contentContainer.dir = "auto"; // make sure ::after icons are on right side for RTL text
 
-  let callback = onLinkClick(new Link(linkElement));
+  // Add click event handler
+  let link = new Link(linkElement);
+  let callback = onLinkClick(link);
   linkElement._CanopyClickHandler = callback;
-  linkElement.addEventListener(
-    'click',
-    callback
-  );
+  linkElement.addEventListener('click', callback);
 
+  whenInDom(contentContainer)(() => {
+    let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
+    contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 2)}px`;
+    contentContainer.style.paddingBottom = `${spaceBelow === 0 ? 0 : (spaceBelow + 2)}px`;
+  });
+
+  return linkElement;
+}
+
+function renderLocalLink(token, renderContext) {
+  let linkElement = renderLinkBase(token, renderContext);
+
+  // Set specific attributes for local links
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
+  linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // Helpful for debugger
+  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // Helpful for debugger
 
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
   linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
+
   return [linkElement];
 }
 
 function renderGlobalLink(token, renderContext) {
-  let { fullPath, remainingPath, currentTopic, currentSubtopic } = renderContext;
+  let linkElement = renderLinkBase(token, renderContext);
 
-  let linkElement = document.createElement('a');
-
-  let contentContainer = document.createElement('SPAN');
-  contentContainer.classList.add('canopy-link-content-container');
-  linkElement.appendChild(contentContainer);
-
-  token.tokens.forEach(subtoken => {
-    let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
-  });
-  
+  // Set specific attributes for global links
   linkElement.classList.add('canopy-global-link');
-  linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'global';
-
-  linkElement.dataset.literalPathString = token.pathString; // convert to mixed-case
-  linkElement.path = token.path; // helpful to have in debugger
-  linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-
-  linkElement.dataset.text = token.text;
-
+  linkElement.dataset.literalPathString = token.pathString;
+  linkElement.path = token.path; // Helpful for debugger
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
-  let callback = onLinkClick(link);
-  linkElement.addEventListener(
-    'click',
-    callback
-  );
-
-  linkElement._CanopyClickHandler = callback;
-
-  if (link.isPathReference) linkElement.classList.add('canopy-provisional-icon-link'); // put icon for menu space allocation
-
-  setTimeout(() => { // will run when the paragraph has a parent chain so we can detect cycle types
+  
+  // Add additional class based on link type after delay
+  whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    linkElement.classList.remove('canopy-provisional-icon-link')
+    linkElement.classList.remove('canopy-provisional-icon-link');
 
     if (link.isBackCycle) {
       linkElement.classList.add('canopy-back-cycle-link');
@@ -179,44 +171,28 @@ function renderGlobalLink(token, renderContext) {
     }
   });
 
-  return [linkElement]
+  return [linkElement];
 }
 
 function renderDisabledLink(token, renderContext) {
-  let linkElement = document.createElement('a');
-  //linkElement.classList.add('canopy-selectable-link');
-  // linkElement.dataset.targetTopic = token.targetTopic;
-  // linkElement.targetTopic = token.targetTopic; // helpful for debugger
-  // linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  // linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
-  // linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  // linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  // linkElement.dataset.text = token.text;
+  // Call the helper to create the base link element
+  let linkElement = renderLinkBase(token, renderContext);
 
-  let contentContainer = document.createElement('SPAN');
-  contentContainer.classList.add('canopy-link-content-container');
-  linkElement.appendChild(contentContainer);
+  linkElement.classList.remove('canopy-selectable-link'); // not selectable
 
-  token.tokens.forEach(subtoken => {
-    let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
-  });
+  // Remove `href` attribute to disable link navigation
+  linkElement.removeAttribute('href');
 
-  // let callback = onLinkClick(new Link(linkElement));
+  // Remove the click event listener to disable interactions
+  if (linkElement._CanopyClickHandler) {
+    linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
+    delete linkElement._CanopyClickHandler;
+  }
 
-  // linkElement.addEventListener(
-  //   'click',
-  //   callback
-  // );
-
-  // linkElement._CanopyClickHandler = callback;
-
+  // Add disabled-specific styling and data attributes
   linkElement.classList.add('canopy-disabled-link');
   linkElement.dataset.type = 'disabled';
 
-  // let targetTopic = new Topic(token.targetTopic);
-  // let targetSubtopic = new Topic(token.targetSubtopic);
-  // linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
   return [linkElement];
 }
 
@@ -266,7 +242,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.setAttribute('target', '_blank');
   linkElement.dataset.targetUrl = token.url;
 
-  setTimeout(() => {
+  whenInDom(linkElement)(() => {
     if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
   });
 
@@ -538,7 +514,7 @@ function renderTable(token, renderContext) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-arrow-key-container'); // rect to consider for arrow key comparisons
-                  setTimeout(() => { // need to wait for .parentNode to exist
+                  whenInDom(linkElement)(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
