@@ -137,8 +137,11 @@
   }
 
   a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image) {
-    padding-right: 10px; // following punctuation shouldn't wrap without link
+    padding-right: 11px; // following punctuation shouldn't wrap without link
     margin-right: -10px;
+    
+    padding-left: 11px; // For RTL text
+    margin-left: -10px;
     
     .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
       background-color: #FFFFFF;
@@ -146,8 +149,13 @@
       padding-left: 2px;
       padding-right: 2px;
 
+      padding-top: 3px;
+      padding-bottom: 3px;
+
       border-radius: 1px;
       border: 1px solid #dddddd;
+
+      unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
 
       &:hover {
         background-color: #f5f6fe;
