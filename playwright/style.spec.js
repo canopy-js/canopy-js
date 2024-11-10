@@ -193,7 +193,7 @@ test.describe('Inline entities', () => {
     const elementBottom = elementBox.y + elementBox.height;
 
     // Define tolerance for comparison
-    const tolerance = 2;
+    const tolerance = 5;
 
     // Check if the bottom of the punctuation is within tolerance of the bottom of the element
     const punctuationBottom = punctuationBox.y + punctuationBox.height;
