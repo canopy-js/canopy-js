@@ -7,6 +7,7 @@ import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollPage, imagesLoaded, scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
+import { measureVerticalOverflow, whenInDom } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -116,6 +117,12 @@ function renderLinkBase(token, renderContext) {
   linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener('click', callback);
 
+  whenInDom(contentContainer)(() => {
+    let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
+    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 0)}px`; // naturally more space above
+    if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow === 0 ? 0 : (spaceBelow + 2)}px`;
+  });
+
   return linkElement;
 }
 
@@ -150,7 +157,7 @@ function renderGlobalLink(token, renderContext) {
   let link = new Link(linkElement);
   
   // Add additional class based on link type after delay
-  setTimeout(() => {
+  whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
@@ -169,40 +176,24 @@ function renderGlobalLink(token, renderContext) {
 }
 
 function renderDisabledLink(token, renderContext) {
-  let linkElement = document.createElement('a');
-  //linkElement.classList.add('canopy-selectable-link');
-  // linkElement.dataset.targetTopic = token.targetTopic;
-  // linkElement.targetTopic = token.targetTopic; // helpful for debugger
-  // linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  // linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
-  // linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  // linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  // linkElement.dataset.text = token.text;
+  // Call the helper to create the base link element
+  let linkElement = renderLinkBase(token, renderContext);
 
-  let contentContainer = document.createElement('SPAN');
-  contentContainer.classList.add('canopy-link-content-container');
-  linkElement.appendChild(contentContainer);
+  linkElement.classList.remove('canopy-selectable-link'); // not selectable
 
-  token.tokens.forEach(subtoken => {
-    let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
-  });
+  // Remove `href` attribute to disable link navigation
+  linkElement.removeAttribute('href');
 
-  // let callback = onLinkClick(new Link(linkElement));
+  // Remove the click event listener to disable interactions
+  if (linkElement._CanopyClickHandler) {
+    linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
+    delete linkElement._CanopyClickHandler;
+  }
 
-  // linkElement.addEventListener(
-  //   'click',
-  //   callback
-  // );
-
-  // linkElement._CanopyClickHandler = callback;
-
+  // Add disabled-specific styling and data attributes
   linkElement.classList.add('canopy-disabled-link');
   linkElement.dataset.type = 'disabled';
 
-  // let targetTopic = new Topic(token.targetTopic);
-  // let targetSubtopic = new Topic(token.targetSubtopic);
-  // linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
   return [linkElement];
 }
 
@@ -252,7 +243,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.setAttribute('target', '_blank');
   linkElement.dataset.targetUrl = token.url;
 
-  setTimeout(() => {
+  whenInDom(linkElement)(() => {
     if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
   });
 
@@ -524,7 +515,7 @@ function renderTable(token, renderContext) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-arrow-key-container'); // rect to consider for arrow key comparisons
-                  setTimeout(() => { // need to wait for .parentNode to exist
+                  whenInDom(tableCellElement)(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
