@@ -6,6 +6,7 @@ let { DefaultTopic } = require('../shared/fs-helpers');
 class FileSystemManager {
   execute(fileSystemChange, logging) {
     fileSystemChange.fileDeletions.forEach(filePath => {
+      if (filePath === 'canopy_default_topic') return; // rewrite don't delete in case sigint
       fs.unlinkSync(filePath);
     });
 
