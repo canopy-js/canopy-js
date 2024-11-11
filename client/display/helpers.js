@@ -179,40 +179,22 @@ function scrollToWithPromise(options) {
   }));
 }
 
-// In general path changes are usually one-step, and so we change the path first, then scroll to the new focus point.
-// However, if we are scrolling far up, or up to a fulcrum point, changing the path, then scrolling down a new path,
-// we will need a "before change" scroll in addition to this "after change" scroll.
-
 function beforeChangeScrollNeeded(pathToDisplay, linkToSelect, options = {}) { // we animate when the new path overlaps a bit but goes far up or in a different direction
   if (!Path.rendered) return false;  // user may be changing URL first so we use path from DOM
   if (!pathToDisplay.paragraph) return false;
   if (!pathToDisplay.overlap(Path.rendered)) return false;
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return false;
 
-  return twoStepChange(pathToDisplay, linkToSelect, options) || longDistanceUp(pathToDisplay, linkToSelect, options);
+  return !Path.current.isIn(pathToDisplay);
 }
 
 function twoStepChange(pathToDisplay, linkToSelect, options = {}) {
   return Path.rendered.overlap(pathToDisplay)
     && !Path.rendered.equals(pathToDisplay)
     && !Path.rendered.subsetOf(pathToDisplay)
-    && (!linkToSelect || !linkToSelect.siblingOf(Link.selection))
-    && !pathToDisplay.parentOf(Path.rendered) // this doesn't disqualify animation but we would require a large gap
-    && !(pathToDisplay.overlap(Path.rendered).equals(Path.rendered)) // eg shortcut that selects sibling link
-    && (!linkToSelect || !linkToSelect.equals(Link.selection.parentLink));
-}
-
-function longDistanceUp(pathToDisplay, linkToSelect, options = {}) {
-  let firstDestinationElement = !linkToSelect ? Path.rendered.firstDestination(pathToDisplay).paragraph : linkToSelect;
-  let firstDestinationElementYRelative = firstDestinationElement.top;
-  let firstDestinationElementYAbsolute = firstDestinationElementYRelative + ScrollableContainer.currentScroll; // we need absolute to detect doc top then convert
-  let firstDestinationScrollYAbsolute = Math.max(firstDestinationElementYAbsolute - ScrollableContainer.focusGap, 0);
-  let scrollDistanceUp = firstDestinationScrollYAbsolute - ScrollableContainer.currentScroll;
-  let bigDistanceUp = -0.6 * ScrollableContainer.visibleHeight;
-  let distanceToFirstDestinationVeryLarge = scrollDistanceUp < bigDistanceUp; // must be negative ie up
-  let longDistanceUp = distanceToFirstDestinationVeryLarge; // we no longer check if top element is off screen, because either dist-large or two-step
-
-  return longDistanceUp;
+    && !pathToDisplay.subsetOf(pathToDisplay)
+    && Path.rendered.parentOf(!pathToDisplay)
+    && !pathToDisplay.parentOf(Path.rendered);
 }
 
 const LINK_TARGET_RATIO = .25;
