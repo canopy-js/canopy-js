@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { scrollElementToViewport } = require('./helpers');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
@@ -125,7 +126,10 @@ test.describe('Arrow keys', () => {
   test('Up on top link closes paragraph', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');
     await expect(page.locator('.canopy-selected-section')).toContainText("There is italic text, bold text");
+
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowUp');
+
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Inline_text_styles");
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
   });
@@ -638,7 +642,9 @@ test.describe('Navigation', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
 
@@ -660,7 +666,9 @@ test.describe('Navigation', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
+    
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
 
@@ -682,6 +690,7 @@ test.describe('Navigation', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
@@ -711,20 +720,14 @@ test.describe('Navigation', () => {
         return style.content;
       }, element);
 
-      // Remove quotes added by getComputedStyle around the content value
       const cleanedAfterContent = afterContent.replace(/^"|"$/g, '');
-
       return elementText + cleanedAfterContent;
     };
 
-    // Get the combined text for the first link
     const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible .canopy-link-content-container');
-    // Assert the combined text for the first link
     expect(combinedTextFirstLink).toBe('cafeteria↪');
 
-    // Get the combined text for the second link
     const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
-    // Assert the combined text for the second link
     expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
   });
 

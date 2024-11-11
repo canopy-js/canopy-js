@@ -35,6 +35,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Special paths', () => {
   test('Project path prefix option creates path prefix', async ({ page }, workerInfo) => {
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States');
 
@@ -56,10 +57,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
-    await Promise.race([
-      page.waitForLoadState('networkidle'), // Wait for network idle
-      page.waitForTimeout(3000) // Timeout after 3000ms
-    ]);
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -67,6 +65,7 @@ test.describe('Special paths', () => {
   });
 
   test('Hash URLs option creates hash prefix', async ({ page, context }) => {
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3002');
     await expect(page).toHaveURL('http://localhost:3002/#/United_States');
 
@@ -101,11 +100,7 @@ test.describe('Special paths', () => {
   });
 
   test('Project path prefix option is compatible with hash option', async ({ page }, workerInfo) => {
-    await Promise.race([
-      page.waitForLoadState('networkidle'), // Wait for network idle
-      page.waitForTimeout(10000)
-    ]);
-    
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3003');
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States');
 
@@ -127,10 +122,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States/New_York#Southern_border');
 
     // Project path prefix gets added to image tokens
-    await Promise.race([
-      page.waitForLoadState('networkidle'), // Wait for network idle
-      page.waitForTimeout(3000) // Timeout after 3000ms
-    ]);
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
@@ -172,6 +164,7 @@ test.describe('Special paths', () => {
   });
 
   test('Hash URLs and project path option work with static assets server', async ({ page, context }, workerInfo) => {
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3005/test');
     await expect(page).toHaveURL('http://localhost:3005/test/#/United_States');
 
@@ -205,10 +198,7 @@ test.describe('Special paths', () => {
     await expect(newPage).toHaveURL('http://localhost:3005/test/#/United_States/New_York/Style_examples');
 
     // Project path prefix gets added to image tokens
-    await Promise.race([
-      page.waitForLoadState('networkidle'), // Wait for network idle
-      page.waitForTimeout(3000) // Timeout after 3000ms
-    ]);
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001/test/Style_examples#Local_images');
     await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });

@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { scrollElementToViewport } = require('./helpers');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", (message) => {
@@ -38,6 +39,7 @@ test.describe('Topic names', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
@@ -62,6 +64,7 @@ test.describe('Topic names', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('Enter');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_word_\"vinyard\"");
@@ -86,6 +89,7 @@ test.describe('Topic names', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/The_word_"vinyard"`);
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
@@ -108,7 +112,10 @@ test.describe('Topic names', () => {
   test('it renders everything properly for topics with question marks', async ({ page, context }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/The_world's_%5C#1_gift_shop`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 gift shop");
+    
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
+
     await expect(page.locator('.canopy-selected-link')).toHaveText("the world's #1 keychains");
     await page.locator('body').press('ArrowRight');
 
@@ -133,6 +140,7 @@ test.describe('Topic names', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history");
@@ -156,6 +164,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/%5C_Hello_world%5C_");
@@ -180,6 +189,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/%5C_Hello_world%5C_`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("_Hello world_");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/M&Ms");
@@ -204,6 +214,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/M&Ms`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("M&Ms");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("100% orange juice");
@@ -227,6 +238,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/100%25_orange_juice`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("100% orange juice");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("The %3C shop");
@@ -250,6 +262,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/The_%253C_shop`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("The %3C shop");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
@@ -273,6 +286,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/Good_Books_(bookstore)`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Good Books (bookstore)");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_$1_Store");
@@ -296,6 +310,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/The_$1_Store`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("The $1 Store");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/1+1");
@@ -319,6 +334,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/1+1`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("1+1");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Phone%5C_book");
@@ -342,6 +358,7 @@ test.describe('Topic names', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard/Phone%5C_book`);
     await expect(page.locator('.canopy-selected-link')).toHaveText("Phone_book");
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
 
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%252523_depot");
