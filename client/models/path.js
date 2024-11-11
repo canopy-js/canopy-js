@@ -252,8 +252,8 @@ class Path {
     let targetPathTopicStrings = literalPath.topicArray.map(t => t.mixedCase);
     return parentPathTopicStrings.some((enclosingTopicString, enclosingTopicIndex) => {
       return targetPathTopicStrings.some((targetTopicString, targetTopicIndex) => {
-        return enclosingTopicString === targetTopicString &&
-          !(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
+        return enclosingTopicString === targetTopicString; //&&
+          //!(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
       });
     });
   }
