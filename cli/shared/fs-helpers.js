@@ -12,7 +12,7 @@ class DefaultTopic {
     if (!fs.existsSync('canopy_default_topic')) throw new Error('There must be a default topic file present, try running "canopy init"');
     this.filePath = fs.readFileSync('canopy_default_topic').toString().trim();
     if (!this.filePath || !fs.existsSync(this.filePath)) {
-      throw new Error(chalk.red(`Error: No topic file corresponds to the path given in canopy_default_topic: ${this.filePath.trim()}`));
+      throw new Error(chalk.red(`Error: No topic file corresponds to the path given in canopy_default_topic: "${this.filePath.trim()}"`));
     }
     if (!fs.existsSync(this.filePath)) throw new Error(chalk.bgRed(`Default topic file does not exist: ${this.filePath}`));
     this.name = (new Block(fs.readFileSync(this.filePath).toString().trim())).key
