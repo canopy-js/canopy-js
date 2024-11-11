@@ -225,8 +225,8 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let overlapPath = previousPath.overlap(newPath);
   let minDiff = options.noMinDiff ? null : 75;
-  let targetElement = twoStepChange(newPath, linkToSelect, options) ? 
-    previousPath.fulcrumElement(newPath) : 
+  let targetElement = (twoStepChange(newPath, linkToSelect, options) && previousPath.fulcrumElement(newPath)) ||
+    (options.scrollToParagraph && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 
   let targetRatio = targetElement.tagName === 'A' ? LINK_TARGET_RATIO : PARAGRAPH_TARGET_RATIO; // paragraphs should be higher to be focused than links
@@ -256,7 +256,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 75;
 
-  if (!linkToSelect) { // scroll to paragraph
+  if (!linkToSelect || options.scrollToParagraph) {
     return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,
