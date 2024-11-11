@@ -94,6 +94,10 @@ class Paragraph {
     return new Path(this.sectionElement.dataset.pathString);
   }
 
+  get literalPath() {
+    return Path.forSegment(this.topic, this.subtopic);
+  }
+
   get topicPath() {
     return this.path.lastSegment.firstTopicPath;
   }

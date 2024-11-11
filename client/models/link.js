@@ -537,6 +537,10 @@ class Link {
   }
 
   get inlinePath() { // ie if the user would inline the link's target at the link's enclosing path
+    if (this.literalPath.equals(this.enclosingParagraph.literalPath)) { // link to self in root topic = pop
+      return this?.enclosingParagraph.parentParagraph?.path || this.enclosingParagraph.path;
+    }
+
     if (this.isGlobal) {
       return this.enclosingParagraph.path.append(this.literalPath);
     }
@@ -611,6 +615,11 @@ class Link {
       return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
         () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
       );
+    }
+
+    // Links from a topic paragraph to itself are considered back buttons
+    if (this.literalPath.equals(this.enclosingParagraph.path.lastSegment) && this.enclosingParagraph.parentParagraph) {
+      return this.enclosingParagraph.parentParagraph.path.display(options);//parentLink.select({ ...options, scrollToParagraph: false });
     }
 
     return (options.selectALink && this.firstChild || this).select(options);
