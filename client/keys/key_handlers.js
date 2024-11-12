@@ -88,7 +88,7 @@ function zoomOnLocalPath() {
 }
 
 function removeSelection() {
-  return updateView(Path.current.rootTopicPath, null, { scrollStyle: 'instant' });
+  return updateView(Path.current.firstTopicPath, null, { scrollStyle: 'instant' });
 }
 
 function duplicate() {

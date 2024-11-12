@@ -74,11 +74,7 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('disabled links');
     await page.locator('body').press('ArrowRight');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
-    await page.locator('body').press('ArrowDown');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('special links');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('full-line links'); // no more so test doesn't need updating
   });
 
   test('Navigating right-to-left links', async ({ page, browserName }) => {
@@ -729,6 +725,78 @@ test.describe('Navigation', () => {
 
     const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
     expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
+  });
+
+  test('Rehash references regress to earlier parent link', async ({ page }) => {
+    // A/B/C/D with reference [[A/B/C/D]] goes to A's link to B, not a special case
+    await page.goto('A/B/C/D');
+    await expect(page).toHaveURL('A/B/C/D');
+
+    // Rehash references should get back cycle icons
+    const links = await page.locator('.canopy-selected-section .canopy-selectable-link .canopy-link-content-container');
+
+    const matchingLinks = await links.evaluateAll((elements) =>
+      elements.filter(element => {
+        const computedStyle = window.getComputedStyle(element, '::after');
+        return computedStyle.content === '"↩"';
+      })
+    );
+
+    expect(matchingLinks.length).toBe(3);
+
+    await page.click('text=A/B/C/D ie total rehash');
+    await expect(page).toHaveURL('A/B');
+    await expect(page.locator('.canopy-selected-link')).toContainText('B');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('A:');
+
+    // "Back button" A/B/C/D with reference [[D]] cannot go to parent link in D to D, so we go to C's link to D
+    await page.goto('A/B/C/D');
+    await expect(page).toHaveURL('A/B/C/D');
+
+    await page.click('text=D ie topic self-reference'); // now pop
+    await expect(page).toHaveURL('A/B/C');
+    await expect(page.locator('.canopy-selected-link')).toContainText('C');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('B:');
+
+    // A/B/C/D with reference [[B/C/D]], should go to B's link to C
+    await page.goto('A/B/C/D');
+    await expect(page).toHaveURL('A/B/C/D');
+
+    await page.click('text=B/C/D ie partial rehash ending on topic');
+    await expect(page).toHaveURL('A/B/C');
+    await expect(page.locator('.canopy-selected-link')).toContainText('C');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('B:');
+
+    // A/B/C/D#E with reference [[D#E]], same as previous but finding D's link to paragraph after D
+    await page.goto('A/B/C/D#F');
+    await expect(page).toHaveURL('A/B/C/D#F');
+
+    await page.click('text=D#F ie partial rehash ending on subtopic'); // this is now considered a subtopic self-reference, shifting up
+    await expect(page).toHaveURL('A/B/C/D#F');
+    await expect(page.locator('.canopy-selected-link')).toContainText('F');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('E:');
+  });
+
+  test('Clicking coterminal reference should go to inlined parent link of shared segment', async ({ page }) => {
+    // Overlapping but not coterminal reference should get cycle reduced
+    await page.goto('AA/BB/CC/DD');
+    await expect(page).toHaveURL('AA/BB/CC/DD');
+
+    await page.click('text=EE/FF/CC/DD/GG ie overlapping CC/DD but not coterminal reference');
+    await expect(page).toHaveURL('AA/BB/CC/DD/GG'); // regular cycle reduction
+    await expect(page.locator('.canopy-selected-link')).toContainText('GG');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('DD:');
+
+    // Coterminal reference including page root, divergence is GG's link to AA
+    await page.goto('AA/BB/CC/DD');
+    await expect(page).toHaveURL('AA/BB/CC/DD');
+    
+    await page.click('text=GG/AA/BB/CC/DD ie coterminal reference overlapping current root AA');
+    await expect(page).toHaveURL('AA/BB/CC/DD/GG'); // to select link we really use the URL of the link and just display path cosmetically
+    await expect(page.locator('.canopy-selected-link')).toContainText('AA ie reference that allows GG/AA to occur in paths');
+    await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('GG:');
+    await expect(page.locator('text=DD: >> visible=true')).toHaveCount(2); // visually inline full path
+
   });
 
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
