@@ -66,6 +66,22 @@ class Paragraph {
     return window.getComputedStyle(this.sectionElement).display !== 'none';
   }
 
+  get isFocused() {
+    if (!this.element) return null;
+    const rect = this.element.getBoundingClientRect();
+
+    // Get the viewport height
+    const viewportHeight = ScrollableContainer.visibleHeight;
+
+    const topLimit = viewportHeight * 0.1;
+    const bottomLimit = viewportHeight * 0.5;
+
+    const topInRange = rect.top > topLimit;
+    const bottomInRange = rect.top < bottomLimit;
+
+    return topInRange && bottomInRange;
+  }
+
   get topic () {
     return Topic.fromMixedCase(this.sectionElement.dataset.topicName);
   }
