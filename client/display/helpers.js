@@ -227,7 +227,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   let postChangePause = options.beforeChangeScroll ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
 
-  if (pathToDisplay.equals(Path.rootTopicPath) && !linkToSelect) return scrollElementToPosition(
+  if (pathToDisplay.equals(Path.firstTopicPath) && !linkToSelect) return scrollElementToPosition(
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
   );
 

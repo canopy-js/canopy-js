@@ -51,6 +51,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
 
+    await page.waitForLoadState('networkidle');
     await page.reload();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -81,6 +82,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3002/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
 
+    await page.waitForLoadState('networkidle');
     await page.reload();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -116,6 +118,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3003/test/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
 
+    await page.waitForLoadState('networkidle');
     await page.reload();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -145,6 +148,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3004/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
 
+    await page.waitForLoadState('networkidle');
     await page.reload();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
@@ -180,6 +184,7 @@ test.describe('Special paths', () => {
     await expect(page).toHaveURL('http://localhost:3005/test/#/United_States/New_York#Southern_border');
     await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
 
+    await page.waitForLoadState('networkidle');
     await page.reload();
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');

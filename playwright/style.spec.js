@@ -623,5 +623,92 @@ test.describe('Block entities', () => {
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
     await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
   });
-});
 
+  test('It creates full-line links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Full-line_links');
+
+    // Select the first link based on its text content
+    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+      hasText: 'This is a full line link'
+    });
+
+    const firstLinkContentContainer = firstLink.locator('.canopy-link-content-container');
+    const firstLinkContentDisplay = await firstLinkContentContainer.evaluate(el => getComputedStyle(el).display);
+    expect(firstLinkContentDisplay).toBe('inline-block');
+
+    const firstLinkContentBorderStyle = await firstLinkContentContainer.evaluate(el => getComputedStyle(el).borderStyle);
+    expect(firstLinkContentBorderStyle).not.toBe('none');
+
+    // Check if the first link itself fills the container
+    const firstLinkWidth = await firstLink.evaluate(el => el.offsetWidth);
+    const containerWidth = await firstLink.evaluate(el => el.parentElement.offsetWidth);
+    expect(firstLinkWidth).toBeGreaterThan(containerWidth * 0.9); // It should fill the container
+
+    // Select the second link based on its text content
+    const secondLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+      hasText: 'This link would qualify'
+    });
+
+    // Check the display style of the .canopy-link-content-container inside the second link
+    const secondLinkContentContainer = secondLink.locator('.canopy-link-content-container');
+    const secondLinkContentDisplay = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).display);
+    expect(secondLinkContentDisplay).toBe('inline-block');
+
+    const secondLinkContentBorderStyle = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).borderStyle);
+    expect(secondLinkContentBorderStyle).not.toBe('none');
+
+    // Check if the second link does not fill the container
+    const secondLinkWidth = await secondLink.evaluate(el => el.offsetWidth);
+    expect(secondLinkWidth).not.toBeGreaterThan(containerWidth * 0.9); // It should not fill the container
+  });
+
+  test('It allows solo hash links [[#]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
+
+    await page.click('text=Back'); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
+    await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
+    await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
+  });
+
+  test('It allows solo caret links [[^]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links');
+
+    await expect(page.locator('.canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
+    await page.click('text=Back'); // [[^]] in a root topic paragraph should render to [[#]] ie self-reference which in topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[^ in subtopic is regular cycle reference to ST parent]]
+    await page.waitForURL('**/Solo_caret_links');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('solo caret links');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Nested_subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
+    await page.waitForURL('**/Solo_caret_links#Subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo caret link');
+  });
+
+  test('It allows solo period links [[.]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links');
+
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links');
+    await page.click('text=Back'); // [[.]] in a root topic paragraph is a self-reference which for topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links#Subtopic_solo_period_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[.]] in subtopic is shift to parent
+    await page.waitForURL('**/Solo_period_links#Subtopic_solo_period_link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo period link');
+  });
+});

@@ -2,9 +2,10 @@ let Topic = require('../../shared/topic');
 let chalk = require('chalk');
 
 class Reference {
-  constructor(string, enclosingTopic, parserContext) { // eg [[A#B/C#D|X Y]]
+  constructor(string, parserContext) { // eg [[A#B/C#D|X Y]]
     this.fullText = string;
-    this.enclosingTopic = enclosingTopic;
+    this.enclosingTopic = parserContext.currentTopic;
+    this.enclosingSubtopic = parserContext.currentSubtopic;
     this.parserContext = parserContext;
     this.displayText = '';
     this.targetText = '';
@@ -64,7 +65,7 @@ class Reference {
 
     segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
       if (plainText) {
-        this.displayText += this.findLastPathComponent(plainText); //{|The }Literature/Big Bad Wolf
+        this.displayText += plainText; //{|The }Literature/Big Bad Wolf
         this.targetText += plainText;
       } else {
         this.validateBraces(openingBraces, closingBraces);
@@ -77,7 +78,9 @@ class Reference {
       }
     });
 
-    this.displayText = this.exclusiveDisplaySyntax ? this.exclusiveDisplayText : this.displayText;
+    this.displayText = this.exclusiveDisplaySyntax ? this.exclusiveDisplayText : 
+      (this.exclusiveTargetSyntax ? this.displayText : this.findLastPathComponent(this.displayText)); // only {{}} is path if present
+
     this.targetText = this.exclusiveTargetSyntax ? this.exclusiveTargetText : this.targetText;
   }
 
@@ -120,6 +123,7 @@ class Reference {
     if (this.singleTopicWithEmptyFragment) return Reference.textBeforeFragment(this.contents);
     if (this.soloPoundSign) return null;
     if (this.soloCaretSign) return null;
+    if (this.soloPeriod) return null;
     // Regular expression to match the last unescaped slash or hash
     return this.findLastPathComponent(this.contents);
   }
@@ -136,7 +140,7 @@ class Reference {
   parseSimple() {
     this.targetText = this.contents;
     this.displayText = this.lastPathComponent;
-    if (!this.displayText && (this.soloPoundSign || this.soloCaretSign)) this.displayText = 'Back';
+    if (!this.displayText && (this.soloPoundSign || this.soloCaretSign || this.soloPeriod)) this.displayText = 'Back';
   }
 
   get isPath() {
@@ -166,6 +170,10 @@ class Reference {
 
   get soloCaretSign() {
     return !!(this.targetText === '^');
+  }
+
+  get soloPeriod() {
+    return !!(this.targetText === '.');
   }
 
   get singleTopicWithEmptyFragment() {
@@ -220,27 +228,32 @@ class Reference {
       return `${enclosingTopicMixedCase}#${enclosingTopicMixedCase}`;
     }
 
-    if (this.soloCaretSign) { //eg [#], short for topic subtopic
+    if (this.soloCaretSign) { //eg [^], short for parent paragraph
       let enclosingTopicMixedCase = this.enclosingTopic.mixedCase.replace(/([^\\])\//g, '$1\\/');
-      let subtopic = this.parserContext.parentTopicOf(this.parserContext.currentSubtopic);
-      if (!subtopic) throw new Error(`Cannoy use [[^]] syntax for parent declared after reference in expl file.`);
-      return `${enclosingTopicMixedCase}#${enclosingTopicMixedCase}`;
+      if (this.parserContext.inTopicParagraph) return enclosingTopicMixedCase; // self-reference is pop in topic paragraph, parent unknown
+      let parentSubtopic = this.parserContext.parentTopicOf(this.parserContext.currentSubtopic);
+      if (!parentSubtopic) this.parserContext.registerSubsumptionConditionalError(`Cannoy use [[^]] syntax for parent declared after reference in expl file: ` + this.fullText);
+      return `${enclosingTopicMixedCase}#${parentSubtopic?.mixedCase}`;
+    }
+
+    if (this.soloPeriod) { // eg [[.]] meaning parent link in subtopic and pop in topic
+      if (this.parserContext.inTopicParagraph) {
+        return this.enclosingTopic.mixedCase;
+      } else {
+        return `${this.enclosingTopic.mixedCase}#${this.enclosingSubtopic.mixedCase}`;
+      }
     }
 
     if (this.localReference) { // eg [[X]] where X is a subtopic of current topic
-      // return this.localReferencePath(this.enclosingTopic, this.targetAsTopic);
       return `${this.parserContext.currentTopic.mixedCase}#${this.targetText}`;
     }
 
     if (this.simpleGlobalReference) { // eg [[X]] where X is only global topic
-      // return this.singleSegmentGlobalReferencePath(this.targetAsTopic);
       return this.targetText;
     }
 
     if (this.singleTopicWithEmptyFragment) { // eg [[A#]], global reference override for subtopic collision
-      // return this.singleSegmentGlobalReferencePath(
-        return Reference.textBeforeFragment(this.targetText);
-      // );
+      return Reference.textBeforeFragment(this.targetText);
     }
 
     if (this.orphanFragment) { // eg [[#A]], global self-reference to current topic and given subtopic
@@ -258,8 +271,8 @@ class Reference {
     return string.match(/^\[\[((?:\\.|[^\\])+?)\]\]/)?.[0] || '';
   }
 
-  static for(string, enclosingTopic, parserContext) {
-    return new Reference(string, enclosingTopic, parserContext);
+  static for(string, parserContext) {
+    return new Reference(string, parserContext);
   }
 }
 

@@ -1,0 +1,10 @@
+Solo caret links:
+Here is a topic paragraph solo caret link: [[^]]
+[[Subtopic solo caret link]]
+
+Subtopic solo caret link:
+Here is a subtopic-paragraph solo caret link: [[^]]
+[[Nested subtopic solo caret link]]
+
+Nested subtopic solo caret link:
+Here is a nested subtopic solo caret link: [[^]]
