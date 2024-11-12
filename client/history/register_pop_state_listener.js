@@ -14,7 +14,7 @@ function registerPopStateListener() {
     let linkSelection = e?.state?.linkSelection ? new Link(e?.state?.linkSelection) : null;
 
     let scrollStyle;
-    if (Path.current.rootTopicPath.equals(Path.url.rootTopicPath)) { // Navigating within the same page
+    if (Path.current.firstTopicPath.equals(Path.url.firstTopicPath)) { // Navigating within the same page
       scrollStyle = 'smooth';
     } else { // Nagivating to a new page
       scrollStyle = 'instant';

@@ -200,7 +200,7 @@
       position: relative;
     }
 
-    &.canopy-back-cycle-link .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
+    &.canopy-back-cycle-link:not(.canopy-open-link) .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
       content: '↩';
       top: 2px;
       left: 1px;

@@ -247,7 +247,7 @@ As pictured above, when a global link is selected, the user has the option of ap
 
 Unlike a subtopic which can only be referenced from within a paragraph of its topic file, a topic can be referenced from any paragraph of any file in the project.
 
-#### Path references
+#### Path References
 
 A path reference can be made like so:
 
@@ -268,7 +268,7 @@ Boise: This is the capital.
 
 Selecting such a link will display multiple paragraphs below the current one.
 
-#### Cycle references
+#### Cycle References
 
 Cycle references are when a reference points to a topic that is already displayed in the current path. In such a case, the link offers the user a redirecting scroll backwards to the original instance, followed possibly by an advance to the new subsequent position. Eg, if the user is at path `A/B/C` and they click a link pointing to `B/D`, they will be scrolled up to `B`, and then down to `D`. Whether a link is a cycle link or not depends on the current path.
 
@@ -276,7 +276,7 @@ One common use of path references is to take the user back to a previous list. S
 
 Examples of cycle references can be found in the Canopy playground mentioned above.
 
-#### Path shorthands
+#### Path Shorthands
 
 If you want to create a path reference which references another subtopic in the same topic, you can use the omitted topic syntax like this: \[\[#Subtopic\]\]
 
@@ -284,7 +284,15 @@ Conversely, if you would like to clarify that you mean a reference as a global r
 
 Lastly, a simple \[\[#]] or \[\[#|Back]] is similar to both previous examples, like the first in that the omitted topic implies the reference should point at the current topic, and like the second in that the omitted subtopic implies the reference should point to the topic's topic-subtopic ie the paragraph of the topic's root key. Such a link in effect is a natural back button because a link to the subtopic's topic becomes a cycle reference that when clicked, retraced and closes the subtopic chain until the topic root, and selects the topic's parent link, allowing the user to navigate to other links of the parent paragraph.
 
-#### Advanced link syntax ####
+#### Relative Link Shorthands ####
+
+Two syntaxes exist to make it easier to make links based on where the reference exists in the given topic.
+
+Creating a link like \[\[^]] if done in a non-topic subtopic will create a link to the parent subtopic, which will generally produce a cycle-reducting redirect i.e. pop. If done in a topic, it will create a "self-reference" (see below), which in a topic paragraph pops the paragraph from the visible stack e.g. moving from A/B/C to A/B.
+
+Creating a link like \[\[.]] produces a self-reference, e.g. in topic T a reference \[\[T]] and in subtopic T#ST a reference \[\[T#ST]]. In a subtopic paragraph this will shift to the parent link, and in a topic paragraph this will pop, e.g. moving from A/B/C to A/B.
+
+#### Advanced Link Syntax ####
 
 If you want to make the link target and display text different from one another, there are several syntaxes you can use:
 
@@ -322,6 +330,34 @@ or
 Bob:
 Bob is a nice person who lives in \[!\[New Jersey]]
 ```
+
+#### Coterminal References ####
+
+Because of cycle reduction behavior, e.g. a reference \[\[B]] at path A/B/C causing a redirect to A/C, certain coterminal links are redundant and have been reused for other things.
+
+*Self-References*
+
+Self-references are single-segment paths that reference their containing subtopic path. E.g., in paragraph A/B/C a reference to \[\[C]], or in paragraph A/B/C#D a reference to \[\[C#D]].
+
+In a subtopic paragraph, a self-reference will maintain the current path but scroll to the current parent link. For "pop" behavior i.e. full removal of the current paragraph in a subtopic paragraph, use \[\[^]].
+
+In a topic paragraph, a self-reference will "pop" the current paragraph from the displayed path, e.g. going from A/B/C to A/B. In order to scroll to the parent link, use a "rehash reference" described below.
+
++-------+------------------------------+--------------------------------+
+|       |  From within a ST paragraph  |   From within a T paragraph    |
++-------+------------------------------+--------------------------------+
+|  Pop  |   Parent reference \[\[^]]   | Self-reference \[\[^]] \[\[.]] |
++-------+------------------------------+--------------------------------+
+| Shift |    Self-reference \[\[.]]    |        Rehash Reference        |
++-------+------------------------------+--------------------------------+
+
+*Rehash References*
+
+Rehash references are references that rehash some terminal portion of the current path, and only that. E.g, in path A/B/C, a reference to \[\[C]], \[\[B/C]], or \[\[A/B/C]]. Click such a link will cause the user to scroll to the first parent link in the reiterated path portion, e.g. for \[\[B/C]], to the link in B to C. This allows an author to send the user back up the page without closing the current path.
+
+*Coterminal references*
+
+References which are merely coterminal i.e. which are neither self-references nor rehash references entail a reference that begins at a different path and converges with the current, e.g. in paragraph A/B/C, a reference like \[\[X/Y/B/C]]. This link will cause the cycle path to be inlined, i.e. the reader will redirect to A/B/C/X/Y/B/C, and the reader will scroll to the point at which the paths diverged, e.g. here, Y's link to B.
 
 ### Using Markup
 

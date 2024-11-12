@@ -120,6 +120,10 @@ class ParserContext {
     this.topicFilePaths[topic.caps] = this.filePath;
   }
 
+  get inTopicParagraph() {
+    return this.currentTopic.mixedCase === this.currentSubtopic.mixedCase;
+  }
+
   set currentText(text) {
     this.text = text;
   }

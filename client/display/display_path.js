@@ -21,7 +21,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // before link.select because selection cache by current URL
     Link.persistLinkSelection(linkToSelect || pathToDisplay.parentLink); // if null, persists deselect
     Link.updateSelectionClass(linkToSelect || pathToDisplay.parentLink); // if null, removes previous selection's class
-    let header = setHeader(pathToDisplay.rootTopicPath.topic, options);
+    let header = setHeader(pathToDisplay.firstTopicPath.topic, options);
     document.title = pathToDisplay.pageTitle;
 
     let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, options);

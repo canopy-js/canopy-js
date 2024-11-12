@@ -212,12 +212,11 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 }
 
 function localReferenceMatcher({ string, parserContext, index }) {
-  let { currentTopic, currentSubtopic } = parserContext;
-
   if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  let { currentTopic, currentSubtopic } = parserContext;
 
-  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
+  let reference = Reference.for(Reference.candidateSubstring(string), parserContext);
 
   if (!reference.valid) return;
   if (!reference.simpleTarget) return; // eg [[A]] or [[A|B]] not [[A#B/C#D]] or [[A#B/C#D|XYZ]]
@@ -251,12 +250,11 @@ function localReferenceMatcher({ string, parserContext, index }) {
 }
 
 function globalReferenceMatcher({ string, parserContext }) {
-  let { currentTopic, currentSubtopic } = parserContext;
-
   if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  let { currentTopic, currentSubtopic } = parserContext;
   
-  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
+  let reference = Reference.for(Reference.candidateSubstring(string), parserContext);
   if (!reference.valid) return;
   let pathString = reference.pathString;
 
@@ -277,8 +275,7 @@ function disabledReferenceMatcher({ string, parserContext }) {
   let match = string.match(/^\[!\[(?:\\.|(?!]]).)+]]/s);
 
   if (match) {
-    let { currentTopic, currentSubtopic } = parserContext;
-    let reference = Reference.for('[[' + match[0].slice('[!['.length), currentTopic, parserContext);
+    let reference = Reference.for('[[' + match[0].slice('[!['.length), parserContext);
 
     return [new DisabledReferenceToken(
       reference.displayText,
@@ -290,10 +287,10 @@ function disabledReferenceMatcher({ string, parserContext }) {
 
 function fragmentReferenceMatcher({ string, parserContext }) {
   let match = string.match(/^\[#\[(?:\\.|(?!]]).)+]]/s);
+  let { currentTopic, currentSubtopic } = parserContext;
 
   if (match) {
-    let { currentTopic, currentSubtopic } = parserContext;
-    let reference = Reference.for('[[' + match[0].slice('[#['.length), currentTopic, parserContext);
+    let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
 
     parserContext.registerFragmentReference(reference);
 
