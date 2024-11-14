@@ -1,5 +1,4 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
-import ScrollableContainer from 'helpers/scrollable_container';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
 import Topic from '../../cli/shared/topic';
@@ -107,6 +106,12 @@ class Path {
     return otherPath.isIn(this);
   }
 
+  includesTopic(topic) {
+    return this.pathArray.find(([currentTopic, _]) => {
+      return topic.mixedCase === currentTopic.mixedCase;
+    });
+  }
+
   get array() {
     return this.pathArray;
   }
@@ -121,6 +126,14 @@ class Path {
 
   slice() {
     return new this.constructor(this.pathArray.slice.call(this.pathArray, ...arguments));
+  }
+
+  sliceAfterLastTopicInstance(topic) {
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase) + 1)); // after
+  }
+
+  sliceBeforeLastTopicInstance(topic) {
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase))); // after
   }
 
   get segments() {
@@ -150,7 +163,7 @@ class Path {
   }
 
   get lastSubtopic() {
-    return this.lastSegment.subtopic;
+    return this.lastSegment.firstSubtopic;
   }
 
   get secondTopic() {
@@ -177,6 +190,36 @@ class Path {
     return new this.constructor(this.pathArray.slice(0, -1));
   }
 
+  get withoutLastSubtopic() {
+    return new this.constructor(this.pathArray.slice(0, -1)).append(Path.forTopic(this.lastTopic));
+  }
+
+  endsWith(otherPath) {
+    // Check if there is at least one segment at the end of both paths that matches.
+    const thisLength = this.pathArray.length;
+    const otherLength = otherPath.pathArray.length;
+
+    // If the other path is longer, it cannot be at the end of this path.
+    if (otherLength > thisLength) {
+      return false;
+    }
+
+    // Compare the segments starting from the end of both paths.
+    for (let i = 1; i <= otherLength; i++) {
+      const [thisTopic, thisSubtopic] = this.pathArray[thisLength - i];
+      const [otherTopic, otherSubtopic] = otherPath.pathArray[otherLength - i];
+
+      if (
+        thisTopic.mixedCase !== otherTopic.mixedCase ||
+        thisSubtopic.mixedCase !== otherSubtopic.mixedCase
+      ) {
+        return false;
+      }
+    }
+
+    return true; 
+  }
+
   get isSingleTopic() {
     return this.pathArray.length === 1 && this.pathArray[0][0].mixedCase === this.pathArray[0][1].mixedCase;
   }
@@ -187,6 +230,10 @@ class Path {
 
   get parentLink() {
     return this.paragraph?.parentLink;
+  }
+
+  firstParentLink() {
+    return this.firstTopicPath.intermediaryPathsTo(this)[1].parentLink;
   }
 
   get nextLink() {
@@ -250,10 +297,10 @@ class Path {
 
     let parentPathTopicStrings = parentPath.topicArray.map(t => t.mixedCase); // we only want a cycle not already in parentPath
     let targetPathTopicStrings = literalPath.topicArray.map(t => t.mixedCase);
-    return parentPathTopicStrings.some((enclosingTopicString, enclosingTopicIndex) => {
-      return targetPathTopicStrings.some((targetTopicString, targetTopicIndex) => {
-        return enclosingTopicString === targetTopicString &&
-          !(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
+    return parentPathTopicStrings.some((enclosingTopicString) => {
+      return targetPathTopicStrings.some((targetTopicString) => {
+        return enclosingTopicString === targetTopicString; //&&
+          //!(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
       });
     });
   }
@@ -271,20 +318,26 @@ class Path {
     return candidatePath;
   }
 
-  fulcrumElement(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
-    if (this.includes(otherPath) || otherPath.includes(this)) return this.overlap(otherPath).paragraphElement; // fulcrum paragraph 
-    return this.overlapAndNextTopic(otherPath).parentLink.element;
+  partialOverlap(otherPath) { // an overlap that is not a subset or equivalence
+    return this.overlap(otherPath)
+      && !this.equals(otherPath)
+      && !this.subsetOf(otherPath)
+      && !otherPath.subsetOf(this);
   }
 
-  overlapAndNextTopic(otherPath) { // path of "this" plus first topic not in otherPath
+  twoStepChange(otherPath) {
+    return this.partialOverlap(otherPath) && !this.fulcrumElement(otherPath).isFocused;
+  }
+
+  fulcrumElement(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
+    if (this.includes(otherPath) || otherPath.includes(this)) return this.overlap(otherPath).paragraphElement; // fulcrum paragraph 
+    return this.overlapAndNextSubtopic(otherPath).parentLink.element;
+  }
+
+  overlapAndNextSubtopic(otherPath) { // path of "this" plus first subtopic not in otherPath
     let overlapPath = this.overlap(otherPath);
     if (this.includes(otherPath)) return null;
     return overlapPath.intermediaryPathsTo(otherPath)[1];
-  }
-
-  firstDestination(otherPath) { // going from this to otherPath, the first destination in animation
-    if (this.overlap(otherPath) && !this.includes(otherPath) && !otherPath.includes(this)) return this.overlap(otherPath);
-    return otherPath;
   }
 
   subsetOf(otherPath) { // this is subset of otherPath
@@ -328,6 +381,7 @@ class Path {
   display(options = {}) {
     if (options?.newTab) return window.open(location.origin + this.string, '_blank');
     if (this.empty) return console.error('Cannot display empty path');
+    if (options.options) throw 'Caller produced malformed options object';
 
     return updateView(this, null, options);
   }
@@ -361,20 +415,12 @@ class Path {
     return this.string;
   }
 
-  get rootTopicPath() {
-    if (this.length > 0) {
-      return new Path([[this.firstTopic, this.firstTopic]]);
-    } else {
-      return this;
-    }
-  }
-
   get topicArray() {
-    return this.array.map(([topic, subtopic]) => topic);
+    return this.array.map(([topic]) => topic);
   }
 
   get topicStringArray() {
-    return this.array.map(([topic, subtopic]) => topic.mixedCase);
+    return this.array.map(([topic]) => topic.mixedCase);
   }
 
   get sectionElement() {
@@ -383,6 +429,7 @@ class Path {
 
   get paragraph() {
     if (Paragraph.byPath(this)) return Paragraph.byPath(this);
+    if (this.length === 0) return null;
 
     if (this.sectionElement) {
       return new Paragraph(this.sectionElement);
@@ -409,7 +456,7 @@ class Path {
   }
 
   static get root() {
-    return Path.url.rootTopicPath;
+    return Path.url.firstTopicPath;
   }
 
   static get current() {
@@ -485,6 +532,8 @@ class Path {
     }
 
     if (!currentNode) console.log('element at relative path', path, rootElement, currentNode);
+
+    if (currentNode === canopyContainer) return null;
 
     return currentNode;
   }

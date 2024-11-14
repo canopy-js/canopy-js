@@ -202,7 +202,7 @@ function OutlineToken(text, parserContext) {
     this.lastNode = newNode;
   });
 
-  removeCircularListKeys([this])
+  removeCircularListKeys([this]);
 
   function removeCircularListKeys(tokens) {
     tokens.filter(token => token.type === 'outline').forEach(token => {
@@ -247,10 +247,10 @@ function TableToken(text, parserContext) {
               parserContext: parserContext.clone({
                 insideToken: true,
               })
-              .incrementLineAndResetCharacterNumber(lineNumber) // we want error messages to know how far into the table we are
-              .incrementCharacterNumber(earlierCharactersOnLine.length + cellString.match(/^\s+/)?.[0].length) // count earlier chars and leading space
+                .incrementLineAndResetCharacterNumber(lineNumber) // we want error messages to know how far into the table we are
+                .incrementCharacterNumber(earlierCharactersOnLine.length + cellString.match(/^\s+/)?.[0].length) // count earlier chars and leading space
             })
-          }
+          };
         }
       );
       this.rows.push(cellObjects);
@@ -265,13 +265,12 @@ function TableToken(text, parserContext) {
         let op = cellObject.merge;
         let dir = op.x ? 'x' : 'y';
         let attribute = cellObject.merge.x ? 'colspan' : 'rowspan';
-        let position = cellObject.merge.x ? y : x;
         let limit = Math.max([op.x, op.y]) > 0 ? collection.length : -1;
         let selection = {x: x + op.x, y: y + op.y};
         if ((selection.x < 0 || selection.x > limit && limit > 0 && dir ==='x')
           ||(selection.y < 0 || selection.y > limit && limit > 0 && dir ==='y')) {
-            throw new Error(chalk.red(`Invalid merge instructions in table: ${text}`));
-          }
+          throw new Error(chalk.red(`Invalid merge instructions in table: ${text}`));
+        }
 
         while(selection[dir] !== limit) {
           if (!rows[selection.y][selection.x].merge) {
@@ -287,7 +286,7 @@ function TableToken(text, parserContext) {
         cellObjectList.push(cellObject); // we preserve the direction information for the above check until we are done will all the cells
       }
     });
-  })
+  });
 
   cellObjectList.forEach(cellObject => cellObject.merge && (cellObject.merge = true));
 }
@@ -305,11 +304,11 @@ function MenuToken(text, parserContext) {
 
   items = items.map(item => {
     if (item[2]) { // It has an ordinal, so it's some sort of list.
-     return { list: true, ordinal: item[2], text: item[4] };
+      return { list: true, ordinal: item[2], text: item[4] };
     } else if (item[3]) { // It starts with '>' or '<', so it's a left or right aligned list item.
-     return { list: false, text: item[4], alignment: item[3] === '>' ? 'right' : 'left' };
+      return { list: false, text: item[4], alignment: item[3] === '>' ? 'right' : 'left' };
     } else { // It's not an ordinal item.
-     return { list: false, text: item[4] };
+      return { list: false, text: item[4] };
     }
   });
 
@@ -326,14 +325,14 @@ function MenuToken(text, parserContext) {
         parserContext: parserContext.clone({
           insideToken: true,
         })
-        .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the menu are we, line number plus initial delimiter
-        .incrementCharacterNumber('- '.length) // count earlier chars and leading space
+          .incrementLineAndResetCharacterNumber(lineNumber + 1) // how far into the menu are we, line number plus initial delimiter
+          .incrementCharacterNumber('- '.length) // count earlier chars and leading space
       })
-    }
+    };
   });
 }
 
-function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
+function FootnoteLinesToken(text, parserContext) {
   this.type = 'footnote_lines';
   this.lines = [];
 
@@ -355,7 +354,7 @@ function FootnoteLinesToken(text, parserContext, _, previousCharacter) {
   });
 }
 
-function ItalicsToken(text, parserContext, _, previousCharacter) {
+function ItalicsToken(text, parserContext) {
   this.type = 'italics';
   this.tokens = parseText({
     text,
@@ -363,7 +362,7 @@ function ItalicsToken(text, parserContext, _, previousCharacter) {
   });
 }
 
-function BoldToken(text, parserContext, _, previousCharacter) {
+function BoldToken(text, parserContext) {
   this.type = 'bold';
   this.tokens = parseText({
     text,
@@ -371,12 +370,12 @@ function BoldToken(text, parserContext, _, previousCharacter) {
   });
 }
 
-function InlineCodeSnippetToken(text, parserContext) {
+function InlineCodeSnippetToken(text) {
   this.type = 'inline_code';
   this.text = text.split('\\\\').map(s => s.replace('\\', '')).join('\\'); // remove single backslashes, and replace double with single;
 }
 
-function StrikethroughToken(text, parserContext, _, previousCharacter) {
+function StrikethroughToken(text, parserContext) {
   this.type = 'strikethrough';
   this.tokens = parseText({
     text,

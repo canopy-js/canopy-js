@@ -1,12 +1,3 @@
-const {
-  recursiveDirectoryFind,
-  deduplicate,
-  getRecursiveSubdirectoryFiles,
-  getDirectoryFiles,
-  pathComparator,
-  groupByPath
-} = require('./helpers');
-
 let FileSystemChange = require('./file_system_change');
 let FileSet = require('./file_set');
 
@@ -43,7 +34,7 @@ class FileSystemChangeCalculator {
             fileSystemChange.updateFile(newFile.path, newFile.contents);
           }
         } else { // the file was never loaded so this is an append
-          let originalFileContents = this.diskFileSet.getFileContents(newFile.path)
+          let originalFileContents = this.diskFileSet.getFileContents(newFile.path);
           fileSystemChange.appendToFile(newFile.path, originalFileContents + '\n' + newFile.contents);
         }
       }

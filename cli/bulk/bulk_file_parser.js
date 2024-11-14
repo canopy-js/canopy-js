@@ -9,7 +9,7 @@ class BulkFileParser {
   }
 
   parseSections() {
-    return this.bulkFileString.split(/(?=^\[[^\[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
+    return this.bulkFileString.split(/(?=^\[[^[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
       .map(s => s.trim()).filter(Boolean).map((sectionString) => {
         let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)?.[1];
         if (!displayCategoryPath) throw new Error('Malformed Canopy bulk file: ' + sectionString);
@@ -30,10 +30,10 @@ class BulkFileParser {
                 doubleAsterisk: string.startsWith('** ') ? true : false,
                 key: block.key,
                 text: blockString
-              }
+              };
             })
-      }
-    });
+        };
+      });
   }
 
   generateFileSet() {
@@ -46,7 +46,7 @@ class BulkFileParser {
         throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
       }
 
-      section.files.forEach((file, index, files) => {
+      section.files.forEach((file) => {
         if (file.asterisk && file.key) { // Create topic file
           let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).fileName}.expl`;
 

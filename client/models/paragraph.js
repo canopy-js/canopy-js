@@ -3,7 +3,6 @@ import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import Topic from '../../cli/shared/topic';
-import updateView from 'display/update_view';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not
@@ -66,6 +65,22 @@ class Paragraph {
     return window.getComputedStyle(this.sectionElement).display !== 'none';
   }
 
+  get isFocused() {
+    if (!this.element) return null;
+    const rect = this.element.getBoundingClientRect();
+
+    // Get the viewport height
+    const viewportHeight = ScrollableContainer.visibleHeight;
+
+    const topLimit = viewportHeight * 0.1;
+    const bottomLimit = viewportHeight * 0.5;
+
+    const topInRange = rect.top > topLimit;
+    const bottomInRange = rect.top < bottomLimit;
+
+    return topInRange && bottomInRange;
+  }
+
   get topic () {
     return Topic.fromMixedCase(this.sectionElement.dataset.topicName);
   }
@@ -92,6 +107,10 @@ class Paragraph {
 
   get path() {
     return new Path(this.sectionElement.dataset.pathString);
+  }
+
+  get literalPath() {
+    return Path.forSegment(this.topic, this.subtopic);
   }
 
   get topicPath() {
@@ -273,7 +292,7 @@ class Paragraph {
   }
 
   static get root() {
-    let path = Path.current.rootTopicPath;
+    let path = Path.current.firstTopicPath;
     return path.paragraph;
   }
 

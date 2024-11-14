@@ -247,7 +247,6 @@ class Link {
 
   static collectMetadata(linkElement) {
     let link = new Link(linkElement);
-    let paragraph = Paragraph.containingLink(link);
 
     return {
       enclosingPathString: link.enclosingPath.string,
@@ -267,7 +266,7 @@ class Link {
     if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
     
     let perfectMatch = enclosingParagraph.linkBySelector(
-      (link, i) => (
+      (link) => (
         link.isParent && 
         link.previewPath.string === object.previewPathString &&
         link.relativeLinkNumber === object.relativeLinkNumber &&
@@ -276,7 +275,7 @@ class Link {
     );
 
     let link = perfectMatch || enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
-      (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
+      (link) => (link.isParent && link.previewPath.string === object.previewPathString) ||
         (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)
     );
 
@@ -330,7 +329,7 @@ class Link {
   }
 
   get parentLink() {
-    return this.enclosingParagraph.parentLink;
+    return this.enclosingParagraph?.parentLink;
   }
 
   isParentLinkOf(paragraph) {
@@ -370,12 +369,41 @@ class Link {
     return this.element?.classList.contains('canopy-selected-link');
   }
 
-  get isGlobal() {
-    return this.type === 'global';
+  get isPathReference() {
+    return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase); // A/B or A/B#C
   }
 
-  get isPathReference() {
-    return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase);
+  get isCoterminalReference() { // ie A/B/C/D with [[E/C/D]], if not coterminal, regular reduction
+    return this.literalPath.includesTopic(this.enclosingTopic) 
+      && this.literalPath.lastTopic.mixedCase === this.enclosingTopic.mixedCase
+      && this.literalPath.lastSubtopic.mixedCase === this.enclosingSubtopic.mixedCase;
+  }
+
+  get selfReferencingOverlapStart() { // e.g. A/B/C/D with reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
+    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => topic.mixedCase === this.enclosingTopic.mixedCase);
+    let indexOfSelfReference = topicMatches.lastIndexOf(true);
+    let indexOfCurrentSegment = this.enclosingPath.length - 1;
+
+    while(indexOfCurrentSegment !== 0 && this.inlinePath.pathArray[indexOfCurrentSegment - 1][0].mixedCase === this.inlinePath.pathArray[indexOfSelfReference - 1][0].mixedCase) {
+      indexOfSelfReference--;
+      indexOfCurrentSegment--;
+    }
+
+    if (indexOfCurrentSegment === 0) { // e.g. A/B/C/D [[G/A/B/C/D]], point to G's link to A because here that's context for the repetition
+      return this.inlinePath.slice(0, indexOfSelfReference + 1); // +1 so slice includes the last element which is also root topic so we get it's parent link
+    }
+
+    return this.inlinePath.slice(0, indexOfSelfReference + 1); // e.g. A/B/C/D [[G/B/C/E]] point to A/B/C/D/G/B/C/E B's link to C ie start of shared portion
+  }
+
+  get isRehashReference() {
+    return this.enclosingPath.endsWith(this.literalPath);
+  }
+
+  get parentLinkBeforeRehash() { // eg A/B/C [[B/C]] or A/B#C [[B#C]] give parent link in B
+    return this.enclosingPath.sliceBeforeLastTopicInstance(this.literalPath.firstTopic)
+      .append(Path.forTopic(this.literalPath.firstTopic))
+      .intermediaryPathsTo(this.enclosingPath)[1].parentLink;
   }
 
   get isSimpleGlobal() {
@@ -411,7 +439,8 @@ class Link {
   }
 
   get isBackCycle() {
-    return this.inlinePath.reduce().subsetOf(this.enclosingPath);
+    return this.inlinePath.reduce().subsetOf(this.enclosingPath) ||
+      this.isRehashReference; // e.g. A/B/C with [[B/C]] which focuses on B
   }
 
   get isLateralCycle() {
@@ -537,6 +566,10 @@ class Link {
   }
 
   get inlinePath() { // ie if the user would inline the link's target at the link's enclosing path
+    // if (this.literalPath.equals(this.enclosingParagraph.literalPath)) { // link to self in root topic = pop
+    //   return this?.enclosingParagraph.parentParagraph?.path || this.enclosingParagraph.path;
+    // }
+
     if (this.isGlobal) {
       return this.enclosingParagraph.path.append(this.literalPath);
     }
@@ -576,9 +609,11 @@ class Link {
   }
 
   select(options = {}) {
+    if (options.options) throw 'Caller produced malformed options object';
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
+    if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
     if (options.scrollToParagraph) return updateView(this.previewPath, null, options);
 
     return updateView(this.previewPath, this, options);
@@ -600,6 +635,17 @@ class Link {
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
     }
 
+    if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
+      if (this.literalPath.isSingleTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
+      return this.parentLinkBeforeRehash.select({ ...options, scrollToParagraph: false })
+    }
+
+    if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
+      return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
+        return updateView(this.inlinePath, this.selfReferencingOverlapStart.parentLink, { ...options, scrollToParagraph: false, inlineCycles: true });
+      });
+    }
+
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
       // if (this.backButton) return this.inlinePath.reduce().parentLink.select({ ...options, scrollToParagraph: false }); //unset from click handler
@@ -612,6 +658,11 @@ class Link {
         () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
       );
     }
+
+    // // Links from a topic paragraph to itself are considered back buttons
+    // if (this.literalPath.equals(this.enclosingParagraph.path.lastSegment) && this.enclosingParagraph.parentParagraph) {
+    //   return this.enclosingParagraph.parentParagraph.path.display(options);//parentLink.select({ ...options, scrollToParagraph: false });
+    // }
 
     return (options.selectALink && this.firstChild || this).select(options);
   }

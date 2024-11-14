@@ -1,0 +1,8 @@
+D: D: [[E]]
+[[{{D}} ie topic self-reference]]
+[[{{A/B/C/D}} ie total rehash]]
+[[{{B/C/D}} ie partial rehash ending on topic]]
+
+E: D#E: [[F]]
+
+F: D#F: [[{D#F}{| ie partial rehash ending on subtopic}]]

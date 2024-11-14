@@ -16,7 +16,7 @@ function rebuild (bulkFileString) {
 
     let BulkFileParser = require('../cli/bulk/bulk_file_parser');
     let bulkFileParser = new BulkFileParser(bulkFileString);
-    let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
+    let { newFileSet, defaultTopicKey } = bulkFileParser.generateFileSet();
     let Block = require('../cli/shared/block');
     defaultTopicKey ||= bulkFileString.split('\n').map(line => Block.for(line.match(/^\*?\*? ?(.*)/)[1]).key).find(key => key);
     let defaultTopic = Topic.for(defaultTopicKey);
@@ -27,8 +27,8 @@ function rebuild (bulkFileString) {
 
     let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
 
-    let directoriesToEnsure, filesToWrite;
-    ({ directoriesToEnsure, filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, null, defaultTopicKey));
+    let filesToWrite;
+    ({ filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, null, defaultTopicKey));
 
     for (let key in REQUEST_CACHE) { // Remove old data
       if (REQUEST_CACHE.hasOwnProperty(key)) {

@@ -1,7 +1,6 @@
 import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
-import Paragraph from 'models/paragraph';
 
 function registerPopStateListener() {
   if ('scrollRestoration' in history) {
@@ -14,7 +13,7 @@ function registerPopStateListener() {
     let linkSelection = e?.state?.linkSelection ? new Link(e?.state?.linkSelection) : null;
 
     let scrollStyle;
-    if (Path.current.rootTopicPath.equals(Path.url.rootTopicPath)) { // Navigating within the same page
+    if (Path.current.firstTopicPath.equals(Path.url.firstTopicPath)) { // Navigating within the same page
       scrollStyle = 'smooth';
     } else { // Nagivating to a new page
       scrollStyle = 'instant';
@@ -23,7 +22,7 @@ function registerPopStateListener() {
     updateView(
       Path.url,
       linkSelection || Path.url.parentLink,
-      { scrollStyle, scrollDirect: true, popState: true }
+      { scrollStyle, scrollDirect: true, popState: true, scrollToParagraph: true }
     );
   });
 }

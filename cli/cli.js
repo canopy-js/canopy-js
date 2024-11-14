@@ -5,9 +5,7 @@ const watch = require('./watch');
 const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
-const sketch = require('./sketch/sketch');
 let { tryDefaultTopic } = require('./shared/fs-helpers');
-let { throwOrWriteError } = require('./bulk/helpers');
 let defaultTopic = tryDefaultTopic();
 const program = new Command();
 
@@ -22,7 +20,7 @@ program.command('init')
       init();
     } catch (e) {
       console.error(e.message);
-      process.exit(1)
+      process.exit(1);
     }
   });
 
@@ -45,7 +43,7 @@ program.command('build')
     } catch (e) {
       if (options.error) throw e;
       console.error(e.message);
-      process.exit(1)
+      process.exit(1);
     }
   });
 
@@ -65,7 +63,7 @@ program.command('watch')
     } catch (e) {
       if (options.error) throw e;
       console.error(e.message);
-      process.exit(1)
+      process.exit(1);
     }
   });
 
@@ -88,7 +86,7 @@ program.command('dev')
     } catch (e) {
       if (options.error) throw e;
       console.error(e.message);
-      process.exit(1)
+      process.exit(1);
     }
   });
 
@@ -105,7 +103,7 @@ program.command('serve')
     } catch (e) {
       if (options.error) throw e;
       console.error(e.message);
-      process.exit(1)
+      process.exit(1);
     }
   });
 
@@ -138,21 +136,9 @@ program.command('bulk')
       if (e.message !== 'fzf exited with error code 130') { // unimportant error we get from file picker library
         if (options.error) throw e;
         console.error(e);
-        process.exit(1)
+        process.exit(1);
       }
     });
   });
-
-// program.command('sketch')
-//   .description('interactive CLI for creating content')
-//   .action(() => {
-//     try {
-//       sketch();
-//     } catch (e) {
-//       if (options.error) throw e;
-//       console.error(e.message);
-//       process.exit(1)
-//     }
-//   });
 
 program.parse();
