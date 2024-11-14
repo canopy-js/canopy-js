@@ -1,11 +1,10 @@
-import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
 import ScrollableContainer from 'helpers/scrollable_container';
 
-function moveInDirection(direction, options) {
+function moveInDirection(direction) {
   const currentLinkElement = Link.selection?.element;
 
   if (direction === 'up') {
@@ -166,7 +165,6 @@ function moveInDirection(direction, options) {
     // Wrap to upward far-right for LTR (or downward far-left for rtl)
     let verticalDirectionOfWrap = verticalDirectionToWrapAfterLeftmostLink(currentLinkElement);
     let horizontalDirectionOfWrap = horizontalDirectionToWrapAfterLink(currentLinkElement, verticalDirectionOfWrap);
-    let verticalSideToCompare = verticalDirectionOfWrap === 'up' ? 'bottom' : 'top';
     let isInCorrectVerticalDirection = verticalDirectionOfWrap === 'up' ? isHigher : isLower; // has to be eg upward in general
     let isInBetterVerticalDirection = verticalDirectionOfWrap === 'up' ? isLower : isHigher; // but of the upward links, eg, lower is better
     let closerToCorrectHorizontalEdge = horizontalDirectionOfWrap === 'right' ? rightMostRect : leftMostRect;
@@ -191,8 +189,6 @@ function moveInDirection(direction, options) {
     // Wrap to rightmost bottom (or leftmost top for RTL)
     let verticalDirectionOfExtremeWrap = verticalDirectionToWrapAfterFinalLeftmostLink(currentLinkElement);
     let horizontalDirectionOfExtremeWrap = horizontalDirectionToWrapAfterExtremeLink(currentLinkElement, verticalDirectionOfExtremeWrap);
-    let verticalSideToCompareExtremeWrap = verticalDirectionOfExtremeWrap === 'down' ? 'top' : 'bottom';
-    let horizontalSideToCompareExtremeWrap = horizontalDirectionOfExtremeWrap;
     let isVerticallyFarther = verticalDirectionOfExtremeWrap === 'up' ? isHigher : isLower;
     let closerToCorrectExtremeHorizontalEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
@@ -235,12 +231,8 @@ function moveInDirection(direction, options) {
 
     // Wrap to downward far-left (or upward far-right for RTL text)
     let verticalDirectionOfWrap = verticalDirectionToWrapAfterRightmostLink(currentLinkElement);
-    let horizontalDirectionOfWrap = horizontalDirectionToWrapAfterLink(currentLinkElement, verticalDirectionOfWrap);
-    let verticalSideToCompare = verticalDirectionOfWrap === 'up' ? 'top' : 'bottom';
-    let horizontalSideToCompare = horizontalDirectionOfWrap;
     let isInCorrectVerticalDirection = verticalDirectionOfWrap === 'up' ? isHigher : isLower;
     let isInBetterVerticalDirection = verticalDirectionOfWrap === 'up' ? isLower : isHigher;
-    let isHorizontalExtreme = horizontalDirectionOfWrap === 'left' ? isLeftward : isRightward;
     let closerToCorrectHorizontalEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
     candidateRectContainers = rectContainers.filter(rectObject => isInCorrectVerticalDirection(rectObject, currentSelectionRect));
@@ -263,9 +255,7 @@ function moveInDirection(direction, options) {
     // Wrap to leftmost top (or rightmost bottom for RTL)
     let verticalDirectionOfExtremeWrap = verticalDirectionToWrapAfterFinalRightmostLink(currentLinkElement);
     let horizontalDirectionOfExtremeWrap = horizontalDirectionToWrapAfterExtremeLink(currentLinkElement, verticalDirectionOfExtremeWrap);
-    let extremeHorizontalPosition = horizontalDirectionOfExtremeWrap === 'left' ? 0 : window.innerWidth;
     let verticalSideToCompareExtremeWrap = verticalDirectionOfExtremeWrap === 'up' ? 'top' : 'bottom';
-    let horizontalSideToCompareExtremeWrap = horizontalDirectionOfExtremeWrap;
     let isVerticallyFarther = verticalDirectionOfExtremeWrap === 'up' ? isHigher : isLower;
     let closerToCorrectHorizontalExtremeEdge = horizontalDirectionOfExtremeWrap === 'right' ? rightMostRect : leftMostRect;
 
@@ -294,31 +284,6 @@ function isLower(rect1, rect2) {
   return false;
 }
 
-function bottomsAreEven(rect1, rect2) {
-  if (rect1.bottom === rect2.bottom) return true;
-  return false;
-}
-
-function topsAreEven(rect1, rect2) {
-  if (rect1.top === rect2.top) return true;
-  return false;
-}
-
-function isHorizontallyEvenWith(rect1, rect2) {
-  if (Math.abs(rect1.top - rect2.top) < 30) return true;
-  return false;
-}
-
-function isRightward(rect1, rect2) {
-  if (rect1.left > rect2.left) return true;
-  return false;
-}
-
-function isLeftward(rect1, rect2) {
-  if (rect1.right < rect2.right) return true;
-  return false;
-}
-
 function rightMostRect(rect1, rect2) {
   return rect1.right > rect2.right ? rect1 : rect2;
 }
@@ -329,10 +294,6 @@ function leftMostRect(rect1, rect2) {
 
 function topMostRect(rect1, rect2) {
   return rect1.top < rect2.top ? rect1 : rect2;
-}
-
-function bottomMostRect(rect1, rect2) {
-  return rect1.bottom > rect2.bottom ? rect1 : rect2;
 }
 
 function isHorizontallyWithin(rect1, rect2) {
@@ -430,7 +391,7 @@ function distanceComparingSide(rect1, rect2, side) {
   }
 }
 
-function getRectsOfElements(elementArray, currentLinkElement) {
+function getRectsOfElements(elementArray) {
   const result = [];
 
   for (const element of elementArray) {

@@ -1,6 +1,4 @@
-import updateView from 'display/update_view';
 import Path from 'models/path';
-import Link from 'models/link';
 
 function onLinkClick(link) {
   return (e) => {
@@ -8,9 +6,6 @@ function onLinkClick(link) {
     if (textIsSelected()) return // disqualify drags
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
-    let redirect = e.altKey;
-    let inlineCycles = e.shiftKey;
-    let redirectingCycle = link.cycle && !inlineCycles;
 
     if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // close global link
       return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true, noBeforeChangeScroll: true });

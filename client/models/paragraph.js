@@ -3,7 +3,6 @@ import Link from 'models/link';
 import { canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import Topic from '../../cli/shared/topic';
-import updateView from 'display/update_view';
 
 class Paragraph {
   // A paragraph instance represents a visible paragraph, not

@@ -1,5 +1,4 @@
 let Block = require('../../shared/block');
-let Topic = require('../../shared/topic');
 let { TextToken } = require('./tokens');
 
 function consolidateTextTokens(tokenArray) {
@@ -43,7 +42,7 @@ function frontLoadImages(tokens) {
 }
 
 function isCategoryNotesFile(filePath) {
-  return filePath.match(/([^\/]+)\/(\1).expl$/);
+  return filePath.match(/([^/]+)\/(\1).expl$/);
 }
 
 function terminalCategoryofPath(filePath) {

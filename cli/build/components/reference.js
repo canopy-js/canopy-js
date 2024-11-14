@@ -113,7 +113,7 @@ class Reference {
 
 
   parsePipeReference() {
-    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw `Reference has too many pipes: ${this.fullText}`
+    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw `Reference has too many pipes: ${this.fullText}`;
     const [_, target, display] = [...this.contents.match(/((?:\\.|[^\\])+?)\|((?:\\.|[^\\])+?)$/)];
     this.targetText = target;
     this.displayText = display;
@@ -129,7 +129,7 @@ class Reference {
   }
 
   findLastPathComponent(string) {
-    const match = string.match(/(?:^|[^\\< ]|\\\\+)([\/#])([^\/#]*(?:\\.[^\/#]*)*)$/);
+    const match = string.match(/(?:^|[^\\< ]|\\\\+)([/#])([^/#]*(?:\\.[^/#]*)*)$/);
     if (match) {
       return match[2]; // Return text after the last unescaped slash or hash
     } else {
@@ -144,7 +144,7 @@ class Reference {
   }
 
   get isPath() {
-    return !!this.targetText.match(/(^|[^\\])(\\\\)*[#\/]/);
+    return !!this.targetText.match(/(^|[^\\])(\\\\)*[#/]/);
   }
 
   get simpleTarget() {
@@ -157,11 +157,11 @@ class Reference {
   }
 
   get orphanFragment() {
-    return !!this.targetText.match(/^#([^#\/]*(?:\\.[^#\/]*)*)$/);
+    return !!this.targetText.match(/^#([^#/]*(?:\\.[^#/]*)*)$/);
   }
 
   get initialOrphanFragment() {
-    return !!this.targetText.match(/^#([^#\/]*)/);
+    return !!this.targetText.match(/^#([^#/]*)/);
   }
 
   get soloPoundSign() {
@@ -177,16 +177,16 @@ class Reference {
   }
 
   get singleTopicWithEmptyFragment() {
-    return !!this.targetText.match(/^([^#\/]*(?:\\.[^#\/]*)*)#$/);
+    return !!this.targetText.match(/^([^#/]*(?:\\.[^#/]*)*)#$/);
   }
 
   static textBeforeFragment(string) {
-    const match = string.match(/^((?:\\.|[^\/])+?)#/);
+    const match = string.match(/^((?:\\.|[^/])+?)#/);
     return match ? match[1] : null;
   }
 
   static textAfterFragment(string) {
-    const match = string.match(/^(?:\\.|[^\/])*?#(.*)$/);
+    const match = string.match(/^(?:\\.|[^/])*?#(.*)$/);
     return match ? match[1] : null;
   }
 
@@ -199,7 +199,7 @@ class Reference {
   }
 
   get firstSubtopic() {
-    let subtopicString = this.pathString.match(/^(?:\\.|[^\/])+?#((?:\\.|[^\/])+?)(?:\/.*)?$/)?.[1];
+    let subtopicString = this.pathString.match(/^(?:\\.|[^/])+?#((?:\\.|[^/])+?)(?:\/.*)?$/)?.[1];
     subtopicString = subtopicString || this.firstTopic.mixedCase;
     return subtopicString ? Topic.fromUrl(subtopicString) :  null;
   }
@@ -215,8 +215,8 @@ class Reference {
   }
 
   get pathString() {
-    return [...this.displayPathString.matchAll(/(?:\\.|[^\\\/])+?(?:#(?:\\.|[^\\\/])+?)?(?:(?=\/|$))/g)].map(match => match[0]).map(segmentString => {
-      let [topic, subtopic] = segmentString.match(/((?:[^#\/\\]|\\.)*)(?:[#]((?:[^#\/\\]|\\.)*))?/).slice(1).map(m => m && Topic.fromReference(m));
+    return [...this.displayPathString.matchAll(/(?:\\.|[^\\/])+?(?:#(?:\\.|[^\\/])+?)?(?:(?=\/|$))/g)].map(match => match[0]).map(segmentString => {
+      let [topic, subtopic] = segmentString.match(/((?:[^#/\\]|\\.)*)(?:[#]((?:[^#/\\]|\\.)*))?/).slice(1).map(m => m && Topic.fromReference(m));
       return (this.parserContext.getOriginalTopic(topic)||topic).url + // gives us original display version
         (subtopic ? ('#' + ((this.parserContext.getOriginalSubtopic(topic, subtopic)||subtopic).url)) : '');
     }).join('/');
@@ -253,7 +253,6 @@ class Reference {
     }
 
     if (this.singleTopicWithEmptyFragment) { // eg [[A#]], global reference override for subtopic collision
-      return Reference.textBeforeFragment(this.targetText);
     }
 
     if (this.orphanFragment) { // eg [[#A]], global self-reference to current topic and given subtopic
