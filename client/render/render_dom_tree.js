@@ -1,7 +1,4 @@
-import requestJson from 'requests/request_json';
 import Paragraph from 'models/paragraph';
-import Link from 'models/link';
-import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import renderTokenElements from 'render/render_token_element';
 
@@ -29,7 +26,7 @@ function renderDomTree(topic, subtopic, renderContext) {
 
 function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
   return (token) => {
-    let { fullPath, remainingPath, currentTopic } = renderContext;
+    let { fullPath, remainingPath } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
     let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
     let pathToParagaph = pathToEnclosingTopic.addSegment(topic, newSubtopic);

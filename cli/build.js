@@ -1,7 +1,5 @@
 const fs = require('fs-extra');
-const path = require('path');
 const dedent = require('dedent-js');
-const shell = require('shelljs');
 const buildProject = require('./build/build_project');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');

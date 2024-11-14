@@ -54,7 +54,7 @@ class FileSystemChange {
       this.directoryDeletions.length === 0 &&
       this.fileCreations.length === 0 &&
       this.fileAppendings.length === 0 &&
-      this.directoryCreations.length === 0
+      this.directoryCreations.length === 0;
   }
 }
 

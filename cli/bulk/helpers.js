@@ -1,7 +1,6 @@
 let fs = require('fs-extra');
 let recursiveReadSync = require('recursive-readdir-sync');
 let stripAnsi = require('strip-ansi');
-let chalk = require('chalk');
 
 function fileNameFor(string) {
   return string.replace(/ /g, '_').toLowerCase();

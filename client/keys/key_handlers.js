@@ -1,7 +1,6 @@
 import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
-import Paragraph from 'models/paragraph';
 import { scrollElementToPosition } from 'display/helpers';
 
 function topicParentLink() {
@@ -64,7 +63,7 @@ function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
 }
 
 function inlineACycleLink() {
-  if (!Link.selection.isCycle) return moveInDirection('down');
+  if (!Link.selection.isCycle) return moveDownOrRedirect();
   return Link.selection.execute({ inlineCycles: true });
 }
 

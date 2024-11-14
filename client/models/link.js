@@ -247,7 +247,6 @@ class Link {
 
   static collectMetadata(linkElement) {
     let link = new Link(linkElement);
-    let paragraph = Paragraph.containingLink(link);
 
     return {
       enclosingPathString: link.enclosingPath.string,
@@ -267,7 +266,7 @@ class Link {
     if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
     
     let perfectMatch = enclosingParagraph.linkBySelector(
-      (link, i) => (
+      (link) => (
         link.isParent && 
         link.previewPath.string === object.previewPathString &&
         link.relativeLinkNumber === object.relativeLinkNumber &&
@@ -276,7 +275,7 @@ class Link {
     );
 
     let link = perfectMatch || enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
-      (link, i) => (link.isParent && link.previewPath.string === object.previewPathString) ||
+      (link) => (link.isParent && link.previewPath.string === object.previewPathString) ||
         (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)
     );
 
@@ -368,10 +367,6 @@ class Link {
 
   get isSelected() {
     return this.element?.classList.contains('canopy-selected-link');
-  }
-
-  get isGlobal() {
-    return this.type === 'global';
   }
 
   get isPathReference() {

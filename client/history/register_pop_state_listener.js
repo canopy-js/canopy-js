@@ -1,7 +1,6 @@
 import updateView from 'display/update_view';
 import Path from 'models/path';
 import Link from 'models/link';
-import Paragraph from 'models/paragraph';
 
 function registerPopStateListener() {
   if ('scrollRestoration' in history) {

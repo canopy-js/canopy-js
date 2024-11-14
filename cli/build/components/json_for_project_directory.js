@@ -24,7 +24,6 @@ function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString
 
     if (options.symlinks) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[filePath]));
-      let topicFolderPath = destinationBuildDirectory + '/' + folderTopic.fileName;
       directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.fileName);
     }
   });

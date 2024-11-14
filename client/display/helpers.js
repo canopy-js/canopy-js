@@ -144,9 +144,8 @@ let currentScrollOptions = null; // multiple calls to scrollToWithPromise replac
 
 function scrollToWithPromise(options) {
   currentScrollOptions = options;
-  return (scrollInProgress = new Promise(async function(resolve, reject) {
+  return (scrollInProgress = new Promise(function(resolve) {
     ScrollableContainer.scrollTo(currentScrollOptions);
-    let startTime = Date.now();
     let lastY = ScrollableContainer.currentScroll;
     let inactivityStart = null;
     let checks = 0;
@@ -192,7 +191,6 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (Path.rendered.fulcrumElement(newPath).isFocused) return Promise.resolve(); // already focused on fulcrum
   
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
-  let overlapPath = previousPath.overlap(newPath);
   let minDiff = options.noMinDiff ? null : 75;
 
   // If it is a two step change, go to fulcrum element, otherwise go straight to final position

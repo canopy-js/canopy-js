@@ -3,7 +3,6 @@ import requestJson from 'requests/request_json';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import { canopyContainer } from 'helpers/getters';
-import ScrollableContainer from 'helpers/scrollable_container';
 import { generateHeader } from 'render/helpers';
 let promiseCache = {};
 let headerCache = {};

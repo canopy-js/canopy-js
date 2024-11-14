@@ -1,7 +1,6 @@
 let fs = require('fs');
 let Topic = require('./topic');
 let Block = require('./block');
-let { getRecursiveSubdirectoryFiles } = require('../bulk/helpers');
 let chalk = require('chalk');
 let path = require('path');
 let shell = require('shelljs');
@@ -15,11 +14,11 @@ class DefaultTopic {
       throw new Error(chalk.red(`Error: No topic file corresponds to the path given in canopy_default_topic: "${this.filePath.trim()}"`));
     }
     if (!fs.existsSync(this.filePath)) throw new Error(chalk.bgRed(`Default topic file does not exist: ${this.filePath}`));
-    this.name = (new Block(fs.readFileSync(this.filePath).toString().trim())).key
+    this.name = (new Block(fs.readFileSync(this.filePath).toString().trim())).key;
     if (!this.name) {
       throw new Error(chalk.red(`Error: The file referenced in canopy_default_topic lacks a valid topic key: ${this.filePath}`));
     }
-    let categoryPath = this.filePath?.match(/topics\/(.*)\/[^\/]+.expl/)[1];
+    let categoryPath = this.filePath?.match(/topics\/(.*)\/[^/]+.expl/)[1];
     this.categoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
     this.fileName = Topic.for(this.name).fileName;
   }
@@ -29,7 +28,9 @@ let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs
 
 function tryDefaultTopic() {
   let defaultTopic = {};
-  try { defaultTopic = new DefaultTopic(); } catch {}
+  try { defaultTopic = new DefaultTopic(); } catch {
+    console.error(chalk.red(`Failed to find default topic file`));
+  }
   return defaultTopic;
 }
 

@@ -22,7 +22,7 @@ function splitOnPipes(string) { // ignore pipes that are escaped or inside links
       result[result.length - 1] += string[i];
       if (string[i] === '\\' && !escape) { escape = true; } else { escape = false; }
       if (string[i] === '[' && !oneOpenBracket) oneOpenBracket = true;
-      if (string[i] === '[' && oneOpenBracket) (openLink = true) && (oneOpenBracket = false);
+      if (string[i] === '[' && oneOpenBracket) {openLink = true; oneOpenBracket = false;}
       if (string[i] === ']' && openLink && !oneCloseBracket) oneCloseBracket = true;
       if (string[i] === ']' && openLink && oneCloseBracket) openLink = false;
 
@@ -51,15 +51,13 @@ function wrapText(str, width) {
     // Add the last line to the output.
     lines.push(line);
     return lines.join('\n');
-  }).join('\n').trim()
-};
+  }).join('\n').trim();
+}
 
 function detectTextDirection(text) {
   // Regular expression patterns for different character ranges
   const rtlChars = '\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC';
-  const ltrChars = 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u0300-\u0590\u0800-\u1FFF' +
-                   '\u2C00-\uFB1C\uFDFE-\uFE6F\uFEFD-\uFFFF';
-  const rtlDirCheck = new RegExp(`^${rtlChars}]+`);//new RegExp(`^[^${ltrChars}]*[${rtlChars}]`); // we now require all letters to be RTL
+  const rtlDirCheck = new RegExp(`^${rtlChars}]+`);
 
   // Check if the text is RTL
   return rtlDirCheck.test(text) ? 'rtl' : 'ltr';

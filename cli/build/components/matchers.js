@@ -2,8 +2,6 @@ let {
   LocalReferenceToken,
   GlobalReferenceToken,
   DisabledReferenceToken,
-  FragmentReferenceToken,
-  TextToken,
   ExternalLinkToken,
   ImageToken,
   FootnoteMarkerToken,
@@ -19,7 +17,6 @@ let {
   InlineCodeSnippetToken,
   StrikethroughToken,
   ToolTipToken,
-  TextLineToken
 } = require('./tokens');
 
 const Matchers = [
@@ -50,8 +47,7 @@ const Matchers = [
 ];
 
 let Topic = require('../../shared/topic');
-let { displaySegment, splitOnPipes } = require('../../shared/simple-helpers');
-let chalk = require('chalk');
+let { splitOnPipes } = require('../../shared/simple-helpers');
 let Reference = require('./reference');
 
 function fenceCodeBlockMatcher({ string, startOfLine }) {
@@ -91,8 +87,8 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
     let text = Array.from(
       match[0]
         .matchAll(/(?:^|\n)(?:[><])(?: ([^\n]+)|(?=\n))/g))
-        .map(m => m?.[1] || '')
-        .join('\n');
+      .map(m => m?.[1] || '')
+      .join('\n');
 
     if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
     let direction = match[2] === '>' ? 'ltr' : 'rtl';
@@ -179,7 +175,7 @@ function htmlMatcher({ string, parserContext, startOfLine }) {
         let terminalNewlineLength = (startOfLine && string[segment.length] === '\n') ? '\n'.length : 0;
 
         result = result || [
-        new HtmlToken(match[0], parserContext),
+          new HtmlToken(match[0], parserContext),
           match[0].length + terminalNewlineLength
         ];
       }
@@ -311,14 +307,14 @@ function escapedCharacterMatcher({ string, parserContext }) {
   if (match) {
     parserContext.buffer += match[1];
 
-    return [null, match[0].length]
+    return [null, match[0].length];
   }
 }
 
-function escapedNewlineMatcher({ string, parserContext }) {
+function escapedNewlineMatcher({ string }) {
   let match = string.match(/^\\\n/s);
   if (match) {
-    return [null, match[0].length]
+    return [null, match[0].length];
   }
 }
 
@@ -344,7 +340,7 @@ function hyperlinkMatcher({ string, parserContext }) {
   }
 }
 
-function urlMatcher({ string, parserContext }) {
+function urlMatcher({ string }) {
   let match = string.match(/^([A-Za-z0-9+\-.]+:\/\/\S+[^.,;!\s])/);
   if (match) {
     return [
@@ -432,7 +428,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 
 function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
-  let match = string.match(/^~(.*?[^\\])\~(.|$)/s);
+  let match = string.match(/^~(.*?[^\\])~(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[0].match(/\s/s);
 
@@ -453,7 +449,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 }
 
 function toolTipMatcher({ string, parserContext }) {
-  let match = string.match(/^ ?(\{\!\s?)((?:[^\\}]|\\.)+)\}/s);
+  let match = string.match(/^ ?(\{!\s?)((?:[^\\}]|\\.)+)\}/s);
   if (match) {
     return [
       new ToolTipToken(

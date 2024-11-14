@@ -11,7 +11,6 @@ const {
   logOrWriteError
 } = require('./helpers');
 const watch = require('../watch');
-const build = require('../build');
 const serve = require('../serve/serve');
 let chalk = require('chalk');
 let FileSystemManager = require('./file_system_manager');
@@ -22,7 +21,7 @@ let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
 const readline = require('readline');
 
 const bulk = async function(selectedFileList, options = {}) {
-  function log(message) { if (options.logging) console.log(message) }
+  function log(message) { if (options.logging) console.log(message); }
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
@@ -80,10 +79,9 @@ const bulk = async function(selectedFileList, options = {}) {
   let oldBulkFileString;
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
-    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopic = {};
-    logOrWriteError(() => { defaultTopic = new DefaultTopic() }, options); // validate existence of default topic
+    logOrWriteError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     checkGitIgnoreForBulkFile(options);
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
@@ -95,7 +93,7 @@ const bulk = async function(selectedFileList, options = {}) {
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
   }
 
-  function handleFinish({deleteBulkFile, deleteOriginalSelection, originalSelectedFilesList}) {
+  function handleFinish({deleteBulkFile, originalSelectedFilesList}) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
@@ -124,8 +122,8 @@ const bulk = async function(selectedFileList, options = {}) {
   if (normalMode) {
     setUpBulkFile({storeOriginalSelection: false, selectedFileList});
     editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
-      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true })
-    })
+      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true });
+    });
   }
 
   if (options.start) { // non-editor mode
@@ -148,7 +146,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     // Open bulk file in editor and process when closed
     if (options.editor) {
-      editor(options.bulkFileName, { editor: process.env['CANOPY_EDITOR'] || process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, (code, sig) => {
+      editor(options.bulkFileName, { editor: process.env['CANOPY_EDITOR'] || process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
         logOrWriteError(() => {
           handleFinish({deleteBulkFile: false});
           log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
@@ -209,7 +207,7 @@ const bulk = async function(selectedFileList, options = {}) {
     });
 
     // Watch bulk file and end session on delete
-    bulkFileWatcher.on('unlink', (e) => {
+    bulkFileWatcher.on('unlink', () => {
       logOrWriteError(() => handleFinish({deleteBulkFile: false}), options);
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
@@ -242,18 +240,18 @@ let debounce = debounceGenerator();
 function debounceGenerator() {
   let hasBeenCalledRecently = false;
   return (callback) => {
-    return (...arguments) => {
+    return (...argumentsArray) => {
       if (hasBeenCalledRecently) return;
       hasBeenCalledRecently = true;
       setTimeout(() => (hasBeenCalledRecently = false), 500);
-      return callback(...arguments);
-    }
-  }
+      return callback(...argumentsArray);
+    };
+  };
 }
 
 function checkGitIgnoreForBulkFile(options = {}) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)\/${options.bulkFileName||defaultTopic().fileName}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: \/${options.bulkFileName||defaultTopic().fileName}`)));
+  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().fileName}($|\n)`, 's'))) {
+    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: /${options.bulkFileName||defaultTopic().fileName}`)));
   }
 }
 

@@ -1,11 +1,10 @@
 import { onLinkClick } from 'render/click_handlers';
 import Link from 'models/link';
-import Paragraph from 'models/paragraph';
 import Path from 'models/path';
 import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
-import { scrollPage, imagesLoaded, scrollToWithPromise, getScrollInProgress } from 'display/helpers';
+import { scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
 import { measureVerticalOverflow, whenInDom } from 'render/helpers';
 
@@ -328,7 +327,6 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
       imageElement.closest('.canopy-image')?.style.setProperty('background-color', 'transparent') // remove gray placeholder
       let newBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
       let diff = newBottomOfCurrentParagraph - oldBottomOfCurrentParagraph
-      let current = ScrollableContainer.currentScroll;
       let newScroll = ScrollableContainer.currentScroll + diff;
 
       let { pathToParagraph } = renderContext;
@@ -426,7 +424,6 @@ function renderBlockQuote(token, renderContext) {
   // Check direction consistency among characters in the clone
   let wraps = false;
   let direction = null; // neutral
-  let parentSpan;
 
   [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element, index, elements) => {
     // if (blockQuoteElement.innerText.includes('abcdef')) debugger;
@@ -436,7 +433,6 @@ function renderBlockQuote(token, renderContext) {
       let elementRect = element.getBoundingClientRect();
       let previousElement = elements[index - 1];
       let previousRect = elements[index - 1]?.getBoundingClientRect();
-      let previousParentSpan = previousElement?.closest('.canopy-text-span');
 
       if (previousElement && !previousElement.classList.contains('canopy-linebreak-span')) { // don't compare first letter to last of last line
         if (direction === null) {
@@ -452,7 +448,7 @@ function renderBlockQuote(token, renderContext) {
   tempParagraphElement.removeChild(clone);
 
   if (wraps) {
-    blockQuoteElement.querySelectorAll('.canopy-linebreak-span').forEach((span, i, all) => {
+    blockQuoteElement.querySelectorAll('.canopy-linebreak-span').forEach((span) => {
       span.classList.add('canopy-blockquote-padded-linebreak'); // there is no terminal linebreak so we pad all
     });
   }
@@ -553,7 +549,7 @@ function renderMenu(token, renderContext) {
   let SizesByArea = ['eigth-pill', 'quarter-pill', 'third-pill', 'half-pill', 'quarter-card', 'third-card', 'half-tube', 'half-card'];
   let tableListSizeIndex = 0;
 
-  let cellElements = token.items.map((cellObject, cellIndex) => {
+  let cellElements = token.items.map((cellObject) => {
     let menuCellElement = document.createElement('DIV');
     menuCellElement.classList.add('canopy-menu-cell');
     let contentContainer = document.createElement('DIV');
@@ -572,9 +568,7 @@ function renderMenu(token, renderContext) {
         menuCellElement.appendChild(contentContainer);
         menuCellElement.addEventListener('dragstart', e => e.preventDefault());
       } else {
-        cellObject.tokens.forEach(token => {
-          tokenElements.forEach(tokenElement => contentContainer.appendChild(tokenElement));
-        });
+        contentContainer.appendChild(tokenElement);
         menuCellElement.appendChild(contentContainer);
       }      
 
@@ -682,22 +676,6 @@ function renderMenu(token, renderContext) {
   }
 
   return [menuElement];
-
-  function getTotalWidthWithAfter(element) {
-    // Get the width of the main element
-    const mainWidth = element.getBoundingClientRect().width;
-
-    // Get the computed style of the ::after pseudo-element
-    const afterStyle = window.getComputedStyle(element, '::after');
-
-    // Try to parse the width of the ::after pseudo-element
-    // This assumes a fixed width is set in CSS
-    const afterWidth = parseFloat(afterStyle.width);
-
-    // If afterWidth is NaN (not a number), it means the width couldn't be parsed,
-    // so we assume it's 0 or handle it according to your use case.
-    return mainWidth + (isNaN(afterWidth) ? 0 : afterWidth);
-  }
 }
 
 function renderFootnoteLines(footnoteLinesToken, renderContext) {
@@ -748,7 +726,7 @@ function renderItalicText(token, renderContext) {
   return [element];
 }
 
-function renderInlineCodeText(token, renderContext) {
+function renderInlineCodeText(token) {
   let element = document.createElement('CODE');
   element.innerText = token.text;
   return [element];
@@ -775,12 +753,6 @@ function renderToolTip(token, renderContext) {
   // Append the tooltip text span to the tooltip span
   tooltipContainerSpan.appendChild(tooltipTextSpan);
   return [tooltipContainerSpan];
-}
-
-function renderLineBreak() {
-  let lineBreakSpan = document.createElement('SPAN');
-  lineBreakSpan.classList.add('canopy-linebreak-span');
-  return [lineBreakSpan];
 }
 
 export default renderTokenElements;

@@ -1,9 +1,7 @@
 const fs = require('fs-extra');
-const path = require('path');
 const build = require('./build');
 const chokidar = require('chokidar');
 let chalk = require('chalk');
-let shell = require('shelljs');
 let { canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 
 function watch(options = {}) {

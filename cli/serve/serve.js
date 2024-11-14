@@ -6,7 +6,6 @@ let chalk = require('chalk');
 function serve(options = {}) {
   options = options || {};
   let port = options.port;
-  let static = options.static;
   port = port || 4001;
 
   let validBuild = ['build', 'build/index.html', 'build/_data', 'build/_canopy.js'].map(s => fs.existsSync(s)).every(Boolean);
