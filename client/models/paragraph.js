@@ -266,6 +266,22 @@ class Paragraph {
     return this.paragraphElement.getBoundingClientRect().bottom;
   }
 
+  get positionOnViewport() {
+    if (!this.paragraphElement) return null;
+
+    const rect = this.element.getBoundingClientRect();
+    const viewportHeight = ScrollableContainer.visibleHeight;
+    const elementTop = rect.top;
+
+    if (elementTop < 0) return -1;
+    if (elementTop > viewportHeight) return Infinity;
+
+    // Calculate the percentage of the viewport the element's top is at
+    const percentageInView = (elementTop / viewportHeight) * 100;
+
+    return percentageInView;
+  }
+
   static get selection() {
     return Paragraph.current;
   }

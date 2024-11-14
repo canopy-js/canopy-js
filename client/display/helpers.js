@@ -84,17 +84,6 @@ function scrollElementToPosition(element, options) {
     containerPointToPutAtTarget = elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll;
   }
 
-  // Handling large A tags
-  if (element.tagName === 'A' && (side === 'middle' || side === 'bottom')) {
-    const padding = 20; // minimum space between top of link and top of screen
-    const topOffScreen = (side === 'bottom' ? 1 : .5) * (elementRect.bottom - elementRect.top) + padding > idealTargetPositionOnVisibleContainer;
-    if (topOffScreen) {
-      targetRatio = 0.05;
-      idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
-      containerPointToPutAtTarget = elementRect.top + ScrollableContainer.currentScroll;
-    }
-  }
-
   let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
   // Adjust idealScrollY to the closest possible scroll position
@@ -181,6 +170,7 @@ function scrollToWithPromise(options) {
 const LINK_TARGET_RATIO = .25;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
+const BIG_LINK_TARGET_RATIO = .1;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!Path.rendered) return Promise.resolve();  // user may be changing URL first so we use path from DOM
@@ -198,8 +188,9 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     (options.scrollToParagraph && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 
-  let targetRatio = targetElement.tagName === 'A' ? LINK_TARGET_RATIO : PARAGRAPH_TARGET_RATIO; // paragraphs should be higher to be focused than links
-  if (targetElement.tagName === 'P' && Paragraph.for(targetElement.parentNode).isBig) targetRatio = BIG_PARAGRAPH_TARGET_RATIO;
+  let targetRatio = targetElement.tagName === 'A' ?
+    (Link.for(targetElement).isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO) :
+    (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
 
   if (elementIsFocused(targetElement)) {
     return Promise.resolve();

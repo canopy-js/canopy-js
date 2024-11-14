@@ -1,7 +1,7 @@
 import Path from 'models/path';
 import Link from 'models/link';
 import Paragraph from 'models/paragraph';
-import { scrollElementToPosition } from 'display/helpers';
+import { scrollElementToPosition, scrollToWithPromise } from 'display/helpers';
 import ScrollableContainer from 'helpers/scrollable_container';
 
 function moveInDirection(direction) {
@@ -21,9 +21,9 @@ function moveInDirection(direction) {
 
     if (candidateRectContainers.length === 0) {
       if (currentSelectionLowerRect.top < -10) {
-        return scrollElementToPosition(currentLinkElement, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'up', behavior: 'smooth'});
+        return scrollElementToPosition(currentLinkElement, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 40, direction: 'up', behavior: 'smooth'});
       } else {
-        return Path.root.display();
+        return Path.root.display().then(() => scrollToWithPromise({top: 0}));
       }
     }
 
@@ -86,7 +86,7 @@ function moveInDirection(direction) {
 
     if (candidateRectContainers.length === 0) {
       let sectionElement = Paragraph.current.sectionElement;
-      return scrollElementToPosition(sectionElement, {targetRatio: 0.05, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
+      return scrollElementToPosition(sectionElement, {targetRatio: 0.05, maxScrollRatio: 0.5, minDiff: 40, direction: 'down', behavior: 'smooth', side: 'bottom'});
     }
 
     let highestLowerRect = candidateRectContainers

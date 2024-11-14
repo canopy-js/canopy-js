@@ -136,7 +136,7 @@
     }
   }
 
-  a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image) {
+  a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image):not(.canopy-image-caption a) {
     padding-right: 11px; // following punctuation shouldn't wrap without link
     margin-right: -10px;
     
@@ -650,7 +650,7 @@
 
     a {
       margin: 0 auto;
-      display: block;
+      // display: block;
     }
 
     .canopy-image {

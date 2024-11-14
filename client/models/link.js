@@ -86,6 +86,27 @@ class Link {
     return this.element?.innerText;
   }
 
+  get isBig() {
+    let viewPercent = this.element.offsetHeight / ScrollableContainer.visibleHeight;
+    return viewPercent > .4;
+  }
+
+  get positionOnViewport() {
+    if (!this.element) return null;
+
+    const rect = this.element.getBoundingClientRect();
+    const viewportHeight = ScrollableContainer.visibleHeight;
+    const elementTop = rect.top;
+
+    if (elementTop < 0) return -1;
+    if (elementTop > viewportHeight) return Infinity;
+
+    // Calculate the percentage of the viewport the element's top is at
+    const percentageInView = (elementTop / viewportHeight);
+
+    return percentageInView;
+  }
+
   transferDataset() {
     // This is just to make it easier to inspect and debug DOM elements
     if (!this.linkElement) return;

@@ -42,7 +42,7 @@ function moveToParent() {
 function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
   let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
 
-  if (firstChild && firstChild.isBelowViewport && !Link.selection.isPathReference) {
+  if (firstChild && firstChild.isBelowViewport && firstChild.positionOnViewport > 0.8 && !Link.selection.isPathReference) {
     return scrollElementToPosition(firstChild.element, {targetRatio: 0.25, maxScrollRatio: 0.5, minDiff: 50, direction: 'down', behavior: 'smooth', side: 'bottom'});
   }
 
@@ -59,7 +59,7 @@ function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
     return firstChild.select({ newTab, redirect: altKey, inlineCycles: shiftKey });
   }
 
-  return Link.selection.execute({ newTab, redirect: altKey, inlineCycles: shiftKey });
+  return Link.selection.execute({ newTab, redirect: altKey, inlineCycles: shiftKey, selectALink: true });
 }
 
 function inlineACycleLink() {
