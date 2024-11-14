@@ -616,7 +616,7 @@ test.describe('Block entities', () => {
       // Assert that the span is closer to the left side of the viewport
       expect(boundingBox.x + boundingBox.width / 2).toBeLessThan(page.viewportSize().width / 2);
     }
-  });  
+  });
 
   test('It creates disabled links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');

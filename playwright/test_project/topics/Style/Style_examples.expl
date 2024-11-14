@@ -388,3 +388,8 @@ This is a sentence with a [![disabled link]].
 ===
 - [![This is a menu cell with a disabled link]]
 ===
+
+Full-line links:
+This is some prose.
+[[New York|This is a full line link that may go multiple lines and we should detect that and cause the border to go around the outer perimiter and not around each line individually.]]
+[[New York|This link would qualify to be a full-line link if it were longer]]
