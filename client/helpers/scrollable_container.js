@@ -1,5 +1,4 @@
 import { canopyContainer } from 'helpers/getters';
-import Paragraph from 'models/paragraph';
 
 class ScrollableContainer {
   static get windowMode() {

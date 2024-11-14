@@ -1,5 +1,4 @@
 import { defaultTopic, canopyContainer, projectPathPrefix, hashUrls } from 'helpers/getters';
-import ScrollableContainer from 'helpers/scrollable_container';
 import Paragraph from 'models/paragraph';
 import Link from 'models/link';
 import Topic from '../../cli/shared/topic';
@@ -130,11 +129,11 @@ class Path {
   }
 
   sliceAfterLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t, st]) => t.mixedCase === topic.mixedCase) + 1)); // after
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase) + 1)); // after
   }
 
   sliceBeforeLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t, st]) => t.mixedCase === topic.mixedCase))); // after
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase))); // after
   }
 
   get segments() {
@@ -298,8 +297,8 @@ class Path {
 
     let parentPathTopicStrings = parentPath.topicArray.map(t => t.mixedCase); // we only want a cycle not already in parentPath
     let targetPathTopicStrings = literalPath.topicArray.map(t => t.mixedCase);
-    return parentPathTopicStrings.some((enclosingTopicString, enclosingTopicIndex) => {
-      return targetPathTopicStrings.some((targetTopicString, targetTopicIndex) => {
+    return parentPathTopicStrings.some((enclosingTopicString) => {
+      return targetPathTopicStrings.some((targetTopicString) => {
         return enclosingTopicString === targetTopicString; //&&
           //!(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
       });
@@ -339,10 +338,6 @@ class Path {
     let overlapPath = this.overlap(otherPath);
     if (this.includes(otherPath)) return null;
     return overlapPath.intermediaryPathsTo(otherPath)[1];
-  }
-
-  get firstParentLink() {
-    return this.firstTopicPath.overlapAndNextSubtopic(this).parentLink;
   }
 
   subsetOf(otherPath) { // this is subset of otherPath
@@ -420,20 +415,12 @@ class Path {
     return this.string;
   }
 
-  get firstTopicPath() {
-    if (this.length > 0) {
-      return new Path([[this.firstTopic, this.firstTopic]]);
-    } else {
-      return this;
-    }
-  }
-
   get topicArray() {
-    return this.array.map(([topic, subtopic]) => topic);
+    return this.array.map(([topic]) => topic);
   }
 
   get topicStringArray() {
-    return this.array.map(([topic, subtopic]) => topic.mixedCase);
+    return this.array.map(([topic]) => topic.mixedCase);
   }
 
   get sectionElement() {

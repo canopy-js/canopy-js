@@ -1,14 +1,13 @@
 let Topic = require('../../shared/topic');
 let dedent = require('dedent-js');
-let { ImportReferenceToken } = require('./tokens');
 let Block = require('../../shared/block');
-let { displaySegment, wrapText } = require('../../shared/simple-helpers');
+let { displaySegment } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
 
 class ParserContext {
   constructor({ explFileData, defaultTopicString, priorParserContext, options }) {
     if (priorParserContext) {
-      Object.assign(this, priorParserContext, options) // create a new object with new properties, but with references to prior data properties
+      Object.assign(this, priorParserContext, options); // create a new object with new properties, but with references to prior data properties
     } else {
       this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
       this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
@@ -29,7 +28,7 @@ class ParserContext {
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
-      this.linePrefixSize = 0 // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
+      this.linePrefixSize = 0; // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
 
       this.buildNamespaceObject(explFileData);
       
@@ -45,8 +44,8 @@ class ParserContext {
 
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
-  buildNamespaceObject(explFileData, newStatusData) {
-    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics, subtopicParents } = this;
+  buildNamespaceObject(explFileData) {
+    let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
 
     Object.keys(explFileData).forEach(function(filePath){
       let fileContents = explFileData[filePath];
@@ -199,11 +198,11 @@ class ParserContext {
   }
 
   pathExists(path) {
-    return path.array.reduce((segment, nextSegment) => {
+    return path.array.reduce((segment) => {
       if (!segment) return false;
 
       if (this.topicSubtopics.hasOwnProperty(segment[0].caps) && this.topicSubtopics[segment[0].caps].hasOwnProperty(segment[1].caps)) {
-        return true
+        return true;
       } else {
         return false;
       }
@@ -365,7 +364,7 @@ class ParserContext {
   validateGlobalReferences() {
     this.pathsReferenced.forEach(([pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic]) => {
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
-        [...pathString.matchAll(/(?:\\.|[^\/])+/g)].map(match => match[0]).map(segmentString => {
+        [...pathString.matchAll(/(?:\\.|[^/])+/g)].map(match => match[0]).map(segmentString => {
           let [currentTopic, currentSubtopic] = Topic.parseUrlSegment(segmentString);
 
           if (!this.topicExists(currentTopic)) {
@@ -384,7 +383,7 @@ class ParserContext {
           return segmentString;
         }).reduce((currentSegmentString, nextSegmentString) => {
           let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
-          let [__, nextTopic, nextSubtopic] = nextSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
+          let [__, nextTopic] = nextSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
 
           if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency:\n` +

@@ -10,8 +10,6 @@ import {
   afterChangeScroll
 } from 'display/helpers';
 
-import { canopyContainer } from 'helpers/getters';
-
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
@@ -32,7 +30,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
     return afterChangeScroll(pathToDisplay, linkToSelect, options);
   });
-};
+}
 
 const displayPathTo = (paragraph) => {
   while (paragraph) {

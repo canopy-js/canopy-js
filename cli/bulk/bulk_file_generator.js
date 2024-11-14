@@ -14,13 +14,13 @@ class BulkFileGenerator {
       .map(directory => {
         return `[${directory.displayPath}]\n\n` // two newlines after the category path header
           + directory
-              .files
-              .sort(this.fileComparator)
-              .filter(f => f.path.endsWith('.expl'))
-              .map(file =>
-                (this.generateInitialAsterisks(file))
+            .files
+            .sort(this.fileComparator)
+            .filter(f => f.path.endsWith('.expl'))
+            .map(file =>
+              (this.generateInitialAsterisks(file))
                 + file.contents.replace(/\n\n+/g, '\n\n').trim() // trim trailing newlines to ensure spacing is consistent
-              ).join('\n\n\n'); // three newlines between files
+            ).join('\n\n\n'); // three newlines between files
 
       }).join('\n\n\n') // three newlines between the last file and the next category
       + '\n\n'; // two newlines at the end for space when adding
@@ -52,7 +52,7 @@ function generateDirectoryComparator(defaultTopicDisplayCategoryPath) {
 
     if (directory1.displayPath > directory2.displayPath) return 1;
     if (directory1.displayPath < directory2.displayPath) return -1;
-  }
+  };
 }
 
 function generateFileComparator(defaultTopicFilePath) {
@@ -63,14 +63,14 @@ function generateFileComparator(defaultTopicFilePath) {
     if (file1.key === file1.terminalCategory) return -1;
     if (file2.key === file2.terminalCategory) return 1;
 
-    let file1MentionsCategory = file1.key?.toUpperCase().trim().includes(file1.terminalCategory.toUpperCase())
-    let file2MentionsCategory = file2.key?.toUpperCase().trim().includes(file2.terminalCategory.toUpperCase())
+    let file1MentionsCategory = file1.key?.toUpperCase().trim().includes(file1.terminalCategory.toUpperCase());
+    let file2MentionsCategory = file2.key?.toUpperCase().trim().includes(file2.terminalCategory.toUpperCase());
     if (file1MentionsCategory && !file2MentionsCategory) return -1;
     if (file2MentionsCategory && !file1MentionsCategory) return 1;
 
     if (file1.path > file2.path) return 1;
     if (file1.path < file2.path) return -1;
-  }
+  };
 }
 
 module.exports = BulkFileGenerator;

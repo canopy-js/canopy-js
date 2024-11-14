@@ -1,6 +1,7 @@
 env:
   browser: true
   es2021: true
+  node: true
 extends: eslint:recommended
 overrides: []
 parserOptions:
@@ -11,4 +12,9 @@ rules:
   no-prototype-builtins: off
   no-unused-vars:
   - error
-  - argsIgnorePattern: ^_
+  -
+    argsIgnorePattern: ^_
+    varsIgnorePattern: ^_
+  no-constant-condition: off
+  getter-return: off
+  no-misleading-character-class: off

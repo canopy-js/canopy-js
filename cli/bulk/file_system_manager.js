@@ -54,11 +54,11 @@ class FileSystemManager {
     if (!fs.existsSync('.canopy_bulk_backups')) { fs.ensureDirSync('.canopy_bulk_backups'); }
     let date = new Date();
     let year = date.getFullYear();
-    let month = ('0' + (date.getMonth()+1)).slice(-2)
-    let day = ('0' + date.getDate()).slice(-2)
-    let hours = ('0' + date.getHours()).slice(-2)
-    let minutes = ('0' + date.getMinutes()).slice(-2)
-    let seconds = ('0' + date.getSeconds()).slice(-2)
+    let month = ('0' + (date.getMonth()+1)).slice(-2);
+    let day = ('0' + date.getDate()).slice(-2);
+    let hours = ('0' + date.getHours()).slice(-2);
+    let minutes = ('0' + date.getMinutes()).slice(-2);
+    let seconds = ('0' + date.getSeconds()).slice(-2);
     let timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
     fs.writeFileSync(`.canopy_bulk_backups/${fileName}-${timestamp}`, fileContents);
   }
@@ -101,8 +101,8 @@ class FileSystemManager {
     if (!fs.existsSync(fileName)) {
       return null;
     }
-    let newBulkFileString = fs.readFileSync(fileName).toString()
-    if (typeof newBulkFileString !== 'string') console.error(chalk.red(`Expected bulk file at ./${options.bulkFileName} but did not find one`)) || process.exit();
+    let newBulkFileString = fs.readFileSync(fileName).toString();
+    if (typeof newBulkFileString !== 'string') console.error(chalk.red(`Expected bulk file at ./${fileName} but did not find one`)) || process.exit();
 
     return newBulkFileString;
   }
@@ -114,8 +114,10 @@ class FileSystemManager {
   persistDefaultTopicPath(newDefaultTopicPath, newDefaultTopicName) {
     try {
       let defaultTopic = new DefaultTopic();
-      if (defaultTopic.name !== newDefaultTopicName) console.log(chalk.yellow(`Changing default topic from [${existingKey}] to [${newDefaultTopicName}]`));
-    } catch(e){} // if the file system has gotten in a bad state and the old default topic isn't available, just persist the new one.
+      if (defaultTopic.name !== newDefaultTopicName) console.log(chalk.yellow(`Changing default topic from [${defaultTopic.name}] to [${newDefaultTopicName}]`));
+    } catch(_){  // if the file system has gotten in a bad state and the old default topic isn't available, just persist the new one.
+      console.error(chalk.red(`Couldn't find old default topic file, persisting new`));
+    }
 
     fs.writeFileSync('canopy_default_topic', newDefaultTopicPath + '\n');
   }

@@ -1,5 +1,5 @@
 let removeStyleCharacters = require('./remove_style_characters');
-require('css.escape');
+require('css.escape'); /* global CSS */
 const Cache = {};
 
 class Topic {
@@ -32,12 +32,12 @@ class Topic {
       .toUpperCase() // We want matches to be case-insensitive
       .replace(/\?$/, '') // It should match whether or not both have trailing question marks
       .replace(/["”“’‘']/g, '') // We remove quotation marks so matches ignore them
-      .replace(/(\\{2})*([.,])(?=["'')}\]]*$)/g, (m, bs, punc) => bs ? m : '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
+      .replace(/(\\{2})*([.,])(?=["'')}\]]*$)/g, (m, bs) => bs ? m : '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
       .replace(/\(/g, '') // we remove parentheses to allow link texts to contain optional parentheses
       .replace(/\)/g, '')
       .replace(/ +/g, ' ') // consolidate spaces
       .replace(/&[Nn][Bb][Ss][Pp];/g, ' ')
-      .trim() // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
+      .trim(); // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
     this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
 

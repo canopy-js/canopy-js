@@ -54,12 +54,12 @@ class FileSet {
 
   get directories () {
     return Object.keys(this.directoriesObject)
-      .map(path => this.directoriesObject[path])
+      .map(path => this.directoriesObject[path]);
   }
 
   get directoryPaths() {
     return Object.keys(this.directoriesObject)
-      .map(path => this.directoriesObject[path].path)
+      .map(path => this.directoriesObject[path].path);
   }
 
   get files() {

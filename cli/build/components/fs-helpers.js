@@ -1,7 +1,6 @@
 let recursiveReadSync = require('recursive-readdir-sync');
 let fs = require('fs-extra');
 let Topic = require('../../shared/topic');
-let { TextToken } = require('./tokens');
 let chalk = require('chalk');
 let { topicKeyOfString } = require('./simple-helpers');
 const path = require('path');
