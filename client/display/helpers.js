@@ -131,7 +131,7 @@ function scrollElementToPosition(element, options) {
   if (shouldScroll) {
     return scrollToWithPromise({ top: actualScrollY, behavior, ...options });
   } else {
-    return Promise.resolve(true);
+    return Promise.resolve(false);
   }
 }
 
@@ -181,6 +181,7 @@ function scrollToWithPromise(options) {
 const LINK_TARGET_RATIO = .25;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
+const BIG_LINK_TARGET_RATIO = .1;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!Path.rendered) return Promise.resolve();  // user may be changing URL first so we use path from DOM
@@ -198,14 +199,21 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     (options.scrollToParagraph && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 
-  let targetRatio = targetElement.tagName === 'A' ? LINK_TARGET_RATIO : PARAGRAPH_TARGET_RATIO; // paragraphs should be higher to be focused than links
-  if (targetElement.tagName === 'P' && Paragraph.for(targetElement.parentNode).isBig) targetRatio = BIG_PARAGRAPH_TARGET_RATIO;
+  let targetRatio = targetElement.tagName === 'A' ?
+    (Link.for(targetElement).isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO) :
+    (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
 
-  if (!elementIsFocused(targetElement)) options.beforeChangeScrollOccured = true;
+  if (elementIsFocused(targetElement)) {
+    return Promise.resolve();
+  }
 
-  return (!elementIsFocused(targetElement) ? 
-    (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
-    .then(() => new Promise(resolve => setTimeout(resolve, 110)))) : Promise.resolve());
+  return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
+    .then((scrolled) => {
+      if (scrolled) {
+        options.beforeChangeScrollOccured = true;
+        return new Promise(resolve => setTimeout(resolve, 110))
+      }
+    }));
 }
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options) {

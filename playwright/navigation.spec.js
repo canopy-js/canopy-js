@@ -736,6 +736,18 @@ test.describe('Navigation', () => {
     await page.goto('A/B/C/D');
     await expect(page).toHaveURL('A/B/C/D');
 
+    // Rehash references should get back cycle icons
+    const links = await page.locator('.canopy-selected-section .canopy-selectable-link .canopy-link-content-container');
+
+    const matchingLinks = await links.evaluateAll((elements) =>
+      elements.filter(element => {
+        const computedStyle = window.getComputedStyle(element, '::after');
+        return computedStyle.content === '"↩"';
+      })
+    );
+
+    expect(matchingLinks.length).toBe(3);
+
     await page.click('text=A/B/C/D ie total rehash');
     await expect(page).toHaveURL('A/B');
     await expect(page.locator('.canopy-selected-link')).toContainText('B');
@@ -767,7 +779,6 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('A/B/C/D#E');
     await expect(page.locator('.canopy-selected-link')).toContainText('E');
     await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('D:');
-
   });
 
   test('Clicking coterminal reference should go to inlined parent link of shared segment', async ({ page }) => {
