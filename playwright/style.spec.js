@@ -623,5 +623,17 @@ test.describe('Block entities', () => {
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
     await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
   });
+
+  test('It creates full-line links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Full-line_links');
+
+    const linkElement = page.locator('.canopy-selected-section .canopy-selectable-link .canopy-link-content-container');
+
+    const display = await linkElement.evaluate(el => getComputedStyle(el).display);
+    expect(display).toBe('inline-block');
+
+    const borderStyle = await linkElement.evaluate(el => getComputedStyle(el).borderStyle);
+    expect(borderStyle).not.toBe('none');
+  });
 });
 
