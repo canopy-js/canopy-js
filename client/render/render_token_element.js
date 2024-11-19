@@ -533,6 +533,54 @@ function renderTable(token, renderContext) {
     }
   );
 
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(tableElement);
+
+  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+
+  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
+    let clsp = tableCellElement.getAttribute('colspan');
+    let rwsp = tableCellElement.getAttribute('rowspan');
+    
+    let styles = window.getComputedStyle(tableCellElement);
+    let paddingLeft = parseInt(styles.paddingLeft, 10);
+    let paddingRight = parseInt(styles.paddingRight, 10);
+    let paddingTop = parseInt(styles.paddingTop, 10);
+    let paddingBottom = parseInt(styles.paddingBottom, 10);
+
+    let cellWidth = tableCellElement.getBoundingClientRect().width;
+    let cellHeight = tableCellElement.getBoundingClientRect().height;
+
+    let widthWithoutPadding = cellWidth - paddingLeft - paddingRight;
+    let heightWithoutPadding = cellHeight - paddingTop - paddingBottom;
+
+    if (!clsp && widthWithoutPadding > sizes.widest) sizes.widest = widthWithoutPadding;
+    if (!clsp && widthWithoutPadding < sizes.narrowest) sizes.narrowest = widthWithoutPadding;
+    if (!rwsp && heightWithoutPadding > sizes.tallest) sizes.tallest = heightWithoutPadding;
+    if (!rwsp && heightWithoutPadding < sizes.shortest) sizes.shortest = heightWithoutPadding;
+  });
+
+  [...tableElement.querySelectorAll('td')].forEach(td => {
+    td.style.width = sizes.widest + 'px';
+  });
+
+  tableElement.dataset.widest = sizes.widest;
+  tableElement.dataset.narrowest = sizes.narrowest;
+  tableElement.dataset.widthDiff = sizes.widest - sizes.narrowest;
+
+  [...tableElement.querySelectorAll('td')].forEach(td => {
+    td.style.height = sizes.tallest + 'px';
+  });
+
+  tableElement.dataset.tallest = sizes.tallest;
+  tableElement.dataset.shortest = sizes.shortest;
+  tableElement.dataset.heightDiff = sizes.tallest - sizes.shortest;
+
+  canopyContainer.removeChild(tempSectionElement);
+  tempParagraphElement.removeChild(tableElement);
+
   return [tableElement];
 }
 
