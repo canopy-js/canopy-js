@@ -15,7 +15,7 @@ function onLinkClick(link) {
       return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
     }
 
-    if (!newTab && !e.altKey && !link.isFocused && !link.isClosedCycle) { // scroll up to see link
+    if (!newTab && !e.altKey && !link.isFocused) { // scroll up to see link
       return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
     }
 
