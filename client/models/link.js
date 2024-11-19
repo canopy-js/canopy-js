@@ -193,22 +193,13 @@ class Link {
   get targetParagraph() { // if the link is to A/B/C, A is the child and C is the targetParagraph
     if (!this.isParent) return null;
 
-    let pathDepth = this.enclosingParagraph.pathDepth;
-    if (this.isGlobal) pathDepth = Number(pathDepth) + 1;
-
-    let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.literalPath.firstTopic.cssMixedCase}"]` +
-        `[data-subtopic-name="${this.literalPath.firstSubtopic.cssMixedCase}"]` +
-        `[data-path-depth="${pathDepth}"`
-      );
-
-    if (!sectionElement) {
+    if (!Paragraph.byPath(this.inlinePath)) {
       if (this.cycle) return null; // the paragraph doesn't exist because we didn't preview it
       console.log(`Did not find paragraph child element matching link [${this.literalPath.firstTopic.mixedCase}, ${this.literalPath.firstSubtopic.mixedCase}]`); // could be network issues
       return null;
     }
 
-    return new Paragraph(sectionElement);
+    return Paragraph.byPath(this.inlinePath);
   }
 
   get childPath() {

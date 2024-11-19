@@ -178,8 +178,8 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.overlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
-  if (Path.rendered.fulcrumElement(newPath).isFocused) return Promise.resolve(); // already focused on fulcrum
-  
+  if (Path.rendered.fulcrumElement(newPath).getBoundingClientRect().top > 0) return Promise.resolve(); // fulcrum is already visible
+
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;
 
