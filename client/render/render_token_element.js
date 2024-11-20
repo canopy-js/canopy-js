@@ -119,6 +119,17 @@ function renderLinkBase(token, renderContext) {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
     if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 0)}px`; // naturally more space above
     if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow === 0 ? 0 : (spaceBelow + 2)}px`;
+
+    // Detect if a link wraps over a newline
+    const computedStyle = window.getComputedStyle(linkElement);
+    const lineHeight = parseFloat(computedStyle.lineHeight);
+    const height = linkElement.getBoundingClientRect().height;
+
+    if (height > lineHeight * 1.5) {
+      linkElement.dataset.height = height;
+      linkElement.dataset.lineHeight = lineHeight;
+      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+    }
   });
 
   return linkElement;
@@ -621,16 +632,12 @@ function renderMenu(token, renderContext) {
 
     tokenElements.forEach(tokenElement => {
       if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
-        tokenElement.classList.add('canopy-menu-cell');
-        tokenElement.classList.add('canopy-menu-link-cell');
-        while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
-        menuCellElement = tokenElement;
-        menuCellElement.appendChild(contentContainer);
-        menuCellElement.addEventListener('dragstart', e => e.preventDefault());
-      } else {
-        contentContainer.appendChild(tokenElement);
-        menuCellElement.appendChild(contentContainer);
-      }      
+        menuCellElement.classList.add('canopy-menu-link-cell');
+        menuCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
+        tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler);
+      }
+      contentContainer.appendChild(tokenElement);
+      menuCellElement.appendChild(contentContainer);
 
       if (cellObject.alignment || ['left', 'right'].includes(token.alignment)) { // apply alignment to specific cells
         menuCellElement.classList.add(`canopy-menu-cell-${cellObject.alignment || token.alignment}-aligned`);
@@ -665,7 +672,7 @@ function renderMenu(token, renderContext) {
 
       menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let combinedContentRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
+      let contentBoundingRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
 
       let container = menuCellElement.closest('.canopy-menu-cell');
       let containerStyles = window.getComputedStyle(container);
@@ -676,15 +683,15 @@ function renderMenu(token, renderContext) {
       let containerPaddingTop = parseFloat(containerStyles.paddingTop);
       let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
 
-      let adjustedAncestorRect = {
+      let adjustedContainerRect = {
         top: containerRect.top + containerPaddingTop,
         left: containerRect.left + containerPaddingLeft,
         bottom: containerRect.bottom - containerPaddingBottom,
         right: containerRect.right - containerPaddingRight
       };
 
-      let isOverflowingHorizontally = combinedContentRect.left < adjustedAncestorRect.left || combinedContentRect.right > adjustedAncestorRect.right;
-      let isOverflowingVertically = combinedContentRect.top < adjustedAncestorRect.top || combinedContentRect.bottom > adjustedAncestorRect.bottom;
+      let isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
+      let isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
 
       if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
 
