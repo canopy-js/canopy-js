@@ -512,21 +512,6 @@ class Link {
   get isVisible() {
     if (!this.element) return false;
     const rect = this.element.getBoundingClientRect();
-    const windowHeight = ScrollableContainer.visibleHeight;
-
-    // Calculate the visible height of the element
-    const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-
-    // Calculate the total height of the element
-    const totalHeight = rect.bottom - rect.top;
-
-    // Check if more than 50% of the element's height is visible
-    return (visibleHeight / totalHeight) >= 0.5;
-  }
-
-  get isEntirelyVisible() {
-    if (!this.element) return false;
-    const rect = this.element.getBoundingClientRect();
     return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
   }
 
@@ -564,7 +549,7 @@ class Link {
     // Get the viewport height
     const viewportHeight = ScrollableContainer.visibleHeight;
 
-    const topLimit = viewportHeight * 0.1;
+    const topLimit = viewportHeight * 0.15;
     const bottomLimit = viewportHeight * 0.5;
 
     // Check if the element is within the target area

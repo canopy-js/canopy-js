@@ -305,7 +305,8 @@ class Path {
     });
   }
 
-  overlap(otherPath) {
+  initialOverlap(otherPath) {
+    if (this.empty || otherPath.empty) return null;
     if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
     let candidatePath = otherPath;
 
@@ -318,25 +319,29 @@ class Path {
     return candidatePath;
   }
 
-  partialOverlap(otherPath) { // an overlap that is not a subset or equivalence
-    return this.overlap(otherPath)
+  initialPartialOverlap(otherPath) { // an overlap that is not a subset or equivalence
+    return this.initialOverlap(otherPath)
       && !this.equals(otherPath)
       && !this.subsetOf(otherPath)
       && !otherPath.subsetOf(this);
   }
 
+  overlaps(otherPath) {
+    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.mixedCase === t2.mixedCase));
+  }
+
   twoStepChange(otherPath) {
-    return this.partialOverlap(otherPath) && !this.fulcrumElement(otherPath).isFocused;
+    return this.initialPartialOverlap(otherPath) && !this.fulcrumLink(otherPath).isFocused;
   }
 
-  fulcrumElement(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
-    if (this.includes(otherPath) || otherPath.includes(this)) return this.overlap(otherPath).paragraphElement; // fulcrum paragraph 
-    return this.overlapAndNextSubtopic(otherPath).parentLink.element;
+  fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
+    if (this.includes(otherPath)) return otherPath.initialOverlapAndFirstChild(this).parentLink;
+    return this.initialOverlapAndFirstChild(otherPath).parentLink;
   }
 
-  overlapAndNextSubtopic(otherPath) { // path of "this" plus first subtopic not in otherPath
-    let overlapPath = this.overlap(otherPath);
-    if (this.includes(otherPath)) return null;
+  initialOverlapAndFirstChild(otherPath) { // path of "this" plus first subtopic not in otherPath, to get parent link
+    if (this.includes(otherPath)) return null; // this function assumes we are going down from "this" to "otherPath"
+    let overlapPath = this.initialOverlap(otherPath);
     return overlapPath.intermediaryPathsTo(otherPath)[1];
   }
 
