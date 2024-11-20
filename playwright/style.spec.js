@@ -222,21 +222,28 @@ test.describe('Inline entities', () => {
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
-    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
-    await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
 
-    // Check if the ::after pseudo-element of the link has the background image set
-    const afterStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container').evaluate(element => {
-      const afterElementStyles = window.getComputedStyle(element, '::after');
+    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
+
+    const link = page.locator('.canopy-selected-section a');
+    await expect(await link.evaluate(element => element.href)).toEqual('http://google.com/');
+
+    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-content-container');
+    await expect(iconContainer).toBeVisible();
+
+    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container .canopy-external-link-icon').evaluate(element => {
+      const computedStyles = window.getComputedStyle(element);
       return {
-        backgroundImage: afterElementStyles.getPropertyValue('background-image'),
+        backgroundImage: computedStyles.getPropertyValue('background-image'),
+        display: computedStyles.getPropertyValue('display'),
       };
     });
 
-    // Expected background image for the ::after pseudo-element (part of the SVG)
+    // Expected background image for the icon (part of the SVG)
     const expectedBackgroundImage = 'url("data:image/svg+xml;base64,'; // Start of the base64 encoded SVG
 
-    expect(afterStyles.backgroundImage).toContain(expectedBackgroundImage);
+    expect(iconStyles.backgroundImage).toContain(expectedBackgroundImage);
+    expect(iconStyles.display).toEqual('inline-block'); // Ensure the icon span is rendered correctly
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {
@@ -314,7 +321,7 @@ test.describe('Inline entities', () => {
 
   test('Special link examples', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_links');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York, and to new york, and to \"New\" \'York\', and to the city of New York, and to the city of dew cork, and to the city that is new, and the city of newest york.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York↩, and to new york↩, and to \"New\" 'York'↩, and to the city of New York↩, and to the city of dew cork↩, and to the city that is new↩, and the city of newest york↩.");
     await expect(page.locator('.canopy-selected-section a')).toHaveCount(7);
   });
 });
@@ -402,6 +409,30 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-card')).toHaveCount(1);
   });
 
+  test('It creates menu link icons', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Menu_link_icons');
+    await expect(page).toHaveURL("United_States/New_York/Style_examples#Menu_link_icons");
+
+    // Assert on the first menu link
+    const firstLink = await page.locator('a[data-literal-path-string="United_States"]');
+    await expect(firstLink).toHaveAttribute('href', '/United_States');
+    await expect(firstLink).toHaveText(/United States/);
+    await expect(firstLink.locator('.canopy-back-cycle-icon')).toHaveText('↩');
+
+    // Assert on the second menu link
+    const secondLink = await page.locator('a[data-literal-path-string="United_States/New_Jersey"]');
+    await expect(secondLink).toHaveAttribute('href', '/United_States/New_Jersey');
+    await expect(secondLink).toHaveText(/New Jersey/);
+    await expect(secondLink.locator('.canopy-forward-cycle-icon')).toHaveText('↪');
+
+    // Assert on the external link
+    const externalLink = await page.locator('a[data-type="external"]');
+    await expect(externalLink).toHaveAttribute('href', 'https://google.com');
+    await expect(externalLink).toHaveAttribute('target', '_blank');
+    await expect(externalLink).toHaveText(/Hello/);
+    await expect(externalLink.locator('.canopy-external-link-icon')).toBeVisible();
+  });
+
   test('It allows directional menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Directional_menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Directional_menus");
@@ -437,10 +468,8 @@ test.describe('Block entities', () => {
     expect(secondBoundingBox.x).toBeGreaterThan(viewportWidth / 2);
 
     // Verify the ::after content for buttons in the third container
-    await expect(await thirdContainerButtons.nth(0).locator('.canopy-menu-content-container')
-      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↩"'); // special case where we flip arrow
-    await expect(await thirdContainerButtons.nth(1).locator('.canopy-menu-content-container')
-      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↪"');
+    await expect(await thirdContainerButtons.nth(0).locator('.canopy-menu-content-container')).toHaveText('New York↩'); // special case where we flip arrow
+    await expect(await thirdContainerButtons.nth(1).locator('.canopy-menu-content-container')).toHaveText('New Jersey↪');
   });
 
   test('It creates multi-line code blocks', async ({ page }) => {
@@ -519,7 +548,7 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#HTML_blocks_with_insertions');
     await expect(page.locator('.canopy-selected-section .canopy-raw-html')).toHaveCount(2);
 
-    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York');
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York↩');
 
     await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(1)).toHaveText('These are not: \\{{[[New York]]}} {\\{[[New York]]}} {{[[New York]]\\}} {{[[New York]]}\\}');
   });
@@ -573,7 +602,7 @@ test.describe('Block entities', () => {
       'This is some text.',
       // skipped because not directly before linebreak
       '.',
-      'ר-ט-ל טקסט',
+      'ר-ט-ל טקסט↩',
       'This is some text.',
       'ר-ט-ל טקסט',
       'This is some text.',
