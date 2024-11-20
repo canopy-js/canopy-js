@@ -115,6 +115,12 @@ class Link {
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
     this._text = this.linkElement.dataset.text;
+
+    this.linkElement._literalPathString = this.linkElement.dataset.literalPathString;
+    this.linkElement._enclosingTopic = this.linkElement.dataset.enclosingTopic;
+    this.linkElement._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
+    this.linkElement._typeValue = this.linkElement.dataset.type;
+    this.linkElement._text = this.linkElement.dataset.text;
   }
 
   get text() {
