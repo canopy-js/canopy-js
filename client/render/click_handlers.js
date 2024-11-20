@@ -7,11 +7,11 @@ function onLinkClick(link) {
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
-    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // close global link
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect global or path/cycle link
       return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true, noBeforeChangeScroll: true });
     }
 
-    if (!newTab && !e.altKey && link.isOpen && !link.isClosedCycle && !link.isPathReference && !link.isInlinedCycleReference) { // select open link
+    if (!newTab && !e.altKey && link.isOpen) { // select open link
       return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
     }
 
