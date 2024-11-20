@@ -451,7 +451,7 @@ By default images link to their sources.
 
 #### Style characters ####
 ````
-This text is *bold*, _italic_, `code snippet`, ~strike through~.
+This text is *bold*, _italic_, `code snippet`, ~underlined~.
 ````
 #### HTML ####
 ````

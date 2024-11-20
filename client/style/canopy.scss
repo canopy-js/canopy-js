@@ -593,8 +593,8 @@ table {
 
   &.canopy-eigth-pill .canopy-menu-cell {
     width: calc((750px - 70px)/8); // take total width, subtract gaps, and divide by total number
-    padding-left: 10px; // make it a little harder to qualify
-    padding-right: 10px; // make it a little harder to qualify
+    padding-left: 14px; // make it a little harder to qualify
+    padding-right: 14px; // make it a little harder to qualify
     padding-top: 2px;
     padding-bottom: 2px;
     height: 45px; // more button-esque
