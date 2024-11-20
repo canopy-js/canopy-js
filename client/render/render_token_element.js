@@ -749,6 +749,15 @@ function renderMenu(token, renderContext) {
     }
   }
 
+  // Only inner-most of left and right aligned links need margin
+  [...tableRowElement.childNodes]
+    .filter(element => element.classList.contains('canopy-menu-cell-right-aligned'))?.[0]
+    ?.classList.add('canopy-menu-cell-first-right');
+
+  [...tableRowElement.childNodes]
+    .filter(element => element.classList.contains('canopy-menu-cell-left-aligned')).slice(-1)?.[0]
+    ?.classList.add('canopy-menu-cell-last-left');
+
   return [menuElement];
 }
 
