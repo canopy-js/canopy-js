@@ -88,7 +88,6 @@ class Link {
 
   get isBig() {
     let viewPercent = this.element.offsetHeight / ScrollableContainer.visibleHeight;
-    console.log(viewPercent)
     return viewPercent > .4;
   }
 
@@ -116,6 +115,12 @@ class Link {
     this._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
     this._typeValue = this.linkElement.dataset.type;
     this._text = this.linkElement.dataset.text;
+
+    this.linkElement._literalPathString = this.linkElement.dataset.literalPathString;
+    this.linkElement._enclosingTopic = this.linkElement.dataset.enclosingTopic;
+    this.linkElement._enclosingSubtopic = this.linkElement.dataset.enclosingSubtopic;
+    this.linkElement._typeValue = this.linkElement.dataset.type;
+    this.linkElement._text = this.linkElement.dataset.text;
   }
 
   get text() {
@@ -194,22 +199,13 @@ class Link {
   get targetParagraph() { // if the link is to A/B/C, A is the child and C is the targetParagraph
     if (!this.isParent) return null;
 
-    let pathDepth = this.enclosingParagraph.pathDepth;
-    if (this.isGlobal) pathDepth = Number(pathDepth) + 1;
-
-    let sectionElement = this.enclosingParagraph.sectionElement.querySelector(
-        `section[data-topic-name="${this.literalPath.firstTopic.cssMixedCase}"]` +
-        `[data-subtopic-name="${this.literalPath.firstSubtopic.cssMixedCase}"]` +
-        `[data-path-depth="${pathDepth}"`
-      );
-
-    if (!sectionElement) {
+    if (!Paragraph.byPath(this.inlinePath)) {
       if (this.cycle) return null; // the paragraph doesn't exist because we didn't preview it
       console.log(`Did not find paragraph child element matching link [${this.literalPath.firstTopic.mixedCase}, ${this.literalPath.firstSubtopic.mixedCase}]`); // could be network issues
       return null;
     }
 
-    return new Paragraph(sectionElement);
+    return Paragraph.byPath(this.inlinePath);
   }
 
   get childPath() {
@@ -418,6 +414,10 @@ class Link {
     return this.inlinePath.slice(0, indexOfSelfReference + 1); // e.g. A/B/C/D [[G/B/C/E]] point to A/B/C/D/G/B/C/E B's link to C ie start of shared portion
   }
 
+  get isSelfReference() {
+    return this.enclosingParagraph.path.lastSegment.equals(this.literalPath);
+  }
+
   get isRehashReference() {
     return this.enclosingPath.endsWith(this.literalPath);
   }
@@ -512,21 +512,6 @@ class Link {
   get isVisible() {
     if (!this.element) return false;
     const rect = this.element.getBoundingClientRect();
-    const windowHeight = ScrollableContainer.visibleHeight;
-
-    // Calculate the visible height of the element
-    const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-
-    // Calculate the total height of the element
-    const totalHeight = rect.bottom - rect.top;
-
-    // Check if more than 50% of the element's height is visible
-    return (visibleHeight / totalHeight) >= 0.5;
-  }
-
-  get isEntirelyVisible() {
-    if (!this.element) return false;
-    const rect = this.element.getBoundingClientRect();
     return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
   }
 
@@ -564,7 +549,7 @@ class Link {
     // Get the viewport height
     const viewportHeight = ScrollableContainer.visibleHeight;
 
-    const topLimit = viewportHeight * 0.1;
+    const topLimit = viewportHeight * 0.15;
     const bottomLimit = viewportHeight * 0.5;
 
     // Check if the element is within the target area
@@ -657,9 +642,14 @@ class Link {
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
     }
 
+    if (this.isSelfReference && !this.isOpen) {
+      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display(options); // pop
+      return this.enclosingPath.parentLink.select({...options, scrollToParagraph: false }); // shift
+    }
+
     if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
-      if (this.literalPath.isSingleTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
-      return this.parentLinkBeforeRehash.select({ ...options, scrollToParagraph: false })
+      if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
+      return updateView(Path.rendered, this.parentLinkBeforeRehash, {...options, scrollToParagraph: false });
     }
 
     if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
@@ -670,7 +660,6 @@ class Link {
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      // if (this.backButton) return this.inlinePath.reduce().parentLink.select({ ...options, scrollToParagraph: false }); //unset from click handler
       return this.inlinePath.reduce().display(options);
     }
 
@@ -680,11 +669,6 @@ class Link {
         () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
       );
     }
-
-    // // Links from a topic paragraph to itself are considered back buttons
-    // if (this.literalPath.equals(this.enclosingParagraph.path.lastSegment) && this.enclosingParagraph.parentParagraph) {
-    //   return this.enclosingParagraph.parentParagraph.path.display(options);//parentLink.select({ ...options, scrollToParagraph: false });
-    // }
 
     return (options.selectALink && this.firstChild || this).select(options);
   }

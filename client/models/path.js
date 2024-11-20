@@ -93,7 +93,7 @@ class Path {
   isIn(otherPath) { // is otherPath a subpath of this
     if (!otherPath) return false;
     if (this.equals(otherPath)) return true;
-    if (otherPath.isSingleTopic) return false;
+    if (otherPath.isTopic) return false;
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
@@ -220,7 +220,7 @@ class Path {
     return true; 
   }
 
-  get isSingleTopic() {
+  get isTopic() {
     return this.pathArray.length === 1 && this.pathArray[0][0].mixedCase === this.pathArray[0][1].mixedCase;
   }
 
@@ -292,6 +292,14 @@ class Path {
     return resultPath;
   }
 
+  get containsBackCycle() {
+    return this.reduce().subsetOf(this);
+  }
+
+  get containsForwardCycle() {
+    return this.cycle && !this.containsBackCycle;
+  }
+
   static introducesNewCycle(parentPath, literalPath) {
     if (literalPath.reduce().length < literalPath.length) return true; // unlikely but technically this introduces cycle
 
@@ -305,11 +313,11 @@ class Path {
     });
   }
 
-  overlap(otherPath) {
+  initialOverlap(otherPath) {
     if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
     let candidatePath = otherPath;
 
-    while (!candidatePath.isSingleTopic) {
+    while (!candidatePath.isTopic) {
       if (this.includes(candidatePath)) return candidatePath;
       if (!candidatePath.parentPath) throw new Error(`Undefined parent path for ${candidatePath}`);
       candidatePath = candidatePath.parentPath;
@@ -318,25 +326,29 @@ class Path {
     return candidatePath;
   }
 
-  partialOverlap(otherPath) { // an overlap that is not a subset or equivalence
-    return this.overlap(otherPath)
+  initialPartialOverlap(otherPath) { // an overlap that is not a subset or equivalence
+    return this.initialOverlap(otherPath)
       && !this.equals(otherPath)
       && !this.subsetOf(otherPath)
       && !otherPath.subsetOf(this);
   }
 
+  overlaps(otherPath) {
+    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.mixedCase === t2.mixedCase));
+  }
+
   twoStepChange(otherPath) {
-    return this.partialOverlap(otherPath) && !this.fulcrumElement(otherPath).isFocused;
+    return this.initialPartialOverlap(otherPath) && !this.fulcrumLink(otherPath).isFocused;
   }
 
-  fulcrumElement(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
-    if (this.includes(otherPath) || otherPath.includes(this)) return this.overlap(otherPath).paragraphElement; // fulcrum paragraph 
-    return this.overlapAndNextSubtopic(otherPath).parentLink.element;
+  fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
+    if (this.includes(otherPath)) return otherPath.initialOverlapAndFirstChild(this).parentLink;
+    return this.initialOverlapAndFirstChild(otherPath).parentLink;
   }
 
-  overlapAndNextSubtopic(otherPath) { // path of "this" plus first subtopic not in otherPath
-    let overlapPath = this.overlap(otherPath);
-    if (this.includes(otherPath)) return null;
+  initialOverlapAndFirstChild(otherPath) { // path of "this" plus first subtopic not in otherPath, to get parent link
+    if (this.includes(otherPath)) return null; // this function assumes we are going down from "this" to "otherPath"
+    let overlapPath = this.initialOverlap(otherPath);
     return overlapPath.intermediaryPathsTo(otherPath)[1];
   }
 

@@ -103,7 +103,7 @@ function HtmlToken(html, parserContext) {
   this.tokenInsertions = [];
 
   // Updated regex to handle escaped {{ and }} sequences
-  const regex = /(^|[^\\])(\{\{)([^{}\\]*(?:\}(?!\})|\{(?!\{)|[^}{\\])*?[^\\]?)(}})/g;
+  const regex = /(^|[^\\])(\{\{)([^{}\\]*(?:\}(?!\})|\{(?!\{)|[^}{\\]|\\.)*?[^\\]?)(}})/gs;
 
   this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
     const isEscaped = precedingChar === '\\';
@@ -375,8 +375,8 @@ function InlineCodeSnippetToken(text) {
   this.text = text.split('\\\\').map(s => s.replace('\\', '')).join('\\'); // remove single backslashes, and replace double with single;
 }
 
-function StrikethroughToken(text, parserContext) {
-  this.type = 'strikethrough';
+function UnderlineToken(text, parserContext) {
+  this.type = 'underlined';
   this.tokens = parseText({
     text,
     parserContext: parserContext.clone({ insideToken: true }).incrementCharacterNumber('~'.length)
@@ -414,5 +414,5 @@ module.exports = {
   BoldToken,
   InlineCodeSnippetToken,
   ToolTipToken,
-  StrikethroughToken
+  UnderlineToken
 };

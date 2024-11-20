@@ -152,10 +152,6 @@ class Paragraph {
     return this.sectionElement.parentNode === canopyContainer
   }
 
-  get isSingleTopic() {
-    return this.topic.caps === this.subtopic.caps;
-  }
-
   get hasLinks() {
     return this.links.length > 0;
   }
@@ -354,7 +350,7 @@ class Paragraph {
     if (!this.parentNode) throw new Error('Every sectionElement must have parentNode');
     this.parentNode.appendChild(this.sectionElement); // attach bottom up so added to the DOM all at once.
     if (this.parentParagraph) this.parentParagraph.addToDom(); // recurse
-    if (this.path.isSingleTopic) return canopyContainer.appendChild(this.sectionElement); // base
+    if (this.path.isTopic) return canopyContainer.appendChild(this.sectionElement); // base
   }
 
   static registerNode(sectionElement) {

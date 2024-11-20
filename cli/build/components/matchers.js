@@ -15,7 +15,7 @@ let {
   ItalicsToken,
   BoldToken,
   InlineCodeSnippetToken,
-  StrikethroughToken,
+  UnderlineToken,
   ToolTipToken,
 } = require('./tokens');
 
@@ -39,7 +39,7 @@ const Matchers = [
   italicsMatcher,
   boldMatcher,
   codeSnippetMatcher,
-  strikeThroughMatcher,
+  underlineMatcher,
   imageMatcher,
   hyperlinkMatcher,
   urlMatcher,
@@ -208,12 +208,11 @@ function footnoteLinesMatcher({ string, parserContext, startOfLine }) {
 }
 
 function localReferenceMatcher({ string, parserContext, index }) {
-  let { currentTopic, currentSubtopic } = parserContext;
-
   if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  let { currentTopic, currentSubtopic } = parserContext;
 
-  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
+  let reference = Reference.for(Reference.candidateSubstring(string), parserContext);
 
   if (!reference.valid) return;
   if (!reference.simpleTarget) return; // eg [[A]] or [[A|B]] not [[A#B/C#D]] or [[A#B/C#D|XYZ]]
@@ -247,12 +246,11 @@ function localReferenceMatcher({ string, parserContext, index }) {
 }
 
 function globalReferenceMatcher({ string, parserContext }) {
-  let { currentTopic, currentSubtopic } = parserContext;
-
   if (parserContext.noLinks) return;
   if (!Reference.candidateSubstring(string)) return;
+  let { currentTopic, currentSubtopic } = parserContext;
   
-  let reference = Reference.for(Reference.candidateSubstring(string), currentTopic, parserContext);
+  let reference = Reference.for(Reference.candidateSubstring(string), parserContext);
   if (!reference.valid) return;
   let pathString = reference.pathString;
 
@@ -273,8 +271,7 @@ function disabledReferenceMatcher({ string, parserContext }) {
   let match = string.match(/^\[!\[(?:\\.|(?!]]).)+]]/s);
 
   if (match) {
-    let { currentTopic } = parserContext;
-    let reference = Reference.for('[[' + match[0].slice('[!['.length), currentTopic, parserContext);
+    let reference = Reference.for('[[' + match[0].slice('[!['.length), parserContext);
 
     return [new DisabledReferenceToken(
       reference.displayText,
@@ -286,10 +283,10 @@ function disabledReferenceMatcher({ string, parserContext }) {
 
 function fragmentReferenceMatcher({ string, parserContext }) {
   let match = string.match(/^\[#\[(?:\\.|(?!]]).)+]]/s);
+  let { currentTopic, currentSubtopic } = parserContext;
 
   if (match) {
-    let { currentTopic, currentSubtopic } = parserContext;
-    let reference = Reference.for('[[' + match[0].slice('[#['.length), currentTopic, parserContext);
+    let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
 
     parserContext.registerFragmentReference(reference);
 
@@ -429,7 +426,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   }
 }
 
-function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
+function underlineMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^~(.*?[^\\])~(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
@@ -442,7 +439,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 
   if (matchExists) {
     return [
-      new StrikethroughToken(
+      new UnderlineToken(
         match[1],
         parserContext
       ),

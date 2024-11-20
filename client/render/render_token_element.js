@@ -6,7 +6,7 @@ import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
-import { measureVerticalOverflow, whenInDom } from 'render/helpers';
+import { measureVerticalOverflow, whenInDom, getCombinedBoundingRect } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -43,8 +43,8 @@ function renderTokenElements(token, renderContext) {
     return renderFootnoteLines(token, renderContext);
   } else if (token.type === 'bold') {
     return renderBoldText(token, renderContext);
-  } else if (token.type === 'strikethrough') {
-    return renderStrikethroughText(token, renderContext);
+  } else if (token.type === 'underlined') {
+    return renderUnderlineText(token, renderContext);
   } else if (token.type === 'italics') {
     return renderItalicText(token, renderContext);
   } else if (token.type === 'inline_code') {
@@ -117,8 +117,17 @@ function renderLinkBase(token, renderContext) {
 
   whenInDom(contentContainer)(() => {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
-    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 2)}px`;
+    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 0)}px`; // naturally more space above
     if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow === 0 ? 0 : (spaceBelow + 2)}px`;
+
+    // Detect if a link wraps over a newline
+    const computedStyle = window.getComputedStyle(linkElement);
+    const lineHeight = parseFloat(computedStyle.lineHeight);
+    const height = linkElement.getBoundingClientRect().height;
+
+    if (height > lineHeight) {
+      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+    }
   });
 
   return linkElement;
@@ -153,20 +162,29 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
+  if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
+    let cycleIcon = document.createElement('span');
+    cycleIcon.classList.add('canopy-provisional-cycle-icon');
+    cycleIcon.innerText = '↩'
+    linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
+  }
   
   // Add additional class based on link type after delay
   whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    linkElement.classList.remove('canopy-provisional-icon-link');
+    if (link.cycle) {
+      let cycleIcon = linkElement.querySelector('.canopy-provisional-cycle-icon');
+      cycleIcon.classList.remove('canopy-provisional-cycle-icon');
 
-    if (link.isBackCycle) {
-      linkElement.classList.add('canopy-back-cycle-link');
-    } else if (link.isLateralCycle) {
-      linkElement.classList.add('canopy-lateral-cycle-link');
-    } else if (link.isPathReference) {
-      linkElement.classList.add('canopy-path-reference');
+      if (link.isBackCycle || linkElement.closest('.canopy-menu-cell-left-aligned')) {
+        cycleIcon.classList.add('canopy-back-cycle-icon');
+        cycleIcon.innerText = '↩';
+      } else if (link.isLateralCycle) {
+        cycleIcon.classList.add('canopy-forward-cycle-icon');
+        cycleIcon.innerText = '↪';
+      }
     }
   });
 
@@ -253,6 +271,10 @@ function renderExternalLink(token, renderContext) {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
+
+  let cycleIcon = document.createElement('span');
+  cycleIcon.classList.add('canopy-external-link-icon');
+  contentContainer.appendChild(cycleIcon);
 
   return [linkElement];
 }
@@ -532,6 +554,54 @@ function renderTable(token, renderContext) {
     }
   );
 
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempParagraphElement = tempSectionElement.querySelector('p');
+  canopyContainer.appendChild(tempSectionElement);
+  tempParagraphElement.appendChild(tableElement);
+
+  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+
+  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
+    let clsp = tableCellElement.getAttribute('colspan');
+    let rwsp = tableCellElement.getAttribute('rowspan');
+    
+    let styles = window.getComputedStyle(tableCellElement);
+    let paddingLeft = parseInt(styles.paddingLeft, 10);
+    let paddingRight = parseInt(styles.paddingRight, 10);
+    let paddingTop = parseInt(styles.paddingTop, 10);
+    let paddingBottom = parseInt(styles.paddingBottom, 10);
+
+    let cellWidth = tableCellElement.getBoundingClientRect().width;
+    let cellHeight = tableCellElement.getBoundingClientRect().height;
+
+    let widthWithoutPadding = cellWidth - paddingLeft - paddingRight;
+    let heightWithoutPadding = cellHeight - paddingTop - paddingBottom;
+
+    if (!clsp && widthWithoutPadding > sizes.widest) sizes.widest = widthWithoutPadding;
+    if (!clsp && widthWithoutPadding < sizes.narrowest) sizes.narrowest = widthWithoutPadding;
+    if (!rwsp && heightWithoutPadding > sizes.tallest) sizes.tallest = heightWithoutPadding;
+    if (!rwsp && heightWithoutPadding < sizes.shortest) sizes.shortest = heightWithoutPadding;
+  });
+
+  [...tableElement.querySelectorAll('td')].forEach(td => {
+    td.style.width = sizes.widest + 'px';
+  });
+
+  tableElement.dataset.widest = sizes.widest;
+  tableElement.dataset.narrowest = sizes.narrowest;
+  tableElement.dataset.widthDiff = sizes.widest - sizes.narrowest;
+
+  [...tableElement.querySelectorAll('td')].forEach(td => {
+    td.style.height = sizes.tallest + 'px';
+  });
+
+  tableElement.dataset.tallest = sizes.tallest;
+  tableElement.dataset.shortest = sizes.shortest;
+  tableElement.dataset.heightDiff = sizes.tallest - sizes.shortest;
+
+  canopyContainer.removeChild(tempSectionElement);
+  tempParagraphElement.removeChild(tableElement);
+
   return [tableElement];
 }
 
@@ -560,18 +630,14 @@ function renderMenu(token, renderContext) {
 
     tokenElements.forEach(tokenElement => {
       if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
-        tokenElement.classList.add('canopy-menu-cell');
-        tokenElement.classList.add('canopy-menu-link-cell');
-        while (tokenElement.firstChild) contentContainer.appendChild(tokenElement.firstChild);
-        menuCellElement = tokenElement;
-        menuCellElement.appendChild(contentContainer);
-        menuCellElement.addEventListener('dragstart', e => e.preventDefault());
-      } else {
-        contentContainer.appendChild(tokenElement);
-        menuCellElement.appendChild(contentContainer);
-      }      
+        menuCellElement.classList.add('canopy-menu-link-cell');
+        menuCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
+        tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler);
+      }
+      contentContainer.appendChild(tokenElement);
+      menuCellElement.appendChild(contentContainer);
 
-      if (cellObject.alignment || token.alignment) { // apply alignment to specific cells
+      if (cellObject.alignment || ['left', 'right'].includes(token.alignment)) { // apply alignment to specific cells
         menuCellElement.classList.add(`canopy-menu-cell-${cellObject.alignment || token.alignment}-aligned`);
       }
     });
@@ -595,38 +661,43 @@ function renderMenu(token, renderContext) {
   menuElement.appendChild(tempRowElement);
 
   for (let i = 0; i < cellElements.length; i++) {
-    // try fitting text into boxes and find the minimum cell size that fits
     let menuCellElement = cellElements[i];
     tempRowElement.appendChild(menuCellElement);
 
-    while(true) {
-      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // quarters look better than halves
+    while (true) {
+      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) 
+        tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
 
       menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let availableWidth = menuCellElement.clientWidth -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingLeft) -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingRight);
+      let contentBoundingRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
 
-      let availableHeight = menuCellElement.clientHeight -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingTop) -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingBottom);
+      let container = menuCellElement.closest('.canopy-menu-cell');
+      let containerStyles = window.getComputedStyle(container);
+      let containerRect = container.getBoundingClientRect();
 
-      let scrollWidth = menuCellElement.firstChild.scrollWidth -
-        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
+      let containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
+      let containerPaddingRight = parseFloat(containerStyles.paddingRight);
+      let containerPaddingTop = parseFloat(containerStyles.paddingTop);
+      let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
 
-      let scrollHeight = menuCellElement.firstChild.scrollHeight -
-        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
+      let adjustedContainerRect = {
+        top: containerRect.top + containerPaddingTop,
+        left: containerRect.left + containerPaddingLeft,
+        bottom: containerRect.bottom - containerPaddingBottom,
+        right: containerRect.right - containerPaddingRight
+      };
 
-      let tooWide = scrollWidth > availableWidth;
-      let tooTall = scrollHeight > availableHeight;
+      let isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
+      let isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
 
-      if (!tooWide && !tooTall) break; // fits
-      if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
+      if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
+
+      if (tableListSizeIndex >= SizesByArea.length - 1) break; // No larger sizes available
 
       menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
       tableListSizeIndex++;
-      i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
+      i = 0; // Once we increment the size, we need to recheck all previous elements because a larger area might have a narrower width
     }
   }
 
@@ -674,6 +745,15 @@ function renderMenu(token, renderContext) {
     }
   }
 
+  // Only inner-most of left and right aligned links need margin
+  [...tableRowElement.childNodes]
+    .filter(element => element.classList.contains('canopy-menu-cell-right-aligned'))?.[0]
+    ?.classList.add('canopy-menu-cell-first-right');
+
+  [...tableRowElement.childNodes]
+    .filter(element => element.classList.contains('canopy-menu-cell-left-aligned')).slice(-1)?.[0]
+    ?.classList.add('canopy-menu-cell-last-left');
+
   return [menuElement];
 }
 
@@ -707,8 +787,8 @@ function renderBoldText(token, renderContext) {
   });
   return [element];
 }
-function renderStrikethroughText(token, renderContext) {
-  let element = document.createElement('S');
+function renderUnderlineText(token, renderContext) {
+  let element = document.createElement('u');
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => element.appendChild(subtokenElement));

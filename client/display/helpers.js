@@ -186,16 +186,16 @@ const BIG_LINK_TARGET_RATIO = .1;
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!Path.rendered) return Promise.resolve();  // user may be changing URL first so we use path from DOM
   if (!newPath.paragraph) return Promise.resolve();
-  if (!newPath.overlap(Path.rendered)) return Promise.resolve();
+  if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
-  if (Path.rendered.fulcrumElement(newPath).isFocused) return Promise.resolve(); // already focused on fulcrum
-  
+  if (Path.rendered.fulcrumLink(newPath).isFocused) return Promise.resolve(); // fulcrum is already visible
+
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;
 
   // If it is a two step change, go to fulcrum element, otherwise go straight to final position
-  let targetElement = (Path.rendered.twoStepChange(newPath) && previousPath.fulcrumElement(newPath)) ||
+  let targetElement = (Path.rendered.twoStepChange(newPath) && previousPath.fulcrumLink(newPath)).linkElement ||
     (options.scrollToParagraph && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 

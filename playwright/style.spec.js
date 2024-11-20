@@ -29,10 +29,10 @@ test.describe('Text styles', () => {
     await expect(page.locator('.canopy-selected-section b')).toHaveCount(4);
   });
 
-  test('Tildes create strike-through text', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Strike-through_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is strike through text. So is this. And this. Bu~t not thi~s.This is a struck through table cell.");
-    await expect(page.locator('.canopy-selected-section s')).toHaveCount(4);
+  test('Tildes create underline text', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Underlined_text');
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is underlined text. So is this. And this. Bu~t not thi~s.This is an underlined table cell.");
+    await expect(page.locator('.canopy-selected-section u')).toHaveCount(4);
   });
 
   test('Underscores and asterisks creates bold italic text', async ({ page }) => {
@@ -222,21 +222,28 @@ test.describe('Inline entities', () => {
 
   test('It creates links from hyperlink markup', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
-    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
-    await expect(await page.locator('.canopy-selected-section a').evaluate(element => element.href)).toEqual('http://google.com/');
 
-    // Check if the ::after pseudo-element of the link has the background image set
-    const afterStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container').evaluate(element => {
-      const afterElementStyles = window.getComputedStyle(element, '::after');
+    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
+
+    const link = page.locator('.canopy-selected-section a');
+    await expect(await link.evaluate(element => element.href)).toEqual('http://google.com/');
+
+    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-content-container');
+    await expect(iconContainer).toBeVisible();
+
+    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container .canopy-external-link-icon').evaluate(element => {
+      const computedStyles = window.getComputedStyle(element);
       return {
-        backgroundImage: afterElementStyles.getPropertyValue('background-image'),
+        backgroundImage: computedStyles.getPropertyValue('background-image'),
+        display: computedStyles.getPropertyValue('display'),
       };
     });
 
-    // Expected background image for the ::after pseudo-element (part of the SVG)
+    // Expected background image for the icon (part of the SVG)
     const expectedBackgroundImage = 'url("data:image/svg+xml;base64,'; // Start of the base64 encoded SVG
 
-    expect(afterStyles.backgroundImage).toContain(expectedBackgroundImage);
+    expect(iconStyles.backgroundImage).toContain(expectedBackgroundImage);
+    expect(iconStyles.display).toEqual('inline-block'); // Ensure the icon span is rendered correctly
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {
@@ -314,7 +321,7 @@ test.describe('Inline entities', () => {
 
   test('Special link examples', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_links');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York, and to new york, and to \"New\" \'York\', and to the city of New York, and to the city of dew cork, and to the city that is new, and the city of newest york.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is a link to (New) York↩, and to new york↩, and to \"New\" 'York'↩, and to the city of New York↩, and to the city of dew cork↩, and to the city that is new↩, and the city of newest york↩.");
     await expect(page.locator('.canopy-selected-section a')).toHaveCount(7);
   });
 });
@@ -388,6 +395,33 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
   });
 
+  test('It supports table links with icons', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Table_links');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_links");
+
+    const newYorkLink = await page.locator('.canopy-selected-section a[data-literal-path-string="New_York"]');
+    await expect(newYorkLink).toHaveText('New York↩');
+    await expect(newYorkLink).toHaveAttribute('href', '/New_York');
+
+    const newJerseyLink = await page.locator('.canopy-selected-section a[data-literal-path-string="New_Jersey"]');
+    await expect(newJerseyLink).toHaveText('New Jersey');
+    await expect(newJerseyLink).toHaveAttribute('href', '/New_Jersey');
+
+    const helloLink = await page.locator('.canopy-selected-section a[data-text="Hello"]');
+    await expect(helloLink).toHaveText('Hello');
+    await expect(helloLink).toHaveAttribute('href', 'https://google.com');
+    await expect(helloLink).toHaveAttribute('target', '_blank');
+    const helloIcon = await helloLink.locator('.canopy-external-link-icon');
+    await expect(helloIcon).toBeVisible();
+
+    const normalText = await page.locator('.canopy-selected-section span:has-text("Normal Text")');
+    await expect(normalText).toHaveText('Normal Text');
+
+    const disabledLink = await page.locator('.canopy-selected-section a[data-text="Disabled Link"]');
+    await expect(disabledLink).toHaveText('Disabled Link');
+    expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
+  });
+
   test('It allows menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Menus");
@@ -400,6 +434,30 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-third-card')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-tube')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-card')).toHaveCount(1);
+  });
+
+  test('It creates menu link icons', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Menu_link_icons');
+    await expect(page).toHaveURL("United_States/New_York/Style_examples#Menu_link_icons");
+
+    // Assert on the first menu link
+    const firstLink = await page.locator('a[data-literal-path-string="United_States"]');
+    await expect(firstLink).toHaveAttribute('href', '/United_States');
+    await expect(firstLink).toHaveText(/United States/);
+    await expect(firstLink.locator('.canopy-back-cycle-icon')).toHaveText('↩');
+
+    // Assert on the second menu link
+    const secondLink = await page.locator('a[data-literal-path-string="United_States/New_Jersey"]');
+    await expect(secondLink).toHaveAttribute('href', '/United_States/New_Jersey');
+    await expect(secondLink).toHaveText(/New Jersey/);
+    await expect(secondLink.locator('.canopy-forward-cycle-icon')).toHaveText('↪');
+
+    // Assert on the external link
+    const externalLink = await page.locator('a[data-type="external"]');
+    await expect(externalLink).toHaveAttribute('href', 'https://google.com');
+    await expect(externalLink).toHaveAttribute('target', '_blank');
+    await expect(externalLink).toHaveText(/Hello/);
+    await expect(externalLink.locator('.canopy-external-link-icon')).toBeVisible();
   });
 
   test('It allows directional menus', async ({ page }) => {
@@ -437,10 +495,8 @@ test.describe('Block entities', () => {
     expect(secondBoundingBox.x).toBeGreaterThan(viewportWidth / 2);
 
     // Verify the ::after content for buttons in the third container
-    await expect(await thirdContainerButtons.nth(0).locator('.canopy-menu-content-container')
-      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↩"'); // special case where we flip arrow
-    await expect(await thirdContainerButtons.nth(1).locator('.canopy-menu-content-container')
-      .evaluate(el => window.getComputedStyle(el, '::after').getPropertyValue('content'))).toBe('" ↪"');
+    await expect(await thirdContainerButtons.nth(0).locator('.canopy-menu-content-container')).toHaveText('New York↩'); // special case where we flip arrow
+    await expect(await thirdContainerButtons.nth(1).locator('.canopy-menu-content-container')).toHaveText('New Jersey↪');
   });
 
   test('It creates multi-line code blocks', async ({ page }) => {
@@ -519,7 +575,7 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#HTML_blocks_with_insertions');
     await expect(page.locator('.canopy-selected-section .canopy-raw-html')).toHaveCount(2);
 
-    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York');
+    await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(0)).toHaveText('This is a link: New York↩');
 
     await expect(page.locator('.canopy-selected-section .canopy-raw-html').nth(1)).toHaveText('These are not: \\{{[[New York]]}} {\\{[[New York]]}} {{[[New York]]\\}} {{[[New York]]}\\}');
   });
@@ -566,14 +622,14 @@ test.describe('Block entities', () => {
 
     const paragraph = page.locator('.canopy-selected-section > .canopy-paragraph');
     const linebreakSpans = paragraph.locator('.canopy-linebreak-span');
-    await expect(linebreakSpans).toHaveCount(6);
+    await expect(linebreakSpans).toHaveCount(7);
 
     // Assert placement of each line break
     const expectedTextBeforeLineBreaks = [
       'This is some text.',
-      // skipped because not directly before linebreak
+      'ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסטר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט↩',
       '.',
-      'ר-ט-ל טקסט',
+      'ר-ט-ל טקסט↩',
       'This is some text.',
       'ר-ט-ל טקסט',
       'This is some text.',
@@ -616,24 +672,99 @@ test.describe('Block entities', () => {
       // Assert that the span is closer to the left side of the viewport
       expect(boundingBox.x + boundingBox.width / 2).toBeLessThan(page.viewportSize().width / 2);
     }
-  });  
+  });
 
   test('It creates disabled links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
-    await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
+    await expect(page.locator('.canopy-menu-link-cell a.canopy-disabled-link')).toHaveCount(1);
   });
 
   test('It creates full-line links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Full-line_links');
 
-    const linkElement = page.locator('.canopy-selected-section .canopy-selectable-link .canopy-link-content-container');
+    // Select the first link based on its text content
+    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+      hasText: 'This is a full line link'
+    });
 
-    const display = await linkElement.evaluate(el => getComputedStyle(el).display);
-    expect(display).toBe('inline-block');
+    const firstLinkContentContainer = firstLink.locator('.canopy-link-content-container');
+    const firstLinkContentDisplay = await firstLinkContentContainer.evaluate(el => getComputedStyle(el).display);
+    expect(firstLinkContentDisplay).toBe('inline-block');
 
-    const borderStyle = await linkElement.evaluate(el => getComputedStyle(el).borderStyle);
-    expect(borderStyle).not.toBe('none');
+    const firstLinkContentBorderStyle = await firstLinkContentContainer.evaluate(el => getComputedStyle(el).borderStyle);
+    expect(firstLinkContentBorderStyle).not.toBe('none');
+
+    // Check if the first link itself fills the container
+    const firstLinkWidth = await firstLink.evaluate(el => el.offsetWidth);
+    const containerWidth = await firstLink.evaluate(el => el.parentElement.offsetWidth);
+    expect(firstLinkWidth).toBeGreaterThan(containerWidth * 0.9); // It should fill the container
+
+    // Select the second link based on its text content
+    const secondLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+      hasText: 'This link would qualify'
+    });
+
+    // Check the display style of the .canopy-link-content-container inside the second link
+    const secondLinkContentContainer = secondLink.locator('.canopy-link-content-container');
+    const secondLinkContentDisplay = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).display);
+    expect(secondLinkContentDisplay).toBe('inline'); // we don't make it inline-block because it doesn't wrap, avoiding unicode-bidi issue
+
+    const secondLinkContentBorderStyle = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).borderStyle);
+    expect(secondLinkContentBorderStyle).not.toBe('none');
+
+    // Check if the second link does not fill the container
+    const secondLinkWidth = await secondLink.evaluate(el => el.offsetWidth);
+    expect(secondLinkWidth).not.toBeGreaterThan(containerWidth * 0.9); // It should not fill the container
+  });
+
+  test('It allows solo hash links [[#]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
+
+    await page.click('text=Back'); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
+    await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
+    await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
+  });
+
+  test('It allows solo caret links [[^]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links');
+
+    await expect(page.locator('.canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
+    await page.click('text=Back'); // [[^]] in a root topic paragraph should render to [[#]] ie self-reference which in topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[^ in subtopic is regular cycle reference to ST parent]]
+    await page.waitForURL('**/Solo_caret_links');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('solo caret links');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Nested_subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
+    await page.waitForURL('**/Solo_caret_links#Subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo caret link');
+  });
+
+  test('It allows solo period links [[.]]', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links');
+
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links');
+    await page.click('text=Back'); // [[.]] in a root topic paragraph is a self-reference which for topic is pop
+    await page.waitForURL('**/Style_examples#Inline_text_styles');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links#Subtopic_solo_period_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[.]] in subtopic is shift to parent
+    await page.waitForURL('**/Solo_period_links#Subtopic_solo_period_link');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo period link');
   });
 });
-
