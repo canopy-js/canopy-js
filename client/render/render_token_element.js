@@ -533,7 +533,7 @@ function renderTable(token, renderContext) {
                 const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
-                  tableCellElement.classList.add('canopy-arrow-key-container'); // rect to consider for arrow key comparisons
+                  tableCellElement.classList.add('canopy-arrow-keys-container'); // rect to consider for arrow key comparisons
                   whenInDom(tableCellElement)(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
@@ -633,6 +633,7 @@ function renderMenu(token, renderContext) {
     tokenElements.forEach(tokenElement => {
       if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
         menuCellElement.classList.add('canopy-menu-link-cell');
+        menuCellElement.classList.add('canopy-arrow-keys-container');
         menuCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
         tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler);
       }

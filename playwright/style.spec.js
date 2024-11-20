@@ -686,7 +686,7 @@ test.describe('Block entities', () => {
   test('It creates disabled links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
-    await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
+    await expect(page.locator('.canopy-menu-link-cell a.canopy-disabled-link')).toHaveCount(1);
   });
 
   test('It creates full-line links', async ({ page }, workerInfo) => {
