@@ -475,11 +475,11 @@ table {
     word-break: normal; 
     hyphens: none;
 
-    &.canopy-menu-cell-left-aligned {
+    &.canopy-menu-cell-last-left { // only the right-most left needs margin
       margin-right: auto;
     }
 
-    &.canopy-menu-cell-right-aligned {
+    &.canopy-menu-cell-first-right { // only the left-most right needs margin
       margin-left: auto;
     }
 
