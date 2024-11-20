@@ -619,7 +619,7 @@ function renderMenu(token, renderContext) {
         menuCellElement.appendChild(contentContainer);
       }      
 
-      if (cellObject.alignment || token.alignment) { // apply alignment to specific cells
+      if (cellObject.alignment || ['left', 'right'].includes(token.alignment)) { // apply alignment to specific cells
         menuCellElement.classList.add(`canopy-menu-cell-${cellObject.alignment || token.alignment}-aligned`);
       }
     });

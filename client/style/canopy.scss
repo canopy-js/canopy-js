@@ -216,7 +216,7 @@ a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not
     position: relative;
   }
 
-  &.canopy-lateral-cycle-link .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
+  &.canopy-forward-cycle-link .canopy-link-content-container::after { // if it is open, it has been inlined and isn't a cycle
     content: '↪';
     top: 2px;
     left: 1px;
@@ -564,11 +564,11 @@ table {
       content: ' ↩';
     }
 
-    &.canopy-lateral-cycle-link .canopy-menu-content-container::after { // if it is open, it has been inlined and isn't a cycle
+    &.canopy-forward-cycle-link .canopy-menu-content-container::after { // if it is open, it has been inlined and isn't a cycle
       content: ' ↪';
     }
 
-    &.canopy-lateral-cycle-link.canopy-menu-cell-left-aligned .canopy-menu-content-container::after { // override direction
+    &.canopy-forward-cycle-link.canopy-menu-cell-left-aligned .canopy-menu-content-container::after { // override direction
       content: ' ↩'; // hard-coding special case of back and forth buttons
     }
 
@@ -593,8 +593,8 @@ table {
 
   &.canopy-eigth-pill .canopy-menu-cell {
     width: calc((750px - 70px)/8); // take total width, subtract gaps, and divide by total number
-    padding-left: 14px; // make it a little harder to qualify
-    padding-right: 14px; // make it a little harder to qualify
+    padding-left: 10px; // make it a little harder to qualify
+    padding-right: 10px; // make it a little harder to qualify
     padding-top: 2px;
     padding-bottom: 2px;
     height: 45px; // more button-esque
