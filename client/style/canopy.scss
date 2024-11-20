@@ -148,7 +148,7 @@ a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not
     .canopy-linebreak-span + &:has( + .canopy-linebreak-span),
     .canopy-linebreak-span + &:last-child,
     &:only-child {
-      .canopy-link-content-container {
+      &.canopy-multiline-link .canopy-link-content-container {
         display: inline-block; // put border around multi-line content as one unit
       }
     }

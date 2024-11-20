@@ -595,12 +595,12 @@ test.describe('Block entities', () => {
 
     const paragraph = page.locator('.canopy-selected-section > .canopy-paragraph');
     const linebreakSpans = paragraph.locator('.canopy-linebreak-span');
-    await expect(linebreakSpans).toHaveCount(6);
+    await expect(linebreakSpans).toHaveCount(7);
 
     // Assert placement of each line break
     const expectedTextBeforeLineBreaks = [
       'This is some text.',
-      // skipped because not directly before linebreak
+      'ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסטר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט↩',
       '.',
       'ר-ט-ל טקסט↩',
       'This is some text.',
@@ -614,13 +614,13 @@ test.describe('Block entities', () => {
       expect(previousText).toBe(expectedTextBeforeLineBreaks[i]);
     }
 
-    // Assert that each Hebrew element is on the right side of the screen
-    const hebrewSpans = paragraph.locator('span').filter({
-      hasText: 'ר-ט-ל טקסט'
+    // Assert that the short RTL elements is on the right side of the screen
+    const shortRTLSpans = paragraph.locator('span').filter({
+      hasText: (text) => text.includes('ר-ט-ל טקסט') && text.length < 30
     });
 
-    for (let i = 0; i < await hebrewSpans.count(); i++) {
-      const span = hebrewSpans.nth(i);
+    for (let i = 0; i < await shortRTLSpans.count(); i++) {
+      const span = shortRTLSpans.nth(i);
 
       // Get the bounding box of the span
       const boundingBox = await span.boundingBox();
@@ -629,6 +629,15 @@ test.describe('Block entities', () => {
       // Assert that the span is closer to the right side of the viewport
       expect(boundingBox.x + boundingBox.width / 2).toBeGreaterThan(page.viewportSize().width / 2);
     }
+
+    const longText = 'ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסטר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט↩';
+    const longRTLspans = paragraph.locator('span').filter({ hasText: longText });
+
+    await expect(longRTLspans.first()).toHaveText(longText);
+
+    const boundingBox = await longRTLspans.first().boundingBox();
+    expect(boundingBox).not.toBeNull();
+    expect(boundingBox.x + boundingBox.width / 2).toBe(page.viewportSize().width / 2);
 
     // Assert that each English element is on the left side of the screen
     const englishSpans = paragraph.locator('span').filter({
@@ -653,11 +662,12 @@ test.describe('Block entities', () => {
     await expect(page.locator('a.canopy-disabled-link.canopy-menu-link-cell')).toHaveCount(1);
   });
 
-  test('It creates full-line links', async ({ page }) => {
+  test('It creates full-line links', async ({ page }, workerInfo) => {
     await page.goto('/United_States/New_York/Style_examples#Full-line_links');
+    await expect(page).toHaveURL("United_States/New_York/Style_examples#Full-line_links");
 
     // Select the first link based on its text content
-    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link.canopy-multiline-link', {
       hasText: 'This is a full line link'
     });
 
@@ -681,7 +691,7 @@ test.describe('Block entities', () => {
     // Check the display style of the .canopy-link-content-container inside the second link
     const secondLinkContentContainer = secondLink.locator('.canopy-link-content-container');
     const secondLinkContentDisplay = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).display);
-    expect(secondLinkContentDisplay).toBe('inline-block');
+    expect(secondLinkContentDisplay).toBe('inline'); // we don't make it inline-block because it doesn't wrap, avoiding unicode-bidi issue
 
     const secondLinkContentBorderStyle = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).borderStyle);
     expect(secondLinkContentBorderStyle).not.toBe('none');
