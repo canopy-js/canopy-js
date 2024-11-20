@@ -29,10 +29,10 @@ test.describe('Text styles', () => {
     await expect(page.locator('.canopy-selected-section b')).toHaveCount(4);
   });
 
-  test('Tildes create strike-through text', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Strike-through_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is strike through text. So is this. And this. Bu~t not thi~s.This is a struck through table cell.");
-    await expect(page.locator('.canopy-selected-section s')).toHaveCount(4);
+  test('Tildes create underline text', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Underlined_text');
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is underlined text. So is this. And this. Bu~t not thi~s.This is an underlined table cell.");
+    await expect(page.locator('.canopy-selected-section u')).toHaveCount(4);
   });
 
   test('Underscores and asterisks creates bold italic text', async ({ page }) => {

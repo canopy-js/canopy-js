@@ -15,7 +15,7 @@ let {
   ItalicsToken,
   BoldToken,
   InlineCodeSnippetToken,
-  StrikethroughToken,
+  UnderlineToken,
   ToolTipToken,
 } = require('./tokens');
 
@@ -39,7 +39,7 @@ const Matchers = [
   italicsMatcher,
   boldMatcher,
   codeSnippetMatcher,
-  strikeThroughMatcher,
+  underlineMatcher,
   imageMatcher,
   hyperlinkMatcher,
   urlMatcher,
@@ -426,7 +426,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   }
 }
 
-function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
+function underlineMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^~(.*?[^\\])~(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
@@ -439,7 +439,7 @@ function strikeThroughMatcher({ string, parserContext, previousCharacter }) {
 
   if (matchExists) {
     return [
-      new StrikethroughToken(
+      new UnderlineToken(
         match[1],
         parserContext
       ),
