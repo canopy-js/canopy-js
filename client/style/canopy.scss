@@ -137,7 +137,7 @@ a.canopy-selectable-link { // even menu and table cells
   }
 }
 
-a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image):not(.canopy-image-caption a) {
+a.canopy-selectable-link {
   padding-right: 11px; // following punctuation shouldn't wrap without link
   margin-right: -10px;
   
@@ -225,6 +225,15 @@ a.canopy-disabled-link {
 
 a.canopy-selectable-link.canopy-linked-image {
   text-decoration: none;
+
+  .canopy-link-content-container {
+    border: none;
+    background-color: inherit;
+  }
+
+  &.canopy-external-link .canopy-external-link-icon {
+    display: none;
+  }
 }
 
 /////////////////////////////////////////////
@@ -279,7 +288,7 @@ blockquote {
   margin-top: 12px;
   margin-bottom: 12px;
 
-  a.canopy-selectable-link:not(.canopy-menu-link-cell):not(.canopy-table-link):not(.canopy-linked-image):not(.canopy-image-caption a) {
+  a.canopy-selectable-link {
     .canopy-link-content-container {
       //reset button styling
       background-color: #FFFFFF00;
@@ -364,6 +373,13 @@ table {
       border: none;
       padding: 4px; // to force breaking onto multiple lines
       display: block; // makes link text spacing more regular
+    
+      &, &.canopy-open-link, &.canopy-selected-link {
+        .canopy-link-content-container {
+          border: none;
+          background-color: inherit;
+        }
+      }
     }
     
     &:has(.canopy-selected-link) {
@@ -484,7 +500,7 @@ table {
     }
   }
 
-  .canopy-menu-link-cell.canopy-menu-cell {
+  .canopy-menu-cell.canopy-menu-link-cell {
     cursor: pointer;
     border: 1.5px solid black;
     border-radius: 5px;
@@ -493,30 +509,31 @@ table {
     align-items: center; /* Center content vertically */
     user-select: none;
 
-    &.canopy-selectable-link {
+    a.canopy-selectable-link {
       text-decoration: none;
       text-shadow: none;
       user-select: none;
-    }
 
-    &.canopy-selected-link {
-      background-color: #edeefc;
-    }
-
-    &.canopy-open-link:not(.canopy-selected-link) {
-      background-color: #eae8e8;
-    }
-
-    &:hover:not(.canopy-selected-link), // selected link style overrides hover
-    &:hover.canopy-open-link:not(.canopy-selected-link) {
-      background-color: #f5f6fe;
-
-      .canopy-selected-link {
-          background-color: #f5f6fe;
+      span.canopy-link-content-container {
+        border: none;
+        background-color: inherit;
       }
     }
 
-    .canopy-menu-content-container {
+    &:has(.canopy-selected-link) {
+      background-color: #edeefc;
+    }
+
+    &:has(.canopy-open-link:not(.canopy-selected-link)) {
+      background-color: #eae8e8;
+    }
+
+    &:hover:has(a.canopy-selectable-link:not(.canopy-selected-link)), // selected link style overrides hover
+    &:hover:has(a.canopy-selectable-link.canopy-open-link:not(.canopy-selected-link)) {
+      background-color: #f5f6fe;
+    }
+
+    .canopy-link-content-container {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
         font-size: 11px;
         margin-left: -5px; // Negative margin to pull the icon closer to the last word
@@ -524,10 +541,15 @@ table {
         top: 5px;
         left: 6px;
         white-space: nowrap; // Prevents the icon from wrapping
+      
+        &[dir="rtl"] {
+          top: 0px; // find good values
+          left: 0px; 
+        }
       }
     }
 
-    &.canopy-external-link {
+    &:has(.canopy-external-link) {
       &.canopy-selectable-link * {
         text-decoration: none;
       }
@@ -547,7 +569,7 @@ table {
       }
     }
 
-    &.canopy-disabled-link {
+    &:has(.canopy-disabled-link) {
       background-color: #FFFFFF;
       color: #000000;
       cursor: not-allowed;
@@ -624,11 +646,6 @@ table {
 
   margin-top: 15px;
 
-  a {
-    margin: 0 auto;
-    // display: block;
-  }
-
   .canopy-image {
     img {
       display: block;
@@ -651,11 +668,25 @@ table {
         color: #595959;
       }
 
+      a.canopy-selectable-link {
+        border: none;
+        text-decoration: underline #D3D3D3;
+
+        &:hover {
+          text-decoration: underline #000000;
+        }
+      }
+
+      a.canopy-link-content-container {
+        border: none;
+        background-color: inherit;
+      }
+
       a.canopy-selected-link {
         background-color: #c9ccff; // extra dark so it is noticible
       }
 
-      a.canopy-external-link:not(.canopy-menu-link-cell):not(.canopy-linked-image) .canopy-external-link-icon { // need to beat specificity of general definition
+      a.canopy-external-link .canopy-external-link-icon {
         display: none; // no icon for links in image captions because usually they'll be external
       }
 
