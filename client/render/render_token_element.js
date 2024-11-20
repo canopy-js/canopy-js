@@ -43,8 +43,8 @@ function renderTokenElements(token, renderContext) {
     return renderFootnoteLines(token, renderContext);
   } else if (token.type === 'bold') {
     return renderBoldText(token, renderContext);
-  } else if (token.type === 'strikethrough') {
-    return renderStrikethroughText(token, renderContext);
+  } else if (token.type === 'underlined') {
+    return renderUnderlineText(token, renderContext);
   } else if (token.type === 'italics') {
     return renderItalicText(token, renderContext);
   } else if (token.type === 'inline_code') {
@@ -755,8 +755,8 @@ function renderBoldText(token, renderContext) {
   });
   return [element];
 }
-function renderStrikethroughText(token, renderContext) {
-  let element = document.createElement('S');
+function renderUnderlineText(token, renderContext) {
+  let element = document.createElement('u');
   token.tokens.forEach(subtoken => {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => element.appendChild(subtokenElement));
