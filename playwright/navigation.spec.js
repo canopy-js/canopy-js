@@ -695,7 +695,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
-    await page.locator('a:has-text("cafeteria").canopy-lateral-cycle-link').click({
+    await page.locator('a:has-text("cafeteria").canopy-forward-cycle-link').click({
       modifiers: ['Shift']
     });
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -720,7 +720,7 @@ test.describe('Navigation', () => {
       return elementText + cleanedAfterContent;
     };
 
-    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-lateral-cycle-link:visible .canopy-link-content-container');
+    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-forward-cycle-link:visible .canopy-link-content-container');
     expect(combinedTextFirstLink).toBe('cafeteria↪');
 
     const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
