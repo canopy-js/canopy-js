@@ -395,6 +395,33 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
   });
 
+  test('It supports table links with icons', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Table_links');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Table_links");
+
+    const newYorkLink = await page.locator('.canopy-selected-section a[data-literal-path-string="New_York"]');
+    await expect(newYorkLink).toHaveText('New York↩');
+    await expect(newYorkLink).toHaveAttribute('href', '/New_York');
+
+    const newJerseyLink = await page.locator('.canopy-selected-section a[data-literal-path-string="New_Jersey"]');
+    await expect(newJerseyLink).toHaveText('New Jersey');
+    await expect(newJerseyLink).toHaveAttribute('href', '/New_Jersey');
+
+    const helloLink = await page.locator('.canopy-selected-section a[data-text="Hello"]');
+    await expect(helloLink).toHaveText('Hello');
+    await expect(helloLink).toHaveAttribute('href', 'https://google.com');
+    await expect(helloLink).toHaveAttribute('target', '_blank');
+    const helloIcon = await helloLink.locator('.canopy-external-link-icon');
+    await expect(helloIcon).toBeVisible();
+
+    const normalText = await page.locator('.canopy-selected-section span:has-text("Normal Text")');
+    await expect(normalText).toHaveText('Normal Text');
+
+    const disabledLink = await page.locator('.canopy-selected-section a[data-text="Disabled Link"]');
+    await expect(disabledLink).toHaveText('Disabled Link');
+    expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
+  });
+
   test('It allows menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Menus");
