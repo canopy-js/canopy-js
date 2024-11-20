@@ -6,7 +6,7 @@ import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
-import { measureVerticalOverflow, whenInDom } from 'render/helpers';
+import { measureVerticalOverflow, whenInDom, getCombinedBoundingRect } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -153,20 +153,29 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
+  if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
+    let cycleIcon = document.createElement('span');
+    cycleIcon.classList.add('canopy-provisional-cycle-icon');
+    cycleIcon.innerText = '↩'
+    linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
+  }
   
   // Add additional class based on link type after delay
   whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    linkElement.classList.remove('canopy-provisional-icon-link');
+    if (link.cycle) {
+      let cycleIcon = linkElement.querySelector('.canopy-provisional-cycle-icon');
+      cycleIcon.classList.remove('canopy-provisional-cycle-icon');
 
-    if (link.isBackCycle) {
-      linkElement.classList.add('canopy-back-cycle-link');
-    } else if (link.isLateralCycle) {
-      linkElement.classList.add('canopy-lateral-cycle-link');
-    } else if (link.isPathReference) {
-      linkElement.classList.add('canopy-path-reference');
+      if (link.isBackCycle || linkElement.closest('.canopy-menu-cell-left-aligned')) {
+        cycleIcon.classList.add('canopy-back-cycle-icon');
+        cycleIcon.innerText = '↩';
+      } else if (link.isLateralCycle) {
+        cycleIcon.classList.add('canopy-forward-cycle-icon');
+        cycleIcon.innerText = '↪';
+      }
     }
   });
 
@@ -253,6 +262,10 @@ function renderExternalLink(token, renderContext) {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
+
+  let cycleIcon = document.createElement('span');
+  cycleIcon.classList.add('canopy-external-link-icon');
+  contentContainer.appendChild(cycleIcon);
 
   return [linkElement];
 }
@@ -643,38 +656,43 @@ function renderMenu(token, renderContext) {
   menuElement.appendChild(tempRowElement);
 
   for (let i = 0; i < cellElements.length; i++) {
-    // try fitting text into boxes and find the minimum cell size that fits
     let menuCellElement = cellElements[i];
     tempRowElement.appendChild(menuCellElement);
 
-    while(true) {
-      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // quarters look better than halves
+    while (true) {
+      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) 
+        tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
 
       menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let availableWidth = menuCellElement.clientWidth -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingLeft) -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingRight);
+      let combinedContentRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
 
-      let availableHeight = menuCellElement.clientHeight -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingTop) -
-        parseFloat(window.getComputedStyle(menuCellElement).paddingBottom);
+      let container = menuCellElement.closest('.canopy-menu-cell');
+      let containerStyles = window.getComputedStyle(container);
+      let containerRect = container.getBoundingClientRect();
 
-      let scrollWidth = menuCellElement.firstChild.scrollWidth -
-        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
+      let containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
+      let containerPaddingRight = parseFloat(containerStyles.paddingRight);
+      let containerPaddingTop = parseFloat(containerStyles.paddingTop);
+      let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
 
-      let scrollHeight = menuCellElement.firstChild.scrollHeight -
-        parseFloat(window.getComputedStyle(menuCellElement).borderWidth) * 2;
+      let adjustedAncestorRect = {
+        top: containerRect.top + containerPaddingTop,
+        left: containerRect.left + containerPaddingLeft,
+        bottom: containerRect.bottom - containerPaddingBottom,
+        right: containerRect.right - containerPaddingRight
+      };
 
-      let tooWide = scrollWidth > availableWidth;
-      let tooTall = scrollHeight > availableHeight;
+      let isOverflowingHorizontally = combinedContentRect.left < adjustedAncestorRect.left || combinedContentRect.right > adjustedAncestorRect.right;
+      let isOverflowingVertically = combinedContentRect.top < adjustedAncestorRect.top || combinedContentRect.bottom > adjustedAncestorRect.bottom;
 
-      if (!tooWide && !tooTall) break; // fits
-      if (tableListSizeIndex >= SizesByArea.length - 1) break; // no bigger sizes
+      if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
+
+      if (tableListSizeIndex >= SizesByArea.length - 1) break; // No larger sizes available
 
       menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
       tableListSizeIndex++;
-      i = 0; // once we increment the size, we have to try on all previous elements because larger area might have narrower width
+      i = 0; // Once we increment the size, we need to recheck all previous elements because a larger area might have a narrower width
     }
   }
 

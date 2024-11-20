@@ -195,14 +195,14 @@ test.describe('Navigation', () => {
     await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
   test('It decodes encoded path pound symbols', async ({ page }) => { // Eg Gmail does this sometimes to links
     await page.goto('United_States/New_York#Southern_border/New_Jersey%23Northern_border'); // this is an unescaped encoded #
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border'); //no redirects
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
   test('Pressing down on global link advances path', async ({ page }) => {
@@ -382,7 +382,7 @@ test.describe('Navigation', () => {
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
   test('Pressing meta-enter on local opens new tab to same path', async ({ page, context }) => {
@@ -511,7 +511,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
   test('Down on path reference selects links of current paragraph', async ({ page }) => {
@@ -567,7 +567,7 @@ test.describe('Navigation', () => {
     )).toHaveCount(0);
 
     // Path reference path should be open
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border of New York. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
   test('Alt-clicking on a path reference redirects to the reference path', async ({ page, context }) => {
@@ -649,7 +649,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");
     await expect(page.locator("text=There is a lot of parking, and it is near the >> visible=true")).toHaveCount(1);
 
     await page.locator('body').press('Enter');
@@ -673,7 +673,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");
 
     await page.locator('body').press('Shift+ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -695,7 +695,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
-    await page.locator('a:has-text("cafeteria").canopy-forward-cycle-link').click({
+    await page.locator('a:has-text("cafeteria↪")').click({
       modifiers: ['Shift']
     });
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -707,24 +707,8 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL('United_States/New_York/Martha\'s_Vineyard#Parking_lot');
 
-    // Function to get the text content including ::after content for a link
-    const getTextIncludingAfter = async (selector) => {
-      const element = await page.waitForSelector(selector);
-      const elementText = await element.evaluate(node => node.textContent);
-      const afterContent = await page.evaluate(el => {
-        const style = window.getComputedStyle(el, '::after');
-        return style.content;
-      }, element);
-
-      const cleanedAfterContent = afterContent.replace(/^"|"$/g, '');
-      return elementText + cleanedAfterContent;
-    };
-
-    const combinedTextFirstLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-forward-cycle-link:visible .canopy-link-content-container');
-    expect(combinedTextFirstLink).toBe('cafeteria↪');
-
-    const combinedTextSecondLink = await getTextIncludingAfter('a.canopy-selectable-link.canopy-back-cycle-link:visible .canopy-link-content-container');
-    expect(combinedTextSecondLink).toBe('Martha\'s Vineyard↩');
+    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: 'cafeteria↪' })).toHaveCount(1);
+    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
   });
 
   test('Rehash references regress to earlier parent link', async ({ page }) => {
@@ -734,15 +718,7 @@ test.describe('Navigation', () => {
 
     // Rehash references should get back cycle icons
     const links = await page.locator('.canopy-selected-section .canopy-selectable-link .canopy-link-content-container');
-
-    const matchingLinks = await links.evaluateAll((elements) =>
-      elements.filter(element => {
-        const computedStyle = window.getComputedStyle(element, '::after');
-        return computedStyle.content === '"↩"';
-      })
-    );
-
-    expect(matchingLinks.length).toBe(3);
+    await expect(page.locator('.canopy-selected-section a.canopy-selectable-link .canopy-link-content-container').filter({ hasText: "↩" })).toHaveCount(3);
 
     await page.click('text=A/B/C/D ie total rehash');
     await expect(page).toHaveURL('A/B');
@@ -885,7 +861,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('h1')).toBeVisible();
 
-    await page.click('text=The northern border of New Jersey abuts the southern border of New York. >> text=southern border >> visible=true');
+    await page.click('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> text=southern border >> visible=true');
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
 
     // we also want it to scroll to New_York#Southern_border, not to New_York, ie it should identify when nodes after the cycle occur
