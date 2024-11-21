@@ -178,7 +178,10 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
-  if (Path.rendered.fulcrumLink(newPath).isFocused) return Promise.resolve(); // fulcrum is already visible
+  if (Path.rendered.fulcrumLink(newPath).isFocused) { // fulcrum is already visible
+    options.delayAfterChange = true; //still change and wait to highlight new path
+    return Promise.resolve();
+  } 
 
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;
@@ -199,7 +202,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
     .then((scrolled) => {
       if (scrolled) {
-        options.beforeChangeScrollOccured = true;
+        options.delayAfterChange = true;
         return new Promise(resolve => setTimeout(resolve, 110))
       }
     }));
@@ -212,7 +215,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   let { direction } = options;
 
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  let postChangePause = options.beforeChangeScrollOccured ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
+  let postChangePause = options.delayAfterChange ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
 
   if (pathToDisplay.equals(Path.firstTopicPath) && !linkToSelect) return scrollElementToPosition(
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
