@@ -36,6 +36,7 @@ program.command('build')
   .option('-o, --orphans', 'Note which topics do not receive references from other parts of the project', false)
   .option('-r, --reciprocals', 'Note which topics reference topics that do not reference them back.', false)
   .option('-e, --error', 'Throw errors with trace for debugging', false)
+  .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
   .addOption(new Option('--pretty', 'Pretty print JSON'))
   .action((options) => {
     try {
@@ -57,6 +58,7 @@ program.command('watch')
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
   .addOption(new Option('--pretty', 'Pretty print JSON'))
+  .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
   .action((options) => {
     try {
       watch(options);
@@ -79,6 +81,7 @@ program.command('dev')
   .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
   .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
   .option('-l, --logging', 'print logs', true)
+  .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
   .action((portArgument, options) => {
     try {
       options.port = options.port || Number(portArgument) || null;
@@ -126,7 +129,7 @@ program.command('bulk')
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies({sync: true}))
   .addOption(new Option('--error', 'Whether to throw errors'))
   .addOption(new Option('--pretty', 'Pretty print JSON'))
-  .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change'))
+  .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
   .option('--no-open', 'do not open link in browser', true)
   .option('--no-backup', 'clear the backup file and do not write to it')
   .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)

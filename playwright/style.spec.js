@@ -680,11 +680,12 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-menu-link-cell a.canopy-disabled-link')).toHaveCount(1);
   });
 
-  test('It creates full-line links', async ({ page }) => {
+  test('It creates full-line links', async ({ page }, workerInfo) => {
     await page.goto('/United_States/New_York/Style_examples#Full-line_links');
+    await expect(page).toHaveURL("United_States/New_York/Style_examples#Full-line_links");
 
     // Select the first link based on its text content
-    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link', {
+    const firstLink = page.locator('.canopy-selected-section .canopy-selectable-link.canopy-multiline-link', {
       hasText: 'This is a full line link'
     });
 

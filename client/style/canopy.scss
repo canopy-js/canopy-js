@@ -500,7 +500,7 @@ table {
     }
   }
 
-  .canopy-menu-link-cell.canopy-menu-cell {
+  .canopy-menu-cell.canopy-menu-link-cell {
     cursor: pointer;
     border: 1.5px solid black;
     border-radius: 5px;
@@ -516,6 +516,7 @@ table {
 
       span.canopy-link-content-container {
         border: none;
+        background-color: inherit;
       }
     }
 

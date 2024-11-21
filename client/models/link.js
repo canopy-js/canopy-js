@@ -495,7 +495,7 @@ class Link {
   }
 
   get isFragment() {
-    return this.childParagraph?.paragraphElement?.offsetHeight === 0;
+    return this.childParagraph?.paragraphElement?.innerText === '';
   }
 
   get childParagraphElement() {
