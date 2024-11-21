@@ -188,7 +188,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
   // If it is a two step change, go to fulcrum element, otherwise go straight to final position
   let targetElement = (Path.rendered.twoStepChange(newPath) && previousPath.fulcrumLink(newPath)).linkElement ||
-    (options.scrollToParagraph && newPath.paragraphElement) ||
+    (options.scrollToParagraph && !linkToSelect?.isFragment && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 
   let targetRatio = targetElement.tagName === 'A' ?
@@ -228,7 +228,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 50;
 
-  if (!linkToSelect || options.scrollToParagraph) {
+  if (!linkToSelect || (options.scrollToParagraph && !linkToSelect.isFragment)) {
     return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,

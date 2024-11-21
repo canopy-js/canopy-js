@@ -503,7 +503,7 @@ class Link {
   }
 
   get isFragment() {
-    return this.childParagraph?.paragraphElement?.offsetHeight === 0;
+    return this.childParagraph?.paragraphElement?.innerText === '';
   }
 
   get childParagraphElement() {
@@ -607,7 +607,7 @@ class Link {
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
     if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
-    if (options.scrollToParagraph) return updateView(this.previewPath, null, options);
+    if (options.scrollToParagraph && !this.isFragment) return updateView(this.previewPath, null, options);
 
     return updateView(this.previewPath, this, options);
   }
