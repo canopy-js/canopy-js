@@ -450,7 +450,6 @@ function renderBlockQuote(token, renderContext) {
   let direction = null; // neutral
 
   [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element, index, elements) => {
-    // if (blockQuoteElement.innerText.includes('abcdef')) debugger;
     if (element.classList.contains('canopy-linebreak-span')) { // we switched spans ie linebreak
       direction = null;
     } else { // The element is a character span
@@ -458,7 +457,10 @@ function renderBlockQuote(token, renderContext) {
       let previousElement = elements[index - 1];
       let previousRect = elements[index - 1]?.getBoundingClientRect();
 
-      if (previousElement && !previousElement.classList.contains('canopy-linebreak-span')) { // don't compare first letter to last of last line
+      let previousElementWasNewline = previousElement && (previousElement?.classList.contains('canopy-linebreak-span') 
+        || previousElement.tagName === "BR" || previousElement.innerText === '\n');
+      
+      if (previousElement && !previousElementWasNewline) {  // don't compare first letter to last of last line
         if (direction === null) {
           direction = elementRect.right > previousRect.right ? 1 : -1;
         } else {
