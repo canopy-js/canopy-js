@@ -339,7 +339,7 @@ class Path {
   }
 
   twoStepChange(otherPath) {
-    return this.initialPartialOverlap(otherPath) && !this.fulcrumLink(otherPath).isFocused;
+    return this.initialPartialOverlap(otherPath);
   }
 
   fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
