@@ -314,6 +314,7 @@ class Path {
   }
 
   initialOverlap(otherPath) {
+    if (this.empty || otherPath.empty) return null;
     if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
     let candidatePath = otherPath;
 
@@ -338,7 +339,7 @@ class Path {
   }
 
   twoStepChange(otherPath) {
-    return this.initialPartialOverlap(otherPath) && !this.fulcrumLink(otherPath).isFocused;
+    return this.initialPartialOverlap(otherPath);
   }
 
   fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph

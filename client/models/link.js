@@ -73,11 +73,19 @@ class Link {
 
   get top() {
     if (!this.element) return null;
+    if (this.element.closest('.canopy-arrow-keys-container')) {
+      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().top;
+    }
+
     return this.element.getBoundingClientRect().top;
   }
 
   get bottom() {
     if (!this.element) return null;
+    if (this.element.closest('.canopy-arrow-keys-container')) {
+      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().bottom;
+    }
+
     return this.element.getBoundingClientRect().bottom;
   }
 
@@ -511,31 +519,15 @@ class Link {
 
   get isVisible() {
     if (!this.element) return false;
-    const rect = this.element.getBoundingClientRect();
-    return rect.top >= 0 && rect.bottom <= ScrollableContainer.visibleHeight;
+    return this.top >= 0 && this.bottom <= ScrollableContainer.visibleHeight;
   }
 
   get isAboveViewport() {
-    if (!this.element || !this.element.getBoundingClientRect) {
-      return false;
-    }
-
-    const rect = this.element.getBoundingClientRect();
-    return rect.top < ScrollableContainer.top;
+    return this.top < ScrollableContainer.top;
   }
 
   get isBelowViewport() {
-    if (!this.element || !this.element.getBoundingClientRect) {
-      return false;
-    }
-
-    const rect = this.element.getBoundingClientRect();
-    const viewportHeight = ScrollableContainer.visibleHeight;
-    return rect.bottom > viewportHeight;
-  }
-
-  get isDistantParent() {
-    return this.top + ScrollableContainer.visibleHeight * 0.5 < this.childParagraph.top;
+    return this.bottom > ScrollableContainer.visibleHeight;
   }
 
   isHigherThan(otherLink) {
@@ -543,18 +535,12 @@ class Link {
   }
 
   get isFocused() {
-    if (!this.element) return null;
-    const rect = this.element.getBoundingClientRect();
-
-    // Get the viewport height
-    const viewportHeight = ScrollableContainer.visibleHeight;
-
-    const topLimit = viewportHeight * 0.15;
-    const bottomLimit = viewportHeight * 0.5;
+    const topLimit = ScrollableContainer.visibleHeight * 0.15;
+    const bottomLimit = ScrollableContainer.visibleHeight * 0.5;
 
     // Check if the element is within the target area
-    const overlapsTop = rect.bottom > topLimit;
-    const overlapsBottom = rect.top < bottomLimit;
+    const overlapsTop = this.bottom > topLimit;
+    const overlapsBottom = this.top < bottomLimit;
 
     return overlapsTop && overlapsBottom;
   }
@@ -644,23 +630,33 @@ class Link {
 
     if (this.isSelfReference && !this.isOpen) {
       if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display(options); // pop
-      return this.enclosingPath.parentLink.select({...options, scrollToParagraph: false }); // shift
+      return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly });
     }
 
     if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
       if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
-      return updateView(Path.rendered, this.parentLinkBeforeRehash, {...options, scrollToParagraph: false });
+      return updateView(
+        Path.rendered, 
+        this.parentLinkBeforeRehash,
+        { renderOnly: options.renderOnly }
+      )
     }
 
     if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
       return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
-        return updateView(this.inlinePath, this.selfReferencingOverlapStart.parentLink, { ...options, scrollToParagraph: false, inlineCycles: true });
+        return updateView(
+          this.inlinePath, 
+          this.selfReferencingOverlapStart.parentLink, 
+          { renderOnly: options.renderOnly }
+        );
       });
     }
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display(options);
+      return this.inlinePath.reduce().display({
+        renderOnly: options.renderOnly // initiating a cycle reduction disconnects the change from previous options
+      });
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down

@@ -8,15 +8,15 @@ function onLinkClick(link) {
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
     if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect global or path/cycle link
-      return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true, noBeforeChangeScroll: true });
+      return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true });
     }
 
     if (!newTab && !e.altKey && link.isOpen) { // select open link
-      return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
+      return link.select({ scrollDirect: true }); // not scrollToParagraph because returning up to parent link
     }
 
     if (!newTab && !e.altKey && !link.isVisible) { // scroll up to see link
-      return link.select({ scrollDirect: true, noBeforeChangeScroll: true }); // not scrollToParagraph because returning up to parent link
+      return link.select({ scrollDirect: true }); // not scrollToParagraph because returning up to parent link
     }
 
     if (!newTab && !e.altKey && link.isInlinedCycleReference) { // un-inlining an inlined cycle reference
@@ -30,7 +30,9 @@ function onLinkClick(link) {
       scrollDirect: true,
       selectALink: false,
       pushHistoryState: true,
-      scrollToParagraph: true
+      scrollToParagraph: true,
+      noBeforeChangeScroll: true, // we don't need to highlight fulcrum if it's being clicked
+      noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
     });
   }
 }

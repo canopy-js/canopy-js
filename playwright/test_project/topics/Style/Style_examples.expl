@@ -371,7 +371,7 @@ This is text.{! Here is a tooltip}
 Special links: This is a link to [[(New) York]], and to [[new york]], and to [["New" 'York']], and to [[the city of {{New York}}]], and to the city of [[{new|dew} {york|cork}]], and to the city that is [[{new} York]], and the city of [[New York|newest york]].
 
 Links in right-to-left text:
-זוהי פסקה של טקסט. הנה [[קישור ראשון]], זהו טקסט מילוי. הנה [[קישור שני]], זהו טקסט מילוי. והנה [[קישור שלישי]], זהו טקסט מילוי.
+זוהי פסקה של טקסט. הנה [[קישור ראשון]], זהו טקסט מילוי. הנה [[קישור שני]], זהו טקסט מילוי. והנה זה [[קישור שלישי]], זהו טקסט מילוי.
 
 קישור ראשון:
 זו הפסקה הראשונה.

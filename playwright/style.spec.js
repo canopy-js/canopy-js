@@ -641,13 +641,13 @@ test.describe('Block entities', () => {
       expect(previousText).toBe(expectedTextBeforeLineBreaks[i]);
     }
 
-    // Assert that each Hebrew element is on the right side of the screen
-    const hebrewSpans = paragraph.locator('span').filter({
-      hasText: 'ר-ט-ל טקסט'
+    // Assert that the short RTL elements is on the right side of the screen
+    const shortRTLSpans = paragraph.locator('span').filter({
+      hasText: (text) => text.includes('ר-ט-ל טקסט') && text.length < 30
     });
 
-    for (let i = 0; i < await hebrewSpans.count(); i++) {
-      const span = hebrewSpans.nth(i);
+    for (let i = 0; i < await shortRTLSpans.count(); i++) {
+      const span = shortRTLSpans.nth(i);
 
       // Get the bounding box of the span
       const boundingBox = await span.boundingBox();
@@ -656,6 +656,15 @@ test.describe('Block entities', () => {
       // Assert that the span is closer to the right side of the viewport
       expect(boundingBox.x + boundingBox.width / 2).toBeGreaterThan(page.viewportSize().width / 2);
     }
+
+    const longText = 'ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסטר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט ר-ט-ל טקסט↩';
+    const longRTLspans = paragraph.locator('span').filter({ hasText: longText });
+
+    await expect(longRTLspans.first()).toHaveText(longText);
+
+    const boundingBox = await longRTLspans.first().boundingBox();
+    expect(boundingBox).not.toBeNull();
+    expect(boundingBox.x + boundingBox.width / 2).toBe(page.viewportSize().width / 2);
 
     // Assert that each English element is on the left side of the screen
     const englishSpans = paragraph.locator('span').filter({
