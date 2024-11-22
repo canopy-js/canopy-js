@@ -12,6 +12,8 @@ import {
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
+  options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
+
   beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
@@ -25,6 +27,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, options);
     pathToDisplay.paragraph.addSelectionClass();
     setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+
     return afterChangeScroll(pathToDisplay, linkToSelect, options).then(() => {
       visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show();
     });

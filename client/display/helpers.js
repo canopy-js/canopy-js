@@ -178,10 +178,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
-  if (Path.rendered.fulcrumLink(newPath).isFocused) { // fulcrum is already visible
-    options.delayAfterChange = true; //still change and wait to highlight new path
-    return Promise.resolve();
-  } 
+  if (Path.rendered.fulcrumLink(newPath).isFocused) return Promise.resolve();
 
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;
@@ -199,24 +196,18 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     return Promise.resolve();
   }
 
+  let preChangePause = () => new Promise(resolve => setTimeout(resolve, 130))
+
   return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
-    .then((scrolled) => {
-      if (scrolled) {
-        options.delayAfterChange = true;
-        return new Promise(resolve => setTimeout(resolve, 110))
-      }
-    }));
+    .then((scrolled) => scrolled && preChangePause())); // we only pause before change if there was a real scroll to the fulcrum link
 }
 
-function afterChangeScroll(pathToDisplay, linkToSelect, options) {
-  if (options.noScroll) return Promise.resolve();
-  options = options || {};
+function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
+  if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
   let behavior = options.scrollStyle || 'smooth';
   let { direction } = options;
-
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  let postChangePause = options.delayAfterChange ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
-
+  
   if (pathToDisplay.equals(Path.firstTopicPath) && !linkToSelect) return scrollElementToPosition(
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
   );
@@ -225,11 +216,12 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
     linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
   );
 
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 50;
 
-  if (!linkToSelect || (options.scrollToParagraph && !linkToSelect.isFragment)) {
-    return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
+  if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
+    return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,
       minDiff,
@@ -247,15 +239,9 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options) {
       targetRatio = LINK_TARGET_RATIO;
     }
 
-    return postChangePause.then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
+    return postChangePause().then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
   }
 }
-
-// Old post-transition code
-// .then(() => !strictlyUpward && !elementIsFocused(pathToDisplay.paragraph.paragraphElement) && scrollElementToPosition( // if new path is not subset, we continue down new path
-//       (newPath.paragraph.paragraphElement.offsetHeight > 0 ? newPath.paragraph.paragraphElement : linkToSelect.element), // highlight cell
-//       {targetRatio: 0.24, maxScrollRatio: Infinity, minDiff: 0, behavior: 'smooth', side: 'top' })
-//     );
 
 function elementIsFocused(element) {
   const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
