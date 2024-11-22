@@ -629,24 +629,34 @@ class Link {
     }
 
     if (this.isSelfReference && !this.isOpen) {
-      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display(options); // pop
-      return this.enclosingPath.parentLink.select({...options, scrollToParagraph: false }); // shift
+      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
+      return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
 
     if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
       if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
-      return updateView(Path.rendered, this.parentLinkBeforeRehash, {...options, scrollToParagraph: false });
+      return updateView(
+        Path.rendered, 
+        this.parentLinkBeforeRehash,
+        { renderOnly: options.renderOnly }
+      )
     }
 
     if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
       return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
-        return updateView(this.inlinePath, this.selfReferencingOverlapStart.parentLink, { ...options, scrollToParagraph: false, inlineCycles: true });
+        return updateView(
+          this.inlinePath, 
+          this.selfReferencingOverlapStart.parentLink, 
+          { renderOnly: options.renderOnly }
+        );
       });
     }
 
     if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display(options);
+      return this.inlinePath.reduce().display({
+        renderOnly: options.renderOnly // initiating a cycle reduction disconnects the change from previous options
+      });
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
