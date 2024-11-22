@@ -139,10 +139,10 @@ a.canopy-selectable-link { // even menu and table cells
 
 a.canopy-selectable-link {
   padding-right: 11px; // following punctuation shouldn't wrap without link
-  margin-right: -10px;
+  margin-right: -11px;
   
   padding-left: 11px; // For RTL text
-  margin-left: -10px;
+  margin-left: -11px;
 
   &:first-child:has( + .canopy-linebreak-span), // for top-level text on its own line
     .canopy-linebreak-span + &:has( + .canopy-linebreak-span),
