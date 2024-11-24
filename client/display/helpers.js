@@ -167,7 +167,7 @@ function scrollToWithPromise(options) {
   }));
 }
 
-const LINK_TARGET_RATIO = .25;
+const LINK_TARGET_RATIO = .22;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
 const BIG_LINK_TARGET_RATIO = .1;
