@@ -4,7 +4,6 @@ class BulkFileGenerator {
   constructor(fileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath) {
     this.fileSet = fileSet;
     this.directoryComparator = generateDirectoryComparator(defaultTopicDisplayCategoryPath);
-    this.fileComparator = generateFileComparator(defaultTopicFilePath);
     this.defaultTopicFilePath = defaultTopicFilePath;
   }
 
@@ -12,10 +11,14 @@ class BulkFileGenerator {
     return this.fileSet.directories.sort(this.directoryComparator)
       .filter(d => d.files.find(f => f.path.endsWith('.expl'))) // a directory must have at least one expl file to be rendered
       .map(directory => {
+        let shortestCategoryMatchFile = directory.files.filter(file => 
+          file.key?.toUpperCase()?.includes(file.terminalCategory.toUpperCase())
+        ).reduce((shortestItem, newItem) => (shortestItem && (shortestItem.key.length < newItem.key.length) ? shortestItem : newItem), null);
+
         return `[${directory.displayPath}]\n\n` // two newlines after the category path header
           + directory
             .files
-            .sort(this.fileComparator)
+            .sort(generateFileComparator(this.defaultTopicFilePath, shortestCategoryMatchFile))
             .filter(f => f.path.endsWith('.expl'))
             .map(file =>
               (this.generateInitialAsterisks(file))
@@ -55,18 +58,13 @@ function generateDirectoryComparator(defaultTopicDisplayCategoryPath) {
   };
 }
 
-function generateFileComparator(defaultTopicFilePath) {
+function generateFileComparator(defaultTopicFilePath, shortestCategoryMatchFile) {
   return function fileComparator(file1, file2) {
     if (file1.path === defaultTopicFilePath) return -1;
     if (file2.path === defaultTopicFilePath) return 1;
 
-    if (file1.key === file1.terminalCategory) return -1;
-    if (file2.key === file2.terminalCategory) return 1;
-
-    let file1MentionsCategory = file1.key?.toUpperCase().trim().includes(file1.terminalCategory.toUpperCase());
-    let file2MentionsCategory = file2.key?.toUpperCase().trim().includes(file2.terminalCategory.toUpperCase());
-    if (file1MentionsCategory && !file2MentionsCategory) return -1;
-    if (file2MentionsCategory && !file1MentionsCategory) return 1;
+    if (file1 === shortestCategoryMatchFile) return -1;
+    if (file2 === shortestCategoryMatchFile) return 1;
 
     if (file1.path > file2.path) return 1;
     if (file1.path < file2.path) return -1;
