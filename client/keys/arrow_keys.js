@@ -396,14 +396,14 @@ function getRectsOfElements(elementArray) {
 
   for (const element of elementArray) {
     let elementForRect = element;
-    if (element.closest('.canopy-arrow-keys-container')) {
-      elementForRect = element.closest('.canopy-arrow-keys-container'); // a single link in TD should use the TD's borders eg
+    if (element.closest('.canopy-bounding-box-container')) {
+      elementForRect = element.closest('.canopy-bounding-box-container'); // a single link in TD should use the TD's borders eg
     }
 
     const subRects = Array.from(elementForRect.getClientRects());
     let singleRect = { element, link: Link.for(element), text: element.innerText, ...JSON.parse(JSON.stringify(elementForRect.getBoundingClientRect()))};
 
-    if (element.closest('.canopy-arrow-keys-container')) { // a link in a TD eg
+    if (element.closest('.canopy-bounding-box-container')) { // a link in a TD eg
       result.push(singleRect);
     } else {
       for (let i = 0; i < subRects.length; i++) { // treat multiple rects of same link as separate candidates
@@ -457,7 +457,7 @@ function getBoundingRectInDirection(element, direction) {
   }
 
   function linkTextIsOneUnit(linkElement) { // is wrapped text new unit for proximity calculations or is container one unit?
-    return linkElement.closest('.canopy-arrow-keys-container'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
+    return linkElement.closest('.canopy-bounding-box-container'); // descendants of a div are not inline, unlike direct children of <p> or eg <b>
   }
 }
 

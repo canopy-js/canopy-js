@@ -73,8 +73,8 @@ class Link {
 
   get top() {
     if (!this.element) return null;
-    if (this.element.closest('.canopy-arrow-keys-container')) {
-      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().top;
+    if (this.element.closest('.canopy-bounding-box-container')) {
+      return this.element.closest('.canopy-bounding-box-container').getBoundingClientRect().top;
     }
 
     return this.element.getBoundingClientRect().top;
@@ -82,8 +82,8 @@ class Link {
 
   get bottom() {
     if (!this.element) return null;
-    if (this.element.closest('.canopy-arrow-keys-container')) {
-      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().bottom;
+    if (this.element.closest('.canopy-bounding-box-container')) {
+      return this.element.closest('.canopy-bounding-box-container').getBoundingClientRect().bottom;
     }
 
     return this.element.getBoundingClientRect().bottom;
