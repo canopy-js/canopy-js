@@ -1,10 +1,14 @@
 let Topic = require('./topic');
 
 function displaySegment(topic, subtopic) {
+  const rtlRegex = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F]/;
+  const bothHaveRtl = rtlRegex.test(topic.mixedCase) && rtlRegex.test(subtopic.mixedCase);
+
   if (topic.mixedCase === subtopic.mixedCase) {
     return `[${topic.mixedCase}]`;
   } else {
-    return `[${subtopic.mixedCase} (${topic.mixedCase})]`;
+    const ltrMark = bothHaveRtl ? '\u200E' : '';
+    return `[${subtopic.mixedCase}${ltrMark} (${topic.mixedCase})]`;
   }
 }
 
