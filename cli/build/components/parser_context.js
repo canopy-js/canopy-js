@@ -120,7 +120,7 @@ class ParserContext {
   }
 
   get inTopicParagraph() {
-    return this.currentTopic.mixedCase === this.currentSubtopic.mixedCase;
+    return Topic.areEqual(this.currentTopic, this.currentSubtopic);
   }
 
   set currentText(text) {

@@ -401,8 +401,8 @@ class Link {
 
   get isCoterminalReference() { // ie A/B/C/D with [[E/C/D]], if not coterminal, regular reduction
     return this.literalPath.includesTopic(this.enclosingTopic) 
-      && this.literalPath.lastTopic.mixedCase === this.enclosingTopic.mixedCase
-      && this.literalPath.lastSubtopic.mixedCase === this.enclosingSubtopic.mixedCase;
+      && Topic.areEqual(this.literalPath.lastTopic, this.enclosingTopic)
+      && Topic.areEqual(this.literalPath.lastSubtopic, this.enclosingSubtopic);
   }
 
   get pathOfCoterminalOverlap() { // e.g. A/B/C/D with reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
