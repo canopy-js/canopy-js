@@ -169,14 +169,14 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-selected-link, &.canopy-selected-link code  {
+  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
     .canopy-link-content-container {
       background-color: #edeefc;
       text-decoration: none;
     }
   }
 
-  &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
+  &.canopy-open-link .canopy-link-content-container {
     background-color: #dedede;
     position: relative;
 
@@ -275,12 +275,10 @@ blockquote {
 
   &[dir="rtl"] {
     border-right: 0.25em solid lightgray;
-/*      margin-right: 10px;*/
   }
 
   &[dir="ltr"] {
     border-left: 0.25em solid lightgray;
-/*      margin-left: 10px;*/
   }
 
   margin-left: 0px;
@@ -298,13 +296,21 @@ blockquote {
       text-decoration: underline #D3D3D3;
     }
 
-    &.canopy-open-link .canopy-link-content-container {
-      background-color: #dedede;
+    &.canopy-selected-link.canopy-open-link .canopy-link-content-container {
+      background-color: #edeefc;
+      border: none;
       text-decoration: none;
     }
 
-    &:hover {
-      text-decoration: underline #000000;
+    &.canopy-open-link .canopy-link-content-container {
+      background-color: #dedede;
+      border: none;
+      text-decoration: none;
+    }
+
+    &:hover:not(.canopy-open-link) .canopy-link-content-container {
+      background-color: #f0f0f0;
+      // text-decoration: underline #000000;
     }
   }
 
