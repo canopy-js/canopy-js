@@ -46,11 +46,15 @@ function GlobalReferenceToken(
 
 function DisabledReferenceToken(
   text,
+  enclosingTopic,
+  enclosingSubtopic,
   parserContext
 ) {
   this.text = text;
   this.type = 'disabled_reference';
   this.tokens = parseText({ text: convertSpacesToHtml(text), parserContext: parserContext.clone({ insideToken: true }) });
+  this.enclosingTopic = enclosingTopic;
+  this.enclosingSubtopic = enclosingSubtopic;
 }
 
 function FragmentReferenceToken(
