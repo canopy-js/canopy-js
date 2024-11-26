@@ -28,10 +28,10 @@ function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString
     }
   });
 
-  parserContext.validateSubtopicDefinitions();
-  parserContext.validateGlobalReferences();
   if (options.orphans) parserContext.logGlobalOrphans();
   if (options.orphans) parserContext.logLocalOrphans();
+  if (!options.cache) parserContext.validateSubtopicDefinitions();
+  if (!options.cache) parserContext.validateGlobalReferences();
 
   return { directoriesToEnsure, filesToWrite };
 }
