@@ -4,7 +4,7 @@ function displaySegment(topic, subtopic) {
   const rtlRegex = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F]/;
   const bothHaveRtl = rtlRegex.test(topic.mixedCase) && rtlRegex.test(subtopic.mixedCase);
 
-  if (topic.mixedCase === subtopic.mixedCase) {
+  if (Topic.areEqual(topic, subtopic)) {
     return `[${topic.mixedCase}]`;
   } else {
     const ltrMark = bothHaveRtl ? '\u200E' : '';

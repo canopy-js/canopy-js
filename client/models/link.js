@@ -401,12 +401,12 @@ class Link {
 
   get isCoterminalReference() { // ie A/B/C/D with [[E/C/D]], if not coterminal, regular reduction
     return this.literalPath.includesTopic(this.enclosingTopic) 
-      && this.literalPath.lastTopic.mixedCase === this.enclosingTopic.mixedCase
-      && this.literalPath.lastSubtopic.mixedCase === this.enclosingSubtopic.mixedCase;
+      && Topic.areEqual(this.literalPath.lastTopic, this.enclosingTopic)
+      && Topic.areEqual(this.literalPath.lastSubtopic, this.enclosingSubtopic);
   }
 
   get selfReferencingOverlapStart() { // e.g. A/B/C/D with reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
-    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => topic.mixedCase === this.enclosingTopic.mixedCase);
+    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
     let indexOfSelfReference = topicMatches.lastIndexOf(true);
     let indexOfCurrentSegment = this.enclosingPath.length - 1;
 
