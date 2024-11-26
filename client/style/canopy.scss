@@ -515,6 +515,10 @@ table {
     align-items: center; /* Center content vertically */
     user-select: none;
 
+    a.canopy-disabled-link {
+      opacity: unset; // apply on menu element
+    }
+
     a.canopy-selectable-link {
       text-decoration: none;
       text-shadow: none;
