@@ -141,6 +141,10 @@ class Topic {
   static for(string) {
     return new Topic(string);
   }
+
+  static areEqual(topic1, topic2) {
+    return topic1.mixedCase === topic2.mixedCase;
+  }
 }
 
 module.exports = Topic;

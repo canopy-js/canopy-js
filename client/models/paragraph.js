@@ -241,7 +241,7 @@ class Paragraph {
   }
 
   get isTopic() {
-    return this.topic.mixedCase === this.subtopic.mixedCase;
+    return Topic.areEqual(this.topic, this.subtopic);
   }
 
   get isInDom() {
