@@ -291,7 +291,7 @@ function fragmentReferenceMatcher({ string, parserContext }) {
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
 
-    parserContext.registerFragmentReference(reference);
+    parserContext.registerFragmentReference(reference, currentSubtopic);
 
     return [new LocalReferenceToken(
       currentTopic.mixedCase,
