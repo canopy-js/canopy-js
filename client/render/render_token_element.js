@@ -198,8 +198,6 @@ function renderDisabledLink(token, renderContext) {
   let linkElement = renderLinkBase(token, renderContext);
 
   linkElement.classList.remove('canopy-selectable-link'); // not selectable
-
-  // Remove `href` attribute to disable link navigation
   linkElement.removeAttribute('href');
 
   // Remove the click event listener to disable interactions
