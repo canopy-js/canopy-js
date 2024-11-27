@@ -98,7 +98,7 @@ function whenInDom(element) {
   };
 }
 
-function getCombinedBoundingRect(element) {
+function getCombinedBoundingRect(elements) {
   // Helper function to check if an element is visible and takes up space
   function isVisible(el) {
     const style = window.getComputedStyle(el);
@@ -110,38 +110,61 @@ function getCombinedBoundingRect(element) {
     );
   }
 
-  // Initialize the bounds using the element's bounding rect
-  let rect = element.getBoundingClientRect();
-  let combinedRect = { top: rect.top, left: rect.left, bottom: rect.bottom, right: rect.right };
+  if (!Array.isArray(elements) || elements.length === 0) {
+    throw new Error("The input should be a non-empty array of elements.");
+  }
 
-  // Recursively look at all the children
-  Array.from(element.children).forEach(child => {
-    // Check if the child is visible
-    if (!isVisible(child)) return;
+  // Initialize the combined rect with the bounds of the first visible element
+  let combinedRect = null;
 
-    // Get the bounding rect of the visible child
-    let childRect = child.getBoundingClientRect();
+  elements.forEach(element => {
+    // Get the bounding rect for the element and its visible children
+    function getElementBoundingRect(el) {
+      let rect = el.getBoundingClientRect();
+      let currentCombinedRect = {
+        top: rect.top,
+        left: rect.left,
+        bottom: rect.bottom,
+        right: rect.right,
+      };
 
-    // Adjust combined rect to include the child's bounding box
-    combinedRect.top = Math.min(combinedRect.top, childRect.top);
-    combinedRect.left = Math.min(combinedRect.left, childRect.left);
-    combinedRect.bottom = Math.max(combinedRect.bottom, childRect.bottom);
-    combinedRect.right = Math.max(combinedRect.right, childRect.right);
+      // Process child elements recursively
+      Array.from(el.children).forEach(child => {
+        if (!isVisible(child)) return;
 
-    // Recursively include the child's children
-    let childCombinedRect = getCombinedBoundingRect(child);
-    combinedRect.top = Math.min(combinedRect.top, childCombinedRect.top);
-    combinedRect.left = Math.min(combinedRect.left, childCombinedRect.left);
-    combinedRect.bottom = Math.max(combinedRect.bottom, childCombinedRect.bottom);
-    combinedRect.right = Math.max(combinedRect.right, childCombinedRect.right);
+        let childRect = getElementBoundingRect(child);
+
+        currentCombinedRect.top = Math.min(currentCombinedRect.top, childRect.top);
+        currentCombinedRect.left = Math.min(currentCombinedRect.left, childRect.left);
+        currentCombinedRect.bottom = Math.max(currentCombinedRect.bottom, childRect.bottom);
+        currentCombinedRect.right = Math.max(currentCombinedRect.right, childRect.right);
+      });
+
+      return currentCombinedRect;
+    }
+
+    // Skip invisible elements
+    if (!isVisible(element)) return;
+
+    let elementRect = getElementBoundingRect(element);
+
+    if (!combinedRect) {
+      combinedRect = { ...elementRect };
+    } else {
+      combinedRect.top = Math.min(combinedRect.top, elementRect.top);
+      combinedRect.left = Math.min(combinedRect.left, elementRect.left);
+      combinedRect.bottom = Math.max(combinedRect.bottom, elementRect.bottom);
+      combinedRect.right = Math.max(combinedRect.right, elementRect.right);
+    }
   });
+
+  if (!combinedRect) {
+    throw new Error("No visible elements found in the input array.");
+  }
 
   // Calculate the width and height of the combined bounding box
   combinedRect.width = combinedRect.right - combinedRect.left;
   combinedRect.height = combinedRect.bottom - combinedRect.top;
-
-  // Draw the bounding box visually around the final outer bounding box
-  // drawBoundingBox(combinedRect);
 
   return combinedRect;
 }

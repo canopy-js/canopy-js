@@ -556,50 +556,77 @@ function renderTable(token, renderContext) {
     }
   );
 
+  let MAX_WIDTH_CHANGE_PERCENT = 150; // Maximum allowable percentage change for width
+  let MAX_HEIGHT_CHANGE_PERCENT = 150; // Maximum allowable percentage change for height
+
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   canopyContainer.appendChild(tempSectionElement);
   tempParagraphElement.appendChild(tableElement);
 
-  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+  let sizes = {widestContent: -1, narrowestContent: Infinity, tallestContent: -1, shortestContent: Infinity};
 
-  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
-    let clsp = tableCellElement.getAttribute('colspan');
-    let rwsp = tableCellElement.getAttribute('rowspan');
-    
-    let styles = window.getComputedStyle(tableCellElement);
-    let paddingLeft = parseInt(styles.paddingLeft, 10);
-    let paddingRight = parseInt(styles.paddingRight, 10);
-    let paddingTop = parseInt(styles.paddingTop, 10);
-    let paddingBottom = parseInt(styles.paddingBottom, 10);
+  [...tableElement.querySelectorAll('td')].forEach(td => {  
+    if (td.childNodes.length === 0) return;
 
-    let cellWidth = tableCellElement.getBoundingClientRect().width;
-    let cellHeight = tableCellElement.getBoundingClientRect().height;
+    let clsp = td.getAttribute('colspan');
+    let rwsp = td.getAttribute('rowspan');
 
-    let widthWithoutPadding = cellWidth - paddingLeft - paddingRight;
-    let heightWithoutPadding = cellHeight - paddingTop - paddingBottom;
+    let contentRect = getCombinedBoundingRect([...td.childNodes]); // Get content size
+    let contentWidth = contentRect.width;
+    let contentHeight = contentRect.height;
 
-    if (!clsp && widthWithoutPadding > sizes.widest) sizes.widest = widthWithoutPadding;
-    if (!clsp && widthWithoutPadding < sizes.narrowest) sizes.narrowest = widthWithoutPadding;
-    if (!rwsp && heightWithoutPadding > sizes.tallest) sizes.tallest = heightWithoutPadding;
-    if (!rwsp && heightWithoutPadding < sizes.shortest) sizes.shortest = heightWithoutPadding;
+    if (!clsp && contentWidth > sizes.widestContent) {
+      sizes.widestContent = contentWidth;
+      sizes.widestTd = td.offsetWidth;
+    }
+    if (!rwsp && contentHeight > sizes.tallestContent) { 
+      sizes.tallestContent = contentHeight;
+      sizes.tallestTd = td.offsetHeight;
+    }
   });
 
   [...tableElement.querySelectorAll('td')].forEach(td => {
-    td.style.width = sizes.widest + 'px';
-  });
+    if (td.childNodes.length === 0) return;
 
-  tableElement.dataset.widest = sizes.widest;
-  tableElement.dataset.narrowest = sizes.narrowest;
-  tableElement.dataset.widthDiff = sizes.widest - sizes.narrowest;
+    let contentRect = getCombinedBoundingRect([...td.childNodes]);
+    let currentContentWidth = contentRect.width;
+    let widestContentWidth = sizes.widestContent;
+    let widthChangePercent = Math.abs((widestContentWidth - currentContentWidth) / currentContentWidth) * 100;
+    td.dataset.currentContentWidth = currentContentWidth;
+    td.dataset.widestContentWidth = widestContentWidth;
+    td.dataset.widestTd = sizes.widestTd;
+    td.dataset.widthChangePercent = widthChangePercent;
+
+    if (widthChangePercent <= MAX_WIDTH_CHANGE_PERCENT) {
+      td.style.minWidth = sizes.widestTd + 'px';
+      td.style.width = sizes.widestTd + 'px';
+      td.style.boxSizing = 'border-box';
+    }
+  });
 
   [...tableElement.querySelectorAll('td')].forEach(td => {
-    td.style.height = sizes.tallest + 'px';
+    if (td.childNodes.length === 0) return;
+
+    let contentRect = getCombinedBoundingRect([...td.childNodes]);
+    let currentContentHeight = contentRect.height;
+    let tallestContentHeight = sizes.tallestContent;
+    let heightChangePercent = Math.abs((tallestContentHeight - currentContentHeight) / currentContentHeight) * 100;
+    td.dataset.tallestContentHeight = tallestContentHeight;
+    td.dataset.currentContentHeight = currentContentHeight;
+    td.dataset.heightChangePercent = heightChangePercent;
+
+    if (heightChangePercent <= MAX_HEIGHT_CHANGE_PERCENT) {
+      td.style.minHeight = sizes.tallestTd + 'px';
+      td.style.height = sizes.tallestTd + 'px';
+      td.style.boxSizing = 'border-box';
+    }
   });
 
-  tableElement.dataset.tallest = sizes.tallest;
-  tableElement.dataset.shortest = sizes.shortest;
-  tableElement.dataset.heightDiff = sizes.tallest - sizes.shortest;
+  tableElement.dataset.tallestContent = sizes.tallestContent;
+  tableElement.dataset.tallestTd = sizes.tallestTd;
+  tableElement.dataset.widest = sizes.widestContent;
+  tableElement.dataset.widest = sizes.widestTd;
 
   canopyContainer.removeChild(tempSectionElement);
   tempParagraphElement.removeChild(tableElement);
@@ -674,7 +701,7 @@ function renderMenu(token, renderContext) {
 
       menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let contentBoundingRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
+      let contentBoundingRect = getCombinedBoundingRect([menuCellElement.querySelector('.canopy-menu-content-container')]);
 
       let container = menuCellElement.closest('.canopy-menu-cell');
       let containerStyles = window.getComputedStyle(container);
