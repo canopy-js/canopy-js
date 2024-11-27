@@ -98,16 +98,30 @@ function whenInDom(element) {
   };
 }
 
-function getCombinedBoundingRect(element) { // taking into consideration relative positioning which native function doesn't do
+function getCombinedBoundingRect(element) {
+  // Helper function to check if an element is visible and takes up space
+  function isVisible(el) {
+    const style = window.getComputedStyle(el);
+    return (
+      el.offsetWidth > 0 &&
+      el.offsetHeight > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden"
+    );
+  }
+
   // Initialize the bounds using the element's bounding rect
   let rect = element.getBoundingClientRect();
   let combinedRect = { top: rect.top, left: rect.left, bottom: rect.bottom, right: rect.right };
 
   // Recursively look at all the children
   Array.from(element.children).forEach(child => {
-    // Get the bounding rect of the child
+    // Check if the child is visible
+    if (!isVisible(child)) return;
+
+    // Get the bounding rect of the visible child
     let childRect = child.getBoundingClientRect();
-    
+
     // Adjust combined rect to include the child's bounding box
     combinedRect.top = Math.min(combinedRect.top, childRect.top);
     combinedRect.left = Math.min(combinedRect.left, childRect.left);
