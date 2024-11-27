@@ -171,19 +171,16 @@ a.canopy-selectable-link {
 
   &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
     .canopy-link-content-container {
-      background-color: #eae8e8;
+      background-color: #edeefc;
       text-decoration: none;
     }
   }
 
   &.canopy-open-link .canopy-link-content-container {
-    background-color: #dedede;
-    position: relative;
-
-    background-color: #f0f0f0; /* Slightly darker background to indicate pressing */
-    border: 1px solid #cccccc;  /* Darker border to enhance the pressed effect */
-    border-radius: 1px;         /* Same border-radius to maintain consistency */
-    unicode-bidi: inherit;      /* Keep same text rendering */
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    border-radius: 1px;       
+    unicode-bidi: inherit;    
   }
 
   &.canopy-external-link .canopy-link-content-container .canopy-external-link-icon {
@@ -378,7 +375,6 @@ table {
       background-color: #FFFFFF00;
       border: none;
       padding: 4px; // to force breaking onto multiple lines
-      display: block; // makes link text spacing more regular
     
       &, &.canopy-open-link, &.canopy-selected-link {
         .canopy-link-content-container {
@@ -551,10 +547,12 @@ table {
         top: 5px;
         left: 6px;
         white-space: nowrap; // Prevents the icon from wrapping
-      
-        &[dir="rtl"] {
+      }
+
+      &[dir="rtl"] {
+        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
           top: 0px; // find good values
-          left: 0px; 
+          left: 0px;
         }
       }
     }

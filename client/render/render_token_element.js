@@ -107,8 +107,6 @@ function renderLinkBase(token, renderContext) {
     e.preventDefault();
   });
 
-  contentContainer.dir = "auto"; // make sure ::after icons are on right side for RTL text
-
   // Add click event handler
   let link = new Link(linkElement);
   let callback = onLinkClick(link);
