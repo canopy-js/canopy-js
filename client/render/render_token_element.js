@@ -499,7 +499,7 @@ function renderList(listNodeObjects, renderContext) {
     );
 
     if (listNodeObject.children.length > 0) {
-      let [childList] = renderList(listNodeObject.children);
+      let [childList] = renderList(listNodeObject.children, renderContext);
       listItemElement.appendChild(childList);
     }
 
