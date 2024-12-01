@@ -246,6 +246,29 @@ describe('BulkFileParser', function() {
     ]);
   });
 
+  test('it only splits on asterisks that are at the start of a block', () => {
+    let bulkFileString = dedent`[A/B/C]
+    * Topic: Paragraph.
+    * Topic: Paragraph.
+    
+    * Topic2: Paragraph.` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n* Topic: Paragraph.\n",
+      'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+
   test('it parses data file with single newline after path', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic: Paragraph.` + '\n';
@@ -350,6 +373,7 @@ describe('BulkFileParser', function() {
 
 
     * Topic1: Paragraph.
+
     * Topic2: Paragraph.
 
 
@@ -374,30 +398,6 @@ describe('BulkFileParser', function() {
       'topics/A/B/C',
       'topics/A/B',
       'topics/A'
-    ]);
-  });
-
-  test('it parses data file with multiple files and no extra newlines', () => {
-    let bulkFileString = dedent`[A/B/C]
-    * Topic1: Paragraph.
-    * Topic2: Paragraph.
-    [A/B/D]
-    * Topic3: Paragraph.`+ '\n';
-
-    let bulkFileParser = new BulkFileParser(bulkFileString);
-    let { newFileSet } = bulkFileParser.generateFileSet();
-
-    expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
-      'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/D/Topic3.expl': "Topic3: Paragraph.\n"
-    });
-
-    expect(newFileSet.directoryPaths).toEqual([
-      'topics/A/B/C',
-      'topics/A/B',
-      'topics/A',
-      'topics/A/B/D'
     ]);
   });
 
