@@ -3,7 +3,7 @@ import Path from 'models/path';
 function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
-    if (textIsSelected()) return // disqualify drags
+    if (textIsSelected(link)) return // disqualify drags
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
@@ -41,9 +41,12 @@ function onLinkClick(link) {
   }
 }
 
-function textIsSelected() {
+function textIsSelected(link) {
   const selection = window.getSelection();
-  return selection && selection.rangeCount > 0 && !selection.isCollapsed;
+  return selection 
+    && selection.rangeCount > 0 
+    && !selection.isCollapsed 
+    && selection.focusElement.closest('.canopy-selectable-link') === link.element;
 }
 
 export { onLinkClick };
