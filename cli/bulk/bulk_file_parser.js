@@ -18,11 +18,11 @@ class BulkFileParser {
           displayCategoryPath,
           diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
           terminalCategory: displayCategoryPath.split('/').slice(-1)[0],
-          files: sectionString
+          files: [...sectionString
             .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
-            .split(/(?=^\*\*?(?: |\n))/mg)
-            .filter(Boolean)
+            .matchAll(/(?:^\n|^|\n\n)((?:\*\*? )?(?:(?!\n\n\*\*?\s).)+)/gs)].map(match => match[1])
             .map(string => {
+              // console.error(string, string.match(/^\*?\*? ?(.*)/s)[1])
               let blockString = string.match(/^\*?\*? ?(.*)/s)[1];
               let block = new Block(blockString);
               return {
