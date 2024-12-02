@@ -166,11 +166,10 @@ function renderGlobalLink(token, renderContext) {
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     let cycleIcon = document.createElement('span');
     cycleIcon.classList.add('canopy-provisional-cycle-icon');
-    cycleIcon.innerText = '↩'
+    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩'
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
-  // Add additional class based on link type after delay
   whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
@@ -185,6 +184,9 @@ function renderGlobalLink(token, renderContext) {
       } else if (link.isLateralCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
+      } else if (link.isDownCycle) { // eg in A/B/C a link to [[B/C/D]]
+        cycleIcon.classList.add('canopy-down-cycle-icon');
+        cycleIcon.innerText = '';
       }
     }
   });

@@ -95,6 +95,7 @@ class Path {
     if (this.equals(otherPath)) return true;
     if (otherPath.isTopic) return false;
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
+    if (`${otherPath.string}/`.includes(`${this.string}/`)) return true; // / to ensure not mid-topic match
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
 
@@ -336,6 +337,21 @@ class Path {
 
   overlaps(otherPath) {
     return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => Topic.areEqual(t1, t2)));
+  }
+
+  terminalOverlap(otherPath) { // e.g A/B/C B/C/D
+    let lastInstanceOfFirstTopicOfOtherPath = this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, otherPath.firstTopic));
+    if (lastInstanceOfFirstTopicOfOtherPath === -1) return false;
+    let otherPathIndex = 0;
+
+    for (let i = lastInstanceOfFirstTopicOfOtherPath; i < this.length; i++) {
+      if (otherPathIndex >= otherPath.length) return false;
+      if (!Topic.areEqual(this.pathArray[i][0], otherPath.pathArray[otherPathIndex][0])) return false;
+      if (!Topic.areEqual(this.pathArray[i][1], otherPath.pathArray[otherPathIndex][1])) return false;
+      otherPathIndex++;
+    }
+
+    return true; // got to the end without a difference
   }
 
   twoStepChange(otherPath) {
