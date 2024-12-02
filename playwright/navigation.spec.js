@@ -41,6 +41,7 @@ test.describe('Arrow keys', () => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');
     await expect(page.locator('.canopy-selected-section')).toContainText("There is italic text, bold text,");
     await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('images');
     await page.locator('body').press('ArrowRight');
@@ -59,6 +60,8 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('link icon special cases');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('down cycle references');    
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline HTML');
     await page.locator('body').press('ArrowRight');
@@ -709,6 +712,19 @@ test.describe('Navigation', () => {
 
     await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: 'cafeteria↪' })).toHaveCount(1);
     await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
+  });
+
+  test('it differentiates between lateral cycles and down cycles', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Style_examples#Down_Cycle_references`);
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_references');
+
+    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'go down' })).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'go down↪' })).toHaveCount(0);
+
+    await page.locator('a:has-text("go down")').click()
+    await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_references/Solo_hash_links');
   });
 
   test('Rehash references regress to earlier parent link', async ({ page }) => {
