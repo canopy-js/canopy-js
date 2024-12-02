@@ -474,7 +474,13 @@ class Link {
   }
 
   get isLateralCycle() {
-    return this.cycle && !this.inlinePath.reduce().subsetOf(this.enclosingPath);
+    return this.cycle 
+      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not back cycle
+      && !this.isDownCycle; // not down cycle
+  }
+
+  get isDownCycle() {
+    return this.cycle && this.inlinePath.reduce().includes(this.enclosingPath); // result includes current path
   }
 
   get isParent() {
