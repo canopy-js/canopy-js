@@ -73,8 +73,8 @@ class Link {
 
   get top() {
     if (!this.element) return null;
-    if (this.element.closest('.canopy-arrow-keys-container')) {
-      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().top;
+    if (this.element.closest('.canopy-bounding-box-container')) {
+      return this.element.closest('.canopy-bounding-box-container').getBoundingClientRect().top;
     }
 
     return this.element.getBoundingClientRect().top;
@@ -82,8 +82,8 @@ class Link {
 
   get bottom() {
     if (!this.element) return null;
-    if (this.element.closest('.canopy-arrow-keys-container')) {
-      return this.element.closest('.canopy-arrow-keys-container').getBoundingClientRect().bottom;
+    if (this.element.closest('.canopy-bounding-box-container')) {
+      return this.element.closest('.canopy-bounding-box-container').getBoundingClientRect().bottom;
     }
 
     return this.element.getBoundingClientRect().bottom;
@@ -401,12 +401,12 @@ class Link {
 
   get isCoterminalReference() { // ie A/B/C/D with [[E/C/D]], if not coterminal, regular reduction
     return this.literalPath.includesTopic(this.enclosingTopic) 
-      && this.literalPath.lastTopic.mixedCase === this.enclosingTopic.mixedCase
-      && this.literalPath.lastSubtopic.mixedCase === this.enclosingSubtopic.mixedCase;
+      && Topic.areEqual(this.literalPath.lastTopic, this.enclosingTopic)
+      && Topic.areEqual(this.literalPath.lastSubtopic, this.enclosingSubtopic);
   }
 
   get selfReferencingOverlapStart() { // e.g. A/B/C/D with reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
-    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => topic.mixedCase === this.enclosingTopic.mixedCase);
+    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
     let indexOfSelfReference = topicMatches.lastIndexOf(true);
     let indexOfCurrentSegment = this.enclosingPath.length - 1;
 
@@ -474,7 +474,13 @@ class Link {
   }
 
   get isLateralCycle() {
-    return this.cycle && !this.inlinePath.reduce().subsetOf(this.enclosingPath);
+    return this.cycle 
+      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not back cycle
+      && !this.isDownCycle; // not down cycle
+  }
+
+  get isDownCycle() {
+    return this.cycle && this.inlinePath.reduce().includes(this.enclosingPath); // result includes current path
   }
 
   get isParent() {
@@ -607,7 +613,7 @@ class Link {
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
     if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
-    if (options.scrollToParagraph) return updateView(this.previewPath, null, options);
+    if (options.scrollToParagraph && !this.isFragment) return updateView(this.previewPath, null, options);
 
     return updateView(this.previewPath, this, options);
   }
@@ -629,8 +635,8 @@ class Link {
     }
 
     if (this.isSelfReference && !this.isOpen) {
-      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display(options); // pop
-      return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly });
+      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
+      return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
 
     if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C

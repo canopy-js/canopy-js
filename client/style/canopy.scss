@@ -7,7 +7,7 @@
   removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
   the scroll upwards can be animated using the window.scrollTo method. */
 
-  padding-bottom: calc(100vh);
+  padding-bottom: calc(90vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
   font-family: "Times New Roman", Times, serif; // good default and standardizes layout for browser tests
@@ -169,21 +169,18 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-selected-link, &.canopy-selected-link code  {
+  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
     .canopy-link-content-container {
       background-color: #edeefc;
       text-decoration: none;
     }
   }
 
-  &.canopy-open-link:not(.canopy-selected-link) .canopy-link-content-container {
-    background-color: #dedede;
-    position: relative;
-
-    background-color: #f0f0f0; /* Slightly darker background to indicate pressing */
-    border: 1px solid #cccccc;  /* Darker border to enhance the pressed effect */
-    border-radius: 1px;         /* Same border-radius to maintain consistency */
-    unicode-bidi: inherit;      /* Keep same text rendering */
+  &.canopy-open-link .canopy-link-content-container {
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    border-radius: 1px;       
+    unicode-bidi: inherit;    
   }
 
   &.canopy-external-link .canopy-link-content-container .canopy-external-link-icon {
@@ -275,12 +272,10 @@ blockquote {
 
   &[dir="rtl"] {
     border-right: 0.25em solid lightgray;
-/*      margin-right: 10px;*/
   }
 
   &[dir="ltr"] {
     border-left: 0.25em solid lightgray;
-/*      margin-left: 10px;*/
   }
 
   margin-left: 0px;
@@ -288,9 +283,9 @@ blockquote {
   margin-top: 12px;
   margin-bottom: 12px;
 
-  a.canopy-selectable-link {
+  /* a.canopy-selectable-link {
     .canopy-link-content-container {
-      //reset button styling
+      // reset button styling
       background-color: #FFFFFF00;
       padding-left: 0px;
       padding-right: 0px;
@@ -298,15 +293,23 @@ blockquote {
       text-decoration: underline #D3D3D3;
     }
 
-    &.canopy-open-link .canopy-link-content-container {
-      background-color: #dedede;
+    &.canopy-selected-link.canopy-open-link .canopy-link-content-container {
+      background-color: #edeefc;
+      border: none;
       text-decoration: none;
     }
 
-    &:hover {
-      text-decoration: underline #000000;
+    &.canopy-open-link .canopy-link-content-container {
+      background-color: #dedede;
+      border: none;
+      text-decoration: none;
     }
-  }
+
+    &:hover:not(.canopy-open-link) .canopy-link-content-container {
+      background-color: #f0f0f0;
+      // text-decoration: underline #000000;
+    }
+  } */
 
   .canopy-linebreak-span {
     margin-bottom: 0px; // unset default
@@ -372,7 +375,6 @@ table {
       background-color: #FFFFFF00;
       border: none;
       padding: 4px; // to force breaking onto multiple lines
-      display: block; // makes link text spacing more regular
     
       &, &.canopy-open-link, &.canopy-selected-link {
         .canopy-link-content-container {
@@ -509,6 +511,10 @@ table {
     align-items: center; /* Center content vertically */
     user-select: none;
 
+    a.canopy-disabled-link {
+      opacity: unset; // apply on menu element
+    }
+
     a.canopy-selectable-link {
       text-decoration: none;
       text-shadow: none;
@@ -528,8 +534,8 @@ table {
       background-color: #eae8e8;
     }
 
-    &:has(a.canopy-selectable-link:hover:not(.canopy-selected-link)), // selected link style overrides hover
-    &:has(a.canopy-selectable-link:hover.canopy-open-link:not(.canopy-selected-link)) {
+    &:hover:has(a.canopy-selectable-link:not(.canopy-selected-link)), // selected link style overrides hover
+    &:hover:has(a.canopy-selectable-link.canopy-open-link:not(.canopy-selected-link)) {
       background-color: #f5f6fe;
     }
 
@@ -541,10 +547,12 @@ table {
         top: 5px;
         left: 6px;
         white-space: nowrap; // Prevents the icon from wrapping
-      
-        &[dir="rtl"] {
+      }
+
+      &[dir="rtl"] {
+        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
           top: 0px; // find good values
-          left: 0px; 
+          left: 0px;
         }
       }
     }

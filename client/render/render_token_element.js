@@ -107,8 +107,6 @@ function renderLinkBase(token, renderContext) {
     e.preventDefault();
   });
 
-  contentContainer.dir = "auto"; // make sure ::after icons are on right side for RTL text
-
   // Add click event handler
   let link = new Link(linkElement);
   let callback = onLinkClick(link);
@@ -125,7 +123,9 @@ function renderLinkBase(token, renderContext) {
     const lineHeight = parseFloat(computedStyle.lineHeight);
     const height = linkElement.getBoundingClientRect().height;
 
-    if (height > lineHeight) {
+    if (height > lineHeight * 1.5) {
+      linkElement.dataset.height = height;
+      linkElement.dataset.lineHeight = lineHeight;
       linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
     }
   });
@@ -165,11 +165,10 @@ function renderGlobalLink(token, renderContext) {
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     let cycleIcon = document.createElement('span');
     cycleIcon.classList.add('canopy-provisional-cycle-icon');
-    cycleIcon.innerText = '↩'
+    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩'
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
-  // Add additional class based on link type after delay
   whenInDom(link.element)(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
@@ -184,6 +183,9 @@ function renderGlobalLink(token, renderContext) {
       } else if (link.isLateralCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
+      } else if (link.isDownCycle) { // eg in A/B/C a link to [[B/C/D]]
+        cycleIcon.classList.add('canopy-down-cycle-icon');
+        cycleIcon.innerText = '';
       }
     }
   });
@@ -196,8 +198,6 @@ function renderDisabledLink(token, renderContext) {
   let linkElement = renderLinkBase(token, renderContext);
 
   linkElement.classList.remove('canopy-selectable-link'); // not selectable
-
-  // Remove `href` attribute to disable link navigation
   linkElement.removeAttribute('href');
 
   // Remove the click event listener to disable interactions
@@ -499,7 +499,7 @@ function renderList(listNodeObjects, renderContext) {
     );
 
     if (listNodeObject.children.length > 0) {
-      let [childList] = renderList(listNodeObject.children);
+      let [childList] = renderList(listNodeObject.children, renderContext);
       listItemElement.appendChild(childList);
     }
 
@@ -533,7 +533,7 @@ function renderTable(token, renderContext) {
                 const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
-                  tableCellElement.classList.add('canopy-arrow-keys-container'); // rect to consider for arrow key comparisons
+                  tableCellElement.classList.add('canopy-bounding-box-container'); // rect to consider for arrow key comparisons
                   whenInDom(tableCellElement)(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
@@ -556,50 +556,77 @@ function renderTable(token, renderContext) {
     }
   );
 
+  let MAX_WIDTH_CHANGE_PERCENT = 150; // Maximum allowable percentage change for width
+  let MAX_HEIGHT_CHANGE_PERCENT = 150; // Maximum allowable percentage change for height
+
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   canopyContainer.appendChild(tempSectionElement);
   tempParagraphElement.appendChild(tableElement);
 
-  let sizes = {widest: -1, narrowest: Infinity, tallest: -1, shortest: Infinity};
+  let sizes = {widestContent: -1, narrowestContent: Infinity, tallestContent: -1, shortestContent: Infinity};
 
-  [...tableElement.querySelectorAll('td')].forEach(tableCellElement => {
-    let clsp = tableCellElement.getAttribute('colspan');
-    let rwsp = tableCellElement.getAttribute('rowspan');
-    
-    let styles = window.getComputedStyle(tableCellElement);
-    let paddingLeft = parseInt(styles.paddingLeft, 10);
-    let paddingRight = parseInt(styles.paddingRight, 10);
-    let paddingTop = parseInt(styles.paddingTop, 10);
-    let paddingBottom = parseInt(styles.paddingBottom, 10);
+  [...tableElement.querySelectorAll('td')].forEach(td => {  
+    if (td.childNodes.length === 0) return;
 
-    let cellWidth = tableCellElement.getBoundingClientRect().width;
-    let cellHeight = tableCellElement.getBoundingClientRect().height;
+    let clsp = td.getAttribute('colspan');
+    let rwsp = td.getAttribute('rowspan');
 
-    let widthWithoutPadding = cellWidth - paddingLeft - paddingRight;
-    let heightWithoutPadding = cellHeight - paddingTop - paddingBottom;
+    let contentRect = getCombinedBoundingRect([...td.childNodes]); // Get content size
+    let contentWidth = contentRect.width;
+    let contentHeight = contentRect.height;
 
-    if (!clsp && widthWithoutPadding > sizes.widest) sizes.widest = widthWithoutPadding;
-    if (!clsp && widthWithoutPadding < sizes.narrowest) sizes.narrowest = widthWithoutPadding;
-    if (!rwsp && heightWithoutPadding > sizes.tallest) sizes.tallest = heightWithoutPadding;
-    if (!rwsp && heightWithoutPadding < sizes.shortest) sizes.shortest = heightWithoutPadding;
+    if (!clsp && contentWidth > sizes.widestContent) {
+      sizes.widestContent = contentWidth;
+      sizes.widestTd = td.offsetWidth;
+    }
+    if (!rwsp && contentHeight > sizes.tallestContent) { 
+      sizes.tallestContent = contentHeight;
+      sizes.tallestTd = td.offsetHeight;
+    }
   });
 
   [...tableElement.querySelectorAll('td')].forEach(td => {
-    td.style.width = sizes.widest + 'px';
-  });
+    if (td.childNodes.length === 0) return;
 
-  tableElement.dataset.widest = sizes.widest;
-  tableElement.dataset.narrowest = sizes.narrowest;
-  tableElement.dataset.widthDiff = sizes.widest - sizes.narrowest;
+    let contentRect = getCombinedBoundingRect([...td.childNodes]);
+    let currentContentWidth = contentRect.width;
+    let widestContentWidth = sizes.widestContent;
+    let widthChangePercent = Math.abs((widestContentWidth - currentContentWidth) / currentContentWidth) * 100;
+    td.dataset.currentContentWidth = currentContentWidth;
+    td.dataset.widestContentWidth = widestContentWidth;
+    td.dataset.widestTd = sizes.widestTd;
+    td.dataset.widthChangePercent = widthChangePercent;
+
+    if (widthChangePercent <= MAX_WIDTH_CHANGE_PERCENT) {
+      td.style.minWidth = sizes.widestTd + 'px';
+      td.style.width = sizes.widestTd + 'px';
+      td.style.boxSizing = 'border-box';
+    }
+  });
 
   [...tableElement.querySelectorAll('td')].forEach(td => {
-    td.style.height = sizes.tallest + 'px';
+    if (td.childNodes.length === 0) return;
+
+    let contentRect = getCombinedBoundingRect([...td.childNodes]);
+    let currentContentHeight = contentRect.height;
+    let tallestContentHeight = sizes.tallestContent;
+    let heightChangePercent = Math.abs((tallestContentHeight - currentContentHeight) / currentContentHeight) * 100;
+    td.dataset.tallestContentHeight = tallestContentHeight;
+    td.dataset.currentContentHeight = currentContentHeight;
+    td.dataset.heightChangePercent = heightChangePercent;
+
+    if (heightChangePercent <= MAX_HEIGHT_CHANGE_PERCENT) {
+      td.style.minHeight = sizes.tallestTd + 'px';
+      td.style.height = sizes.tallestTd + 'px';
+      td.style.boxSizing = 'border-box';
+    }
   });
 
-  tableElement.dataset.tallest = sizes.tallest;
-  tableElement.dataset.shortest = sizes.shortest;
-  tableElement.dataset.heightDiff = sizes.tallest - sizes.shortest;
+  tableElement.dataset.tallestContent = sizes.tallestContent;
+  tableElement.dataset.tallestTd = sizes.tallestTd;
+  tableElement.dataset.widest = sizes.widestContent;
+  tableElement.dataset.widest = sizes.widestTd;
 
   canopyContainer.removeChild(tempSectionElement);
   tempParagraphElement.removeChild(tableElement);
@@ -631,9 +658,10 @@ function renderMenu(token, renderContext) {
     let tokenElements = renderTokenElements(cellObject.tokens[0], renderContext);
 
     tokenElements.forEach(tokenElement => {
-      if (cellObject.tokens.length === 1 && tokenElement.tagName === 'A') {
+      const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
+      if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
         menuCellElement.classList.add('canopy-menu-link-cell');
-        menuCellElement.classList.add('canopy-arrow-keys-container');
+        menuCellElement.classList.add('canopy-bounding-box-container');
         menuCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
         tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler);
       }
@@ -673,7 +701,7 @@ function renderMenu(token, renderContext) {
 
       menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
 
-      let contentBoundingRect = getCombinedBoundingRect(menuCellElement.querySelector('.canopy-menu-content-container'));
+      let contentBoundingRect = getCombinedBoundingRect([menuCellElement.querySelector('.canopy-menu-content-container')]);
 
       let container = menuCellElement.closest('.canopy-menu-cell');
       let containerStyles = window.getComputedStyle(container);

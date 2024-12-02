@@ -95,6 +95,7 @@ class Path {
     if (this.equals(otherPath)) return true;
     if (otherPath.isTopic) return false;
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
+    if (otherPath.string.includes(this.string)) return true;
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
 
@@ -108,7 +109,7 @@ class Path {
 
   includesTopic(topic) {
     return this.pathArray.find(([currentTopic, _]) => {
-      return topic.mixedCase === currentTopic.mixedCase;
+      return Topic.areEqual(topic, currentTopic);
     });
   }
 
@@ -129,11 +130,11 @@ class Path {
   }
 
   sliceAfterLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase) + 1)); // after
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, topic)) + 1)); // after
   }
 
   sliceBeforeLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => t.mixedCase === topic.mixedCase))); // after
+    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, topic)))); // after
   }
 
   get segments() {
@@ -221,7 +222,7 @@ class Path {
   }
 
   get isTopic() {
-    return this.pathArray.length === 1 && this.pathArray[0][0].mixedCase === this.pathArray[0][1].mixedCase;
+    return this.pathArray.length === 1 && Topic.areEqual(this.pathArray[0][0], this.pathArray[0][1]);
   }
 
   get parentPath() {
@@ -261,7 +262,7 @@ class Path {
 
     this.array.forEach((selectedSegment, selectedIndex) => {
       this.array.forEach((currentSegment, currentIndex) => {
-        if (selectedSegment[0].mixedCase === currentSegment[0].mixedCase && selectedIndex < currentIndex) {
+        if (Topic.areEqual(selectedSegment[0], currentSegment[0]) && selectedIndex < currentIndex) {
           cycle = {
             start: selectedIndex,
             end: currentIndex
@@ -335,7 +336,22 @@ class Path {
   }
 
   overlaps(otherPath) {
-    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.mixedCase === t2.mixedCase));
+    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => Topic.areEqual(t1, t2)));
+  }
+
+  terminalOverlap(otherPath) { // e.g A/B/C B/C/D
+    let lastInstanceOfFirstTopicOfOtherPath = this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, otherPath.firstTopic));
+    if (lastInstanceOfFirstTopicOfOtherPath === -1) return false;
+    let otherPathIndex = 0;
+
+    for (let i = lastInstanceOfFirstTopicOfOtherPath; i < this.length; i++) {
+      if (otherPathIndex >= otherPath.length) return false;
+      if (!Topic.areEqual(this.pathArray[i][0], otherPath.pathArray[otherPathIndex][0])) return false;
+      if (!Topic.areEqual(this.pathArray[i][1], otherPath.pathArray[otherPathIndex][1])) return false;
+      otherPathIndex++;
+    }
+
+    return true; // got to the end without a difference
   }
 
   twoStepChange(otherPath) {

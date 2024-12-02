@@ -3,12 +3,12 @@ import Path from 'models/path';
 function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
-    if (textIsSelected()) return // disqualify drags
+    if (textIsSelected(link)) return // disqualify drags
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
     if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect global or path/cycle link
-      return link.parentLink?.select({ scrollDirect: true, noBeforeChangeScroll: true }) || Path.root.display({ scrollDirect: true });
+      return link.parentLink?.select({ scrollDirect: true, noAfterChangeScroll: true }) || Path.root.display({ scrollDirect: true });
     }
 
     if (!newTab && !e.altKey && link.isOpen) { // select open link
@@ -16,7 +16,11 @@ function onLinkClick(link) {
     }
 
     if (!newTab && !e.altKey && !link.isVisible) { // scroll up to see link
-      return link.select({ scrollDirect: true }); // not scrollToParagraph because returning up to parent link
+      return link.select({
+        scrollDirect: true, 
+        noBeforeChangeScroll: true, // we should move straight to the link
+        noAfterChangePause: true 
+      });
     }
 
     if (!newTab && !e.altKey && link.isInlinedCycleReference) { // un-inlining an inlined cycle reference
@@ -37,9 +41,12 @@ function onLinkClick(link) {
   }
 }
 
-function textIsSelected() {
+function textIsSelected(link) {
   const selection = window.getSelection();
-  return selection && selection.rangeCount > 0 && !selection.isCollapsed;
+  return selection 
+    && selection.rangeCount > 0 
+    && !selection.isCollapsed 
+    && selection.focusElement.closest('.canopy-selectable-link') === link.element;
 }
 
 export { onLinkClick };

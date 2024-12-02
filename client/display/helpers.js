@@ -84,17 +84,6 @@ function scrollElementToPosition(element, options) {
     containerPointToPutAtTarget = elementRect.top - ScrollableContainer.top + ScrollableContainer.currentScroll;
   }
 
-  // Handling large A tags
-  if (element.tagName === 'A' && (side === 'middle' || side === 'bottom')) {
-    const padding = 20; // minimum space between top of link and top of screen
-    const topOffScreen = (side === 'bottom' ? 1 : .5) * (elementRect.bottom - elementRect.top) + padding > idealTargetPositionOnVisibleContainer;
-    if (topOffScreen) {
-      targetRatio = 0.05;
-      idealTargetPositionOnVisibleContainer = ScrollableContainer.visibleHeight * targetRatio;
-      containerPointToPutAtTarget = elementRect.top + ScrollableContainer.currentScroll;
-    }
-  }
-
   let idealScrollY = containerPointToPutAtTarget - idealTargetPositionOnVisibleContainer;
 
   // Adjust idealScrollY to the closest possible scroll position
@@ -178,7 +167,7 @@ function scrollToWithPromise(options) {
   }));
 }
 
-const LINK_TARGET_RATIO = .25;
+const LINK_TARGET_RATIO = .22;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
 const BIG_LINK_TARGET_RATIO = .1;
@@ -207,14 +196,14 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     return Promise.resolve();
   }
 
-  let preChangePause = new Promise(resolve => setTimeout(resolve, 110))
+  let preChangePause = () => new Promise(resolve => setTimeout(resolve, 130))
 
   return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
-    .then((scrolled) => scrolled && preChangePause)); // we only pause before change if there was a real scroll to the fulcrum link
+    .then((scrolled) => scrolled && preChangePause())); // we only pause before change if there was a real scroll to the fulcrum link
 }
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
-  if (options.noScroll) return Promise.resolve();
+  if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
   let behavior = options.scrollStyle || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
@@ -227,12 +216,12 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
     linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
   );
 
-  let postChangePause = options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 50;
 
-  if (!linkToSelect || (options.scrollToParagraph && !linkToSelect.isFragment)) {
-    return postChangePause.then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
+  if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
+    return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
       targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
       maxScrollRatio,
       minDiff,
@@ -250,7 +239,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
       targetRatio = LINK_TARGET_RATIO;
     }
 
-    return postChangePause.then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
+    return postChangePause().then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
   }
 }
 

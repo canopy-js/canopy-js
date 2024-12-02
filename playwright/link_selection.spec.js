@@ -94,6 +94,7 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
 
     await page.reload();
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('multi-line tokens');
   });

@@ -63,7 +63,7 @@ function createSectionElement(topic, subtopic, renderContext) {
 
   let tokens = paragraphsBySubtopic[topic.mixedCase];
 
-  if (topic.mixedCase === subtopic.mixedCase) {
+  if (Topic.areEqual(topic, subtopic)) {
     let hr = document.createElement('hr')
     hr.classList.add('canopy-hr');
     if (pathDepth > 0 && tokens.length > 0) sectionElement.prepend(hr);

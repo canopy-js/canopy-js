@@ -269,12 +269,15 @@ function globalReferenceMatcher({ string, parserContext }) {
 
 function disabledReferenceMatcher({ string, parserContext }) {
   let match = string.match(/^\[!\[(?:\\.|(?!]]).)+]]/s);
+  let { currentTopic, currentSubtopic } = parserContext;
 
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[!['.length), parserContext);
 
     return [new DisabledReferenceToken(
       reference.displayText,
+      currentTopic.mixedCase,
+      currentSubtopic.mixedCase,
       parserContext
     ),
     match[0].length];
@@ -288,7 +291,7 @@ function fragmentReferenceMatcher({ string, parserContext }) {
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
 
-    parserContext.registerFragmentReference(reference);
+    parserContext.registerFragmentReference(reference, currentSubtopic);
 
     return [new LocalReferenceToken(
       currentTopic.mixedCase,

@@ -120,7 +120,7 @@ class ParserContext {
   }
 
   get inTopicParagraph() {
-    return this.currentTopic.mixedCase === this.currentSubtopic.mixedCase;
+    return Topic.areEqual(this.currentTopic, this.currentSubtopic);
   }
 
   set currentText(text) {
@@ -243,15 +243,21 @@ class ParserContext {
     };
   }
 
-  registerFragmentReference(reference) {
+  registerFragmentReference(reference, currentSubtopic) {
     this.fragmentReferenceSubtopics[this.currentTopic.caps] = this.fragmentReferenceSubtopics[this.currentTopic.caps] || [];
-    this.fragmentReferenceSubtopics[this.currentTopic.caps].push(reference.targetAsTopic);
+    this.fragmentReferenceSubtopics[this.currentTopic.caps].push({
+      fragmentTargetSubtopic: reference.targetAsTopic,
+      enclosingSubtopic: currentSubtopic
+    });
   }
 
   addFragmentReferenceSubtopics(callback) {
     if (this.fragmentReferenceSubtopics[this.currentTopic.caps]) {
-      this.fragmentReferenceSubtopics[this.currentTopic.caps].forEach(fragmentReferenceTargetTopic => {
-        callback(fragmentReferenceTargetTopic); // caller will know how to add topics to json object
+      this.fragmentReferenceSubtopics[this.currentTopic.caps].forEach(({fragmentTargetSubtopic, enclosingSubtopic}) => {
+        this.topicSubtopics[this.currentTopic.caps][fragmentTargetSubtopic.caps] = fragmentTargetSubtopic;
+        this.subtopicParents[this.currentTopic.caps][fragmentTargetSubtopic.caps] = enclosingSubtopic;
+
+        callback(fragmentTargetSubtopic); // caller will know how to add topics to json object
       });
     }
   }
