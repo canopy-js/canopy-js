@@ -261,6 +261,7 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on global inlines link', async ({ page }) => {
+    await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
 
@@ -272,6 +273,7 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on a selected global deselects', async ({ page }) => {
+    await page.waitForLoadState('networkidle');
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 

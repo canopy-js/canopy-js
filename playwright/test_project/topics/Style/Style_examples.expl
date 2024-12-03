@@ -232,7 +232,8 @@ HTML blocks:
     It doesn't end early because of the closing tag
   </figure>
 </figure>
-<b></b>[[New York]]<b></b> These are two separate HTML tags
+<b></b>[[New York]]<b></b>
+These are two separate HTML tags
 
 HTML entities: I like M&amp;M's.
 
