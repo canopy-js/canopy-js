@@ -94,6 +94,7 @@ function renderLinkBase(token, renderContext) {
 
   let contentContainer = document.createElement('SPAN');
   contentContainer.classList.add('canopy-link-content-container');
+  contentContainer.dir = "auto";
   linkElement.appendChild(contentContainer);
 
   // Append subtoken elements
@@ -556,8 +557,8 @@ function renderTable(token, renderContext) {
     }
   );
 
-  let MAX_WIDTH_CHANGE_PERCENT = 150; // Maximum allowable percentage change for width
-  let MAX_HEIGHT_CHANGE_PERCENT = 150; // Maximum allowable percentage change for height
+  let MAX_WIDTH_CHANGE_PERCENT = 200; // Maximum allowable percentage change for width
+  let MAX_HEIGHT_CHANGE_PERCENT = 50; // Maximum allowable percentage change for height
 
   let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
@@ -599,7 +600,7 @@ function renderTable(token, renderContext) {
     td.dataset.widthChangePercent = widthChangePercent;
 
     if (widthChangePercent <= MAX_WIDTH_CHANGE_PERCENT) {
-      td.style.minWidth = sizes.widestTd + 'px';
+      // td.style.minWidth = sizes.widestTd + 'px';
       td.style.width = sizes.widestTd + 'px';
       td.style.boxSizing = 'border-box';
     }
@@ -617,7 +618,7 @@ function renderTable(token, renderContext) {
     td.dataset.heightChangePercent = heightChangePercent;
 
     if (heightChangePercent <= MAX_HEIGHT_CHANGE_PERCENT) {
-      td.style.minHeight = sizes.tallestTd + 'px';
+      // td.style.minHeight = sizes.tallestTd + 'px';
       td.style.height = sizes.tallestTd + 'px';
       td.style.boxSizing = 'border-box';
     }

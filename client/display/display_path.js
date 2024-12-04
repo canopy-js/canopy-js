@@ -14,7 +14,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
-  beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
+  return beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
     if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }

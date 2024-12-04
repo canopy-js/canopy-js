@@ -49,6 +49,7 @@ const Matchers = [
 let Topic = require('../../shared/topic');
 let { splitOnPipes } = require('../../shared/simple-helpers');
 let Reference = require('./reference');
+const { Parser } = require('htmlparser2');
 
 function fenceCodeBlockMatcher({ string, startOfLine }) {
   let match = string.match(/^```\n(.*\n)```(\n|$)/s);
@@ -141,48 +142,103 @@ function tableListMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function htmlMatcher({ string, parserContext, startOfLine }) {
-  let fragments = string.match(/(<[^>]+>|((?!<[^>]+>).)*)/gs);
-  let result = null;
+function htmlMatcher({ string, parserContext }) {
+  // Check if the string starts with whitespace
+  if (string[0] && /\s/.test(string[0])) {
+    return null; // Disqualify match if it begins with whitespace
+  }
 
-  fragments.forEach((_, index) => { // Look at eg <a><b><c> then <a><b> then <a> for balanced fragment
-    let segment = fragments.slice(0, fragments.length - index).join('');
+  // Check if the string starts with a '<' character
+  if (string[0] !== '<') {
+    return null; // Fragment must start with a tag
+  }
 
-    let match = segment.match(/^<([^<> ]+)[^<>]*>(.*<[^>]+>)?/s);
-    if (match) {
-      let [_, openingTagName, doubleTag] = match;
-      let singleTag = !doubleTag;
+  let openTags = [];
+  let isBalanced = true;
+  let fragmentEndIndex = -1;
 
-      let balancedFirstTag = !singleTag && (Array.from(match[0].matchAll(/<(\/?)([^<> ]+[^<>]*)>/gs)).slice(1).reduce((count, match) => {
-        let [_, forwardSlash, tagName] = match;
-
-        if (count === 0) return NaN; // if we've close the opening tag before finishing, reject the block eg <div></div><div></div>
-
-        if (tagName.toLowerCase() === openingTagName.toLowerCase()) {
-          if (forwardSlash) {
-            count--;
-          } else {
-            count++;
+  // Create a parser instance
+  const parser = new Parser(
+    {
+      onopentag(name) {
+        openTags.push(name);
+      },
+      onclosetag(name) {
+        if (
+          openTags.length === 0 ||
+          openTags[openTags.length - 1] !== name
+        ) {
+          isBalanced = false;
+          parser.pause(); // Stop parsing if tags are unbalanced
+        } else {
+          openTags.pop();
+          if (openTags.length === 0) {
+            // All tags are closed; record the position
+            fragmentEndIndex = parser.endIndex + 1; // +1 to include the closing tag
+            // Do not pause here; allow parser to check for plaintext
           }
         }
-
-        return count;
-
-      }, 1) === 0); // if we end with zero having never hit zero in between, the outer tag is balanced eg <b><b></b></b> and not <b></b><b></b>
-
-
-      if (singleTag || balancedFirstTag) {
-        let terminalNewlineLength = (startOfLine && string[segment.length] === '\n') ? '\n'.length : 0;
-
-        result = result || [
-          new HtmlToken(match[0], parserContext),
-          match[0].length + terminalNewlineLength
-        ];
-      }
+      },
+      ontext() {
+        if (openTags.length === 0) {
+          // If no fragment end index has been set, disqualify the match
+          if (fragmentEndIndex === -1) {
+            fragmentEndIndex = -1;
+          } else {
+            // Adjust fragmentEndIndex to exclude the plaintext
+            fragmentEndIndex = Math.min(
+              fragmentEndIndex,
+              parser.startIndex
+            );
+          }
+          parser.pause();
+        }
+      },
+      onend() {
+        // Ensure we have a fragment if the string ends after tags are closed
+        if (
+          openTags.length === 0 &&
+          isBalanced &&
+          fragmentEndIndex === -1
+        ) {
+          fragmentEndIndex = parser.endIndex + 1;
+        }
+      },
+      onerror() {
+        isBalanced = false;
+        parser.pause();
+      },
+    },
+    {
+      decodeEntities: false,
+      recognizeSelfClosing: true
     }
-  });
+  );
 
-  return result;
+  // Parse the substring starting from startIndex
+  const substringToParse = string.substring(0);
+  parser.parseComplete(substringToParse);
+
+  if (fragmentEndIndex !== -1 && isBalanced) {
+    // Build the fragment
+    let fragment = string.substring(0, fragmentEndIndex);
+
+    // Redundantly check if fragment starts and ends with a tag
+    let startsWithTag = fragment.startsWith('<');
+    let endsWithTag = fragment.endsWith('>');
+
+    if (!startsWithTag || !endsWithTag) {
+      return null; // Fragment must start and end with a tag
+    }
+
+    // Determine consumed length
+    let consumedLength = fragmentEndIndex;
+
+    return [new HtmlToken(fragment, parserContext), consumedLength];
+  }
+
+  // No valid fragment found
+  return null;
 }
 
 function htmlEntityMatcher({ string, parserContext }) {

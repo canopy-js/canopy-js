@@ -405,7 +405,7 @@ class Link {
       && Topic.areEqual(this.literalPath.lastSubtopic, this.enclosingSubtopic);
   }
 
-  get selfReferencingOverlapStart() { // e.g. A/B/C/D with reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
+  get pathOfCoterminalOverlap() { // e.g. A/B/C/D with reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
     let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
     let indexOfSelfReference = topicMatches.lastIndexOf(true);
     let indexOfCurrentSegment = this.enclosingPath.length - 1;
@@ -430,10 +430,10 @@ class Link {
     return this.enclosingPath.endsWith(this.literalPath);
   }
 
-  get parentLinkBeforeRehash() { // eg A/B/C [[B/C]] or A/B#C [[B#C]] give parent link in B
+  get pathOfRehash() { // eg A/B/C [[B/C]] or A/B#C [[B#C]] give parent link in B
     return this.enclosingPath.sliceBeforeLastTopicInstance(this.literalPath.firstTopic)
       .append(Path.forTopic(this.literalPath.firstTopic))
-      .intermediaryPathsTo(this.enclosingPath)[1].parentLink;
+      .intermediaryPathsTo(this.enclosingPath)[1];
   }
 
   get isSimpleGlobal() {
@@ -627,6 +627,9 @@ class Link {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
     }
 
+    if (options?.newTab && this.isCycle && options.inlineCycles) return window.open(location.origin + this.inlinePath.productionPathString, '_blank');
+    if (options?.newTab && this.isCycle) return window.open(location.origin + this.inlinePath.reduce().productionPathString, '_blank');
+
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
@@ -643,26 +646,29 @@ class Link {
       if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
       return updateView(
         Path.rendered, 
-        this.parentLinkBeforeRehash,
+        this.pathOfRehash.parentLink,
         { renderOnly: options.renderOnly }
       )
     }
 
-    if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D/G]] inline A/B/C/D/E/F/C/D/G and focus on F's link to C ie divergence
+    if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
       return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
         return updateView(
           this.inlinePath, 
-          this.selfReferencingOverlapStart.parentLink, 
+          this.pathOfCoterminalOverlap.parentLink, 
           { renderOnly: options.renderOnly }
         );
       });
     }
 
-    if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
+    if (this.isCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display({
-        renderOnly: options.renderOnly // initiating a cycle reduction disconnects the change from previous options
-      });
+      if (this.isBackCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
+          .intermediaryPathsTo(this.enclosingPath)[1].parentLink
+          .select({renderOnly: options.renderOnly})
+          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+
+      return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down

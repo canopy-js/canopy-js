@@ -11,7 +11,7 @@ current_version=$(jq -r '.version' package.json)
 echo "Current version: $current_version"
 
 # Check if a Git tag exists for the current version
-if git rev-parse -q --verify "refs/tags/v$current_version" >/dev/null; then
+if git rev-parse -q --verify "refs/tags/$current_version" >/dev/null; then
     echo "Git tag for version $current_version exists. Proceeding to increment patch version."
 
     # Break the version number into an array (major, minor, patch)

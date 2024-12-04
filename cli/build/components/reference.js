@@ -232,8 +232,8 @@ class Reference {
       let enclosingTopicMixedCase = this.enclosingTopic.mixedCase.replace(/([^\\])\//g, '$1\\/');
       if (this.parserContext.inTopicParagraph) return enclosingTopicMixedCase; // self-reference is pop in topic paragraph, parent unknown
       let parentSubtopic = this.parserContext.parentTopicOf(this.parserContext.currentSubtopic);
-      if (!parentSubtopic) throw new Error(`Cannoy use [[^]] syntax for parent declared after reference in expl file.`);
-      return `${enclosingTopicMixedCase}#${parentSubtopic.mixedCase}`;
+      if (!parentSubtopic) this.parserContext.registerSubsumptionConditionalError(`Cannoy use [[^]] syntax for parent declared after reference in expl file: ` + this.fullText);
+      return `${enclosingTopicMixedCase}#${parentSubtopic?.mixedCase}`;
     }
 
     if (this.soloPeriod) { // eg [[.]] meaning parent link in subtopic and pop in topic

@@ -95,7 +95,7 @@ class Path {
     if (this.equals(otherPath)) return true;
     if (otherPath.isTopic) return false;
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
-    if (otherPath.string.includes(this.string)) return true;
+    if (`${otherPath.string}/`.includes(`${this.string}/`)) return true; // / to ensure not mid-topic match
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
 
@@ -375,10 +375,12 @@ class Path {
   }
 
   intermediaryPathsTo(otherPath) {
+    if (!this.isIn(otherPath)) return null; // we only handle straight path increases
+    let [shorterPath, longerPath] = [this, otherPath];
     let result = [];
-    let bufferPath = otherPath.clone();
+    let bufferPath = longerPath.clone();
 
-    while(bufferPath && !this.equals(bufferPath)) {
+    while(bufferPath && !shorterPath.equals(bufferPath)) {
       result.unshift(bufferPath);
       bufferPath = bufferPath.parentPath;
     }

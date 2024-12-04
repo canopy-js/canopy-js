@@ -569,6 +569,19 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section s')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section s')).toHaveText('This is an html block');
     await expect(page.locator('.canopy-selected-section a')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section b')).toHaveText(['', '']); // we don't include trailing plaintext
+
+    const parentLocator = page.locator('.canopy-selected-section');
+    const newYorkLink = parentLocator.locator('a', { hasText: 'New York↩' });
+    await expect(newYorkLink).toHaveCount(1);
+
+    // From the link, locate the next sibling with class .canopy-linebreak-span
+    const nextSiblingLineBreak = newYorkLink.locator('~ .canopy-linebreak-span');
+    await expect(nextSiblingLineBreak).toHaveCount(1);
+
+    // From the .canopy-linebreak-span, locate the next sibling span with the target text
+    const nextSiblingSpan = nextSiblingLineBreak.locator('~ span', { hasText: 'These are two separate HTML tags' });
+    await expect(nextSiblingSpan).toHaveCount(1);
   });
 
   test('It allows insertions of tokens into html blocks', async ({ page }) => {
