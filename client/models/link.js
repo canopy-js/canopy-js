@@ -627,6 +627,9 @@ class Link {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
     }
 
+    if (options?.newTab && this.isCycle && options.inlineCycles) return window.open(location.origin + this.inlinePath.productionPathString, '_blank');
+    if (options?.newTab && this.isCycle) return window.open(location.origin + this.inlinePath.reduce().productionPathString, '_blank');
+
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
     if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
 
