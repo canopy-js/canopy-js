@@ -21,7 +21,7 @@ const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   });
 
   return renderComplete.then(() => {
-    if (!options?.renderOnly && pathToDisplay.equals(lastPath)) displayPath(
+    if (!options?.renderOnly && pathToDisplay.equals(lastPath)) return displayPath(
       pathToDisplay,
       linkToSelect,
       options

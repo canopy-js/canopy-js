@@ -661,11 +661,14 @@ class Link {
       });
     }
 
-    if (this.isGlobal && this.introducesNewCycle && !options.inlineCycles) { // reduction
+    if (this.isCycle && !options.inlineCycles) { // reduction
       if (options.pushHistoryState) Link.pushHistoryState(this);
-      return this.inlinePath.reduce().display({
-        renderOnly: options.renderOnly // initiating a cycle reduction disconnects the change from previous options
-      });
+      if (this.isBackCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
+          .intermediaryPathsTo(this.enclosingPath)[1].parentLink
+          .select({renderOnly: options.renderOnly})
+          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+
+      return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
