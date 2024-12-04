@@ -375,10 +375,12 @@ class Path {
   }
 
   intermediaryPathsTo(otherPath) {
+    if (!this.isIn(otherPath)) return null; // we only handle straight path increases
+    let [shorterPath, longerPath] = [this, otherPath];
     let result = [];
-    let bufferPath = otherPath.clone();
+    let bufferPath = longerPath.clone();
 
-    while(bufferPath && !this.equals(bufferPath)) {
+    while(bufferPath && !shorterPath.equals(bufferPath)) {
       result.unshift(bufferPath);
       bufferPath = bufferPath.parentPath;
     }
