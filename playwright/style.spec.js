@@ -422,18 +422,68 @@ test.describe('Block entities', () => {
     expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
   });
 
-  test('It allows menus', async ({ page }) => {
+  test('It properly sizes menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Menus");
 
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-eigth-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-quarter-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-third-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-pill')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-quarter-card')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-third-card')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-tube')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-menu.canopy-half-card')).toHaveCount(1);
+    const menus = page.locator('.canopy-selected-section .canopy-menu');
+
+    const menu0 = menus.nth(0);
+    await expect(menu0).toContainText('This is 1/4 pill');
+    await expect(menu0).toHaveClass(/canopy-quarter-pill/);
+
+    const menu1 = menus.nth(1);
+    await expect(menu1).toContainText('This is 1/3 pill??????');
+    await expect(menu1).toHaveClass(/canopy-third-pill/);
+
+    const menu2 = menus.nth(2);
+    await expect(menu2).toContainText('This is 1/2 pill ????????????');
+    await expect(menu2).toHaveClass(/canopy-half-pill/);
+
+    const menu3 = menus.nth(3);
+    await expect(menu3).toContainText('This is 1/4 card ????????????');
+    await expect(menu3).toHaveClass(/canopy-quarter-card/);
+
+    const menu4 = menus.nth(4);
+    await expect(menu4).toContainText('This is 1/3 card ??? ??? ?????????????');
+    await expect(menu4).toHaveClass(/canopy-third-card/);
+
+    const menu5 = menus.nth(5);
+    await expect(menu5).toContainText('This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ????? ??????????????????');
+    await expect(menu5).toHaveClass(/canopy-half-card/);
+
+    const menu6 = menus.nth(6);
+    await expect(menu6).toContainText('1. A');
+    await expect(menu6).toHaveClass(/canopy-eigth-pill/);
+
+    const menu7 = menus.nth(7);
+    await expect(menu7).toHaveClass(/canopy-eigth-pill/);
+    await expect(menu7).toHaveAttribute('dir', 'rtl');
+
+    const firstCell = menu7.locator('.canopy-menu-cell').nth(0);
+    const secondCell = menu7.locator('.canopy-menu-cell').nth(1);
+    const firstBox = await firstCell.boundingBox();
+    const secondBox = await secondCell.boundingBox();
+    if (firstBox && secondBox) {
+      expect(firstBox.x).toBeGreaterThan(secondBox.x);
+    }
+
+    const menu8 = menus.nth(8);
+    await expect(menu8).toContainText('Thisisalongword');
+    await expect(menu8).toHaveClass(/canopy-quarter-pill/);
+
+    const menu9 = menus.nth(9);
+    await expect(menu9).toContainText('Thisisalongword????');
+    await expect(menu9).toHaveClass(/canopy-third-pill/); // Updated expected class.
+    await expect(menu9.locator('.canopy-menu-row').nth(0).locator('.canopy-menu-cell')).toHaveCount(3);
+
+    const menu10 = menus.nth(10);
+    await expect(menu10).toContainText('Thisisalongword????????????');
+    await expect(menu10).toHaveClass(/canopy-half-tube/);
+
+    const menu11 = menus.nth(11);
+    await expect(menu11).toContainText('Thisisalongword????????????');
+    await expect(menu11).toHaveClass(/canopy-half-pill/);
   });
 
   test('It creates menu link icons', async ({ page }) => {
@@ -764,13 +814,15 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Subtopic_solo_caret_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
-    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[^ in subtopic is regular cycle reference to ST parent]]
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo caret link"]'))
+    .toHaveAttribute('href', '/Solo_caret_links');
+    await page.click('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo caret link"]'); // [[^ in subtopic is regular cycle reference to ST parent]]
     await page.waitForURL('**/Solo_caret_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo caret links');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Nested_subtopic_solo_caret_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Nested subtopic solo caret link"]'))
+      .toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
     await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
     await page.waitForURL('**/Solo_caret_links#Subtopic_solo_caret_link');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo caret link');
