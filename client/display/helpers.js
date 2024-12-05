@@ -36,12 +36,6 @@ function closeAllLinks() { // now selection class management is done in Link.upd
   });
 }
 
-function deselectSectionElement() {
-  Array.from(document.querySelectorAll('.canopy-selected-section')).forEach((sectionElement) => {
-    sectionElement.classList.remove('canopy-selected-section');
-  });
-}
-
 function hideHeaders() {
   Array.from(document.querySelectorAll('#_canopy h1')).forEach(header => {
     header.style.display = 'none';
@@ -64,8 +58,7 @@ function tryPathPrefix(path, displayOptions) {
 const resetDom = (pathToDisplay) => {
   hideHeaders();
   closeAllLinks();
-  hideAllSectionElements(pathToDisplay);
-  deselectSectionElement();
+  hideAllSectionElements(pathToDisplay); // remove top down to reduce DOM changes
 }
 
 function scrollElementToPosition(element, options) {

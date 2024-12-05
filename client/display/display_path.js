@@ -15,6 +15,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
   return beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
+    Paragraph.removeSelectionClass();
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
     if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }
@@ -26,11 +27,11 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
     displayPathTo(pathToDisplay.paragraph, options);
     header.show();
-    pathToDisplay.paragraph.addSelectionClass(); // after other changes for feature specs
     
     setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
 
-    return afterChangeScroll(pathToDisplay, linkToSelect, options);
+    return afterChangeScroll(pathToDisplay, linkToSelect, options)
+      .then(() => pathToDisplay.paragraph.addSelectionClass()); // last for feature specs
   });
 }
 
