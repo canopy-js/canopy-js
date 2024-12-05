@@ -295,6 +295,10 @@ class Paragraph {
     }
   }
 
+  static removeSelectionClass() {
+    document.querySelector('.canopy-selected-section')?.classList.remove('canopy-selected-section');
+  }
+
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
   }
