@@ -67,7 +67,7 @@ function measureVerticalOverflow(element) {
     return { top, bottom };
   }
 
-  const referenceBounds = measureTextBounds('()'); // tall but line-fitting characters as benchmark to detect overflow
+  const referenceBounds = measureTextBounds('()');
   let maxSpaceAbove = 0;
   let maxSpaceBelow = 0;
 
@@ -75,8 +75,13 @@ function measureVerticalOverflow(element) {
   for (const line of textLines) {
     const textBounds = measureTextBounds(line);
 
-    const spaceAbove = referenceBounds.top - textBounds.top > 0 ? referenceBounds.top - textBounds.top : 0;
-    const spaceBelow = textBounds.bottom - referenceBounds.bottom > 0 ? textBounds.bottom - referenceBounds.bottom : 0;
+    // Calculate differences relative to the reference
+    const diffAbove = referenceBounds.top - textBounds.top;
+    const diffBelow = textBounds.bottom - referenceBounds.bottom;
+
+    // If there's a perfect fit (0 or 1 difference), add a 2 pixel buffer
+    let spaceAbove = diffAbove; // line height forces minimum border so there's already a gap
+    let spaceBelow = diffBelow > 1 ? diffBelow : (diffBelow < 1 ? 1 : 0);
 
     maxSpaceAbove = Math.max(maxSpaceAbove, spaceAbove);
     maxSpaceBelow = Math.max(maxSpaceBelow, spaceBelow);
