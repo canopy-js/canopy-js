@@ -25,8 +25,8 @@ test.describe('Text styles', () => {
 
   test('Asterisks create bold text', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Bold_text');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text. This is a bold sentence which can contain spaces because the asterisks are on the edges of the words, whereas this is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.This is a bold table cell.");
-    await expect(page.locator('.canopy-selected-section b')).toHaveCount(4);
+    await expect(page.locator('.canopy-selected-section')).toHaveText("This is bold text. This is a bold sentence which can contain spaces because the asterisks are on the edges of the words, whereas this is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character, but at the end of the word it works.This is a bold table cell.");
+    await expect(page.locator('.canopy-selected-section b')).toHaveCount(5);
   });
 
   test('Tildes create underline text', async ({ page }) => {

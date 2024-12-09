@@ -288,7 +288,7 @@ This is text with _italics_. This is _multiple italicized words_, and this is it
 | _This is an italic table cell._ |
 
 Bold text:
-This is *bold* text. This is *a bold sentence which can contain spaces because the asterisks are on the edges of the words*, whereas th*i*s is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.
+This is *bold* text. This is *a bold sentence which can contain spaces because the asterisks are on the edges of the words*, whereas th*i*s is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character, but at the end of the wo*rd* it works.
 | *This is a bold table cell.* |
 
 Italicized bolded text:
