@@ -46,7 +46,8 @@ function textIsSelected(link) {
   return selection 
     && selection.rangeCount > 0 
     && !selection.isCollapsed 
-    && selection.focusElement.closest('.canopy-selectable-link') === link.element;
+    && (selection.focusElement||selection.focusNode.parentNode) // focusElement can be textNode which lacks .closest
+      .closest('.canopy-selectable-link') === link.element;
 }
 
 export { onLinkClick };
