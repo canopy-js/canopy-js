@@ -294,6 +294,14 @@ test.describe('Inline entities', () => {
     });
   });
 
+  test('it allows the user to set custom arrow icons', async ({ page, context }) => {
+    await page.goto(`United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons`);
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons');
+
+    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: '↺' })).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: '↩' })).toHaveCount(0);
+  });
+
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
     await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText.trim())).toEqual('Text. This is a test. Text.'); // no newlines between html element and following text
