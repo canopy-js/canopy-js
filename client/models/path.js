@@ -390,7 +390,7 @@ class Path {
     return result;
   }
 
-  get includedParagraphs() {
+  get paragraphs() {
     let result = [];
     let currentParagraph = this.paragraph;
     while (currentParagraph) {

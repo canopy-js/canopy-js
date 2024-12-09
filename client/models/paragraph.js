@@ -303,6 +303,10 @@ class Paragraph {
     this.sectionElement.classList.add('canopy-selected-section');
   }
 
+  removeSelectionClass() {
+    this.sectionElement.classList.remove('canopy-selected-section');
+  }
+
   scrollComplete() {
     this.sectionElement.classList.add('canopy-scroll-complete');
   }
@@ -392,7 +396,7 @@ class Paragraph {
   }
 
   static get contentLoaded() {
-    return !!document.querySelector('h1.canopy-header'); // this is a proxy for whether the first render has occured yet
+    return !!(document.querySelector('h1.canopy-header') && document.querySelector('canopy.section')); // this is a proxy for whether the first render has occured yet
   }
 
   static for(element) {

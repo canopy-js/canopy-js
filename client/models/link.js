@@ -681,7 +681,7 @@ class Link {
     return (options.selectALink && this.firstChild || this).select(options);
   }
 
-  static removeSelectionClass() {
+  static removeSelectedSelectionClass() {
     Array.from(document.getElementsByTagName("a")).forEach((linkElement) => {
       linkElement.classList.remove('canopy-selected-link');
     });
@@ -812,6 +812,10 @@ class Link {
     return Array.from(document.querySelectorAll('.canopy-selectable-link'))
       .map(element => Link.for(element))
       .filter(link => link.isVisible)
+  }
+
+  static eagerLoadVisibleLinks() {
+    setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
   }
 
   static get onPage() {

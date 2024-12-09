@@ -350,6 +350,7 @@ function handleDelayedImageLoad(imageElement, renderContext) { // we don't know 
       let newBottomOfCurrentParagraph = focusedElement.getBoundingClientRect().bottom;
       let diff = newBottomOfCurrentParagraph - oldBottomOfCurrentParagraph
       let newScroll = ScrollableContainer.currentScroll + diff;
+      if (window.getComputedStyle(imageElement).display === 'absolute') return; // doesn't disrupt flow
 
       let { pathToParagraph } = renderContext;
       if (Path.current.includes(pathToParagraph)) { // if when the image loads, it is on the current page and might jump the viewport
