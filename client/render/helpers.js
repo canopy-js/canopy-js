@@ -21,7 +21,6 @@ function generateHeader(topicTokens, displayTopicName) {
 }
 
 function measureVerticalOverflow(element) {
-  // Get computed font size and font family from the element
   const computedStyle = window.getComputedStyle(element);
   const fontSize = parseFloat(computedStyle.fontSize);
   const fontFamily = computedStyle.fontFamily;
@@ -31,58 +30,98 @@ function measureVerticalOverflow(element) {
     return [0, 0];
   }
 
-  // Get the text content and split it by lines
   const textLines = element.textContent.split('\n');
 
-  // Create a canvas element for rendering
   const canvas = document.createElement('canvas');
-  // Set the `willReadFrequently` option to true
   const context = canvas.getContext('2d', { willReadFrequently: true });
 
-  // Set canvas width and height with extra space for any unusual characters
-  canvas.width = fontSize * 10;
-  canvas.height = fontSize * 3; // Triple the font size to ensure ample height
+  // Make the canvas large enough to draw text and measure accurately
+  canvas.width = Math.ceil(fontSize * 20);
+  canvas.height = Math.ceil(fontSize * 6);
+
+  // Use a stable baseline by placing the text in the vertical middle of the canvas
+  const baselineY = Math.floor(canvas.height / 2);
+
   context.font = `${fontSize}px ${fontFamily}`;
   context.textBaseline = 'alphabetic';
 
-  // Measure bounds for the reference "()" characters
+  // Use a reference text that covers ascenders, descenders, and typical heights 
+  // to establish a stable top and bottom baseline
+  const referenceText = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  
   function measureTextBounds(textContent) {
-    context.clearRect(0, 0, canvas.width, canvas.height); // Clear any previous drawings
-    context.fillText(textContent, 0, fontSize * 1.5); // Draw text centered vertically
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillText(textContent, 0, baselineY);
 
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
     let top = null;
     let bottom = null;
 
+    // Scan the imageData to find the topmost and bottommost pixels
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
         const alpha = imageData[(y * canvas.width + x) * 4 + 3];
         if (alpha > 0) {
           if (top === null) top = y;
           bottom = y;
-          break;
         }
       }
     }
+
     return { top, bottom };
   }
 
-  const referenceBounds = measureTextBounds('()'); // tall but line-fitting characters as benchmark to detect overflow
-  let maxSpaceAbove = 0;
-  let maxSpaceBelow = 0;
-
-  // Measure each line of text
-  for (const line of textLines) {
-    const textBounds = measureTextBounds(line);
-
-    const spaceAbove = referenceBounds.top - textBounds.top > 0 ? referenceBounds.top - textBounds.top : 0;
-    const spaceBelow = textBounds.bottom - referenceBounds.bottom > 0 ? textBounds.bottom - referenceBounds.bottom : 0;
-
-    maxSpaceAbove = Math.max(maxSpaceAbove, spaceAbove);
-    maxSpaceBelow = Math.max(maxSpaceBelow, spaceBelow);
+  // Measure the reference bounds, which should fully represent the font's vertical extents
+  const referenceBounds = measureTextBounds(referenceText);
+  if (referenceBounds.top === null || referenceBounds.bottom === null) {
+    // If we somehow didn't get any pixels, return no overflow
+    return [0, 0];
   }
 
-  return [maxSpaceAbove, maxSpaceBelow];
+  let maxDiffAbove = Number.NEGATIVE_INFINITY;
+  let maxDiffBelow = Number.NEGATIVE_INFINITY;
+
+  for (const line of textLines) {
+    // If the line is empty, just skip it
+    if (!line.trim()) continue;
+
+    const textBounds = measureTextBounds(line);
+
+    if (textBounds.top === null || textBounds.bottom === null) {
+      // If this line didn't produce visible pixels (e.g., whitespace), skip it
+      continue;
+    }
+
+    // Calculate how much higher the line's top is compared to reference top
+    // If textBounds.top < referenceBounds.top, that means it extends above the reference top
+    // diffAbove = referenceBounds.top - textBounds.top
+    const diffAbove = referenceBounds.top - textBounds.top;
+
+    // Calculate how much lower the line's bottom is compared to reference bottom
+    // If textBounds.bottom > referenceBounds.bottom, that means it extends below the reference bottom
+    // diffBelow = textBounds.bottom - referenceBounds.bottom
+    const diffBelow = textBounds.bottom - referenceBounds.bottom;
+
+    if (diffAbove > 0) {
+      maxDiffAbove = Math.max(maxDiffAbove, diffAbove);
+    }
+
+    if (diffBelow > 0) {
+      maxDiffBelow = Math.max(maxDiffBelow, diffBelow);
+    }
+  }
+
+  if (maxDiffAbove === Number.NEGATIVE_INFINITY) maxDiffAbove = -1;
+  if (maxDiffBelow === Number.NEGATIVE_INFINITY) maxDiffBelow = -1;
+
+  // If flush or overflow, add padding
+  // diff >= 0 means it extends beyond
+  // If diff > 0, add diff + 1
+  // If diff == 0, add just 1 pixel
+  const spaceAbove = maxDiffAbove >= 0 ? (maxDiffAbove > 0 ? maxDiffAbove + 1 : 1) : 0;
+  const spaceBelow = maxDiffBelow >= 0 ? (maxDiffBelow > 0 ? maxDiffBelow + 1 : 1) : 0;
+
+  return [spaceAbove, spaceBelow];
 }
 
 function whenInDom(element) {

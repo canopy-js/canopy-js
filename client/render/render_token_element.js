@@ -116,8 +116,9 @@ function renderLinkBase(token, renderContext) {
 
   whenInDom(contentContainer)(() => {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
-    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove === 0 ? 0 : (spaceAbove + 0)}px`; // naturally more space above
-    if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow === 0 ? 0 : (spaceBelow + 2)}px`;
+    linkElement.dataset.extraSpace = JSON.stringify(measureVerticalOverflow(contentContainer));
+    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
+    if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
 
     // Detect if a link wraps over a newline
     const computedStyle = window.getComputedStyle(linkElement);
@@ -224,67 +225,45 @@ function renderDisabledLink(token, renderContext) {
 }
 
 function renderFragmentReference(token, renderContext) {
-  let linkElement = document.createElement('a');
-  linkElement.classList.add('canopy-selectable-link');
-  linkElement.dataset.targetTopic = token.targetTopic;
-  linkElement.targetTopic = token.targetTopic; // helpful for debugger
-  linkElement.dataset.targetSubtopic = token.targetSubtopic;
-  linkElement.targetSubtopic = token.targetSubtopic; // helpful to have in debugger
-  linkElement.dataset.enclosingTopic = token.enclosingTopic;
-  linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
-  linkElement.dataset.text = token.text;
+  let linkElement = renderLinkBase(token, renderContext);
 
-  token.tokens.forEach(subtoken => {
-    let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => linkElement.appendChild(subtokenElement));
-  });
-
-  linkElement.addEventListener('dragstart', (e) => { // make text selection of table cell links easier
-    e.preventDefault();
-  });
-
-  let callback = onLinkClick(new Link(linkElement));
-  linkElement._CanopyClickHandler = callback;
-  linkElement.addEventListener(
-    'click',
-    callback
-  );
-
+  // Add fragment reference-specific classes and attributes
   linkElement.classList.add('canopy-local-link');
   linkElement.dataset.type = 'local';
+  linkElement.dataset.targetTopic = token.targetTopic;
+  linkElement.targetTopic = token.targetTopic; // Helpful for debugging
+  linkElement.dataset.targetSubtopic = token.targetSubtopic;
+  linkElement.targetSubtopic = token.targetSubtopic; // Helpful for debugging
 
+  // Construct the href attribute based on projectPathPrefix and hashUrls
   let targetTopic = new Topic(token.targetTopic);
   let targetSubtopic = new Topic(token.targetSubtopic);
   linkElement.href = `${projectPathPrefix ? '/' + projectPathPrefix : ''}${hashUrls ? '/#' : ''}/${targetTopic.url}#${targetSubtopic.url}`;
+
   return [linkElement];
 }
 
 function renderExternalLink(token, renderContext) {
-  let linkElement = document.createElement('A');
+  let linkElement = renderLinkBase(token, renderContext);
+
+  // Add external link-specific classes and attributes
   linkElement.classList.add('canopy-external-link');
-  linkElement.classList.add('canopy-selectable-link');
   linkElement.dataset.type = 'external';
-  linkElement.dataset.text = token.text;
-  linkElement.setAttribute('href', token.url); // validation should have been done at the matcher/token stage
+  linkElement.setAttribute('href', token.url); // URL validation assumed to be done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
   linkElement.dataset.targetUrl = token.url;
 
-  whenInDom(linkElement)(() => {
-    if (linkElement.querySelector('img')) linkElement.classList.add('canopy-linked-image');
-  });
-
-  let contentContainer = document.createElement('SPAN');
-  contentContainer.classList.add('canopy-link-content-container');
-  linkElement.appendChild(contentContainer);
-
-  token.tokens.forEach(subtoken => {
-    let subtokenElements = renderTokenElements(subtoken, renderContext);
-    subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
-  });
-
+  // Add external link icon
   let cycleIcon = document.createElement('span');
   cycleIcon.classList.add('canopy-external-link-icon');
-  contentContainer.appendChild(cycleIcon);
+  linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
+
+  // Add a class if the link contains an image
+  whenInDom(linkElement)(() => {
+    if (linkElement.querySelector('img')) {
+      linkElement.classList.add('canopy-linked-image');
+    }
+  });
 
   return [linkElement];
 }
