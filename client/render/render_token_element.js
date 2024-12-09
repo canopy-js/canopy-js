@@ -166,7 +166,7 @@ function renderGlobalLink(token, renderContext) {
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     let cycleIcon = document.createElement('span');
     cycleIcon.classList.add('canopy-provisional-cycle-icon');
-    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩'
+    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩';
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
@@ -188,10 +188,19 @@ function renderGlobalLink(token, renderContext) {
         cycleIcon.classList.add('canopy-down-cycle-icon');
         cycleIcon.innerText = '';
       }
+
+      if (containsUnicodeArrow(link.text)) { // user is taking responsibility for arrow
+        cycleIcon.innerText = '';
+      }
     }
   });
 
   return [linkElement];
+}
+
+function containsUnicodeArrow(str) {
+  const arrowRegex = /[\u{2190}-\u{21FF}\u{27F0}-\u{27FF}\u{2900}-\u{297F}\u{2B00}-\u{2BFF}\u{1F800}-\u{1F8FF}]/u;
+  return arrowRegex.test(str);
 }
 
 function renderDisabledLink(token, renderContext) {
