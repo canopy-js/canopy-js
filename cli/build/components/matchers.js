@@ -432,7 +432,7 @@ function italicsMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^_(.*?[^\\])_(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
-  let containsSpaces = match?.[0].match(/\s/s);
+  let containsSpaces = match?.[1].match(/\s/s);
 
   let matchExists = match &&
     ((strictPreviousCharacter && strictNextCharacter) || // either _ is at the edges of a word, in which case selected text can contain spaces
@@ -453,7 +453,7 @@ function boldMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^\*(.*?[^\\])\*(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
-  let containsSpaces = match?.[0].match(/\s/s);
+  let containsSpaces = match?.[1].match(/\s/s);
 
   let matchExists = match &&
     ((strictPreviousCharacter && strictNextCharacter) || // either * is at the edges of a word, in which case selected text can contain spaces
@@ -489,7 +489,7 @@ function underlineMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
   let match = string.match(/^~(.*?[^\\])~(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
-  let containsSpaces = match?.[0].match(/\s/s);
+  let containsSpaces = match?.[1].match(/\s/s);
 
   let matchExists = match &&
     ((strictPreviousCharacter && strictNextCharacter) || // either ~ is at the edges of a word, in which case selected text can contain spaces
