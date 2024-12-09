@@ -15,6 +15,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
   return beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
+    Paragraph.selection?.removeSelectionClass();
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
     if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }
@@ -24,28 +25,23 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     let header = setHeader(pathToDisplay.firstTopicPath.topic, options);
     document.title = pathToDisplay.pageTitle;
 
-    let visibleParagraphs = displayPathTo(pathToDisplay.paragraph, options);
-    pathToDisplay.paragraph.addSelectionClass();
-    setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+    displayPathTo(pathToDisplay.paragraph, options);
+    Link.eagerLoadVisibleLinks();
 
-    return afterChangeScroll(pathToDisplay, linkToSelect, options).then(() => {
-      visibleParagraphs.forEach(paragraph => paragraph.display()) || header.show();
-    });
+    return afterChangeScroll(pathToDisplay, linkToSelect, options)
+      .then(() => pathToDisplay.paragraphs.forEach(p => p.display()))
+      .then(() => header.show())
+      .then(() => pathToDisplay.paragraph.addSelectionClass()); // last for feature specs
   });
 }
 
 const displayPathTo = (paragraph, options) => {
-  let visibleParagraphs = [];
-
   while (paragraph) {
     options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
-    visibleParagraphs.push(paragraph);
     if (paragraph.parentLink) paragraph.parentLink?.open(); // remember open links of path reference
     Link.persistLinkSelectionInSession(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
     paragraph = paragraph.parentParagraph;
   }
-
-  return visibleParagraphs;
 }
 
 export default displayPath;

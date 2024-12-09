@@ -133,6 +133,7 @@ test.describe('Special paths', () => {
   });
 
   test('Hash URLs option works with static assets server', async ({ page, context }) => {
+    await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3004');
     await expect(page).toHaveURL('http://localhost:3004/#/United_States');
 

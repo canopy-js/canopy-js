@@ -63,6 +63,8 @@ test.describe('Arrow keys', () => {
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('down cycle references');    
     await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('manual cycle arrow icons');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline HTML');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('footnotes');
@@ -93,9 +95,11 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
-    await page.locator('body').press('ArrowUp');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שני');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
   });
 
@@ -717,8 +721,8 @@ test.describe('Navigation', () => {
   });
 
   test('it differentiates between lateral cycles and down cycles', async ({ page, context }) => {
-    await page.goto(`United_States/New_York/Style_examples#Down_Cycle_references`);
-    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_references');
+    await page.goto(`United_States/New_York/Style_examples#Down_Cycle_References`);
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References');
 
     await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'go down' })).toHaveCount(1);
@@ -726,7 +730,7 @@ test.describe('Navigation', () => {
 
     await page.locator('a:has-text("go down")').click()
     await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
-    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_references/Solo_hash_links');
+    await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });
 
   test('Rehash references regress to earlier parent link', async ({ page }) => {

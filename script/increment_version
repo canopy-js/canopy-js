@@ -41,7 +41,7 @@ if git rev-parse -q --verify "refs/tags/$current_version" >/dev/null; then
     # Amend the last commit and add the new version tag
     git add package.json
     git commit --amend --no-edit
-    git tag -a "v$new_version" -m "$new_version"
+    git tag -a "$new_version" -m "$new_version"
     echo "Updated to version $new_version and tagged commit."
 
 else

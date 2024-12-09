@@ -40,12 +40,13 @@ class Paragraph {
   }
 
   display() {
+    this.sectionElement.style.display = 'block';
+    this.sectionElement.style.opacity = '100%'; // prevents early webkit playwright spec bug before fix
+
     // Fixes firefox unicode bug
     this.paragraphElement.style.unicodeBidi = 'unset';
     requestAnimationFrame(() => {
       this.paragraphElement.style.unicodeBidi = 'plaintext';
-      this.sectionElement.style.display = 'block';
-      this.sectionElement.style.opacity = '100%';
     });
   }
 
@@ -294,8 +295,16 @@ class Paragraph {
     }
   }
 
+  static removeSelectionClass() {
+    document.querySelector('.canopy-selected-section')?.classList.remove('canopy-selected-section');
+  }
+
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
+  }
+
+  removeSelectionClass() {
+    this.sectionElement.classList.remove('canopy-selected-section');
   }
 
   scrollComplete() {
@@ -387,7 +396,7 @@ class Paragraph {
   }
 
   static get contentLoaded() {
-    return !!document.querySelector('h1.canopy-header'); // this is a proxy for whether the first render has occured yet
+    return !!(document.querySelector('h1.canopy-header') && document.querySelector('canopy.section')); // this is a proxy for whether the first render has occured yet
   }
 
   static for(element) {

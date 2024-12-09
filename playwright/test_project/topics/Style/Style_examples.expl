@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]] and [[multi-line text]].
 
-Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[solo hash links]], [[solo caret links]], and [[solo period links]].
+Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[solo hash links]], [[solo caret links]], and [[solo period links]].
 
 Style characters: There is [[italic text]], [[bold text]], [[underlined text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 
@@ -53,7 +53,7 @@ For small elements we use a width of 4:
 ===
 For more text we use a width of 3
 ===
-- This is 1/3 pill?????
+- This is 1/3 pill??????
 - 2
 - 3
 - 4
@@ -109,7 +109,7 @@ This is a long word that gets a quarter width:
 ===
 This is a long word that gets a third width:
 ===
-- Thisisalongword???
+- Thisisalongword????
 - A
 - B
 - C
@@ -288,7 +288,7 @@ This is text with _italics_. This is _multiple italicized words_, and this is it
 | _This is an italic table cell._ |
 
 Bold text:
-This is *bold* text. This is *a bold sentence which can contain spaces because the asterisks are on the edges of the words*, whereas th*i*s is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character.
+This is *bold* text. This is *a bold sentence which can contain spaces because the asterisks are on the edges of the words*, whereas th*i*s is bold within a word, and this is not bold be*cause there are sp*aces and it is an intra-word style character, but at the end of the wo*rd* it works.
 | *This is a bold table cell.* |
 
 Italicized bolded text:
@@ -360,8 +360,11 @@ These are hyperlink special cases:
 - This is a parenthases wrapped link ([link](http://google.com\)) and ([link](http://google.com)) and an escaped one ([link](http://google.com)\)
 - This is seemingly a link in a link [[link](http://google.com)](http://google.com) and [[link\](http://google.com)](http://google.com)
 
-Down Cycle references:
+Down Cycle References:
 This is a link [[solo hash links]], and this is a down cycle reference: [[Style Examples#Down Cycle references/Solo Hash Links|go down]]
+
+Manual Cycle Arrow Icons:
+This is a link to [[style examples|style examples ↺]].
 
 Inline HTML: Text. <b> This is a test.</b> Text.
 
