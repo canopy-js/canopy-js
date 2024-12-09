@@ -93,9 +93,11 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
-    await page.locator('body').press('ArrowUp');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שני');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
-    await page.locator('body').press('ArrowDown');
+    await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שלישי');
   });
 
