@@ -33,7 +33,7 @@ function onLinkClick(link) {
       inlineCycles: e.shiftKey,
       scrollDirect: true,
       selectALink: false,
-      pushHistoryState: true,
+      pushLinkSelection: true,
       scrollToParagraph: true,
       noBeforeChangeScroll: true, // we don't need to highlight fulcrum if it's being clicked
       noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
