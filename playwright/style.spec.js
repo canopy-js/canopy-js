@@ -808,8 +808,8 @@ test.describe('Block entities', () => {
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
     await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
     await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
   });
 

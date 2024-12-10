@@ -48,7 +48,7 @@ class Link {
     if (this.linkElement) {
       return this.linkElement
     } else if (this.metadataObject) {
-      this.linkElement = Link.elementFromMetadata(this.metadata);
+      this.linkElement = Link.fromMetadata(this.metadata);
       if (!this.linkElement) return null;
       return this.linkElement;
     } else if (this.selectorCallback) {
@@ -278,7 +278,7 @@ class Link {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
       relativeLinkNumber: link.relativeLinkNumber,
-      previewPathString: link.previewPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
+      selectionPathString: link.selectionPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
       targetUrl: linkElement.dataset.targetUrl,
       targetTopicString: linkElement.dataset.targetTopic,
       targetSubtopicString: linkElement.dataset.targetSubtopic,
@@ -286,22 +286,23 @@ class Link {
     };
   }
 
-  static elementFromMetadata(object) {
+  static fromMetadata(object) {
     let enclosingPath = new Path(object.enclosingPathString);
     let enclosingParagraph = enclosingPath.paragraph;
+    if (!enclosingParagraph) console.trace();
     if (!enclosingParagraph) { return console.error("Link selection data refers to non-existant link", object); }
     
     let perfectMatch = enclosingParagraph.linkBySelector(
       (link) => (
         link.isParent && 
-        link.previewPath.string === object.previewPathString &&
+        link.selectionPath.string === object.selectionPathString &&
         link.relativeLinkNumber === object.relativeLinkNumber &&
         link.text === object.text
       )
     );
 
     let link = perfectMatch || enclosingParagraph.linkBySelector(  // if the link gets moved to a new paragraph, we should invalidate else select and not open parent link
-      (link) => (link.isParent && link.previewPath.string === object.previewPathString) ||
+      (link) => (link.isParent && link.selectionPath.string === object.selectionPathString) ||
         (link.isExternal && link.element?.dataset?.targetUrl === object.targetUrl)
     );
 
@@ -580,9 +581,9 @@ class Link {
     return this.enclosingParagraph.path;
   }
 
-  get previewPath() {
+  get selectionPath() {
     if (this.metadataObject && !Paragraph.contentLoaded) { // for initial page load before links exist
-      return new Path(this.metadataObject.previewPathString);
+      return new Path(this.metadataObject.selectionPathString);
     }
 
     if (this.isExternal) { // select the link and display enclosing path
@@ -610,12 +611,12 @@ class Link {
   select(options = {}) {
     if (options.options) throw 'Caller produced malformed options object';
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
-    if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
+    if (options?.newTab && this.isParent) return window.open(location.origin + this.selectionPath.productionPathString, '_blank');
 
     if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
-    if (options.scrollToParagraph && !this.isFragment) return updateView(this.previewPath, null, options);
+    if (options.scrollToParagraph && !this.isFragment) return updateView(this.selectionPath, null, options);
 
-    return updateView(this.previewPath, this, options);
+    return updateView(this.selectionPath, this, options);
   }
 
   execute(options = {}) {
@@ -631,7 +632,7 @@ class Link {
     if (options?.newTab && this.isCycle) return window.open(location.origin + this.inlinePath.reduce().productionPathString, '_blank');
 
     if (options?.newTab && this.isParent && options.redirect) return window.open(location.origin + this.literalPath.productionPathString, '_blank');
-    if (options?.newTab && this.isParent) return window.open(location.origin + this.previewPath.productionPathString, '_blank');
+    if (options?.newTab && this.isParent) return window.open(location.origin + this.selectionPath.productionPathString, '_blank');
 
     if (options.redirect) { // all handling is the same for redirection
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
@@ -643,15 +644,17 @@ class Link {
     }
 
     if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
+      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
       return updateView(
-        Path.rendered, 
+        Path.current, 
         this.pathOfRehash.parentLink,
         { renderOnly: options.renderOnly }
       )
     }
 
     if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
+      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
         return updateView(
           this.inlinePath, 
@@ -662,7 +665,7 @@ class Link {
     }
 
     if (this.isCycle && !options.inlineCycles) { // reduction
-      if (options.pushHistoryState) Link.pushHistoryState(this);
+      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       if (this.isBackCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
           .intermediaryPathsTo(this.enclosingPath)[1].parentLink
           .select({renderOnly: options.renderOnly})
@@ -672,11 +675,13 @@ class Link {
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
-      if (options.pushHistoryState) Link.pushHistoryState(this);
+      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
         () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
       );
     }
+
+    if (!options.renderOnly && options.pushLinkSelection) Link.pushHistoryState(this.selectionPath, this); // wait until other options exhausted
 
     return (options.selectALink && this.firstChild || this).select(options);
   }
@@ -774,13 +779,12 @@ class Link {
     );
   }
 
-  static pushHistoryState(link) {
-    if (!link) return;
+  static pushHistoryState(path, link) {
 
     history.pushState(
-      { linkSelection: link.metadata },
+      link ? { linkSelection: link.metadata } : null,
       document.title,
-      window.location.origin + link.previewPath.productionPathString
+      window.location.origin + link.selectionPath.productionPathString
     );
   }
 

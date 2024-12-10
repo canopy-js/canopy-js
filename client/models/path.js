@@ -512,7 +512,7 @@ class Path {
 
   static get initial() {
     if (Path.url.present && Link.savedSelection) { // page doesn't exist yet so can't validate selection
-      return Link.savedSelection.previewPath;
+      return Link.savedSelection.selectionPath;
     } else if (Path.url.empty) {
       return Path.default;
     } else {
@@ -569,17 +569,18 @@ class Path {
     return currentNode;
   }
 
-  static setPath(newPath, options = {}) {
+  static setPath(newPath, linkToSelect, options = {}) {
     if (!(newPath instanceof Path)) throw new Error('newPath must be Path object');
     if (options.popState) return; // the URL has already changed
 
     let oldPath = Path.url;
     let documentTitle = newPath.lastTopic.mixedCase;
 
-    let replaceHistoryState = Path.url.empty || newPath.equals(oldPath); // either the old one is bad or the new one is the same
-    if (options.pushHistoryState) replaceHistoryState = false;
-    if (options.replaceHistoryState) replaceHistoryState = true;
+    let sameLinkSelection = 
+      (!history.state?.linkSelection && !linkToSelect) ||
+      (linkToSelect && history.state?.linkSelection && Link.for(history.state?.linkSelection).equals(linkToSelect));
 
+    let replaceHistoryState = Path.url.empty || (newPath.equals(oldPath) && sameLinkSelection); // either the old one is bad or the new one is the same
     let historyApiFunction = replaceHistoryState ? replaceState : pushState;
     let fullPathString = newPath.productionPathString;
 
