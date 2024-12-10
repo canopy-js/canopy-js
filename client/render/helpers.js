@@ -79,9 +79,9 @@ function measureVerticalOverflow(element) {
     const diffAbove = referenceBounds.top - textBounds.top;
     const diffBelow = textBounds.bottom - referenceBounds.bottom;
 
-    // If there's a perfect fit (0 difference), add a 1 pixel buffer
+    // If there's a perfect fit (0 or 1 difference), add a 2 pixel buffer
     let spaceAbove = diffAbove; // line height forces minimum border so there's already a gap
-    let spaceBelow = diffBelow > 0 ? diffBelow : (diffBelow === 0 ? 1 : 0);
+    let spaceBelow = diffBelow > 1 ? diffBelow : (diffBelow < 1 ? 1 : 0);
 
     maxSpaceAbove = Math.max(maxSpaceAbove, spaceAbove);
     maxSpaceBelow = Math.max(maxSpaceBelow, spaceBelow);

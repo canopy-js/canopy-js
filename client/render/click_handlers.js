@@ -33,7 +33,7 @@ function onLinkClick(link) {
       inlineCycles: e.shiftKey,
       scrollDirect: true,
       selectALink: false,
-      pushHistoryState: true,
+      pushLinkSelection: true,
       scrollToParagraph: true,
       noBeforeChangeScroll: true, // we don't need to highlight fulcrum if it's being clicked
       noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
@@ -46,7 +46,7 @@ function textIsSelected(link) {
   return selection 
     && selection.rangeCount > 0 
     && !selection.isCollapsed 
-    && (selection.focusElement||selection.parentNode) // focusElement can be textNode which lacks .closest
+    && (selection.focusElement||selection.focusNode.parentNode) // focusElement can be textNode which lacks .closest
       .closest('.canopy-selectable-link') === link.element;
 }
 

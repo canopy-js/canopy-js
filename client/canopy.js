@@ -7,6 +7,6 @@ import Link from 'models/link';
 
 updateView(
   Path.initial,
-  Link.savedSelection || Link.from(() => Path.initial.parentLink),
+  Link.savedSelection,
   { scrollStyle: 'instant', initialLoad: true, scrollToParagraph: true }
 )

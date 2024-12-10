@@ -19,8 +19,8 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
     if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }
-    Path.setPath(linkToSelect?.urlPath || pathToDisplay, options); // before link.select because selection cache by current URL
-    Link.persistLinkSelection(linkToSelect || pathToDisplay.parentLink); // if null, persists deselect
+    Path.setPath(linkToSelect?.urlPath || pathToDisplay, linkToSelect, options); // before link.select because selection cache by current URL
+    Link.persistLinkSelection(linkToSelect); // if null, persists deselect or paragraph scroll
     Link.updateSelectionClass(linkToSelect || pathToDisplay.parentLink); // if null, removes previous selection's class
     let header = setHeader(pathToDisplay.firstTopicPath.topic, options);
     document.title = pathToDisplay.pageTitle;

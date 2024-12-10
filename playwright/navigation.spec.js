@@ -733,6 +733,23 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });
 
+  test('Link clicks insert history stack frame', async ({ page, browserName }) => {
+    await page.goto('United_States');
+    await expect(page).toHaveURL('United_States');
+    await page.locator('a:has-text("New York"):visible').click();
+    await page.goBack();
+    await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
+  });
+
+  test('Cycle reduction inserts history stack frame', async ({ page, browserName }) => {
+    await page.goto(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
+    await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
+    await page.locator('a:has-text("cafeteria↪"):visible').click();
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
+    await page.goBack();
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");    
+  });
+
   test('Rehash references regress to earlier parent link', async ({ page }) => {
     // A/B/C/D with reference [[A/B/C/D]] goes to A's link to B, not a special case
     await page.goto('A/B/C/D');
@@ -794,7 +811,6 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toContainText('AA ie reference that allows GG/AA to occur in paths');
     await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('GG:');
     await expect(page.locator('text=DD: >> visible=true')).toHaveCount(2); // visually inline full path
-
   });
 
   test('Pressing z zooms to lowest path segment', async ({ page }) => {
@@ -890,30 +906,4 @@ test.describe('Navigation', () => {
     // after the cycle start, because we should scroll to the lowest common ancestor before changing the selection, not the cycle starting point
     await expect(page.evaluate(() => window.scrollY)).not.toEqual(0);
   });
-
-  // test('It scrolls properly for back buttons', async ({ page, context }) => { // currently this behavior is disabled
-  //   await page.goto('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
-  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard#Parking_lot');
-
-  //   await page.click('a.canopy-back-cycle-link:has-text("Martha\'s Vineyard")');
-  //   await expect(page).toHaveURL('/United_States/New_York/Martha\'s_Vineyard');
-
-  //   const link = page.locator('text=southern border');
-
-  //   await expect.poll(async () => {
-  //       // Recalculate link's position relative to the viewport on each poll
-  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
-  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
-  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
-  //       return relativePosition;
-  //   }, { timeout: 5000 }).toBeGreaterThan(0.2);
-
-  //   await expect.poll(async () => {
-  //       // Recalculate link's position relative to the viewport on each poll
-  //       const linkTopRelativeToViewport = await link.evaluate(el => el.getBoundingClientRect().top);
-  //       const viewportHeight = await page.evaluate(() => window.innerHeight);
-  //       const relativePosition = linkTopRelativeToViewport / viewportHeight;
-  //       return relativePosition;
-  //   }, { timeout: 5000 }).toBeLessThan(0.3);
-  // });
 });

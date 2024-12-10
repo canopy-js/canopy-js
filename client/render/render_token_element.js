@@ -116,7 +116,7 @@ function renderLinkBase(token, renderContext) {
 
   whenInDom(contentContainer)(() => {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
-    linkElement.dataset.space = JSON.stringify(measureVerticalOverflow(contentContainer));
+    linkElement.dataset.extraSpace = JSON.stringify(measureVerticalOverflow(contentContainer));
     if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
     if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
 
