@@ -48,7 +48,7 @@ class BulkFileParser {
 
       section.files.forEach((file) => {
         if (file.asterisk && file.key) { // Create topic file
-          let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).fileName}.expl`;
+          let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).topicFileName}.expl`;
 
           if (fileContentsByPath.hasOwnProperty(topicFilePath)) {
             throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
@@ -66,9 +66,9 @@ class BulkFileParser {
           }
         } else { // make note file
           let firstFourtyCharacters = file.text.match(/^(([^\n.?!]{0,40}(?![A-Za-z0-9]))|([^\n.?!]{0,40}))/)[0] || section.terminalCategory;
-          let fileName = Topic.for(firstFourtyCharacters).fileName;
+          let fileName = Topic.for(firstFourtyCharacters).topicFileName;
           let idSuffix = section.orderedCategory ? '' : generateIdSuffix(`${section.diskDirectoryPath}/${fileName}`, `.expl`, fileContentsByPath);
-          let noteFileName = `${section.diskDirectoryPath}/${Topic.for(firstFourtyCharacters).fileName}${idSuffix}.expl`;
+          let noteFileName = `${section.diskDirectoryPath}/${Topic.for(firstFourtyCharacters).topicFileName}${idSuffix}.expl`;
           fileContentsByPath[noteFileName] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
         }
       });

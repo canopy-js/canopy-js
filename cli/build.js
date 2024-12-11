@@ -71,7 +71,7 @@ function build(options = {}) {
     let customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
     let customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
     let customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
-    let defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.fileName}.json`);
+    let defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`);
 
     let html = dedent`
       <!DOCTYPE html>
@@ -84,7 +84,6 @@ function build(options = {}) {
       dedent`${customJs ? `<script>\n${fs.readFileSync(`assets/custom.js`)}\n</script>` : ''}` +
       dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix :''}/_canopy.js" defer></script>` + "\n" + // we want custom css to have loaded before menu size eval
       dedent`${favicon ? `<link rel="icon" type="image/x-icon" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_assets/favicon.ico">\n` : ''}` +
-      // dedent`<link rel="prefetch" href="${projectPathPrefix ? '/' + projectPathPrefix :''}/_data/${defaultTopic.fileName}.json" as="fetch" crossorigin="anonymous" fetchpriority="low">` + '\n' +
       dedent`${customHtmlHead ? customHtmlHead : ''}` +
       dedent`</head>
       <body>\n` +

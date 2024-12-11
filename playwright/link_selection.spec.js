@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { scrollElementToViewport } = require('./helpers');
 
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
@@ -84,6 +85,7 @@ test.describe('Link Selection', () => {
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
 
+    await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 

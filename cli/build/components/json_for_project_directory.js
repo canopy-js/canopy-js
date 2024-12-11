@@ -18,13 +18,13 @@ function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString
 
     let json = jsonForExplFile(filePath, explFileData, parserContext, options);
     let topic = new Topic(topicKeyOfString(explFileData[filePath]), true);
-    let destinationPath = `${destinationDataDirectory}/${topic.fileName}.json`;
+    let destinationPath = `${destinationDataDirectory}/${topic.jsonFileName}.json`;
 
     filesToWrite[destinationPath] = json;
 
     if (options.symlinks) {
       let folderTopic = new Topic(topicKeyOfString(explFileData[filePath]));
-      directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.fileName);
+      directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.topicFileName);
     }
   });
 

@@ -822,16 +822,14 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Subtopic_solo_caret_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo caret link"]'))
-    .toHaveAttribute('href', '/Solo_caret_links');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo caret link"]')).toHaveAttribute('href', '/Solo_caret_links');
     await page.click('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo caret link"]'); // [[^ in subtopic is regular cycle reference to ST parent]]
     await page.waitForURL('**/Solo_caret_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo caret links');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links#Nested_subtopic_solo_caret_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Nested subtopic solo caret link"]'))
-      .toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
-    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Nested subtopic solo caret link"]')).toHaveAttribute('href', '/Solo_caret_links#Subtopic_solo_caret_link');
+    await page.click('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Nested subtopic solo caret link"]'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
     await page.waitForURL('**/Solo_caret_links#Subtopic_solo_caret_link');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo caret link');
   });
