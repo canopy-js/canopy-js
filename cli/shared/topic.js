@@ -23,7 +23,7 @@ class Topic {
 
     // console.error([string, this.url])
 
-    this.fileName = this.mixedCase.replace(
+    this.topicFileName = this.mixedCase.replace(
       new RegExp('\\' + Object.keys(Topic.fileNameConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
       match => Topic.fileNameConversionRules[match]
     );
@@ -39,7 +39,8 @@ class Topic {
       .replace(/&[Nn][Bb][Ss][Pp];/g, ' ')
       .trim(); // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
-    this.requestFileName = encodeURIComponent(this.fileName); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+    this.jsonFileName = encodeURIComponent(this.mixedCase);
+    this.requestFileName = encodeURIComponent(encodeURIComponent(this.mixedCase)); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
 
     Cache[string] = this;
   }

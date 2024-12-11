@@ -50,7 +50,7 @@ function getExplFileData(topicsPath, options) {
     let key = topicKeyOfString(topicFileContents);
     if (!key) return;
 
-    let jsonFileName = Topic.for(key).fileName + '.json';
+    let jsonFileName = Topic.for(key).jsonFileName + '.json';
 
     let isNew = true; // Assume the file is new unless proven otherwise
     if (options.cache && buildDirectoryExists) {
