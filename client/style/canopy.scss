@@ -350,6 +350,7 @@ table {
     border: 1px solid black;
     text-align: center;
     padding: 15px;
+    white-space: break-spaces;
 
     &.hidden {
       opacity: 0;
@@ -397,6 +398,17 @@ table {
 
       .canopy-selected-link {
           background-color: #f5f6fe;
+      }
+    }
+
+    &:not(.canopy-open-link) {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
+        font-size: 9px;
+        margin-left: -2px;
+        position: relative;
+        top: 3px;
+        left: 2px;
+        white-space: nowrap;
       }
     }
 
