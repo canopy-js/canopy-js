@@ -579,6 +579,11 @@ function renderTable(token, renderContext) {
   [...tableElement.querySelectorAll('td')].forEach(td => {
     if (td.childNodes.length === 0) return;
 
+    // check if first bolded row
+    const parentRow = td.parentElement;
+    const firstTd = parentRow?.querySelector('td');
+    if (firstTd === td && td.childNodes.length === 1 && td.firstElementChild?.tagName === 'B') return;
+
     let contentRect = getCombinedBoundingRect([...td.childNodes]);
     let currentContentWidth = contentRect.width;
     let widestContentWidth = sizes.widestContent;
@@ -589,7 +594,6 @@ function renderTable(token, renderContext) {
     td.dataset.widthChangePercent = widthChangePercent;
 
     if (widthChangePercent <= MAX_WIDTH_CHANGE_PERCENT) {
-      // td.style.minWidth = sizes.widestTd + 'px';
       td.style.width = sizes.widestTd + 'px';
       td.style.boxSizing = 'border-box';
     }
@@ -597,6 +601,11 @@ function renderTable(token, renderContext) {
 
   [...tableElement.querySelectorAll('td')].forEach(td => {
     if (td.childNodes.length === 0) return;
+
+    // check if first bolded column
+    const parentRow = td.parentElement;
+    const firstRow = tableElement?.querySelector('tr');
+    if (firstRow === parentRow && td.childNodes.length === 1 && td.firstElementChild?.tagName === 'B') return;
 
     let contentRect = getCombinedBoundingRect([...td.childNodes]);
     let currentContentHeight = contentRect.height;
@@ -607,7 +616,6 @@ function renderTable(token, renderContext) {
     td.dataset.heightChangePercent = heightChangePercent;
 
     if (heightChangePercent <= MAX_HEIGHT_CHANGE_PERCENT) {
-      // td.style.minHeight = sizes.tallestTd + 'px';
       td.style.height = sizes.tallestTd + 'px';
       td.style.boxSizing = 'border-box';
     }
