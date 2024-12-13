@@ -84,6 +84,7 @@ test.describe('Link Selection', () => {
     await page.goto('/United_States/New_York/Style_examples');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('These are some style examples.'); // prevent advance before scroll
 
     await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowDown');
