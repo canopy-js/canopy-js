@@ -173,36 +173,7 @@ class Paragraph {
   }
 
   get parentLink() {
-    if (this.parentNode === canopyContainer) { return null; } // with shadow dom can't assume section element is attached
-
-    if (this.parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
-      return Link.selection; // when selected link is path reference and so is one of the open links also
-    }
-
-    // if paragraph is subtopic, parent link must be local reference in parent
-    if (!this.isTopic) {
-      return this.parentParagraph.links.find(link => link.isLocal && link.targetSubtopic.caps === this.subtopic.caps);
-    }
-
-    // if there are multiple global links beginning with the given topic, prefer the last selection
-    let lastSelectionOfParent = Link.lastSelectionOfParagraph(this.parentParagraph);
-    if (this.parentLinks.length > 1 && lastSelectionOfParent && this.parentLinks.find(l => l.equals(lastSelectionOfParent))) {
-      return lastSelectionOfParent;
-    }
-
-    // if one of the potential parents is a simple global reference, prefer that over a longer path
-    let simpleGlobalParent = this.parentParagraph && this.parentParagraph.links.find(
-      link => link.isGlobal &&
-        link.literalPath.length === 1 &&
-        link.childTopic.caps === this.topic.caps &&
-        link.childSubtopic.caps === this.topic.caps
-    );
-    if (simpleGlobalParent) return simpleGlobalParent;
-
-    // otherwise pick the first matching link
-    return this.parentParagraph && this.parentParagraph.links.find(
-      link => link.isGlobal && link.childTopic.caps === this.topic.caps
-    );
+    return this.path.parentLink;
   }
 
   get parentLinks() {

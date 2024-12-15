@@ -7,26 +7,26 @@ import updateView from 'display/update_view';
 class Path {
   constructor(argument) {
     if (!argument) {
-      this.pathArray = [];
+      this.array = [];
     } else if (Array.isArray(argument)) {
       if (argument.length === 0) {
-        this.pathArray = [];
+        this.array = [];
       } else {
-        this.pathArray = argument.slice();
+        this.array = argument.slice();
         Path.validatePathArray(this.array);
       }
       this.pathString = Path.arrayToString(this.array);
     } else if (typeof argument === 'string' || argument instanceof String) {
-      this.pathArray = Path.stringToArray(argument);
+      this.array = Path.stringToArray(argument);
       this.pathString = Path.arrayToString(this.array); // array formation removes invalid segments so we reform the string
     }
   }
 
   get length() {
-    if (!this.pathArray[0]) {
+    if (!this.array[0]) {
       return 0;
     } else {
-      return this.pathArray.length;
+      return this.array.length;
     }
   }
 
@@ -108,13 +108,9 @@ class Path {
   }
 
   includesTopic(topic) {
-    return this.pathArray.find(([currentTopic, _]) => {
+    return this.array.find(([currentTopic, _]) => {
       return Topic.areEqual(topic, currentTopic);
     });
-  }
-
-  get array() {
-    return this.pathArray;
   }
 
   get string() {
@@ -126,41 +122,37 @@ class Path {
   }
 
   slice() {
-    return new this.constructor(this.pathArray.slice.call(this.pathArray, ...arguments));
+    return new this.constructor(this.array.slice.call(this.array, ...arguments));
   }
 
   sliceAfterLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, topic)) + 1)); // after
+    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => Topic.areEqual(t, topic)) + 1)); // after
   }
 
   sliceBeforeLastTopicInstance(topic) {
-    return new this.constructor(this.pathArray.slice(0, this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, topic)))); // after
+    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => Topic.areEqual(t, topic)))); // after
   }
 
   get segments() {
-    return this.pathArray;
+    return this.array;
   }
 
   get firstTopic() {
     if (this.empty) return null;
-    return this.pathArray[0][0];
+    return this.array[0][0];
   }
 
   get firstTopicPath() {
-    return this.constructor.forSegment(this.pathArray[0][0], this.pathArray[0][0]);
+    return this.constructor.forSegment(this.array[0][0], this.array[0][0]);
   }
 
   get lastTopic() {
-    return this.lastSegment.topic;
-  }
-
-  get topic() {
-    return this.lastSegment.array[0]?.[0];
+    return this.lastSegment.firstTopic;
   }
 
   get firstSubtopic() {
     if (this.empty) return null;
-    return this.pathArray[0][1];
+    return this.array[0][1];
   }
 
   get lastSubtopic() {
@@ -168,37 +160,37 @@ class Path {
   }
 
   get secondTopic() {
-    return this.pathArray[1] && this.pathArray[1][0];
+    return this.array[1] && this.array[1][0];
   }
 
   get secondSubtopic() {
-    return this.pathArray[1] && this.pathArray[1][1];
+    return this.array[1] && this.array[1][1];
   }
 
   get firstSegment() {
-    return new this.constructor(this.pathArray.slice(0, 1));
+    return new this.constructor(this.array.slice(0, 1));
   }
 
   get lastSegment() {
-    return new this.constructor(this.pathArray.slice(-1));
+    return new this.constructor(this.array.slice(-1));
   }
 
   get withoutFirstSegment() {
-    return new this.constructor(this.pathArray.slice(1));
+    return new this.constructor(this.array.slice(1));
   }
 
   get withoutLastSegment() {
-    return new this.constructor(this.pathArray.slice(0, -1));
+    return new this.constructor(this.array.slice(0, -1));
   }
 
   get withoutLastSubtopic() {
-    return new this.constructor(this.pathArray.slice(0, -1)).append(Path.forTopic(this.lastTopic));
+    return new this.constructor(this.array.slice(0, -1)).append(Path.forTopic(this.lastTopic));
   }
 
   endsWith(otherPath) {
     // Check if there is at least one segment at the end of both paths that matches.
-    const thisLength = this.pathArray.length;
-    const otherLength = otherPath.pathArray.length;
+    const thisLength = this.array.length;
+    const otherLength = otherPath.array.length;
 
     // If the other path is longer, it cannot be at the end of this path.
     if (otherLength > thisLength) {
@@ -207,8 +199,8 @@ class Path {
 
     // Compare the segments starting from the end of both paths.
     for (let i = 1; i <= otherLength; i++) {
-      const [thisTopic, thisSubtopic] = this.pathArray[thisLength - i];
-      const [otherTopic, otherSubtopic] = otherPath.pathArray[otherLength - i];
+      const [thisTopic, thisSubtopic] = this.array[thisLength - i];
+      const [otherTopic, otherSubtopic] = otherPath.array[otherLength - i];
 
       if (
         thisTopic.mixedCase !== otherTopic.mixedCase ||
@@ -222,15 +214,64 @@ class Path {
   }
 
   get isTopic() {
-    return this.pathArray.length === 1 && Topic.areEqual(this.pathArray[0][0], this.pathArray[0][1]);
+    return this.array.length === 1 && Topic.areEqual(this.array[0][0], this.array[0][1]);
   }
 
   get parentPath() {
     return this.paragraph?.parentParagraph?.path;
   }
 
+  get parentParagraph() {
+    if (this.lastSegment.isTopic) { // in case child paragraph for last segment isn't rendered yet
+      return this.withoutLastSegment.paragraph;
+    }
+
+    return this.paragraph.parentParagraph;
+  }
+
+  get parentLinks() {
+    if (this.isTopic) { return null; }
+
+    let paragraphWithLinks = this.lastSegment.isTopic ? this.withoutLastSegment.paragraph : this.parentParagraph;
+  
+    return paragraphWithLinks.linksBySelector(
+      (link) =>
+        (link.isGlobal && Topic.areEqual(link.childTopic, this.lastSegment.firstTopic)) ||
+        (link.isLocal && Topic.areEqual(link.targetSubtopic, this.lastSegment.firstSubtopic))
+    );
+  }
+
   get parentLink() {
-    return this.paragraph?.parentLink;
+    if (this.isTopic) { return null; }
+
+    if (this.parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
+      return Link.selection; // when selected link is path reference and so is one of the open links also
+    }
+
+    // if paragraph is subtopic, parent link must be local reference in parent
+    if (!this.lastSegment.isTopic) {
+      return this.parentParagraph.links.find(link => link.isLocal && Topic.areEqual(link.targetSubtopic, this.paragraph.subtopic));
+    }
+
+    // if there are multiple global links beginning with the given topic, prefer the last selection
+    let lastSelectionOfParent = Link.lastSelectionOfParagraph(this.parentParagraph);
+    if (this.parentLinks.length > 1 && lastSelectionOfParent && this.parentLinks.find(l => l.equals(lastSelectionOfParent))) {
+      return lastSelectionOfParent;
+    }
+
+    // if one of the potential parents is a simple global reference, prefer that over a longer path
+    let simpleGlobalParent = this.parentParagraph && this.parentParagraph.links.find(
+      link => link.isGlobal &&
+        link.literalPath.length === 1 &&
+        Topic.areEqual(link.childTopic, this.lastSegment.firstTopic) &&
+        Topic.areEqual(link.childSubtopic, this.lastSegment.firstTopic)
+    );
+    if (simpleGlobalParent) return simpleGlobalParent;
+
+    // otherwise pick the first matching link
+    return this.parentParagraph && this.parentParagraph.links.find(
+      link => link.isGlobal && Topic.areEqual(link.childTopic, this.lastSegment.firstTopic)
+    );
   }
 
   firstParentLink() {
@@ -317,8 +358,23 @@ class Path {
   initialOverlap(otherPath) {
     if (this.empty || otherPath.empty) return null;
     if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
-    let candidatePath = otherPath;
+    
+    for (let i = 0; i < Math.min(this.array.length, otherPath.array.length); i++) { // doesn't assume both paths in DOM
+      const [topic1, subtopic1] = this.array[i];
+      const [topic2, subtopic2] = otherPath.array[i];
 
+      if (Topic.areEqual(topic1, topic2)) {
+        if (Topic.areEqual(subtopic1, subtopic2)) {
+          continue;
+        } else {
+          break; // diversions that break within a segment require .parentPath approach
+        }
+      } else { // topics not equal, divergence occurs at segment boundary
+        return this.slice(0, i);
+      }
+    }
+
+    let candidatePath = otherPath;
     while (!candidatePath.isTopic) {
       if (this.includes(candidatePath)) return candidatePath;
       if (!candidatePath.parentPath) throw new Error(`Undefined parent path for ${candidatePath}`);
@@ -339,15 +395,28 @@ class Path {
     return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => Topic.areEqual(t1, t2)));
   }
 
+  isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
+    if (!this.initialOverlap(otherPath)) return null;
+    let overlapPath = this.initialOverlap(otherPath);
+    let thisParentLink = overlapPath.intermediaryPathsTo(this)[1].parentLink;
+    let otherParentLink = overlapPath.intermediaryPathsTo(otherPath)[1].parentLink;
+
+    if (thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING) { // this is first
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   terminalOverlap(otherPath) { // e.g A/B/C B/C/D
-    let lastInstanceOfFirstTopicOfOtherPath = this.pathArray.findLastIndex(([t]) => Topic.areEqual(t, otherPath.firstTopic));
+    let lastInstanceOfFirstTopicOfOtherPath = this.array.findLastIndex(([t]) => Topic.areEqual(t, otherPath.firstTopic));
     if (lastInstanceOfFirstTopicOfOtherPath === -1) return false;
     let otherPathIndex = 0;
 
     for (let i = lastInstanceOfFirstTopicOfOtherPath; i < this.length; i++) {
       if (otherPathIndex >= otherPath.length) return false;
-      if (!Topic.areEqual(this.pathArray[i][0], otherPath.pathArray[otherPathIndex][0])) return false;
-      if (!Topic.areEqual(this.pathArray[i][1], otherPath.pathArray[otherPathIndex][1])) return false;
+      if (!Topic.areEqual(this.array[i][0], otherPath.array[otherPathIndex][0])) return false;
+      if (!Topic.areEqual(this.array[i][1], otherPath.array[otherPathIndex][1])) return false;
       otherPathIndex++;
     }
 
@@ -471,10 +540,6 @@ class Path {
 
   get paragraphElement() {
     return this.paragraph.paragraphElement;
-  }
-
-  get parentParagraph() {
-    return this.paragraph.parentParagraph;
   }
 
   get present() {

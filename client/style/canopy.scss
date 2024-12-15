@@ -197,7 +197,7 @@ a.canopy-selectable-link {
   }
 
   &:not(.canopy-open-link) { // if it is open, it has been inlined and isn't a cycle
-    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-provisional-cycle-icon {
+    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
       top: 2px;
       left: 1px;
       text-decoration: none;
@@ -551,7 +551,7 @@ table {
     }
 
     .canopy-link-content-container {
-      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
         font-size: 11px;
         margin-left: -5px; // Negative margin to pull the icon closer to the last word
         position: relative; // Allows for position adjustment
@@ -561,7 +561,7 @@ table {
       }
 
       &[dir="rtl"] {
-        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
+        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
           top: 0px; // find good values
           left: 0px;
         }
