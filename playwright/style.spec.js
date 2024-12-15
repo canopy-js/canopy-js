@@ -499,16 +499,22 @@ test.describe('Block entities', () => {
     await expect(page).toHaveURL("United_States/New_York/Style_examples#Menu_link_icons");
 
     // Assert on the first menu link
-    const firstLink = await page.locator('a[data-literal-path-string="United_States"]');
-    await expect(firstLink).toHaveAttribute('href', '/United_States');
-    await expect(firstLink).toHaveText(/United States/);
+    const firstLink = await page.locator('a[data-text="Menus"]');
+    await expect(firstLink).toHaveAttribute('href', '/Style_examples#Menus');
+    await expect(firstLink).toHaveText(/Menus/);
     await expect(firstLink.locator('.canopy-back-cycle-icon')).toHaveText('↩');
 
     // Assert on the second menu link
-    const secondLink = await page.locator('a[data-literal-path-string="United_States/New_Jersey"]');
-    await expect(secondLink).toHaveAttribute('href', '/United_States/New_Jersey');
-    await expect(secondLink).toHaveText(/New Jersey/);
-    await expect(secondLink.locator('.canopy-forward-cycle-icon')).toHaveText('↪');
+    const secondLink = await page.locator('a[data-literal-path-string="United_States"]');
+    await expect(secondLink).toHaveAttribute('href', '/United_States');
+    await expect(secondLink).toHaveText(/United States/);
+    await expect(secondLink.locator('.canopy-up-cycle-icon')).toHaveText('↩');
+
+    // Assert on the third menu link
+    const thirdLink = await page.locator('a[data-literal-path-string="United_States/New_Jersey"]');
+    await expect(thirdLink).toHaveAttribute('href', '/United_States/New_Jersey');
+    await expect(thirdLink).toHaveText(/New Jersey/);
+    await expect(thirdLink.locator('.canopy-forward-cycle-icon')).toHaveText('↪');
 
     // Assert on the external link
     const externalLink = await page.locator('a[data-type="external"]');

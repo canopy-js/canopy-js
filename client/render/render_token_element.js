@@ -179,12 +179,15 @@ function renderGlobalLink(token, renderContext) {
       let cycleIcon = linkElement.querySelector('.canopy-provisional-cycle-icon');
       cycleIcon.classList.remove('canopy-provisional-cycle-icon');
 
-      if (link.isBackCycle || linkElement.closest('.canopy-menu-cell-left-aligned')) {
-        cycleIcon.classList.add('canopy-back-cycle-icon');
+      if (link.isUpCycle) {
+        cycleIcon.classList.add('canopy-up-cycle-icon');
         cycleIcon.innerText = '↩';
-      } else if (link.isLateralCycle) {
+      } else if (link.isForwardCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
+      } else if (link.isBackCycle) {
+        cycleIcon.classList.add('canopy-back-cycle-icon');
+        cycleIcon.innerText = '↩';
       } else if (link.isDownCycle) { // eg in A/B/C a link to [[B/C/D]]
         cycleIcon.classList.add('canopy-down-cycle-icon');
         cycleIcon.innerText = '';
