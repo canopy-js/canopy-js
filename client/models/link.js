@@ -407,11 +407,11 @@ class Link {
   }
 
   get pathOfCoterminalOverlap() { // e.g. A/B/C/D with reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
-    let topicMatches = this.inlinePath.pathArray.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
+    let topicMatches = this.inlinePath.array.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
     let indexOfSelfReference = topicMatches.lastIndexOf(true);
     let indexOfCurrentSegment = this.enclosingPath.length - 1;
 
-    while(indexOfCurrentSegment !== 0 && this.inlinePath.pathArray[indexOfCurrentSegment - 1][0].mixedCase === this.inlinePath.pathArray[indexOfSelfReference - 1][0].mixedCase) {
+    while(indexOfCurrentSegment !== 0 && this.inlinePath.array[indexOfCurrentSegment - 1][0].mixedCase === this.inlinePath.array[indexOfSelfReference - 1][0].mixedCase) {
       indexOfSelfReference--;
       indexOfCurrentSegment--;
     }
@@ -469,15 +469,23 @@ class Link {
     return this.introducesNewCycle;
   }
 
-  get isBackCycle() {
+  get isUpCycle() {
     return this.inlinePath.reduce().subsetOf(this.enclosingPath) ||
       this.isRehashReference; // e.g. A/B/C with [[B/C]] which focuses on B
   }
 
-  get isLateralCycle() {
+  get isBackCycle() {
     return this.cycle 
-      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not back cycle
-      && !this.isDownCycle; // not down cycle
+      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not up cycle
+      && !this.isDownCycle // not down cycle
+      && !this.enclosingPath.isBefore(this.inlinePath.reduce());
+  }
+
+  get isForwardCycle() {
+    return this.cycle 
+      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not up cycle
+      && !this.isDownCycle // not down cycle
+      && this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
 
   get isDownCycle() {
@@ -666,7 +674,7 @@ class Link {
 
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      if (this.isBackCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
+      if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
           .intermediaryPathsTo(this.enclosingPath)[1].parentLink
           .select({renderOnly: options.renderOnly})
           .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));

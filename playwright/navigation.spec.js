@@ -658,7 +658,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");
     await expect(page.locator("text=There is a lot of parking, and it is near the >> visible=true")).toHaveCount(1);
 
     await page.locator('body').press('Enter');
@@ -682,7 +682,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");
 
     await page.locator('body').press('Shift+ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -704,7 +704,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
-    await page.locator('a:has-text("cafeteria↪")').click({
+    await page.locator('a:has-text("cafeteria↩")').click({
       modifiers: ['Shift']
     });
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -716,7 +716,7 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL('United_States/New_York/Martha\'s_Vineyard#Parking_lot');
 
-    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: 'cafeteria↪' })).toHaveCount(1);
+    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: 'cafeteria↩' })).toHaveCount(1);
     await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
   });
 
@@ -744,10 +744,10 @@ test.describe('Navigation', () => {
   test('Cycle reduction inserts history stack frame', async ({ page, browserName }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
-    await page.locator('a:has-text("cafeteria↪"):visible').click();
+    await page.locator('a:has-text("cafeteria↩"):visible').click();
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await page.goBack();
-    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↪");    
+    await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");    
   });
 
   test('Rehash references regress to earlier parent link', async ({ page }) => {
