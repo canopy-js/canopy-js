@@ -92,6 +92,8 @@ function renderLinkBase(token, renderContext) {
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
 
+  linkElement.dir = 'auto'; // necessary to get link icons with RTL link text on correct side and not breaking border
+
   let contentContainer = document.createElement('SPAN');
   contentContainer.classList.add('canopy-link-content-container');
   contentContainer.dir = "auto";
