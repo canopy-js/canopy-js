@@ -168,16 +168,17 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
+  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code { // open and selected
     .canopy-link-content-container {
       background-color: #edeefc;
+      border: 1px solid #e2e2e2;
       text-decoration: none;
     }
   }
 
-  &.canopy-open-link .canopy-link-content-container {
-    background-color: #f0f0f0;
-    border: 1px solid #cccccc;
+  &.canopy-open-link .canopy-link-content-container { // just open
+    background-color: #e1dfdf;
+    border: 1px solid #cbcaca;
     border-radius: 1px;       
     unicode-bidi: inherit;    
   }
