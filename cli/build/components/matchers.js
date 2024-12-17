@@ -27,7 +27,7 @@ const Matchers = [
   blockQuoteMatcher,
   outlineMatcher,
   tableMatcher,
-  tableListMatcher,
+  menuMatcher,
   htmlMatcher,
   htmlEntityMatcher,
   footnoteLinesMatcher,
@@ -113,7 +113,7 @@ function outlineMatcher({ string, parserContext, startOfLine }) {
 }
 
 function tableMatcher({ string, parserContext, startOfLine }) {
-  let match = string.match(/^(?:(?:\|(?:[^\n]*\|))(?:\n|$))+/);
+  let match = string.match(/^(?:(?:\|(?:[^\n]*\|))\s*(?:\n|$))+/);
   if (!match) return null;
   let tableMatch = match[0];
   if (tableMatch.endsWith('\n')) tableMatch = tableMatch.slice(0, -1);
@@ -129,9 +129,9 @@ function tableMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function tableListMatcher({ string, parserContext, startOfLine }) {
+function menuMatcher({ string, parserContext, startOfLine }) {
   if (!string.match(/\n[-=<]+(\n|$)/)) return; // check the end first to avoid catastrophic backtracking
-  let match = string.match(/^[=\-<]+\n((([-<>] ?|[\w\d]+\.\s)[^\n]*\n)+)[=\-<]+\n?/);
+  let match = string.match(/^[=\-<]+\s*\n((([-<>] ?|[\w\d]+\.\s)[^\n]*\n)+)[=\-<]+\s*\n?/);
   if (!match) return null;
 
   if (match && startOfLine) {
