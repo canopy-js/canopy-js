@@ -682,10 +682,10 @@ class Link {
 
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
-          .intermediaryPathsTo(this.enclosingPath)[1].parentLink
-          .select({renderOnly: options.renderOnly})
-          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+      // if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
+      //     .intermediaryPathsTo(this.enclosingPath)[1].parentLink
+      //     .select({renderOnly: options.renderOnly})
+      //     .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
 
       return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
     }
