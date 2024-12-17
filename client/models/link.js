@@ -80,6 +80,14 @@ class Link {
     return this.element.getBoundingClientRect().top;
   }
 
+  get lowFromParagraphTop() { // link is at least 30% of a viewport down from its paragraph top
+    return this.top > this.enclosingParagraph.top + ScrollableContainer.visibleHeight * 0.3;
+  }
+
+  get highFromParagraphBottom() { // link is at least 30% of a viewport up from its paragraph bottom
+    return this.bottom < this.enclosingParagraph.bottom - ScrollableContainer.visibleHeight * 0.3;
+  }
+
   get bottom() {
     if (!this.element) return null;
     if (this.element.closest('.canopy-bounding-box-container')) {
@@ -788,6 +796,9 @@ class Link {
   }
 
   static pushHistoryState(path, link) {
+    // if link selection is at current path, merge history stack items
+    if (link && !history.state?.linkSelection && !link.lowFromParagraphTop && link?.enclosingPath.equals(Path.current)) return; // link pushed is in current paragraph
+    if (!link.highFromParagraphBottom && (link.isSimpleGlobal || link.isLocal)) return; // the coming P frame will subsume this close-by link frame
 
     history.pushState(
       link ? { linkSelection: link.metadata } : null,
