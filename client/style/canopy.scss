@@ -500,6 +500,7 @@ table {
     .canopy-menu-content-container {
       display: inline;
       max-width: 100%;
+      width: 100%; // doesn't expand unless explicitely set
       max-height: 100%;
     }
 
