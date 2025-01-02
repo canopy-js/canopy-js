@@ -206,7 +206,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
     linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
   );
 
-  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 120))) : Promise.resolve();
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 50;
 
