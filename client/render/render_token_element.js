@@ -166,10 +166,14 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
+  let cycleIcon;
+
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
-    let cycleIcon = document.createElement('span');
-    cycleIcon.classList.add('canopy-provisional-cycle-icon');
-    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩';
+    cycleIcon = document.createElement('span');
+    if (!containsUnicodeArrow(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) {
+      cycleIcon.classList.add('canopy-provisional-cycle-icon');
+      cycleIcon.innerText = '↩';
+    }
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
@@ -178,7 +182,6 @@ function renderGlobalLink(token, renderContext) {
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
     if (link.cycle) {
-      let cycleIcon = linkElement.querySelector('.canopy-provisional-cycle-icon');
       cycleIcon.classList.remove('canopy-provisional-cycle-icon');
 
       if (link.isUpCycle) {
