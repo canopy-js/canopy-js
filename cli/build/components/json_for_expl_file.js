@@ -24,8 +24,9 @@ function jsonForExplFile(filePath, explFileData, parserContext, options) {
   });
 
   parserContext.addFragmentReferenceSubtopics(subtopic => { paragraphsBySubtopic[subtopic.mixedCase] = []; });
-  if (!options.cache)parserContext.validateRedundantLocalReferences();
+  if (!options.cache) parserContext.validateSubtopicDefinitions();
   if (!options.cache) parserContext.throwSubsumptionConditionalErrors();
+  if (!options.cache)parserContext.validateRedundantLocalReferences();
 
   let jsonObject = {
     displayTopicName: rootParagraph.key,
