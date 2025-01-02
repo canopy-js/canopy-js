@@ -203,8 +203,9 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
   );
 
-  if (linkToSelect?.isFragment) return scrollElementToPosition(
-    linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
+  if ((linkToSelect||pathToDisplay.parentLink)?.isFragment) return scrollElementToPosition(
+    (linkToSelect||pathToDisplay.parentLink).element || Paragraph.root.paragraphElement, 
+    {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
   );
 
   let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 120))) : Promise.resolve();
