@@ -363,6 +363,10 @@ class Link {
     return this.enclosingParagraph && this.enclosingParagraph.equals(link?.enclosingParagraph);
   }
 
+  hasCloseSibling(otherLink) {
+    return this.siblingOf(otherLink) && Math.abs(this.top - otherLink.top) < ScrollableContainer.visibleHeight * 0.2;
+  }
+
   get parentLink() {
     return this.enclosingParagraph?.parentLink;
   }
