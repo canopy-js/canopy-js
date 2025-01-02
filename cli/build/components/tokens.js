@@ -106,12 +106,10 @@ function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  // Updated regex to handle escaped {{ and }} sequences
-  const regex = /(^|[^\\])(\{\{)([^{}\\]*(?:\}(?!\})|\{(?!\{)|[^}{\\]|\\.)*?[^\\]?)(}})/gs;
+  const regex = /(^|[^\\])(\{\{)((?:.|\n)*[^\\])(}})/g;
 
   this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
     const isEscaped = precedingChar === '\\';
-
     if (isEscaped || !openingBraces || !closingBraces) {
       return match;
     } else {
