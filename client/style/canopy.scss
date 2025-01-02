@@ -375,7 +375,6 @@ table {
       text-shadow: none;
       background-color: #FFFFFF00;
       border: none;
-      padding: 4px; // to force breaking onto multiple lines
     
       &, &.canopy-open-link, &.canopy-selected-link {
         .canopy-link-content-container {
