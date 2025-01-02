@@ -656,7 +656,10 @@ function renderMenu(token, renderContext) {
     let contentContainer = document.createElement('DIV');
     contentContainer.classList.add('canopy-menu-content-container');
 
-    if (cellObject.hidden) menuCellElement.style.opacity = '0';
+    if (cellObject.hidden || cellObject.tokens.length === 0) {
+      menuCellElement.style.opacity = '0';
+      return menuCellElement;
+    }
 
     let tokenElements = renderTokenElements(cellObject.tokens[0], renderContext);
 
@@ -695,6 +698,7 @@ function renderMenu(token, renderContext) {
   menuElement.appendChild(tempRowElement);
 
   for (let i = 0; i < cellElements.length; i++) {
+    if (cellElements[i].style.opacity) continue;
     let menuCellElement = cellElements[i];
     tempRowElement.appendChild(menuCellElement);
 
