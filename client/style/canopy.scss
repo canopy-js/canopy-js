@@ -339,8 +339,8 @@ table {
   max-width: 90%;
   border-collapse: collapse;
   border: none; // we put the border on the TDs to allow omitted table cells
-  font-size: 18px;
-  min-width: 500px;
+  font-size: .85em;
+  min-width: 250px;
   table-layout: fixed;
 
   &:not(:last-child) {
