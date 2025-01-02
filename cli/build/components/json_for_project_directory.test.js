@@ -1289,10 +1289,10 @@ test('it throws error for regular redundant local references', () => {
     () => jsonForProjectDirectory(explFileData, null, 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
-    One reference is in subtopic [Idaho]
+    One reference is [[Boise]] in subtopic [Idaho]
     topics/Idaho/Idaho.expl:1
 
-    One reference is in subtopic [Western Half (Idaho)]
+    The other reference is [[Boise]] in subtopic [Idaho, Western Half]
     topics/Idaho/Idaho.expl:3
 
     Multiple local references to the same subtopic are not permitted.
@@ -1332,10 +1332,10 @@ test('it throws error for redundant local references where both could be global 
     () => jsonForProjectDirectory(explFileData, null, 'England', {})
   ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [England] to subtopic [London]
 
-    One reference is in subtopic [England]
+    One reference is [[London]] in subtopic [England]
     topics/England/England.expl:1
 
-    One reference is in subtopic [Essex (England)]
+    The other reference is [[London]] in subtopic [England, Essex]
     topics/England/England.expl:3
 
     Multiple local references to the same subtopic are not permitted.

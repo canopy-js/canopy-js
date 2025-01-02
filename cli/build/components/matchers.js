@@ -281,7 +281,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
 
   if (parserContext.currentTopicHasSubtopic(potentialSubtopic)) {
     if (parserContext.subtopicReferenceIsRedundant(potentialSubtopic)) {
-      parserContext.registerPotentialRedundantLocalReference(potentialSubtopic);
+      parserContext.registerPotentialRedundantLocalReference(potentialSubtopic, reference);
     }
 
     let localReferenceToken = new LocalReferenceToken(
@@ -293,7 +293,7 @@ function localReferenceMatcher({ string, parserContext, index }) {
       parserContext
     );
 
-    parserContext.registerLocalReference(potentialSubtopic, index, reference.contents, string, localReferenceToken);
+    parserContext.registerLocalReference(potentialSubtopic, index, reference, localReferenceToken);
 
     return [localReferenceToken, reference.fullText.length];
   } else {
