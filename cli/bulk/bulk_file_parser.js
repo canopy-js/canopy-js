@@ -20,7 +20,7 @@ class BulkFileParser {
           terminalCategory: displayCategoryPath.split('/').slice(-1)[0],
           files: [...sectionString
             .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
-            .matchAll(/(?:^\n|^|\n\n)((?:\*\*? )?(?:(?!\n\n\*\*?\s).)+)/gs)].map(match => match[1])
+            .matchAll(/(?:^\n|^|\n\s*\n)((?:\*\*? )?(?:(?!\n\s*\n\*\*?\s).)+)/gs)].map(match => match[1])
             .map(string => {
               // console.error(string, string.match(/^\*?\*? ?(.*)/s)[1])
               let blockString = string.match(/^\*?\*? ?(.*)/s)[1];
