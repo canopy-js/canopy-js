@@ -171,6 +171,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
+  if (Link.selection.hasCloseSibling(linkToSelect)) return Promise.resolve(); // don't swoop from one link to its horizontal sibling
   if (Path.rendered.fulcrumLink(newPath).isFocused) return Promise.resolve();
 
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
@@ -185,10 +186,6 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     (Link.for(targetElement).isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO) :
     (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
 
-  if (elementIsFocused(targetElement)) {
-    return Promise.resolve();
-  }
-
   let preChangePause = () => new Promise(resolve => setTimeout(resolve, 130))
 
   return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
@@ -197,6 +194,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
+  if (linkToSelect?.isFocused) return Promise.resolve();
   let behavior = options.scrollStyle || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
@@ -205,11 +203,12 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
   );
 
-  if (linkToSelect?.isFragment) return scrollElementToPosition(
-    linkToSelect.element, {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
+  if ((linkToSelect||pathToDisplay.parentLink)?.isFragment) return scrollElementToPosition(
+    (linkToSelect||pathToDisplay.parentLink).element || Paragraph.root.paragraphElement, 
+    {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
   );
 
-  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 150))) : Promise.resolve();
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 120))) : Promise.resolve();
   let maxScrollRatio = Infinity; // no limit on initial load and click
   let minDiff = 50;
 
@@ -234,20 +233,6 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
 
     return postChangePause().then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
   }
-}
-
-function elementIsFocused(element) {
-  const rect = element.getBoundingClientRect(); // Get the bounding rectangle of the element
-
-  // Define the viewport height thresholds for the element to be considered within the desired vertical range
-  const topThreshold = ScrollableContainer.visibleHeight * 0.1;
-  const bottomThreshold = ScrollableContainer.visibleHeight * 0.4;
-
-  // Check if the entire element is within the 5% to 50% range of the viewport
-  // The top of the element should be below the top threshold (5% mark)
-  // The bottom of the element should be above the bottom threshold (50% mark)
-  // This ensures the entire element is between 5% and 50% of the viewport vertically
-  return rect.top >= topThreshold && rect.bottom <= bottomThreshold;
 }
 
 export {

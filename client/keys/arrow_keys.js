@@ -56,13 +56,13 @@ function moveInDirection(direction) {
           if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) {
             return greaterHorizontalOverlap(currentSelectionHigherRect, lowestHigherRect, newRect);
           } else {
-            return horizontallyCloserRect(lowestHigherRect, newRect, currentSelectionHigherRect);
+            return leastHorizontalDistanceToEdge(currentSelectionHigherRect, lowestHigherRect, newRect);
           }
         } else { // going up in same paragraph
           if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionLowerRect) && isHorizontallyOverlapping(newRect, currentSelectionLowerRect)) {
             return greaterHorizontalOverlap(currentSelectionLowerRect, lowestHigherRect, newRect);
           } else {
-            return horizontallyCloserRect(lowestHigherRect, newRect, currentSelectionLowerRect);
+            return leastHorizontalDistanceToEdge(currentSelectionLowerRect, lowestHigherRect, newRect);
           }
         }
       });
@@ -128,7 +128,8 @@ function moveInDirection(direction) {
         } else { // going down in same paragraph
           if (isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return highestLowerRect;
           if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect)) return newRect;
-          return greaterHorizontalOverlap(currentSelectionLowerRect, highestLowerRect, newRect);
+          if (isHorizontallyOverlapping(highestLowerRect, currentSelectionHigherRect) && isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return greaterHorizontalOverlap(currentSelectionLowerRect, highestLowerRect, newRect);
+          return leastHorizontalDistanceToEdge(currentSelectionHigherRect, highestLowerRect, newRect);
         }
       });
 
@@ -322,27 +323,12 @@ function isInViewportVertically(rectObject) {
   );
 }
 
-function horizontallyCloserRect(rect1, rect2, targetRect) {
-  const midpointRect1 = (rect1.left + rect1.right) / 2;
-  const midpointRect2 = (rect2.left + rect2.right) / 2;
-  const midpointTarget = (targetRect.left + targetRect.right) / 2;
-
-  const distanceToRect1 = Math.abs(midpointRect1 - midpointTarget);
-  const distanceToRect2 = Math.abs(midpointRect2 - midpointTarget);
-
-  if (distanceToRect1 < distanceToRect2) {
-    return rect1;
-  } else {
-    return rect2;
-  }
-}
-
 function isVisible(element) {
   const style = window.getComputedStyle(element);
   return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && style.opacity !== '0%';
 }
 
-function scrollOrSelect(rect, options) {
+function scrollOrSelect(rect, options={}) {
   const AmountOfLinkThatMustBeVisibleToSelect = -10; // we even let links be a bit over the viewport
 
   if (rect.top - ScrollableContainer.top > window.innerHeight - AmountOfLinkThatMustBeVisibleToSelect) {
@@ -351,7 +337,7 @@ function scrollOrSelect(rect, options) {
     return scrollElementToPosition(rect.element, {targetRatio: 0.2, maxScrollRatio: 0.5, minDiff: 70, direction: 'up', behavior: 'smooth'});
   } else {
     const link = new Link(rect.element);
-    return link.select(options);
+    return link.select(options); // arrow keys should never get pre-change delay
   }
 }
 
@@ -364,6 +350,38 @@ function greaterHorizontalOverlap(selectedRect, candidateRect1, candidateRect2) 
   const overlap2 = calculateHorizontalOverlap(selectedRect, candidateRect2);
 
   if (overlap1 > overlap2) {
+    return candidateRect1;
+  } else {
+    return candidateRect2;
+  }
+}
+
+function leastHorizontalDistanceToEdge(rect1, candidateRect1, candidateRect2) {
+  // Helper function to calculate minimum horizontal distance between two rectangles
+  function getHorizontalDistance(rectA, rectB) {
+    const rectARight = rectA.x + rectA.width; // Right edge of rectA
+    const rectBRight = rectB.x + rectB.width; // Right edge of rectB
+
+    // Case 1: rectB is entirely to the right of rectA
+    if (rectB.x >= rectARight) {
+      return rectB.x - rectARight;
+    }
+    // Case 2: rectB is entirely to the left of rectA
+    else if (rectBRight <= rectA.x) {
+      return rectA.x - rectBRight;
+    }
+    // Case 3: rectB overlaps with rectA horizontally
+    else {
+      return 0; // Minimum distance is 0 if they overlap
+    }
+  }
+
+  // Calculate horizontal distances to candidateRect1 and candidateRect2
+  const distanceToCandidate1 = getHorizontalDistance(rect1, candidateRect1);
+  const distanceToCandidate2 = getHorizontalDistance(rect1, candidateRect2);
+
+  // Compare distances and return the closer candidate
+  if (distanceToCandidate1 < distanceToCandidate2) {
     return candidateRect1;
   } else {
     return candidateRect2;

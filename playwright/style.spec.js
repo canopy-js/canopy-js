@@ -813,7 +813,8 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
-    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back');
+
+    await page.click('.canopy-selected-section[data-subtopic-name="Subtopic solo hash link"] .canopy-selectable-link >> text=Back');
     await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
     await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
@@ -849,7 +850,7 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links#Subtopic_solo_period_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo period link"]')).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
     await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[.]] in subtopic is shift to parent
     await page.waitForURL('**/Solo_period_links#Subtopic_solo_period_link');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo period link');

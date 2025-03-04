@@ -12,9 +12,9 @@ class ParserContext {
       this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
       this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
       this.subtopicParents = {}; // by topic, by subtopic, the parent subtopic that contains a local reference to that subtopic
+      this.subtopicParentReferences = {}; // by topic, by subtopic, the parent link reference string for the specified subtopic
       this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
       this.ambiguousLocalReferences = []; // a list of local references that are possibly global/import and possibly redundant
-      this.provisionalLocalReferences = {}; // a list of local reference tokens for conversion to import if later found to be redundant
       this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
       this.subsumptionConditionalErrors = []; // this is a catch-all for errors that should be thrown if an enclosing subtopic is subsumed
       this.defaultTopic = new Topic(defaultTopicString); // the default topic of the project, used to log orphan topics not connected to it
@@ -116,6 +116,7 @@ class ParserContext {
     this.currentTopic = topic;
     this.currentSubtopic = subtopic;
     this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
+    this.subtopicParentReferences[topic.caps] = this.subtopicParentReferences[topic.caps] || {};
     this.topicFilePaths[topic.caps] = this.filePath;
   }
 
@@ -213,34 +214,20 @@ class ParserContext {
     return this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps];
   }
 
-  provisionalLocalReference(targetSubtopic) {
-    return this.provisionalLocalReferences[targetSubtopic.caps];
-  }
-
-  registerPotentialRedundantLocalReference(targetSubtopic) { // we won't know if these are really redundant until all conversions to import are done
+  registerPotentialRedundantLocalReference(targetSubtopic, secondReference) {
     this.redundantLocalReferences.push([
       this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps],
       this.currentSubtopic,
       this.currentTopic,
-      targetSubtopic
+      targetSubtopic,
+      this.subtopicParentReferences[this.currentTopic.caps][targetSubtopic.caps],
+      secondReference.fullText
     ]);
   }
 
-  registerLocalReference(targetSubtopic, index, linkText, linkFullText, token) {
+  registerLocalReference(targetSubtopic, index, reference) {
     this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps] = this.currentSubtopic;
-
-    this.provisionalLocalReferences[targetSubtopic.caps] = { // local references to convert to imports if found redundant
-      token,
-      paragraphText: this.paragraphText,
-      index,
-      enclosingTopic: this.currentTopic,
-      enclosingSubtopic: this.currentSubtopic,
-      linkText,
-      linkFullText,
-      filePath: this.filePath,
-      lineNumber: this.lineNumber,
-      characterNumber: this.characterNumber
-    };
+    this.subtopicParentReferences[this.currentTopic.caps][targetSubtopic.caps] = reference.fullText;
   }
 
   registerFragmentReference(reference, currentSubtopic) {
@@ -348,14 +335,14 @@ class ParserContext {
   }
 
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
-    this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
+    this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
         throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
-            One reference is in subtopic ${displaySegment(topic, enclosingSubtopic1)}
+            One reference is ${reference1} in subtopic ${displaySegment(topic, enclosingSubtopic1)}
             ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
 
-            One reference is in subtopic ${displaySegment(topic, enclosingSubtopic2)}
+            The other reference is ${reference2} in subtopic ${displaySegment(topic, enclosingSubtopic2)}
             ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
 
             Multiple local references to the same subtopic are not permitted.

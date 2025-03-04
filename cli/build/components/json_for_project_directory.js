@@ -30,7 +30,6 @@ function jsonForProjectDirectory(explFileData, newStatusData, defaultTopicString
 
   if (options.orphans) parserContext.logGlobalOrphans();
   if (options.orphans) parserContext.logLocalOrphans();
-  if (!options.cache) parserContext.validateSubtopicDefinitions();
   if (!options.cache) parserContext.validateGlobalReferences();
 
   return { directoriesToEnsure, filesToWrite };

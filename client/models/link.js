@@ -355,6 +355,10 @@ class Link {
     return this.enclosingParagraph && this.enclosingParagraph.equals(link?.enclosingParagraph);
   }
 
+  hasCloseSibling(otherLink) {
+    return this.siblingOf(otherLink) && Math.abs(this.top - otherLink.top) < ScrollableContainer.visibleHeight * 0.2;
+  }
+
   get parentLink() {
     return this.enclosingParagraph?.parentLink;
   }
@@ -674,10 +678,10 @@ class Link {
 
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
-          .intermediaryPathsTo(this.enclosingPath)[1].parentLink
-          .select({renderOnly: options.renderOnly})
-          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+      // if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
+      //     .intermediaryPathsTo(this.enclosingPath)[1].parentLink
+      //     .select({renderOnly: options.renderOnly})
+      //     .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
 
       return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
     }

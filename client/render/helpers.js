@@ -198,7 +198,7 @@ function getCombinedBoundingRect(elements) {
   });
 
   if (!combinedRect) {
-    throw new Error("No visible elements found in the input array.");
+    return { top: 0, left: 0, bottom: 0, right: 0 };
   }
 
   // Calculate the width and height of the combined bounding box

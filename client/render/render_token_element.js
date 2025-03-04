@@ -92,6 +92,8 @@ function renderLinkBase(token, renderContext) {
   linkElement.dataset.enclosingSubtopic = token.enclosingSubtopic;
   linkElement.dataset.text = token.text;
 
+  linkElement.dir = 'auto'; // necessary to get link icons with RTL link text on correct side and not breaking border
+
   let contentContainer = document.createElement('SPAN');
   contentContainer.classList.add('canopy-link-content-container');
   contentContainer.dir = "auto";
@@ -164,10 +166,14 @@ function renderGlobalLink(token, renderContext) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
+  let cycleIcon;
+
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
-    let cycleIcon = document.createElement('span');
-    cycleIcon.classList.add('canopy-provisional-cycle-icon');
-    if (!renderContext.pathToParagraph.terminalOverlap(link.literalPath)) cycleIcon.innerText = '↩';
+    cycleIcon = document.createElement('span');
+    if (!containsUnicodeArrow(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) {
+      cycleIcon.classList.add('canopy-provisional-cycle-icon');
+      cycleIcon.innerText = '↩';
+    }
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
@@ -176,7 +182,6 @@ function renderGlobalLink(token, renderContext) {
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
     if (link.cycle) {
-      let cycleIcon = linkElement.querySelector('.canopy-provisional-cycle-icon');
       cycleIcon.classList.remove('canopy-provisional-cycle-icon');
 
       if (link.isUpCycle) {
@@ -654,7 +659,10 @@ function renderMenu(token, renderContext) {
     let contentContainer = document.createElement('DIV');
     contentContainer.classList.add('canopy-menu-content-container');
 
-    if (cellObject.hidden) menuCellElement.style.opacity = '0';
+    if (cellObject.hidden || cellObject.tokens.length === 0) {
+      menuCellElement.style.opacity = '0';
+      return menuCellElement;
+    }
 
     let tokenElements = renderTokenElements(cellObject.tokens[0], renderContext);
 
@@ -693,6 +701,7 @@ function renderMenu(token, renderContext) {
   menuElement.appendChild(tempRowElement);
 
   for (let i = 0; i < cellElements.length; i++) {
+    if (cellElements[i].style.opacity) continue;
     let menuCellElement = cellElements[i];
     tempRowElement.appendChild(menuCellElement);
 

@@ -91,7 +91,7 @@ code.canopy-code-block {
 
   .canopy-tooltiptext {
     visibility: hidden;
-    width: 140px;
+    width: 200px;
     background-color: white;
     color: black;
     text-align: center;
@@ -168,16 +168,17 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
+  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code { // open and selected
     .canopy-link-content-container {
       background-color: #edeefc;
+      border: 1px solid #e2e2e2;
       text-decoration: none;
     }
   }
 
-  &.canopy-open-link .canopy-link-content-container {
-    background-color: #f0f0f0;
-    border: 1px solid #cccccc;
+  &.canopy-open-link .canopy-link-content-container { // just open
+    background-color: #e1dfdf;
+    border: 1px solid #cbcaca;
     border-radius: 1px;       
     unicode-bidi: inherit;    
   }
@@ -338,8 +339,8 @@ table {
   max-width: 90%;
   border-collapse: collapse;
   border: none; // we put the border on the TDs to allow omitted table cells
-  font-size: 18px;
-  min-width: 500px;
+  font-size: .85em;
+  min-width: 250px;
   table-layout: fixed;
 
   &:not(:last-child) {
@@ -374,7 +375,6 @@ table {
       text-shadow: none;
       background-color: #FFFFFF00;
       border: none;
-      padding: 4px; // to force breaking onto multiple lines
     
       &, &.canopy-open-link, &.canopy-selected-link {
         .canopy-link-content-container {
@@ -499,6 +499,7 @@ table {
     .canopy-menu-content-container {
       display: inline;
       max-width: 100%;
+      width: 100%; // doesn't expand unless explicitely set
       max-height: 100%;
     }
 
@@ -558,11 +559,6 @@ table {
         top: 5px;
         left: 6px;
         white-space: nowrap; // Prevents the icon from wrapping
-      }
-
-      .canopy-up-cycle-icon {
-        top: 2px;  
-        left: 6.5px;
       }
 
       &[dir="rtl"] {

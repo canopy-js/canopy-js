@@ -8,7 +8,7 @@ function displaySegment(topic, subtopic) {
     return `[${topic.mixedCase}]`;
   } else {
     const ltrMark = bothHaveRtl ? '\u200E' : '';
-    return `[${subtopic.mixedCase}${ltrMark} (${topic.mixedCase})]`;
+    return `[${topic.mixedCase}${ltrMark}, ${subtopic.mixedCase}]`;
   }
 }
 

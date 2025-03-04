@@ -41,9 +41,13 @@ function parseText({ text, parserContext }) {
 
     if (result) continue;
 
-    parserContext.buffer += characters[i];
-    parserContext.incrementCharacterNumber();
-    if (characters[i] === '\n') parserContext.incrementLineAndResetCharacterNumber();
+    let textSpan = string.match(/^(?:(?!\S\S\S\S?\S?\S?:\/\/)(?!(?:^|\s)(?:..?.?\.|- ))(?!\s- )[A-Za-z0-9,?'":;%$#@()/\s])+/)?.[0];
+    let initialPlaintext = textSpan || characters[i]; // obvious plaintext or special character that is really plaintext
+    parserContext.buffer += initialPlaintext;
+    i += initialPlaintext.length - 1; // will get incremented
+    parserContext.incrementLineAndResetCharacterNumber(initialPlaintext.match(/\n/g)?.length || 0);
+    parserContext.incrementCharacterNumber(initialPlaintext.split('\n').slice(-1)[0].length || 0);
+
   }
 
   if (parserContext.buffer) tokens.push(new TextToken(parserContext.buffer));
