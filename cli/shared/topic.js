@@ -12,7 +12,8 @@ class Topic {
     this.display = string; // the string precisely as it appears in the expl file, even with backslashes which will get handled on the front-end
 
     this.mixedCase = removeStyleCharacters(string)  // the display verison sans style characters * _ ~ ` and a trailing question mark, encoding style characters
-      .replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]); // remove backslashes that are escaping subsequent character. webkit compatible
+      .replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]) // remove backslashes that are escaping subsequent character. webkit compatible
+      .normalize("NFD"); // standardize order of diacritics, necessary for mixed not just caps because request json filenames % encoded
 
     this.cssMixedCase = CSS.escape(this.mixedCase);
 
@@ -20,8 +21,6 @@ class Topic {
       new RegExp('\\' + Object.keys(Topic.urlConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
       match => Topic.urlConversionRules[match]
     );
-
-    // console.error([string, this.url])
 
     this.topicFileName = this.mixedCase.replace(
       new RegExp('\\' + Object.keys(Topic.fileNameConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
