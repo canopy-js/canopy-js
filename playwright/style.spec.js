@@ -805,6 +805,15 @@ test.describe('Block entities', () => {
     expect(secondLinkWidth).not.toBeGreaterThan(containerWidth * 0.9); // It should not fill the container
   });
 
+  test('It allows unicode normalized links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Unicode_normalized_links');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Unicode_normalized_links");
+
+    await page.click('text=café');
+    await expect(page).toHaveURL("/United_States/New_York/Style_examples#Unicode_normalized_links/Café");
+    await expect(page.locator('.canopy-selected-section')).toHaveText('Café is a cozy spot for coffee - this topic definition key uses \\u00e9.');
+  });
+
   test('It allows solo hash links [[#]]', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
 
