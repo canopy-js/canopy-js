@@ -46,7 +46,11 @@ class BulkFileParser {
         throw new Error(chalk.red(`Invalid directory path: "[${section.displayCategoryPath}]"`));
       }
 
+      let categoryNotesFilePath = `${section.diskDirectoryPath}/${section.terminalCategory}.expl`;
+      let categoryNotesBuffer = '';
+
       section.files.forEach((file) => {
+
         if (file.asterisk && file.key) { // Create topic file
           let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).topicFileName}.expl`;
 
@@ -64,27 +68,23 @@ class BulkFileParser {
               defaultTopicKey = file.key;
             }
           }
-        } else { // make note file
-          let firstFourtyCharacters = file.text.match(/^(([^\n.?!]{0,40}(?![A-Za-z0-9]))|([^\n.?!]{0,40}))/)[0] || section.terminalCategory;
-          let fileName = Topic.for(firstFourtyCharacters).topicFileName;
-          let idSuffix = section.orderedCategory ? '' : generateIdSuffix(`${section.diskDirectoryPath}/${fileName}`, `.expl`, fileContentsByPath);
-          let noteFileName = `${section.diskDirectoryPath}/${Topic.for(firstFourtyCharacters).topicFileName}${idSuffix}.expl`;
-          fileContentsByPath[noteFileName] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
+        } else { // Add to category notes
+          categoryNotesBuffer += (categoryNotesBuffer ? '\n' : '') + file.text.trim() + '\n';
         }
       });
+
+      if (categoryNotesBuffer) {
+        let existingContents = fileContentsByPath[categoryNotesFilePath];
+        fileContentsByPath[categoryNotesFilePath] = (existingContents ? existingContents + '\n' : '') + categoryNotesBuffer;
+
+        if (fileContentsByPath[categoryNotesFilePath].match(/^[^-][^:;.,?!]*[^\\]\?/)) { // note will be misrecognized as ? topic
+          fileContentsByPath[categoryNotesFilePath] =
+          fileContentsByPath[categoryNotesFilePath].replace(/\?/, '\\?');
+        }
+      }
     });
 
     return { newFileSet: new FileSet(fileContentsByPath), defaultTopicPath, defaultTopicKey };
-  }
-}
-
-function generateIdSuffix(prefix, suffix, hash) {
-  if (hash.hasOwnProperty(prefix + suffix)) {
-    let i = 1;
-    while (hash.hasOwnProperty(`${prefix}-${String(i).padStart(2, '0')}${suffix}`)) { i++; }
-    return `-${String(i).padStart(2, '0')}`;
-  } else {
-    return '';
   }
 }
 

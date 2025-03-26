@@ -318,7 +318,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/Topic%3A_Paragraph.expl': "Topic: Paragraph.\n"
+      'topics/A/B/C/C.expl': "Topic: Paragraph.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -330,13 +330,13 @@ describe('BulkFileParser', function() {
 
   test('a first note with an escaped question mark does not get double escaped', () => {
     let bulkFileString = dedent`[A/B/C]
-    This is a note beginning with a question mark that will get misrecognized as a topic\\?` + '\n';
+    This is a note beginning with a question mark that may get misrecognized as a topic\\?` + '\n';
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      "topics/A/B/C/This_is_a_note_beginning_with_a_question.expl": "This is a note beginning with a question mark that will get misrecognized as a topic\\?\n"
+      "topics/A/B/C/C.expl": "This is a note beginning with a question mark that may get misrecognized as a topic\\?\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -415,7 +415,7 @@ describe('BulkFileParser', function() {
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/This_one_has_no_key.expl': "This one has no key.\n"
+      'topics/A/B/C/C.expl': "This one has no key.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -440,9 +440,8 @@ describe('BulkFileParser', function() {
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
-      'topics/A/B/C/This_one_has_no_key.expl': "This one has no key.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/This_one_also_has_no_key.expl': "This one also has no key.\n"
+      'topics/A/B/C/C.expl': "This one has no key.\n\nThis one also has no key.\n",
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -462,8 +461,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/C.expl': "C: Paragraph.\n",
-      "topics/A/B/C/This_one_has_no_key.expl": "This one has no key.\n"
+      'topics/A/B/C/C.expl': "C: Paragraph.\n\nThis one has no key.\n",
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -490,10 +488,8 @@ describe('BulkFileParser', function() {
 
     expect(newFileSet.fileContentsByPath).toEqual({
       'topics/A/B/C/Topic1.expl': "Topic1: Paragraph.\n",
-      'topics/A/B/C/Note_1.expl': "Note 1.\n",
       'topics/A/B/C/Topic2.expl': "Topic2: Paragraph.\n",
-      'topics/A/B/C/Note_2.expl': "Note 2.\n",
-
+      'topics/A/B/C/C.expl': "Note 1.\n\nNote 2.\n"
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -606,9 +602,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      "topics/A/B/C/This_is_a_note.expl": "This is a note.\n",
-      "topics/A/B/C/This_is_a_note-01.expl": "This is a note.\n",
-      "topics/A/B/C/This_is_a_unique_note.expl": "This is a unique note.\n"
+      "topics/A/B/C/C.expl": "This is a note.\n\nThis is a note.\n\nThis is a unique note.\n",
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -618,7 +612,7 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test('it defaults to category name for empty note files', () => {
+  test('it adds empty note files to category note file', () => {
     let bulkFileString = dedent`[A/B/C]
     *
 
@@ -632,10 +626,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      "topics/A/B/C/This_is_a_note.expl": "This is a note.\n",
-      "topics/A/B/C/C.expl": "\n",
-      "topics/A/B/C/C-01.expl": "\n",
-      "topics/A/B/C/This_is_a_unique_note.expl": "This is a unique note.\n"
+      "topics/A/B/C/C.expl": "\n\n\n\nThis is a note.\n\nThis is a unique note.\n",
     });
 
     expect(newFileSet.directoryPaths).toEqual([
@@ -653,7 +644,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      "topics/A/B/C/#/This_is_a_note.expl": "This is a note.\n",
+      "topics/A/B/C/#/#.expl": "This is a note.\n",
     });
 
     expect(newFileSet.directoryPaths).toEqual([
