@@ -19,6 +19,7 @@ let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
 const readline = require('readline');
+const { spawn } = require('child_process');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
@@ -93,7 +94,7 @@ const bulk = async function(selectedFileList, options = {}) {
     if (storeOriginalSelection) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
   }
 
-  function handleFinish({deleteBulkFile, originalSelectedFilesList}) {
+  function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     let originalSelectionFileSet = originalSelectedFilesList ?
       fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
@@ -120,10 +121,10 @@ const bulk = async function(selectedFileList, options = {}) {
 
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
-    setUpBulkFile({storeOriginalSelection: false, selectedFileList});
-    editor(options.bulkFileName, { editor: process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
-      handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true });
-    });
+    setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
+    const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
+    return openEditorAndWait(options.bulkFileName, editorCmd)
+      .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }));
   }
 
   if (options.start) { // non-editor mode
@@ -143,17 +144,6 @@ const bulk = async function(selectedFileList, options = {}) {
     }
 
     if (!process.env['CANOPY_EDITOR']) console.log(chalk.bgYellow(chalk.black('Try setting your CANOPY_EDITOR environment variable so that Canopy knows which editor to use for bulk sync')));
-
-    // Open bulk file in editor and process when closed
-    if (options.editor) {
-      editor(options.bulkFileName, { editor: process.env['CANOPY_EDITOR'] || process.env['VISUAL'] || process.env['EDITOR'] || 'vi' }, () => {
-        logOrWriteError(() => {
-          handleFinish({deleteBulkFile: false});
-          log(chalk.magenta(`Canopy bulk sync: Session ending from editor close at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-          process.exit();
-        }, options);
-      });
-    }
 
     if (['emacs', 'vim', 'nano', undefined].includes(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
@@ -247,6 +237,24 @@ function debounceGenerator() {
       return callback(...argumentsArray);
     };
   };
+}
+
+function openEditorAndWait(filePath, editorCmd = 'vi') {
+  return new Promise((resolve, reject) => {
+    const child = spawn(editorCmd, [filePath], {
+      stdio: 'inherit'
+    });
+
+    child.on('exit', (code) => {
+      // If exit code is 0, assume user did ZZ (accept) even if file was unchanged
+      if (code === 0) {
+        resolve();
+      } else {
+        // Any non-zero exit code is treated as ZQ (abort)
+        reject(new Error(chalk.red('Operation aborted')));
+      }
+    });
+  });
 }
 
 function checkGitIgnoreForBulkFile(options = {}) {
