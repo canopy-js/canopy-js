@@ -140,7 +140,7 @@ program.command('bulk')
     bulk(paths, options).catch((e) => {
       if (e.message !== 'fzf exited with error code 130') { // unimportant error we get from file picker library
         if (options.error) throw e;
-        console.error(e);
+        console.error(e.message);
         process.exit(1);
       }
     });
