@@ -2,6 +2,7 @@ const { Command, Option } = require('commander');
 const init = require('./init');
 const build = require('./build');
 const watch = require('./watch');
+const utility = require('./utility');
 const serve = require('./serve/serve');
 const dev = require('./dev');
 const bulk = require('./bulk/bulk');
@@ -143,6 +144,14 @@ program.command('bulk')
         process.exit(1);
       }
     });
+  });
+
+program.command('utility')
+  .description('Print values and conversions for scripting')
+  .addOption(new Option('--categories', 'print newline separated categories'))
+  .addOption(new Option('--topics', 'print newline separated topic names'))
+  .action((options) => {
+    utility(options);
   });
 
 program.parse();
