@@ -318,7 +318,7 @@ describe('BulkFileParser', function() {
     let { newFileSet } = bulkFileParser.generateFileSet();
 
     expect(newFileSet.fileContentsByPath).toEqual({
-      'topics/A/B/C/C.expl': "Topic: Paragraph.\n"
+      'topics/A/B/C/C.expl': "Topic\\: Paragraph.\n" // we escape the colon so bulk doesn't later think it's a topic
     });
 
     expect(newFileSet.directoryPaths).toEqual([
