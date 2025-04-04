@@ -696,6 +696,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
 
     await scrollElementToViewport(page, '.canopy-selected-link');
+    await expect(page.locator('.canopy-selected-link')).toBeVisible();
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
