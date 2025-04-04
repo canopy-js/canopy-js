@@ -516,7 +516,7 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 
 [Blogs]
 
-Blogs: Canopy would let an author organize all their views in one place.
+* Blogs: Canopy would let an author organize all their views in one place.
 - Each reader would get a customized path through the content.
 - The author can include smaller and more tangential points than prose articles would allow.
 - The overall work could be much larger than an article or book.
