@@ -77,10 +77,10 @@ class BulkFileParser {
         let existingContents = fileContentsByPath[categoryNotesFilePath];
         fileContentsByPath[categoryNotesFilePath] = (existingContents ? existingContents + '\n' : '') + categoryNotesBuffer;
 
-        if (fileContentsByPath[categoryNotesFilePath].match(/^[^-][^:;.,?!]*[^\\]\?/)) { // note will be misrecognized as ? topic
-          fileContentsByPath[categoryNotesFilePath] =
-          fileContentsByPath[categoryNotesFilePath].replace(/\?/, '\\?');
-        }
+        fileContentsByPath[categoryNotesFilePath] = fileContentsByPath[categoryNotesFilePath].replace(
+          /(^[^-][^:;.,?!]*[^\\])(?=[:?](?=\s|$))/, // escape characters that will make notes look like topics later
+          '$1\\'
+        );
       }
     });
 
