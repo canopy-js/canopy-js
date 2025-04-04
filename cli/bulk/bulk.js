@@ -1,6 +1,5 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
-const editor = require('editor');
 const Fzf = require('@dgoguerra/fzf').Fzf;
 const chokidar = require('chokidar');
 const {
@@ -118,6 +117,8 @@ const bulk = async function(selectedFileList, options = {}) {
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     new DefaultTopic(); // Error in case the person changed the default topic file name
   }
+
+  selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
 
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
