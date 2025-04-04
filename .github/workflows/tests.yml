@@ -1,37 +1,82 @@
 name: Tests
 on:
   workflow_call:
+    outputs:
+      done:
+        description: "Signal that all tests are complete"
+        value: ${{ jobs.all-tests.outputs.done }}
+
 jobs:
-  test:
-    name: Tests
-    timeout-minutes: 60
+  jest:
+    name: Jest Tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: '14.x'
-    - name: Install dependencies
-      run: npm ci
-    - name: Build canopy assets
-      run: npm run build-prod
-    - name: Install canopy
-      run: npm install -g .
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run regular tests
-      run: npm run jest
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: test-results/
-        retention-days: 30
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14.x'
+      - id: cache-key
+        run: echo "key=playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - run: npm ci
+      - run: npm install -g .
+      - run: npx playwright install --with-deps
+      - run: npm run jest
+
+  playwright-tests:
+    name: Playwright (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [playwright:nav, playwright:style, playwright:rest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14.x'
+      - id: cache-key
+        run: echo "key=playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - run: npm ci
+      - run: npm run build-prod
+      - run: npm install -g .
+      - run: npx playwright install --with-deps
+      - run: |
+          if [ "${{ matrix.target }}" = "playwright:nav" ]; then
+            npx playwright test playwright/navigation.spec.js
+          elif [ "${{ matrix.target }}" = "playwright:style" ]; then
+            npx playwright test playwright/style.spec.js
+          else
+            npx playwright test $(find ./playwright -name '*.spec.js' ! -name 'navigation.spec.js' ! -name 'style.spec.js')
+          fi
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14.x'
+      - run: npm ci
+      - run: npm run lint
+
+  all-tests:
+    name: All Tests Complete
+    runs-on: ubuntu-latest
+    needs: [jest, playwright-tests, lint]
+    if: always()
+    outputs:
+      done: true
+    steps:
+      - run: echo "All tests complete"

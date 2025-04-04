@@ -3,51 +3,57 @@ on:
   push:
     branches:
       - main
+
 jobs:
   tests:
-    uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
+     uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
   build:
     needs: tests
+    if: github.ref == 'refs/heads/main' && needs.tests.outputs.done == 'true'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - run: npm install
-      - run: npm run build-prod
-      - run: |
-          mkdir ../playground-deploy
-          cp dist/playground.js ../playground-deploy/
-          cp dist/_playground.js.map ../playground-deploy/
-          cp playground/index.html ../playground-deploy/
-          cp playground/favicon.ico ../playground-deploy/
-          cp playground/logo.png ../playground-deploy/
-          cp playground/google_analytics_tag.txt ../playground-deploy/
-      - run: |
-          set -ex
-          rev=$(git rev-parse --short HEAD)
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14
 
-          git config --global user.email "canopyjs@gmail.com"
-          git config --global user.name "Canopy JS"
+    - run: npm install
+    - run: npm run build-prod
+    - name: Restore Playwright browsers from cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
 
-          # Checkout the playground branch, or create it if it doesn't exist
-          git checkout -b playground || git checkout playground
+    - run: |
+        npx serve -s dist/playground -l 5000 &
+        for i in {1..10}; do curl -sSf http://localhost:5000 && break; sleep 1; done
+        node playground/test-console.js
+      shell: bash
 
-          # Pull the latest changes from the remote playground branch, resetting your local changes to match
-          git fetch origin playground
-          git reset --hard origin/playground || true  # The '|| true' ensures the script continues even if the branch is already up-to-date
+    - run: |
+        set -ex
+        rev=$(git rev-parse --short HEAD)
 
-          # Remove all files in the current branch and copy the new build files
-          rm -rf *
-          cp -r ../playground-deploy/* .
+        git config --global user.email "canopyjs@gmail.com"
+        git config --global user.name "Canopy JS"
 
-          cat ./google_analytics_tag.txt >> index.html
+        git checkout -b playground || git checkout playground
+        git fetch origin playground
+        git reset --hard origin/playground || true
 
-          # Stage all changes, commit, and force push to the playground branch
-          git add -A
-          git commit -m "Playground built at ${rev}" --allow-empty
-          git push -u origin playground --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # move dist/playground to . and remove other files from .
+        shopt -s extglob
+        rm -rf -- !(dist)
+        mv dist/playground/* .
+        rm -rf dist
+
+        cat ./google_analytics_tag.txt >> index.html
+
+        git add -A
+        git commit -m "Playground built at ${rev}" --allow-empty
+        git push -u origin playground --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

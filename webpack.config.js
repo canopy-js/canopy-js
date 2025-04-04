@@ -1,11 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
-const nodeExternals = require('webpack-node-externals');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
     canopy: './client/canopy.js',
-    playground: './playground/src.js',
+    'playground/playground': './playground/src.js',
     rebuild_canopy: './client/rebuild_canopy.js'
   },
   output: {
@@ -19,8 +19,7 @@ module.exports = {
       path.resolve(__dirname, 'client/'),
       'node_modules'
     ],
-    extensions: [ '.js' ],
-
+    extensions: ['.js'],
     fallback: { "path": require.resolve("path-browserify") }
   },
   module: {
@@ -28,13 +27,11 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader"
-        }
+        use: { loader: "babel-loader" }
       },
       {
-        test:/\.(s*)css$/,
-        use:['style-loader','css-loader', 'sass-loader']
+        test: /\.(s*)css$/,
+        use: ['style-loader', 'css-loader', 'sass-loader']
       },
       {
         test: /\.svg$/,
@@ -42,13 +39,23 @@ module.exports = {
       }
     ]
   },
-
   stats: { colors: true },
   target: 'web',
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
-      filename: "_[file].map"
+      filename: '[file].map'
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'playground'),
+          to: path.resolve(__dirname, 'dist/playground'),
+          globOptions: {
+            ignore: ['**/src.js', '**/default_text.js', '**/playground.scss']
+          }
+        }
+      ]
     })
   ]
 }

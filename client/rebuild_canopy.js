@@ -1,9 +1,9 @@
-// Take a bulk string and build or rebuilt the #_canopy element.
+// Take a bulk string and build or rebuild the #_canopy element.
 
 let Topic = require('../cli/shared/topic');
-import REQUEST_CACHE from 'requests/request_cache';
 
-function rebuild (bulkFileString) {
+function rebuildCanopy (bulkFileString) {
+  const REQUEST_CACHE = require('requests/request_cache').default;
   if (!bulkFileString) throw new Error('No bulk file string given');
   let canopyContainer = document.querySelector('#_canopy'); // run after DOM set up
 
@@ -28,7 +28,7 @@ function rebuild (bulkFileString) {
     let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
 
     let filesToWrite;
-    ({ filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, null, defaultTopicKey));
+    ({ filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, defaultTopicKey));
 
     for (let key in REQUEST_CACHE) { // Remove old data
       if (REQUEST_CACHE.hasOwnProperty(key)) {
@@ -69,4 +69,4 @@ function rebuild (bulkFileString) {
   }
 }
 
-export { rebuild };
+export { rebuildCanopy };

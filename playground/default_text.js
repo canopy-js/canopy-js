@@ -1,6 +1,6 @@
 let defaultText = `[Canopy/Playground]
 
-* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. ([Github](https://github.com/canopy-js/canopy-js)\\)
+* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. [Github](https://github.com/canopy-js/canopy-js)
 ![Canopy.js Logo](./logo.png)
 ===
 > [[Part 2|Okay]]
@@ -105,8 +105,8 @@ Part 8: Let’s use Canopy to reuse content across different explanations.
 > [[Part 8-1|Okay]]
 ===
 
-Part 8-1: Try holding the *option or alt key* and clicking the link below.
-- Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
+Part 8-1: Try holding the *option or alt key* and clicking the link below, then selecting *More*.
+- Here is an explanation of the [[Atlantic Ocean]]
 ===
 > [[Part 9|I’m finished]]
 ===
@@ -238,21 +238,22 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 [Oceans]
 
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
+We're going to see how *this explanation* can expand to include *other explanations*.
+![Atlantic Ocean](atlantic.jpg "Atlantic Ocean" "Credit Wikipedia")
 ===
-- [[Part 1|More]]
-- [[Part 2|For later]]
+> [[Part 1|More]]
+> [[Part 2|For later]]
 ===
 
 Part 1:
-*Click the following link:*
-- The Atlantic ocean connects via the Panama Canal to the [[{Pacific Ocean}#Part 1]]
-![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
+_Our explanation of the Atlantic Ocean is going to continue into a discussion of the Pacific Ocean_
+_*Click* the following link, then select *More*_
+The Atlantic ocean connects via the Panama Canal to the [[Pacific Ocean]]
 
 Part 2: Our explanation of the Pacific Ocean has extended to include an explanation of the Atlantic on the same page.
 ===
 > [[Part 2-1|Wow!]]
 ===
-![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
 Part 2-1: So, we see that our explanation of the Atlantic Ocean can get included in an explanation of the Pacific Ocean, and vice versa.
 ===
@@ -272,20 +273,22 @@ Great, now let’s go back to where we were before this tangent.
 
 
 * Pacific Ocean: This is an explanation of the Pacific Ocean:
+![Pacific Ocean](pacific.jpg "Pacific Ocean" "Credit Wikipedia")
 ===
-- [[Part 1|More]]
-- [[Part 2|For later]]
+> [[Part 1|More]]
+> [[Part 2|For later]]
 ===
 
-Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
-- Now, click the following link while holding the *option or alt* key:
-- We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
-![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
+Part 1:
+_This is an explanation of the *Pacific Ocean* which is continuing from our earlier explanation of the *Atlantic*.
+Now we're going to start a *brand new* explanation of the Pacific Ocean, which will include explanation of the *Atlantic*.
+Click the following link while holding the *option or alt* key, then click *For later*:_
+We’re going to start a new explanation about [[the {{Pacific Ocean}}]].
 
-Part 2: Now we’re reading a new explanation, starting from the Pacific Ocean this time.
-Click the following link *normally*:
-- The Pacific Ocean connects via the Panama Canal to the [[{Atlantic Ocean}#Part 2]]
-![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
+Part 2:
+_Now we’re reading a new explanation, starting from the Pacific Ocean this time.
+Click the following link *normally*, then select *For later*:_
+The Pacific Ocean connects via the Panama Canal to the [[Atlantic Ocean]]
 
 [NYC]
 
@@ -516,7 +519,7 @@ Residents of Townsville have debated what seasons of the year the noise pollutio
 
 [Blogs]
 
-Blogs: Canopy would let an author organize all their views in one place.
+* Blogs: Canopy would let an author organize all their views in one place.
 - Each reader would get a customized path through the content.
 - The author can include smaller and more tangential points than prose articles would allow.
 - The overall work could be much larger than an article or book.
