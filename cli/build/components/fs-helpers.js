@@ -28,47 +28,41 @@ function updateFilesystem(directoriesToEnsure, filesToWrite, options = {}) {
   if (options.logging) console.log(chalk.yellow(`Created ${Object.keys(filesToWrite).length} JSON files in build/_data`));
 }
 
-function getExplFileData(topicsPath, options) {
-  let buildDirectoryExists = fs.existsSync('./build/_data/');
+function getExplFileObjects(topicsPath, options = {}) {
+  const buildDirectoryExists = fs.existsSync('./build/_data/');
   let jsonModDatesMap = {};
 
   if (options.cache && buildDirectoryExists) {
-    // Get modification dates for JSON files
-    let jsonFilesWithModDates = listFilesWithModificationDatesSync('./build/_data/');
-    jsonModDatesMap = jsonFilesWithModDates.reduce((acc, { fileName, lastModified }) => {
-      acc[fileName] = lastModified;
-      return acc;
-    }, {});
+    jsonModDatesMap = Object.fromEntries(
+      listFilesWithModificationDatesSync('./build/_data/').map(({ fileName, lastModified }) => [
+        fileName, lastModified
+      ])
+    );
   }
 
-  let explFilePaths = listExplFilesRecursive(topicsPath);
-  let fileContentsObject = {};
-  let newStatusObject = {};
+  const explFilePaths = listExplFilesRecursive(topicsPath);
 
-  explFilePaths.forEach(filePath => {
-    let topicFileContents = fs.readFileSync(filePath, 'utf8');
-    let key = topicKeyOfString(topicFileContents);
-    if (!key) return;
+  return Object.fromEntries(
+    explFilePaths.map(fullPath => {
+      const filePath = path.relative('.', fullPath);
+      const contents = fs.readFileSync(fullPath, 'utf8');
+      const stats = fs.statSync(fullPath);
+      const modTime = stats.mtime.getTime();
 
-    let jsonFileName = Topic.for(key).jsonFileName + '.json';
+      let isNew = true;
+      const key = topicKeyOfString(contents);
 
-    let isNew = true; // Assume the file is new unless proven otherwise
-    if (options.cache && buildDirectoryExists) {
-      let jsonFilePath = path.join('./build/_data/', jsonFileName);
-      if (fs.existsSync(jsonFilePath)) {
-        let explFileStats = fs.statSync(filePath);
-        let jsonFileLastModified = jsonModDatesMap[jsonFileName];
-        isNew = explFileStats.mtime > jsonFileLastModified;
+      if (key && options.cache && buildDirectoryExists) {
+        const jsonFileName = Topic.for(key).jsonFileName + '.json';
+        const jsonLastModified = jsonModDatesMap[jsonFileName];
+        if (jsonLastModified) {
+          isNew = stats.mtime > jsonLastModified;
+        }
       }
-    }
 
-    // Mapping file path to its contents
-    fileContentsObject[filePath] = topicFileContents;
-    // Mapping file path to its new status
-    newStatusObject[filePath] = isNew;
-  });
-
-  return [fileContentsObject, newStatusObject];
+      return [filePath, { contents, isNew, modTime }];
+    })
+  );
 }
 
 function listFilesWithModificationDatesSync(directoryPath) {
@@ -97,5 +91,5 @@ function listFilesWithModificationDatesSync(directoryPath) {
 module.exports = {
   listExplFilesRecursive,
   updateFilesystem,
-  getExplFileData
+  getExplFileObjects
 };
