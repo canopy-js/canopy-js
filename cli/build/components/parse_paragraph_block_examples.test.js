@@ -7,7 +7,7 @@ test('it parses a text block', () => {
   let text = 'This is a line.\n' +
     'This is also a line.';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     { 
@@ -24,7 +24,7 @@ test('it parses a fence-style code block', () => {
     '}\n' +
     '```';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
@@ -41,7 +41,7 @@ test('it parses a line-prefix style code block', () => {
     '` }\n' +
     '`\n';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
@@ -55,7 +55,7 @@ test('it parses a LTR quote block', () => {
   let text = '> To be or not to be;\n' +
     '> that is the question.';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
@@ -75,7 +75,7 @@ test('it parses a LTR quote block with multiline style', () => {
   let text = '> To be or not *to be;\n' +
     '> that is* the question.';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
@@ -108,7 +108,7 @@ test('it parses a RTL quote block', () => {
   let text = '< To be or not to be;\n' +
     '< that is the question.';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
@@ -132,7 +132,7 @@ test('it parses a list block', () => {
     '2. This is the second item.\n' +
     '  * This is the last line.';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens[0].type).toEqual('outline');
 
@@ -174,7 +174,7 @@ test('it parses a table block', () => {
     '|======|=============|\n' +
     '| data \\|| data2 |';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens[0].type).toEqual('table');
 
@@ -188,7 +188,7 @@ test('it rejects invalid merge syntax that goes off table', () => {
   let text = '| Header | Second column |\n' +
     '| \\< | \\< |';
 
-  expect(() => parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }))).toThrow(
+  expect(() => parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }))).toThrow(
     chalk.red(`Invalid merge instructions in table: ${text}`)
   )
 });
@@ -197,7 +197,7 @@ test('it rejects invalid merge syntax that goes in different directions', () => 
   let text = '| Header | Second column |\n' +
     '| \\^ | \\< |';
 
-  expect(() => parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }))).toThrow(
+  expect(() => parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }))).toThrow(
     chalk.red(`Invalid merge instructions in table: ${text}`)
   )
 });
@@ -206,7 +206,7 @@ test('it parses a footnote block', () => {
   let text = '[^1]: This is the first footnote\n' +
     '[^2]: This is the second footnote';
 
-  let tokens = parseParagraph(text, new ParserContext({ explFileData: {}, defaultTopicString: 'ABC' }));
+  let tokens = parseParagraph(text, new ParserContext({ explFileStrings: {}, defaultTopicString: 'ABC' }));
 
   expect(tokens).toEqual([
     {
