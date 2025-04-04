@@ -118,12 +118,25 @@ const bulk = async function(selectedFileList, options = {}) {
     new DefaultTopic(); // Error in case the person changed the default topic file name
   }
 
+  selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
+
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
     const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
     return openEditorAndWait(options.bulkFileName, editorCmd)
-      .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }));
+      .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }))
+      .catch((e) => {
+        let message = chalk.bold.red('Error:') + ' ' + e.message + '\n' +
+          chalk.dim('Tip:') + ' Run ' + chalk.green('canopy bulk --resume') + ' to continue editing.\n';
+        throw new Error(message);
+      });
+  }
+
+  if (options.resume) { // resume editing file whose parsing ended in error
+    const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
+    return openEditorAndWait(options.bulkFileName, editorCmd)
+      .then(() => handleFinish({ originalSelectedFilesList: [], deleteBulkFile: true }));
   }
 
   if (options.start) { // non-editor mode
@@ -250,7 +263,7 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
         resolve();
       } else {
         // Any non-zero exit code is treated as ZQ (abort)
-        reject(new Error(chalk.red('Operation aborted')));
+        reject(new Error(chalk.red('Bulk edit aborted')));
       }
     });
   });
