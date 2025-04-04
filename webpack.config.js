@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -49,6 +50,18 @@ module.exports = {
   plugins: [
     new webpack.SourceMapDevToolPlugin({
       filename: "_[file].map"
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'playground'),
+          to: path.resolve(__dirname, 'dist/playground')
+        },
+        {
+          from: path.resolve(__dirname, 'dist/playground.js'),
+          to: path.resolve(__dirname, 'dist/playground/playground.js')
+        }
+      ]
     })
   ]
 }
