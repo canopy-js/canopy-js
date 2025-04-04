@@ -19,12 +19,12 @@ jobs:
       - run: npm run build-prod
       - run: |
           mkdir ../playground-deploy
-          cp dist/playground.js ../playground-deploy/
-          cp dist/_playground.js.map ../playground-deploy/
-          cp playground/index.html ../playground-deploy/
-          cp playground/favicon.ico ../playground-deploy/
-          cp playground/logo.png ../playground-deploy/
-          cp playground/google_analytics_tag.txt ../playground-deploy/
+          cp dist/playground/playground.js ../playground-deploy/
+          cp dist/playground/_playground.js.map ../playground-deploy/
+          cp dist/playground/index.html ../playground-deploy/
+          cp dist/playground/favicon.ico ../playground-deploy/
+          cp dist/playground/logo.png ../playground-deploy/
+          cp dist/playground/google_analytics_tag.txt ../playground-deploy/
       - run: |
           set -ex
           rev=$(git rev-parse --short HEAD)
@@ -32,20 +32,16 @@ jobs:
           git config --global user.email "canopyjs@gmail.com"
           git config --global user.name "Canopy JS"
 
-          # Checkout the playground branch, or create it if it doesn't exist
           git checkout -b playground || git checkout playground
 
-          # Pull the latest changes from the remote playground branch, resetting your local changes to match
           git fetch origin playground
-          git reset --hard origin/playground || true  # The '|| true' ensures the script continues even if the branch is already up-to-date
+          git reset --hard origin/playground || true
 
-          # Remove all files in the current branch and copy the new build files
           rm -rf *
           cp -r ../playground-deploy/* .
 
           cat ./google_analytics_tag.txt >> index.html
 
-          # Stage all changes, commit, and force push to the playground branch
           git add -A
           git commit -m "Playground built at ${rev}" --allow-empty
           git push -u origin playground --force

@@ -1,6 +1,19 @@
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+const CopyPlugin = require('copy-webpack-plugin');
+
+class MovePlaygroundPlugin { // need this to happen after build creates playground.js asset
+  apply(compiler) {
+    compiler.hooks.emit.tapAsync('MovePlaygroundPlugin', (compilation, callback) => {
+      const asset = compilation.assets['playground.js'];
+      if (asset) {
+        compilation.assets['playground/playground.js'] = asset;
+      }
+      callback();
+    });
+  }
+}
 
 module.exports = {
   entry: {
@@ -49,6 +62,15 @@ module.exports = {
   plugins: [
     new webpack.SourceMapDevToolPlugin({
       filename: "_[file].map"
-    })
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'playground'),
+          to: path.resolve(__dirname, 'dist/playground')
+        }
+      ]
+    }),
+    new MovePlaygroundPlugin()
   ]
 }
