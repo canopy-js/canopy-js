@@ -54,7 +54,7 @@ p.canopy-paragraph {
   max-width: 750px;
   overflow-wrap: break-word; // this causes eg table cells to break long lines into rows
   //word-break: break-word; // this separates words in table cells
-  hyphens: auto; // not sure we want this, rather put whole word on next line?
+  //hyphens: auto; // not sure we want this, rather put whole word on next line?
   margin: auto;
 
   line-height: 1.3;

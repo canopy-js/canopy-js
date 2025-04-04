@@ -8,6 +8,7 @@ jobs:
      uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
   npm:
     needs: tests
+    if: github.ref == 'refs/heads/main' && needs.tests.outputs.done == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

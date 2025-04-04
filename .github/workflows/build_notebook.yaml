@@ -8,8 +8,8 @@ jobs:
     uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
   build:
     needs: tests
+    if: github.ref == 'refs/heads/main' && needs.tests.outputs.done == 'true'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -20,7 +20,7 @@ jobs:
       - run: |
           mkdir ../notebook-deploy
           cp dist/rebuild_canopy.js ../notebook-deploy/
-          cp dist/_rebuild_canopy.js.map ../notebook-deploy/
+          cp dist/rebuild_canopy.js.map ../notebook-deploy/
           cp notebook/index.html ../notebook-deploy/
           cp notebook/favicon.ico ../notebook-deploy/
           cp notebook/google_analytics_tag.txt ../notebook-deploy/

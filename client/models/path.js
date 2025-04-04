@@ -350,7 +350,7 @@ class Path {
     return parentPathTopicStrings.some((enclosingTopicString) => {
       return targetPathTopicStrings.some((targetTopicString) => {
         return enclosingTopicString === targetTopicString; //&&
-          //!(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
+          /// !(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
       });
     });
   }
