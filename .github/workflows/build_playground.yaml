@@ -20,7 +20,7 @@ jobs:
       - run: |
           mkdir ../playground-deploy
           cp dist/playground/playground.js ../playground-deploy/
-          cp dist/playground/_playground.js.map ../playground-deploy/
+          cp dist/playground/playground.js.map ../playground-deploy/
           cp dist/playground/index.html ../playground-deploy/
           cp dist/playground/favicon.ico ../playground-deploy/
           cp dist/playground/logo.png ../playground-deploy/
