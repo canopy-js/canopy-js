@@ -44,7 +44,7 @@ module.exports = {
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
-      filename: '_[name].js.map'
+      filename: '[file].map'
     }),
     new CopyPlugin({
       patterns: [
