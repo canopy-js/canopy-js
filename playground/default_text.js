@@ -105,8 +105,8 @@ Part 8: Let’s use Canopy to reuse content across different explanations.
 > [[Part 8-1|Okay]]
 ===
 
-Part 8-1: Try holding the *option or alt key* and clicking the link below.
-- Here is an explanation of the [[{Atlantic Ocean}#Part 1]]
+Part 8-1: Try holding the *option or alt key* and clicking the link below, then selecting *More*.
+- Here is an explanation of the [[Atlantic Ocean]]
 ===
 > [[Part 9|I’m finished]]
 ===
@@ -238,15 +238,17 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 [Oceans]
 
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
+We're going to see how this explanation can expand to include explanations of other things.
+![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 ===
-- [[Part 1|More]]
-- [[Part 2|For later]]
+> [[Part 1|More]]
+> [[Part 2|For later]]
 ===
 
 Part 1:
-*Click the following link:*
-- The Atlantic ocean connects via the Panama Canal to the [[{Pacific Ocean}#Part 1]]
-![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
+(Our explanation of the Atlantic Ocean is going to continue onwards into a discussion of the Pacific Ocean)
+*Click the following link, then select "More"*
+The Atlantic ocean connects via the Panama Canal to the [[Pacific Ocean]]
 
 Part 2: Our explanation of the Pacific Ocean has extended to include an explanation of the Atlantic on the same page.
 ===
@@ -272,20 +274,22 @@ Great, now let’s go back to where we were before this tangent.
 
 
 * Pacific Ocean: This is an explanation of the Pacific Ocean:
+![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
 ===
-- [[Part 1|More]]
-- [[Part 2|For later]]
+> [[Part 1|More]]
+> [[Part 2|For later]]
 ===
 
-Part 1: This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
-- Now, click the following link while holding the *option or alt* key:
-- We’re going to start a new explanation about [[{|the }{Pacific Ocean}#Part 2]]
+Part 1:
+This is an explanation of the Pacific Ocean which is continuing from our explanation of the Atlantic Ocean that began earlier on the page.
 ![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
+Now we're going to start a brand new explanation of the Pacific Ocean, and see how just as our Atlantic explanation included the Pacific, so too our Pacific explanation can include the Atlantic.
+(Click the following link while holding the *option or alt* key, then click *For later*:)
+We’re going to start a new explanation about [[the {{Pacific Ocean}}]].
 
 Part 2: Now we’re reading a new explanation, starting from the Pacific Ocean this time.
-Click the following link *normally*:
-- The Pacific Ocean connects via the Panama Canal to the [[{Atlantic Ocean}#Part 2]]
-![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
+Click the following link *normally*, then select *For later*:
+The Pacific Ocean connects via the Panama Canal to the [[Atlantic Ocean]]
 
 [NYC]
 

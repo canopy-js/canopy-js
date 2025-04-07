@@ -1,49 +1,41 @@
-name: Build Playground
-on:
-  push:
-    branches:
-      - main
-jobs:
-  tests:
-    uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
-  build:
-    needs: tests
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - run: npm install
-      - run: npm run build-prod
-      - run: |
-          mkdir ../playground-deploy
-          cp dist/playground/playground.js ../playground-deploy/
-          cp dist/playground/playground.js.map ../playground-deploy/
-          cp dist/playground/index.html ../playground-deploy/
-          cp dist/playground/favicon.ico ../playground-deploy/
-          cp dist/playground/logo.png ../playground-deploy/
-          cp dist/playground/google_analytics_tag.txt ../playground-deploy/
-      - run: |
-          set -ex
-          rev=$(git rev-parse --short HEAD)
+build:
+  needs: tests
+  runs-on: ubuntu-latest
+  if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
+  steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14
 
-          git config --global user.email "canopyjs@gmail.com"
-          git config --global user.name "Canopy JS"
+    - run: npm install
+    - run: npm run build-prod
 
-          git checkout -b playground || git checkout playground
+    - run: |
+        npx playwright install --with-deps
+        npx serve -s dist/playground -l 5000 &
+        for i in {1..10}; do curl -sSf http://localhost:5000 && break; sleep 1; done
+        node playground/test-console.js
+      shell: bash
 
-          git fetch origin playground
-          git reset --hard origin/playground || true
+    - run: |
+        set -ex
+        rev=$(git rev-parse --short HEAD)
 
-          rm -rf *
-          cp -r ../playground-deploy/* .
+        git config --global user.email "canopyjs@gmail.com"
+        git config --global user.name "Canopy JS"
 
-          cat ./google_analytics_tag.txt >> index.html
+        git checkout -b playground || git checkout playground
+        git fetch origin playground
+        git reset --hard origin/playground || true
 
-          git add -A
-          git commit -m "Playground built at ${rev}" --allow-empty
-          git push -u origin playground --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        rm -rf *
+        cp -r dist/playground/* .
+
+        cat ./google_analytics_tag.txt >> index.html
+
+        git add -A
+        git commit -m "Playground built at ${rev}" --allow-empty
+        git push -u origin playground --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

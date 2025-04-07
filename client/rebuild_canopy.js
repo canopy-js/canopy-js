@@ -2,7 +2,7 @@
 
 let Topic = require('../cli/shared/topic');
 
-function rebuild (bulkFileString) {
+function rebuildCanopy (bulkFileString, buildOptions = {}) {
   const REQUEST_CACHE = require('requests/request_cache').default;
   if (!bulkFileString) throw new Error('No bulk file string given');
   let canopyContainer = document.querySelector('#_canopy'); // run after DOM set up
@@ -69,4 +69,4 @@ function rebuild (bulkFileString) {
   }
 }
 
-export { rebuild };
+export { rebuildCanopy };

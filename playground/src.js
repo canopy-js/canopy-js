@@ -1,5 +1,5 @@
 import './playground.scss';
-import { rebuild as rebuildCanopy } from '../client/rebuild_canopy';
+import { rebuildCanopy } from '../client/rebuild_canopy';
 
 let playgroundContainer = document.createElement('DIV');
 playgroundContainer.id = 'playground-container';
@@ -27,6 +27,7 @@ playgroundContainer.appendChild(scrollableContainer);
 
 let canopyContainer = document.createElement('DIV');
 canopyContainer.id = '_canopy';
+canopyContainer.dataset.hashUrls = true;
 scrollableContainer.appendChild(canopyContainer);
 
 const defaultText = require('./default_text').default;
@@ -53,7 +54,7 @@ function tryBuild() {
   consoleElement.innerText = defaultConsoleText();
 
   try {
-    rebuildCanopy(editor.value);
+    rebuildCanopy(editor.value, { hashUrls: true });
   } catch(e) {
     consoleElement.innerText = e.message;
     consoleElement.classList.add('error');

@@ -52,7 +52,7 @@ module.exports = {
           from: path.resolve(__dirname, 'playground'),
           to: path.resolve(__dirname, 'dist/playground'),
           globOptions: {
-            ignore: ['**/src.js']
+            ignore: ['**/src.js', '**/default_text.js', '**/playground.scss']
           }
         }
       ]
