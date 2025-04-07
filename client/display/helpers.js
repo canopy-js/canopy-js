@@ -198,8 +198,8 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let behavior = options.scrollStyle || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  
-  if (pathToDisplay.equals(Path.firstTopicPath) && !linkToSelect) return scrollElementToPosition(
+
+  if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) return scrollElementToPosition(
     Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
   );
 
