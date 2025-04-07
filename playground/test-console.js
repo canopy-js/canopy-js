@@ -4,23 +4,23 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  await page.goto('http://localhost:8080', { waitUntil: 'load' });
+  try {
+    await page.goto('http://localhost:49732', { waitUntil: 'load' });
 
-  const consoleEl = await page.$('#console');
-  if (!consoleEl) {
-    console.error('❌ No element with id="console" found');
+    const consoleEl = await page.$('#console');
+    if (!consoleEl) throw new Error('Missing #console');
+
+    const hasErrorClass = await consoleEl.evaluate(el =>
+      el.classList.contains('error')
+    );
+
+    if (hasErrorClass) throw new Error('#console has class="error"');
+
+    console.log('✅ DOM OK');
+  } catch (e) {
+    console.error('❌', e.message);
     process.exit(1);
+  } finally {
+    await browser.close();
   }
-
-  const hasErrorClass = await consoleEl.evaluate(el =>
-    el.classList.contains('error')
-  );
-
-  if (hasErrorClass) {
-    console.error('❌ #console has class="error"');
-    process.exit(1);
-  }
-
-  console.log('✅ #console exists and has no error class');
-  await browser.close();
 })();
