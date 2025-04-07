@@ -239,7 +239,7 @@ PendingMessages database table: There is a \`PendingMessages\` database table:
 
 * Atlantic Ocean: Now we have started a new explanation about the Atlantic Ocean!
 We're going to see how this explanation can expand to include explanations of other things.
-![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
+![Atlantic Ocean](atlantic.jpg "Atlantic Ocean" "Credit Wikipedia")
 ===
 > [[Part 1|More]]
 > [[Part 2|For later]]
@@ -254,7 +254,6 @@ Part 2: Our explanation of the Pacific Ocean has extended to include an explanat
 ===
 > [[Part 2-1|Wow!]]
 ===
-![Atlantic Ocean](https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg/1920px-1710_De_La_Feuille_Map_of_Africa_-_Geographicus_-_Africa-lafeuille-1710.jpg "Atlantic Ocean" "Credit Wikipedia")
 
 Part 2-1: So, we see that our explanation of the Atlantic Ocean can get included in an explanation of the Pacific Ocean, and vice versa.
 ===
@@ -274,7 +273,7 @@ Great, now let’s go back to where we were before this tangent.
 
 
 * Pacific Ocean: This is an explanation of the Pacific Ocean:
-![Pacific Ocean](https://upload.wikimedia.org/wikipedia/commons/4/4e/Ortelius_-_Maris_Pacifici_1589.jpg "Pacific Ocean" "Credit Wikipedia")
+![Pacific Ocean](pacific.jpg "Pacific Ocean" "Credit Wikipedia")
 ===
 > [[Part 1|More]]
 > [[Part 2|For later]]

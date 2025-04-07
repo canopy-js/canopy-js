@@ -48,7 +48,7 @@ jobs:
         shopt -s extglob
         rm -rf -- !(dist)
         mv dist/playground/* .
-        rmdir dist/playground dist
+        rm -rf dist
 
         cat ./google_analytics_tag.txt >> index.html
 
