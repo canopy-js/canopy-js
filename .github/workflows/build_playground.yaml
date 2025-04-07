@@ -44,9 +44,11 @@ jobs:
         git fetch origin playground
         git reset --hard origin/playground || true
 
-        rm -rf *
-        ls -al dist/playground
-        cp -r dist/playground/* .
+        # move dist/playground to . and remove other files from .
+        shopt -s extglob
+        rm -rf -- !(dist)
+        mv dist/playground/* .
+        rmdir dist/playground dist
 
         cat ./google_analytics_tag.txt >> index.html
 
