@@ -19,6 +19,13 @@ jobs:
 
     - run: npm install
     - run: npm run build-prod
+    - name: Restore Playwright browsers from cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
 
     - run: |
         npx serve -s dist/playground -l 5000 &

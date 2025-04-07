@@ -11,6 +11,13 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '14.x'
+    - name: Restore Playwright browsers from cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
     - name: Install dependencies
       run: npm ci
     - name: Build canopy assets
