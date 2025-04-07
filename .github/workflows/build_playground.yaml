@@ -9,8 +9,8 @@ jobs:
      uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
   build:
     needs: tests
+    if: github.ref == 'refs/heads/main' && needs.tests.outputs.done == 'true'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
@@ -45,6 +45,7 @@ jobs:
         git reset --hard origin/playground || true
 
         rm -rf *
+        ls -al dist/playground
         cp -r dist/playground/* .
 
         cat ./google_analytics_tag.txt >> index.html
