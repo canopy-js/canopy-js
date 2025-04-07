@@ -1,8 +1,16 @@
-build:
-  needs: tests
-  runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
-  steps:
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+     uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
+    steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
