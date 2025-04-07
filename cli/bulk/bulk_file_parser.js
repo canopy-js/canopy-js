@@ -78,7 +78,7 @@ class BulkFileParser {
         fileContentsByPath[categoryNotesFilePath] = (existingContents ? existingContents + '\n' : '') + categoryNotesBuffer;
 
         fileContentsByPath[categoryNotesFilePath] = fileContentsByPath[categoryNotesFilePath].replace(
-          /(^[^-][^:;.,?!]*[^\\])(?=[:?])/, // escape characters that will make notes look like topics later
+          /(^[^-][^:;.,?!]*[^\\])(?=[:?](?=\s|$))/, // escape characters that will make notes look like topics later
           '$1\\'
         );
       }

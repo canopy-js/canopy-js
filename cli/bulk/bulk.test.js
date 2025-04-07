@@ -346,6 +346,42 @@ describe('BulkFileParser', function() {
     ]);
   });
 
+  test('a first note with a space-terminated colon is escaped', () => {
+    let bulkFileString = dedent`[A/B/C]
+    This is a note beginning with a colon mark that may get misrecognized as a topic:` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      "topics/A/B/C/C.expl": "This is a note beginning with a colon mark that may get misrecognized as a topic\\:\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
+  test('a first note with a non-space-terminated colon is not escaped', () => {
+    let bulkFileString = dedent`[A/B/C]
+    This is a note beginning with a colon mark that may get misrecognized as a topic:abc` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      "topics/A/B/C/C.expl": "This is a note beginning with a colon mark that may get misrecognized as a topic:abc\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
   test('it parses data file with multiple files', () => {
     let bulkFileString = dedent`[A/B/C]
     * Topic1: Paragraph.
