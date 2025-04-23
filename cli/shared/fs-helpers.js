@@ -29,8 +29,13 @@ let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs
 
 function tryDefaultTopic() {
   let defaultTopic = {};
-  try { defaultTopic = new DefaultTopic(); } catch {
-    console.error(chalk.red(`Failed to find default topic file`));
+  try { defaultTopic = new DefaultTopic(); } catch(e) {
+    if (!fs.existsSync('./topics')) {
+      console.error(chalk.red("You are not in a Canopy project directory."));
+    } else {
+      console.error(chalk.red(e));
+    }
+    process.exit(1);
   }
   return defaultTopic;
 }

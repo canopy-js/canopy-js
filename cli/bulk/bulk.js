@@ -1,6 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
-const Fzf = require('@dgoguerra/fzf').Fzf;
+const {fzfSelect} = require('../shared/fzf');
 const chokidar = require('chokidar');
 const {
   recursiveDirectoryFind,
@@ -25,23 +25,24 @@ const bulk = async function(selectedFileList, options = {}) {
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
-  if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
-    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
-    const fzf = new Fzf().multi().result(p => `topics/${p}`); // put back on topics prefix
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+  if (options.pick && (options.files || (!options.directories && !options.recursive))) {
+    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]);
+    const selected = await fzfSelect(optionList, { map: p => `topics/${p}` });
+    selectedFileList = selectedFileList.concat(selected);
   }
 
   if (options.pick && options.directories) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1]);
-    const fzf = new Fzf().multi().result(p => getDirectoryFiles(`topics/${p}`));
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+    const selected = await fzfSelect(optionList, { map: p => getDirectoryFiles(`topics/${p}`) });
+    selectedFileList = selectedFileList.concat(selected.flat());
   }
 
   if (options.pick && options.recursive) {
-    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**'); // Add the /**
-    let postProcess = p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`); // Remove the /**
-    const fzf = new Fzf().multi().result(postProcess);
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**');
+    const selected = await fzfSelect(optionList, {
+      map: p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`)
+    });
+    selectedFileList = selectedFileList.concat(selected.flat());
   }
 
   if (options.git) {
@@ -96,7 +97,7 @@ const bulk = async function(selectedFileList, options = {}) {
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     let originalSelectionFileSet = originalSelectedFilesList ?
-      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
+      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet(options);
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
@@ -225,6 +226,12 @@ const bulk = async function(selectedFileList, options = {}) {
       log(chalk.magenta(`Canopy bulk sync: Updating bulk file from topics change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid}) – triggered by: ${e}`));
     }
   }
+  function checkGitIgnoreForBulkFile(options = {}) {
+    if (selectedFileList.length === 0) return; // this is clearly a temp bulk file
+    if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().topicFileName}($|\n)`, 's'))) {
+      console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: /${options.bulkFileName||defaultTopic().topicFileName}`)));
+    }
+  }
 };
 
 let debounce = debounceGenerator();
@@ -256,12 +263,6 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
       }
     });
   });
-}
-
-function checkGitIgnoreForBulkFile(options = {}) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().topicFileName}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: /${options.bulkFileName||defaultTopic().topicFileName}`)));
-  }
 }
 
 module.exports = bulk;
