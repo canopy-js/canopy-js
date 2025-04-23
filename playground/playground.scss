@@ -59,6 +59,9 @@
       text-align: center; // for error h1
     }
 
+    transform: scale(.87);
+    transform-origin: top center;
+
     flex: 1;
     margin: 15px;
     box-sizing: border-box;

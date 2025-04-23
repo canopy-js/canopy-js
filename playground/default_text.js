@@ -1,6 +1,6 @@
 let defaultText = `[Canopy/Playground]
 
-* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. ([Github](https://github.com/canopy-js/canopy-js)\\)
+* Playground: This is a demo of Canopy.js, a library for creating interactive explanations. [Github](https://github.com/canopy-js/canopy-js)
 ![Canopy.js Logo](./logo.png)
 ===
 > [[Part 2|Okay]]

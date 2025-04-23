@@ -118,6 +118,8 @@ const bulk = async function(selectedFileList, options = {}) {
     new DefaultTopic(); // Error in case the person changed the default topic file name
   }
 
+  selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
+
   let normalMode = !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({ storeOriginalSelection: false, selectedFileList });

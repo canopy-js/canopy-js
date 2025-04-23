@@ -5,6 +5,7 @@ const watch = require('./watch');
 const utility = require('./utility');
 const serve = require('./serve/serve');
 const dev = require('./dev');
+const review = require('./review');
 const bulk = require('./bulk/bulk');
 let { tryDefaultTopic } = require('./shared/fs-helpers');
 let defaultTopic = tryDefaultTopic();
@@ -144,6 +145,14 @@ program.command('bulk')
         process.exit(1);
       }
     });
+  });
+
+program.command('review')
+  .description('Review and edit expl files using spaced repitition')
+  .addOption(new Option('--list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
+  .addOption(new Option('--all', 'show all due files in one bulk session'))
+  .action((options) => {
+    review(options);
   });
 
 program.command('utility')
