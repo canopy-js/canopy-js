@@ -3,7 +3,7 @@ let Topic = require('./topic');
 let Block = require('./block');
 let chalk = require('chalk');
 let path = require('path');
-let shell = require('shelljs');
+let { execSync } = require('child_process');
 var stripAnsi = require('strip-ansi');
 
 class DefaultTopic {
@@ -25,12 +25,26 @@ class DefaultTopic {
   }
 }
 
-let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(shell.which('canopy').stdout)));
+let canopyBinPath;
+try {
+  canopyBinPath = execSync('which canopy').toString().trim();
+} catch {
+  console.error(chalk.red('Could not find "canopy" in PATH'));
+  process.exit(1);
+}
+let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(canopyBinPath)));
 
 function tryDefaultTopic() {
   let defaultTopic = {};
-  try { defaultTopic = new DefaultTopic(); } catch {
-    console.error(chalk.red(`Failed to find default topic file`));
+  try {
+    defaultTopic = new DefaultTopic();
+  } catch(e) {
+    if (!fs.existsSync('./topics')) {
+      console.error(chalk.red("You are not in a Canopy project directory."));
+    } else {
+      console.error(chalk.red(e));
+    }
+    process.exit(1);
   }
   return defaultTopic;
 }
@@ -48,10 +62,8 @@ function tryAndWriteHtmlError(func, options = {}) {
       `<h1 style="text-align: center;">Error building project</h1>
       <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${stripAnsi(e?.message||e||'Error getting error').replace(/\n+/g, '<br><br>')}</p>`
     );
-
-    throw e; // rethrow the error so that the appropriate logging can be added
+    throw e;
   }
 }
-
 
 module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, tryAndWriteHtmlError, defaultTopic };

@@ -71,9 +71,9 @@ class FileSystemManager {
     fs.writeFileSync('.canopy_bulk_original_selection', JSON.stringify(fileList));
   }
 
-  loadOriginalSelectionFileSet() {
+  loadOriginalSelectionFileSet(options) {
     if (!fs.existsSync('.canopy_bulk_original_selection')) {
-      console.error(chalk.red('Expected .canopy_bulk_original_selection file but did not find one'));
+      if (!options.blank) console.error(chalk.red('Expected .canopy_bulk_original_selection file but did not find one'));
       return new FileSet({});
     }
     let json = fs.readFileSync('.canopy_bulk_original_selection').toString();

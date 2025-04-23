@@ -1,11 +1,10 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
-const Fzf = require('@dgoguerra/fzf').Fzf;
+const { fzfSelect } = require('../shared/pickers');
 const chokidar = require('chokidar');
 const {
   recursiveDirectoryFind,
   getRecursiveSubdirectoryFiles,
-  getDirectoryFiles,
   CyclePreventer,
   logOrWriteError
 } = require('./helpers');
@@ -19,29 +18,40 @@ let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
 const readline = require('readline');
 const { spawn } = require('child_process');
+const { getExplFileObjects } = require('../build/components/fs-helpers');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
-  if (options.pick && (options.files || (!options.directories && !options.recursive))) { // pick files
-    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]); // present paths without 'topics/' prefix
-    const fzf = new Fzf().multi().result(p => `topics/${p}`); // put back on topics prefix
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+  if (options.pick && (options.files || (!options.directories && !options.recursive))) {
+    let optionList = Object.keys(getExplFileObjects('topics')).map(p => p.replace(/^topics\//, ''));
+    const selected = await fzfSelect(optionList, { multi: true });
+    selectedFileList = selectedFileList.concat(selected.map(p => `topics/${p}`));
   }
 
   if (options.pick && options.directories) {
-    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1]);
-    const fzf = new Fzf().multi().result(p => getDirectoryFiles(`topics/${p}`));
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+    let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, ''));
+    const selected = await fzfSelect(optionList, { multi: true });
+    const explFiles = Object.keys(getExplFileObjects('topics'));
+    selectedFileList = selectedFileList.concat(
+      selected.flatMap(p =>
+        explFiles.filter(f => f.startsWith(`topics/${p}/`))
+      )
+    );
   }
 
   if (options.pick && options.recursive) {
-    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**'); // Add the /**
-    let postProcess = p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`); // Remove the /**
-    const fzf = new Fzf().multi().result(postProcess);
-    selectedFileList = selectedFileList.concat((await fzf.run(optionList)).flat());
+    let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, '') + '/**');
+    const selected = await fzfSelect(optionList, { multi: true });
+    const explFiles = Object.keys(getExplFileObjects('topics'));
+    selectedFileList = selectedFileList.concat(
+      selected.flatMap(p => {
+        const dir = p.replace(/\/\*\*$/, '');
+        return explFiles.filter(f => f.startsWith(`topics/${dir}/`));
+      })
+    );
   }
 
   if (options.git) {
@@ -96,7 +106,7 @@ const bulk = async function(selectedFileList, options = {}) {
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
     let originalSelectionFileSet = originalSelectedFilesList ?
-      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet();
+      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet(options);
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
@@ -236,6 +246,12 @@ const bulk = async function(selectedFileList, options = {}) {
       log(chalk.magenta(`Canopy bulk sync: Updating bulk file from topics change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid}) – triggered by: ${e}`));
     }
   }
+  function checkGitIgnoreForBulkFile(options = {}) {
+    if (selectedFileList.length === 0) return; // this is clearly a temp bulk file
+    if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().topicFileName}($|\n)`, 's'))) {
+      console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: /${options.bulkFileName||defaultTopic().topicFileName}`)));
+    }
+  }
 };
 
 let debounce = debounceGenerator();
@@ -267,12 +283,6 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
       }
     });
   });
-}
-
-function checkGitIgnoreForBulkFile(options = {}) {
-  if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().topicFileName}($|\n)`, 's'))) {
-    console.log(chalk.bgYellow(chalk.black(`Add custom bulk file name to your .gitignore: /${options.bulkFileName||defaultTopic().topicFileName}`)));
-  }
 }
 
 module.exports = bulk;
