@@ -130,7 +130,7 @@ async function review(options = {}, {
 
               log(chalk.gray(
                 `Review late by ${daysSinceLastReview} days (interval ${interval}, grace ${grace}). ` +
-                `Iterations decreased from ${n} to ${newIterations}.\n`
+                `Iterations decreased from ${n} to ${newIterations}.`
               ));
 
               review.iterations = newIterations;
@@ -243,6 +243,10 @@ function formatMMDDYY(date) {
 }
 
 function generateLogString(fileData, changes = {}, filePath = "") {
+  if (!fileData) {
+    return `${chalk.bgRed.white("DELETED:")} ${chalk.white.bold(filePath)}`;
+  }
+
   const bracketText = getDueStatus(fileData.daysUntilDue, fileData.dueDate);
   let prefix = "";
   if (changes.added && changes.added.includes(filePath)) {

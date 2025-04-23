@@ -1,5 +1,6 @@
 const review = require('./review');
 const path = require('path');
+const stripAnsi = require('strip-ansi');
 
 function shiftDate(base, days) {
   const shifted = new Date(base);
@@ -190,6 +191,79 @@ describe('review function', () => {
 
     const content = mockFs.writeFileSync.mock.calls[0][1];
     expect(content).toMatch(`topics/test.expl ${newer} 2`);
+  });
+
+  it('handles adds, edits, and deletions during review and logs correctly', async () => {
+    const base = shiftDate(BASE_DATE, 0);
+    const modTimeBefore = new Date(base);
+    const modTimeAfter = new Date(shiftDate(BASE_DATE, 1));
+    const fakeNow = modTimeAfter.getTime();
+
+    const mockFs = {
+      existsSync: jest.fn().mockReturnValue(true),
+      readFileSync: jest.fn().mockReturnValue(
+        `topics/file1.expl ${base} 2\n` +
+        `topics/file2.expl ${base} 2`
+      ),
+      writeFileSync: jest.fn(),
+      statSync: jest.fn(),
+      utimesSync: jest.fn()
+    };
+
+    let callCount = 0;
+    const getExplFileObjects = () => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          'topics/file1.expl': {
+            contents: 'original file1',
+            isNew: false,
+            modTime: modTimeBefore.getTime()
+          },
+          'topics/file2.expl': {
+            contents: 'file2 present',
+            isNew: false,
+            modTime: modTimeBefore.getTime()
+          }
+        };
+      } else {
+        // Simulate: file1 modified, file2 deleted, file3 added
+        return {
+          'topics/file1.expl': {
+            contents: 'edited file1',
+            isNew: false,
+            modTime: modTimeAfter.getTime()
+          },
+          'topics/file3.expl': {
+            contents: 'newly added file',
+            isNew: true,
+            modTime: modTimeAfter.getTime()
+          }
+        };
+      }
+    };
+
+    await review({}, {
+      fs: mockFs,
+      path,
+      getExplFileObjects,
+      bulk: jest.fn(),
+      now: () => fakeNow,
+      log: mockLog
+    });
+
+    const content = mockFs.writeFileSync.mock.calls[0][1];
+    const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+
+    // Check metadata updates
+    expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 1)} 0`); // edited → reset
+    expect(content).not.toMatch(/file2\.expl/); // deleted
+    expect(content).toMatch(`topics/file3.expl ${shiftDate(BASE_DATE, 1)} 0`); // new file added
+
+    // Check plain log output
+    expect(plainLog).toMatch(/CHANGED:\s+topics\/file1\.expl/);
+    expect(plainLog).toMatch(/DELETED:\s+topics\/file2\.expl/);
+    expect(plainLog).toMatch(/NEW:\s+topics\/file3\.expl/);
   });
 
   it('increments iterations if review is on time', async () => {
