@@ -6,6 +6,7 @@ const utility = require('./utility');
 const serve = require('./serve/serve');
 const dev = require('./dev');
 const review = require('./review');
+const note = require('./note');
 const bulk = require('./bulk/bulk');
 let { tryDefaultTopic } = require('./shared/fs-helpers');
 let defaultTopic = tryDefaultTopic();
@@ -139,11 +140,9 @@ program.command('bulk')
   .argument('[paths...]')
   .action((paths, options) => {
     bulk(paths, options).catch((e) => {
-      if (e.message !== 'fzf exited with error code 130') { // unimportant error we get from file picker library
-        if (options.error) throw e;
-        console.error(e.message);
-        process.exit(1);
-      }
+      if (options.error) throw e;
+      console.error(e.message);
+      process.exit(1);
     });
   });
 
@@ -161,6 +160,16 @@ program.command('utility')
   .addOption(new Option('--topics', 'print newline separated topic names'))
   .action((options) => {
     utility(options);
+  });
+
+program
+  .command('note [categoryPath] [noteText]')
+  .description('Add one line to a new or existing expl file')
+  .action((categoryPath, noteText) => {
+    note([categoryPath, noteText]).catch((e) => {
+      console.error(e.message);
+      process.exit(1);
+    });
   });
 
 program.parse();
