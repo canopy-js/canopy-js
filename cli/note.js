@@ -19,7 +19,7 @@ function getTopicDirectories() {
 
 async function promptForNote() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const text = await new Promise(resolve => rl.question('', resolve));
+  const text = await new Promise(resolve => rl.question('Note: ', resolve));
   rl.close();
   return text.trim();
 }
