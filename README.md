@@ -77,10 +77,6 @@ A human expert can adapt to the listener, catering to their interests, adding mo
 
 Canopy allows an author to express their ideas once in small modular pieces, which the interface then combines to produce an infinite number of customized, user-driven explanations. Projects of enormous size can be navigated in just a few clicks. Each self-contained point can reference many more, better capturing the web of connections that can exist between topics of a subject area.
 
-## Demo
-
-Read a partial draft of this documentation written in Canopy as a demo **[here](http://canopyjs.org)**.
-
 ## See the new playground
 
 Check out the new [interactive playground here](https://playground.canopyjs.org).
