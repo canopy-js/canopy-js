@@ -1,6 +1,7 @@
 const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
+const { AutoComplete } = require('enquirer');
 
 function getBundledFzfPath() {
   const platform = os.platform();
@@ -30,7 +31,10 @@ function fzfSelect(choices = [], {
     const fzf = getBundledFzfPath();
     const args = [];
 
-    if (allowCustomInput) args.push('--print-query');
+    if (allowCustomInput) {
+      args.push('--expect=enter');
+      args.push('--print-query');
+    }
     if (multi) args.push('--multi');
     if (header) args.push('--header', header);
 
@@ -54,4 +58,43 @@ function fzfSelect(choices = [], {
   });
 }
 
-module.exports = {getBundledFzfPath, fzfSelect};
+function enquirerSelect(existingPaths) {
+  const originalChoices = existingPaths.map(p => ({
+    name: p,
+    message: p,
+    value: p
+  }));
+
+  const prompt = new AutoComplete({
+    name: 'category',
+    message: 'Please select or enter a category path:',
+    limit: 10,
+    initial: 0,
+    theme: {
+      separator: ' '
+    },
+    choices: originalChoices,
+    suggest(input) {
+      const filtered = originalChoices.filter(choice =>
+        choice.message.toLowerCase().includes(input.toLowerCase())
+      );
+
+      const exactMatch = originalChoices.some(choice =>
+        choice.message.toLowerCase() === input.toLowerCase()
+      );
+
+      return exactMatch ? filtered : [
+        {
+          name: input,
+          message: `Create new: ${input}`,
+          value: input
+        },
+        ...filtered
+      ];
+    }
+  });
+
+  return prompt.run();
+}
+
+module.exports = {getBundledFzfPath, fzfSelect, enquirerSelect};

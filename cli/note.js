@@ -3,7 +3,7 @@ const path = require('path');
 const readline = require('readline');
 const { execSync } = require('child_process');
 const bulk = require('./bulk/bulk');
-const { fzfSelect } = require('./shared/fzf');
+const { enquirerSelect } = require('./shared/pickers');
 const chalk = require('chalk');
 
 function getTopicDirectories() {
@@ -42,7 +42,7 @@ async function note(args = []) {
 
   if (!categoryPath && process.stdin.isTTY) {
     const dirs = getTopicDirectories();
-    const [selected] = await fzfSelect(dirs, {
+    const [selected] = await enquirerSelect(dirs, {
       allowCustomInput: true,
       multi: false
     });
@@ -50,7 +50,7 @@ async function note(args = []) {
   }
 
   if (!categoryPath || !noteText) {
-    throw new Error('Must provide a category path and a note');
+    throw new Error(chalk.red('Must provide a category path and a note'));
   }
 
   const bulkText = `[${categoryPath}]\n\n${noteText}\n`;

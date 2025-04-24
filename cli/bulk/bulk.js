@@ -1,6 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
-const {fzfSelect} = require('../shared/fzf');
+const { fzfSelect } = require('../shared/pickers');
 const chokidar = require('chokidar');
 const {
   recursiveDirectoryFind,
