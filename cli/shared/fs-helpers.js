@@ -66,4 +66,17 @@ function tryAndWriteHtmlError(func, options = {}) {
   }
 }
 
-module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, tryAndWriteHtmlError, defaultTopic };
+function getCategoryPathStrings() {
+  const topicsDir = path.join(process.cwd(), 'topics');
+  const output = execSync(`find "${topicsDir}" -type d`, { encoding: 'utf8' });
+
+  return output
+    .split('\n')
+    .map(p => p.replace(/[\x00-\x1F\x7F]/g, '').trim()) // remove control chars
+    .filter(p => p && p !== topicsDir)
+    .map(p => path.relative(topicsDir, p).split(path.sep).join('/'))
+    .filter(Boolean) // sometimes contains empty strings after relative edit
+    .sort();
+}
+
+module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, tryAndWriteHtmlError, defaultTopic, getCategoryPathStrings };

@@ -1,21 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const { execSync } = require('child_process');
 const bulk = require('./bulk/bulk');
 const { enquirerSelect } = require('./shared/pickers');
 const chalk = require('chalk');
-
-function getTopicDirectories() {
-  const topicsDir = path.join(process.cwd(), 'topics');
-  const output = execSync(`find "${topicsDir}" -type d`, { encoding: 'utf8' });
-  return output
-    .split('\n')
-    .map(p => p.trim())
-    .filter(p => p && p !== topicsDir)
-    .map(p => path.relative(topicsDir, p).split(path.sep).join('/'))
-    .sort();
-}
+let { getCategoryPathStrings } = require('./shared/fs-helpers');
 
 async function promptForNote() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -41,7 +30,7 @@ async function note(args = []) {
   }
 
   if (!categoryPath && process.stdin.isTTY) {
-    const dirs = getTopicDirectories();
+    const dirs = getCategoryPathStrings();
     const selected = await enquirerSelect(dirs, {
       allowCustomInput: true,
       multi: false
