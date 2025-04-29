@@ -105,10 +105,12 @@ const bulk = async function(selectedFileList, options = {}) {
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
-    let originalSelectionFileSet = originalSelectedFilesList ?
-      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet(options);
+
+    let originalSelectionFileSet = originalSelectedFilesList
+      ? fileSystemManager.getFileSet(originalSelectedFilesList)
+      : fileSystemManager.loadOriginalSelectionFileSet(options);
+
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
@@ -126,11 +128,13 @@ const bulk = async function(selectedFileList, options = {}) {
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     new DefaultTopic(); // Error in case the person changed the default topic file name
+
+    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName); // put this last to preserve in case of error
   }
 
   selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
 
-  let normalMode = !options.start && !options.finish && !options.sync;
+  let normalMode = !options.resume && !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
     const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
