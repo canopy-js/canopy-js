@@ -69,8 +69,9 @@ async function review(options = {}, {
       originalFilePaths = options.all
         ? dueFilesWithMetadata.map(file => file.filePath)
         : [dueFilesWithMetadata[0].filePath];
-    } else if (allFilesWithMetadata.length > 0) {
-      originalFilePaths = [allFilesWithMetadata[0].filePath];
+    } else {
+      log(chalk.green('No reviews due at this time.'));
+      return;
     }
 
     if (originalFilePaths.length) {
@@ -165,13 +166,17 @@ function computeMetadata(filePath, fileReviewDataObject, now) {
   let reviewThresholdInDays = iterations === 0 ? 1 : Math.pow(2, iterations);
   let daysUntilDue = reviewThresholdInDays - ageInDays;
   const due = new Date(timestamp + reviewThresholdInDays * 24 * 60 * 60 * 1000);
-  const localDue = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const utcDue = new Date(Date.UTC(
+    due.getUTCFullYear(),
+    due.getUTCMonth(),
+    due.getUTCDate()
+  ));
   return {
     filePath,
     iterations,
     ageInDays,
     daysUntilDue,
-    dueDate: localDue
+    dueDate: utcDue
   };
 }
 
@@ -236,10 +241,7 @@ function getDueStatus(daysUntilDue, dueDate) {
 }
 
 function formatMMDDYY(date) {
-  const mm = date.getMonth() + 1;
-  const dd = date.getDate();
-  const yy = String(date.getFullYear()).slice(-2);
-  return `${mm}/${dd}/${yy}`;
+  return `${date.getUTCMonth() + 1}/${date.getUTCDate()}/${String(date.getUTCFullYear()).slice(-2)}`;
 }
 
 function generateLogString(fileData, changes = {}, filePath = "") {

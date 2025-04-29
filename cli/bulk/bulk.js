@@ -96,10 +96,12 @@ const bulk = async function(selectedFileList, options = {}) {
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
-    let originalSelectionFileSet = originalSelectedFilesList ?
-      fileSystemManager.getFileSet(originalSelectedFilesList) : fileSystemManager.loadOriginalSelectionFileSet(options);
+
+    let originalSelectionFileSet = originalSelectedFilesList
+      ? fileSystemManager.getFileSet(originalSelectedFilesList)
+      : fileSystemManager.loadOriginalSelectionFileSet(options);
+
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
-    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
@@ -109,7 +111,6 @@ const bulk = async function(selectedFileList, options = {}) {
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
 
-    fileSystemManager.deleteOriginalSelectionFile();
     let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
@@ -117,16 +118,29 @@ const bulk = async function(selectedFileList, options = {}) {
     fileSystemManager.execute(fileSystemChange, options.logging);
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     new DefaultTopic(); // Error in case the person changed the default topic file name
+
+    fileSystemManager.deleteOriginalSelectionFile(); // put these last to preserve in case of error
+    if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName);
   }
 
   selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
 
-  let normalMode = !options.start && !options.finish && !options.sync;
+  let normalMode = !options.resume && !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
     const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
     return openEditorAndWait(options.bulkFileName, editorCmd)
-      .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }));
+      .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }))
+      .catch((e) => {
+        console.log(chalk.bold.red('Error:') + ' ' + e.message + '\n');
+        console.log(chalk.dim('Tip:') + ' Run ' + chalk.green('canopy bulk --resume') + ' to continue editing.');
+      });
+  }
+
+  if (options.resume) { // resume editing file whose parsing ended in error
+    const editorCmd = process.env['VISUAL'] || process.env['EDITOR'] || 'vi';
+    return openEditorAndWait(options.bulkFileName, editorCmd)
+      .then(() => handleFinish({ originalSelectedFilesList: [], deleteBulkFile: true }));
   }
 
   if (options.start) { // non-editor mode

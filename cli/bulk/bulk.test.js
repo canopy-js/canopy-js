@@ -487,7 +487,7 @@ describe('BulkFileParser', function() {
     ]);
   });
 
-  test('it does not concatinate category notes to category topic', () => {
+  test('it concatinates category notes to category topic', () => {
     let bulkFileString = dedent`[A/B/C]
     * C: Paragraph.
 
@@ -561,13 +561,13 @@ describe('BulkFileParser', function() {
   });
 
   test('it throws for empty path', () => {
-    let bulkFileString = dedent`[]
-
-    * Topic: Paragraph.` + '\n';
+    let bulkFileString = dedent`[]`;
 
     let bulkFileParser = new BulkFileParser(bulkFileString);
 
-    expect(() => bulkFileParser.generateFileSet()).toThrow();
+    expect(() => bulkFileParser.generateFileSet()).toThrow(
+      'Malformed Canopy bulk file: []'
+    );
   });
 
   test('it removes slash from slash-initial path', () => {

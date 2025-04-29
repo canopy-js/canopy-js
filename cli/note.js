@@ -19,7 +19,7 @@ function getTopicDirectories() {
 
 async function promptForNote() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const text = await new Promise(resolve => rl.question('Note: ', resolve));
+  const text = await new Promise(resolve => rl.question(chalk.yellow('Note: '), resolve));
   rl.close();
   return text.trim();
 }
@@ -42,10 +42,11 @@ async function note(args = []) {
 
   if (!categoryPath && process.stdin.isTTY) {
     const dirs = getTopicDirectories();
-    const [selected] = await enquirerSelect(dirs, {
+    const selected = await enquirerSelect(dirs, {
       allowCustomInput: true,
       multi: false
     });
+
     categoryPath = selected;
   }
 
@@ -59,7 +60,7 @@ async function note(args = []) {
 
   await bulk([], { bulkFileName: tmpFile, finish: true, blank: true });
 
-  const finalSegment = categoryPath.split('/').pop();
+  const finalSegment = path.basename(categoryPath);
   console.log(`✅ Note added to topics/${categoryPath}/${finalSegment}.expl`);
 }
 

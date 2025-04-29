@@ -26,400 +26,574 @@ describe('review function', () => {
     };
   }
 
-  it('increments iterations and resets review date if user views file without editing', async () => {
-    const modTime = shiftDate(BASE_DATE, 0);
-    const dotfileTime = modTime;
-    const fakeNow = new Date(shiftDate(BASE_DATE, 1)).getTime();
+  describe('file tracking and user edits outside review', () => {
+    it('initializes tracking if dotfile does not exist and logs tracking message', async () => {
+      const modTime = shiftDate(BASE_DATE, 10);
+      const fakeNow = new Date(modTime).getTime();
 
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${dotfileTime} 2`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
+      const mockFs = {
+        existsSync: jest.fn().mockImplementation(p => p === './topics'),
+        readFileSync: jest.fn(),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
 
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', modTime),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
+      await review({ list: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', modTime),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      expect(plainLog).toMatch(/Tracking new file: topics\/test\.expl with review date/);
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/test.expl ${modTime} 0`);
     });
 
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/test.expl ${shiftDate(BASE_DATE, 1)} 3`);
+    it('adds file to dotfile if not already tracked', async () => {
+      const modTime = shiftDate(BASE_DATE, 20);
+      const fakeNow = new Date(modTime).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(''),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ list: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => makeExplFileData('topics/newfile.expl', 'new content', modTime),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/newfile.expl ${modTime} 0`);
+    });
+
+    it('ignores older modtime if dotfile date is newer', async () => {
+      const older = shiftDate(BASE_DATE, 0);
+      const newer = shiftDate(BASE_DATE, 5);
+      const fakeNow = new Date(newer).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${newer} 2`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ list: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', older),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/test.expl ${newer} 2`);
+    });
+
+    it('for user edit outside review, dotfile adopts newer modtime and resets iterations', async () => {
+      const modTime = shiftDate(BASE_DATE, 30);
+      const dotfileTime = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(modTime).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${dotfileTime} 2`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ list: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', modTime),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/test.expl ${modTime} 0`);
+    });
+
+    it('in list mode, re-writes dotfile exactly when nothing has changed', async () => {
+      // Setup: one file whose modTime equals the dotfile’s lastReviewed
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const initialData = `topics/foo.expl ${lastReview} 2\n`;
+
+      const fakeNow = new Date(shiftDate(BASE_DATE, 1)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockImplementation(p =>
+          p === './topics' || p === './.canopy_review_data'
+        ),
+        readFileSync: jest.fn().mockReturnValue(initialData),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ list: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/foo.expl': {
+            contents: 'unchanged',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      // It should still re-write the dotfile, but with exactly the same contents
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+        './.canopy_review_data',
+        initialData
+      );
+    });
   });
 
-  it('resets iterations to 0 if file is edited during review', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const modTimeBefore = new Date(shiftDate(BASE_DATE, 0));
-    const modTimeAfter = new Date(shiftDate(BASE_DATE, 1));
-    const fakeNow = modTimeAfter.getTime();
+  describe('review progression for due and overdue files', () => {
+    it('does nothing no files are due', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 0)).getTime(); // same day
 
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/file.expl ${lastReview} 2`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/notDue.expl ${lastReview} 0`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
 
-    let callCount = 0;
-    const getExplFileObjects = () => {
-      callCount++;
-      return {
-        'topics/file.expl': {
-          contents: callCount === 1 ? 'original content' : 'modified during review',
-          isNew: false,
-          modTime: callCount === 1 ? modTimeBefore.getTime() : modTimeAfter.getTime()
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/notDue.expl': {
+            contents: 'not due',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      expect(mockLog).toHaveBeenCalledWith(expect.stringContaining('No reviews due at this time.'));
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('for on-time review, increments iterations and updates last reviewed', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/onTime.expl ${lastReview} 2`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/onTime.expl': {
+            contents: 'on time',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      expect(plainLog).toMatch(
+        /topics\/onTime\.expl \[age: 0 days\] \[iterations: 3\] \[due in: 8 days, 1\/14\/25\]/
+      );
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/onTime.expl ${shiftDate(BASE_DATE, 5)} 3`);
+    });
+
+    it('for review within grace period, increments iterations and updates last reviewed', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 12)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/inGrace.expl ${lastReview} 3`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/inGrace.expl': {
+            contents: 'in grace',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/inGrace.expl ${shiftDate(BASE_DATE, 12)} 4`);
+    });
+
+    it('for edit during review, resets iterations to 0 and updates last reviewed', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const modTimeBefore = new Date(shiftDate(BASE_DATE, 0));
+      const modTimeAfter = new Date(shiftDate(BASE_DATE, 5));
+      const fakeNow = modTimeAfter.getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/file.expl ${lastReview} 2`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      let callCount = 0;
+      const getExplFileObjects = () => {
+        callCount++;
+        return {
+          'topics/file.expl': {
+            contents: callCount === 1 ? 'original content' : 'modified during review',
+            isNew: false,
+            modTime: callCount === 1 ? modTimeBefore.getTime() : modTimeAfter.getTime()
+          }
+        };
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects,
+        bulk: async () => {},
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/file.expl ${shiftDate(BASE_DATE, 5)} 0`);
+    });
+
+    it('for slight overdue beyond grace, decrements iterations once', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 16)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/slightlyLate.expl ${lastReview} 3`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/slightlyLate.expl': {
+            contents: 'late',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/slightlyLate.expl ${shiftDate(BASE_DATE, 16)} 2`);
+    });
+
+    it('for extreme overdue, decrements iterations multiple times', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 40)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/veryLate.expl ${lastReview} 3`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/veryLate.expl': {
+            contents: 'very late',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/veryLate.expl ${shiftDate(BASE_DATE, 40)} 0`);
+    });
+
+    it('never decrements iterations below 0 even if very overdue', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 30)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/minFloor.expl ${lastReview} 1`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/minFloor.expl': {
+            contents: 'floor test',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/minFloor.expl ${shiftDate(BASE_DATE, 30)} 0`);
+    });
+
+  });
+
+  describe('handling live file changes during active review', () => {
+
+    it('during review of one file, handles file additions, edits, and deletions correctly', async () => {
+      const base = shiftDate(BASE_DATE, 0);
+      const modTimeBefore = new Date(base);
+      const modTimeAfter = new Date(shiftDate(BASE_DATE, 5));
+      const fakeNow = modTimeAfter.getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/file1.expl ${base} 2\n` +
+          `topics/file2.expl ${base} 2`
+        ),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      let callCount = 0;
+      const getExplFileObjects = () => {
+        callCount++;
+        if (callCount === 1) {
+          return {
+            'topics/file1.expl': {
+              contents: 'original file1',
+              isNew: false,
+              modTime: modTimeBefore.getTime()
+            },
+            'topics/file2.expl': {
+              contents: 'file2 present',
+              isNew: false,
+              modTime: modTimeBefore.getTime()
+            }
+          };
+        } else {
+          return {
+            'topics/file1.expl': {
+              contents: 'edited file1',
+              isNew: false,
+              modTime: modTimeAfter.getTime()
+            },
+            'topics/file3.expl': {
+              contents: 'newly added file',
+              isNew: true,
+              modTime: modTimeAfter.getTime()
+            }
+          };
         }
       };
-    };
 
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects,
-      bulk: async () => {},
-      now: () => fakeNow,
-      log: mockLog
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects,
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+
+      expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 5)} 0`);
+      expect(content).not.toMatch(/file2\.expl/);
+      expect(content).toMatch(`topics/file3.expl ${shiftDate(BASE_DATE, 5)} 0`);
+      expect(plainLog).toMatch(/CHANGED:\s+topics\/file1\.expl/);
+      expect(plainLog).toMatch(/DELETED:\s+topics\/file2\.expl/);
+      expect(plainLog).toMatch(/NEW:\s+topics\/file3\.expl/);
     });
 
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/file.expl ${shiftDate(BASE_DATE, 1)} 0`);
-  });
+    it('for --all, reviews multiple due files', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
 
-  it('resets iterations to 0 if user edits file independently', async () => {
-    const modTime = shiftDate(BASE_DATE, 30);
-    const dotfileTime = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(modTime).getTime();
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/fileA.expl ${lastReview} 2\n` +
+          `topics/fileB.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
 
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${dotfileTime} 2`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({ list: true }, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', modTime),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/test.expl ${modTime} 0`);
-  });
-
-  it('initializes tracking if dotfile does not exist', async () => {
-    const modTime = shiftDate(BASE_DATE, 10);
-    const fakeNow = new Date(modTime).getTime();
-
-    const mockFs = {
-      existsSync: jest.fn().mockImplementation(p => p === './topics'),
-      readFileSync: jest.fn(),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({ list: true }, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', modTime),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/test.expl ${modTime} 0`);
-  });
-
-  it('adds file to dotfile if not already tracked', async () => {
-    const modTime = shiftDate(BASE_DATE, 20);
-    const fakeNow = new Date(modTime).getTime();
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(''),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({ list: true }, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => makeExplFileData('topics/newfile.expl', 'new content', modTime),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/newfile.expl ${modTime} 0`);
-  });
-
-  it('ignores older mod time if dotfile date is newer', async () => {
-    const older = shiftDate(BASE_DATE, 0);
-    const newer = shiftDate(BASE_DATE, 5);
-    const fakeNow = new Date(newer).getTime();
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${newer} 2`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({ list: true }, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => makeExplFileData('topics/test.expl', 'sample content', older),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/test.expl ${newer} 2`);
-  });
-
-  it('handles adds, edits, and deletions during review and logs correctly', async () => {
-    const base = shiftDate(BASE_DATE, 0);
-    const modTimeBefore = new Date(base);
-    const modTimeAfter = new Date(shiftDate(BASE_DATE, 1));
-    const fakeNow = modTimeAfter.getTime();
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(
-        `topics/file1.expl ${base} 2\n` +
-        `topics/file2.expl ${base} 2`
-      ),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    let callCount = 0;
-    const getExplFileObjects = () => {
-      callCount++;
-      if (callCount === 1) {
-        return {
-          'topics/file1.expl': {
-            contents: 'original file1',
+      await review({ all: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/fileA.expl': {
+            contents: 'A',
             isNew: false,
-            modTime: modTimeBefore.getTime()
+            modTime: new Date(lastReview).getTime()
           },
-          'topics/file2.expl': {
-            contents: 'file2 present',
+          'topics/fileB.expl': {
+            contents: 'B',
             isNew: false,
-            modTime: modTimeBefore.getTime()
+            modTime: new Date(lastReview).getTime()
           }
-        };
-      } else {
-        // Simulate: file1 modified, file2 deleted, file3 added
-        return {
-          'topics/file1.expl': {
-            contents: 'edited file1',
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/fileA.expl ${shiftDate(BASE_DATE, 5)} 3`);
+      expect(content).toMatch(`topics/fileB.expl ${shiftDate(BASE_DATE, 5)} 3`);
+    });
+
+    it('during review, preserves tracking if no file changes occur', async () => {
+    /* If no filesystem changes happen during a review, existing files stay intact and unchanged */
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/file1.expl ${lastReview} 2\n` +
+          `topics/file2.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      const getExplFileObjects = () => ({
+        'topics/file1.expl': {
+          contents: 'file1 unchanged',
+          isNew: false,
+          modTime: new Date(lastReview).getTime()
+        },
+        'topics/file2.expl': {
+          contents: 'file2 unchanged',
+          isNew: false,
+          modTime: new Date(lastReview).getTime()
+        }
+      });
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects,
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+
+      expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 5)} 3`);
+      expect(content).toMatch(`topics/file2.expl ${shiftDate(BASE_DATE, 0)} 2`);
+      expect(plainLog).not.toMatch(/NEW:/);
+      expect(plainLog).not.toMatch(/CHANGED:/);
+      expect(plainLog).not.toMatch(/DELETED:/);
+    });
+
+    it('aborts cleanly if bulk fails', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/failing.expl ${lastReview} 2`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/failing.expl': {
+            contents: 'fail',
             isNew: false,
-            modTime: modTimeAfter.getTime()
-          },
-          'topics/file3.expl': {
-            contents: 'newly added file',
-            isNew: true,
-            modTime: modTimeAfter.getTime()
+            modTime: new Date(lastReview).getTime()
           }
-        };
-      }
-    };
+        }),
+        bulk: jest.fn().mockRejectedValue(new Error('bulk failed')),
+        now: () => fakeNow,
+        log: mockLog
+      });
 
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects,
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      expect(plainLog).toMatch(/Review aborted/);
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
     });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
-
-    // Check metadata updates
-    expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 1)} 0`); // edited → reset
-    expect(content).not.toMatch(/file2\.expl/); // deleted
-    expect(content).toMatch(`topics/file3.expl ${shiftDate(BASE_DATE, 1)} 0`); // new file added
-
-    // Check plain log output
-    expect(plainLog).toMatch(/CHANGED:\s+topics\/file1\.expl/);
-    expect(plainLog).toMatch(/DELETED:\s+topics\/file2\.expl/);
-    expect(plainLog).toMatch(/NEW:\s+topics\/file3\.expl/);
-  });
-
-  it('increments iterations if review is on time', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(shiftDate(BASE_DATE, 3)).getTime(); // interval = 4, grace = 7 → 3 is within
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/onTime.expl ${lastReview} 2`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => ({
-        'topics/onTime.expl': {
-          contents: 'on time',
-          isNew: false,
-          modTime: new Date(lastReview).getTime()
-        }
-      }),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/onTime.expl ${shiftDate(BASE_DATE, 3)} 3`);
-  });
-
-  it('increments iterations if review is within grace', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(shiftDate(BASE_DATE, 12)).getTime(); // interval = 8, grace = 7 → total window = 15
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/inGrace.expl ${lastReview} 3`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => ({
-        'topics/inGrace.expl': {
-          contents: 'in grace',
-          isNew: false,
-          modTime: new Date(lastReview).getTime()
-        }
-      }),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/inGrace.expl ${shiftDate(BASE_DATE, 12)} 4`);
-  });
-
-  it('decrements iterations once when overdue immediately after grace', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(shiftDate(BASE_DATE, 16)).getTime();
-    // iterations = 3 → interval = 8, grace = 7 → grace ends at day 7
-    // day 16 = overdue by 9 → penalty = floor(9 / 8) = 1 → drop from 3 to 2
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/slightlyLate.expl ${lastReview} 3`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => ({
-        'topics/slightlyLate.expl': {
-          contents: 'late',
-          isNew: false,
-          modTime: new Date(lastReview).getTime()
-        }
-      }),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/slightlyLate.expl ${shiftDate(BASE_DATE, 16)} 2`);
-  });
-
-  it('decrements multiple levels when far overdue', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(shiftDate(BASE_DATE, 40)).getTime(); // interval = 8, grace = 7 → overdue = 25 → -3
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/veryLate.expl ${lastReview} 3`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => ({
-        'topics/veryLate.expl': {
-          contents: 'very late',
-          isNew: false,
-          modTime: new Date(lastReview).getTime()
-        }
-      }),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/veryLate.expl ${shiftDate(BASE_DATE, 40)} 0`);
-  });
-
-  it('never decrements below 0', async () => {
-    const lastReview = shiftDate(BASE_DATE, 0);
-    const fakeNow = new Date(shiftDate(BASE_DATE, 30)).getTime(); // interval = 2, grace = 7 → overdue = 21
-
-    const mockFs = {
-      existsSync: jest.fn().mockReturnValue(true),
-      readFileSync: jest.fn().mockReturnValue(`topics/minFloor.expl ${lastReview} 1`),
-      writeFileSync: jest.fn(),
-      statSync: jest.fn(),
-      utimesSync: jest.fn()
-    };
-
-    await review({}, {
-      fs: mockFs,
-      path,
-      getExplFileObjects: () => ({
-        'topics/minFloor.expl': {
-          contents: 'floor test',
-          isNew: false,
-          modTime: new Date(lastReview).getTime()
-        }
-      }),
-      bulk: jest.fn(),
-      now: () => fakeNow,
-      log: mockLog
-    });
-
-    const content = mockFs.writeFileSync.mock.calls[0][1];
-    expect(content).toMatch(`topics/minFloor.expl ${shiftDate(BASE_DATE, 30)} 0`);
   });
 });
