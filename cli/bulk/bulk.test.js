@@ -39,7 +39,6 @@ describe('BulkFileGenerator', function() {
 
       Subtopic: Hello.
 
-
       * Topic2: Hello world.
 
       Subtopic: Hello.
