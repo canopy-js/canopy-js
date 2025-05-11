@@ -161,10 +161,10 @@ function computeMetadata(filePath, fileReviewDataObject, now) {
   let { iterations } = fileReviewDataObject;
   let timestamp = new Date(fileReviewDataObject.lastReviewed).getTime();
   const nowTimestamp = now();
-  let ageInMilliseconds = nowTimestamp - timestamp;
-  let ageInDays = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
+  let lastInMilliseconds = nowTimestamp - timestamp;
+  let lastInDays = Math.floor(lastInMilliseconds / (1000 * 60 * 60 * 24));
   let reviewThresholdInDays = iterations === 0 ? 1 : Math.pow(2, iterations);
-  let daysUntilDue = reviewThresholdInDays - ageInDays;
+  let daysUntilDue = reviewThresholdInDays - lastInDays;
   const due = new Date(timestamp + reviewThresholdInDays * 24 * 60 * 60 * 1000);
   const utcDue = new Date(Date.UTC(
     due.getUTCFullYear(),
@@ -174,7 +174,7 @@ function computeMetadata(filePath, fileReviewDataObject, now) {
   return {
     filePath,
     iterations,
-    ageInDays,
+    lastInDays,
     daysUntilDue,
     dueDate: utcDue
   };
@@ -256,11 +256,11 @@ function generateLogString(fileData, changes = {}, filePath = "") {
   } else if (changes.deleted && changes.deleted.includes(filePath)) {
     prefix = chalk.bgRed.white("DELETED:") + " ";
   } else if (changes.modified && changes.modified.includes(filePath)) {
-    prefix = chalk.bgYellow.black("CHANGED:") + " ";
+    prefix = chalk.bgYellow.black("EDITED:") + " ";
   }
   return (
     `${prefix}${chalk.white.bold(fileData.filePath)} ` +
-    `${chalk.yellow(`[age: ${fileData.ageInDays} days]`)} ` +
+    `${chalk.yellow(`[last: ${fileData.lastInDays} days]`)} ` +
     `${chalk.cyanBright(`[iterations: ${fileData.iterations}]`)} ` +
     bracketText
   );

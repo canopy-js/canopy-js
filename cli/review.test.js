@@ -233,7 +233,7 @@ describe('review function', () => {
 
       const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
       expect(plainLog).toMatch(
-        /topics\/onTime\.expl \[age: 0 days\] \[iterations: 3\] \[due in: 8 days, 1\/14\/25\]/
+        /topics\/onTime\.expl \[last: 0 days\] \[iterations: 3\] \[due in: 8 days, 1\/14\/25\]/
       );
 
       const content = mockFs.writeFileSync.mock.calls[0][1];
@@ -471,7 +471,7 @@ describe('review function', () => {
       expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 5)} 0`);
       expect(content).not.toMatch(/file2\.expl/);
       expect(content).toMatch(`topics/file3.expl ${shiftDate(BASE_DATE, 5)} 0`);
-      expect(plainLog).toMatch(/CHANGED:\s+topics\/file1\.expl/);
+      expect(plainLog).toMatch(/EDITED:\s+topics\/file1\.expl/);
       expect(plainLog).toMatch(/DELETED:\s+topics\/file2\.expl/);
       expect(plainLog).toMatch(/NEW:\s+topics\/file3\.expl/);
     });
@@ -560,7 +560,7 @@ describe('review function', () => {
       expect(content).toMatch(`topics/file1.expl ${shiftDate(BASE_DATE, 5)} 3`);
       expect(content).toMatch(`topics/file2.expl ${shiftDate(BASE_DATE, 0)} 2`);
       expect(plainLog).not.toMatch(/NEW:/);
-      expect(plainLog).not.toMatch(/CHANGED:/);
+      expect(plainLog).not.toMatch(/EDITED:/);
       expect(plainLog).not.toMatch(/DELETED:/);
     });
 
