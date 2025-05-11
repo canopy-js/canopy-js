@@ -40,7 +40,7 @@ function tryDefaultTopic() {
     defaultTopic = new DefaultTopic();
   } catch(e) {
     if (!fs.existsSync('./topics')) {
-      console.error(chalk.red("You are not in a Canopy project directory."));
+      console.error(chalk.red("You are not in a Canopy project directory. Try canopy init to start project."));
     } else {
       console.error(chalk.red(e));
     }

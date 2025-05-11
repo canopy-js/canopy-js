@@ -14,7 +14,7 @@ async function promptForNote() {
 }
 
 async function note(args = []) {
-  if (!fs.existsSync('./topics')) throw new Error(chalk.red("You are not in a Canopy project directory."));
+  if (!fs.existsSync('./topics')) throw new Error(chalk.red("You are not in a Canopy project directory.  Try canopy init to start project."));
 
   let [categoryPath, noteText] = Array.isArray(args) ? args : [];
 
