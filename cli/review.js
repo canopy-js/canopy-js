@@ -159,24 +159,36 @@ async function review(options = {}, {
 
 function computeMetadata(filePath, fileReviewDataObject, now) {
   let { iterations } = fileReviewDataObject;
-  let timestamp = new Date(fileReviewDataObject.lastReviewed).getTime();
-  const nowTimestamp = now();
-  let lastInMilliseconds = nowTimestamp - timestamp;
+
+  let lastUTC = new Date(fileReviewDataObject.lastReviewed);
+  let lastLocal = new Date(
+    lastUTC.getUTCFullYear(),
+    lastUTC.getUTCMonth(),
+    lastUTC.getUTCDate()
+  );
+
+  let nowUTC = new Date(now());
+  let nowLocal = new Date(
+    nowUTC.getUTCFullYear(),
+    nowUTC.getUTCMonth(),
+    nowUTC.getUTCDate()
+  );
+
+  let lastInMilliseconds = nowLocal - lastLocal;
   let lastInDays = Math.floor(lastInMilliseconds / (1000 * 60 * 60 * 24));
+
   let reviewThresholdInDays = iterations === 0 ? 1 : Math.pow(2, iterations);
   let daysUntilDue = reviewThresholdInDays - lastInDays;
-  const due = new Date(timestamp + reviewThresholdInDays * 24 * 60 * 60 * 1000);
-  const utcDue = new Date(Date.UTC(
-    due.getUTCFullYear(),
-    due.getUTCMonth(),
-    due.getUTCDate()
-  ));
+
+  let dueLocal = new Date(lastLocal);
+  dueLocal.setDate(dueLocal.getDate() + reviewThresholdInDays);
+
   return {
     filePath,
     iterations,
     lastInDays,
     daysUntilDue,
-    dueDate: utcDue
+    dueDate: dueLocal
   };
 }
 
@@ -211,7 +223,10 @@ function scanFileSystem({
 
 function getDueStatus(daysUntilDue, dueDate) {
   const now = new Date();
-  const diffDays = Math.floor((dueDate - now) / (1000 * 60 * 60 * 24));
+  const localNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const diffDays = Math.floor((dueDate - localNow) / (1000 * 60 * 60 * 24));
+
   if (daysUntilDue < 0) {
     const overdueBy = Math.abs(daysUntilDue);
     let text = `[overdue by: ${overdueBy} days, due ${overdueBy < 7 ? getLocalWeekday(dueDate) : formatMMDDYY(dueDate)}]`;
@@ -241,7 +256,10 @@ function getDueStatus(daysUntilDue, dueDate) {
 }
 
 function formatMMDDYY(date) {
-  return `${date.getUTCMonth() + 1}/${date.getUTCDate()}/${String(date.getUTCFullYear()).slice(-2)}`;
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const yy = String(date.getUTCFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
 }
 
 function generateLogString(fileData, changes = {}, filePath = "") {

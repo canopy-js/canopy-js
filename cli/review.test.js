@@ -1,3 +1,5 @@
+process.env.TZ = 'UTC';
+
 const review = require('./review');
 const path = require('path');
 const stripAnsi = require('strip-ansi');
@@ -205,8 +207,8 @@ describe('review function', () => {
     });
 
     it('for on-time review, increments iterations and updates last reviewed', async () => {
-      const lastReview = shiftDate(BASE_DATE, 0);
-      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+      const lastReview = shiftDate(BASE_DATE, -8); // last reviewed 8 days ago
+      const fakeNow = new Date(BASE_DATE).getTime(); // now is Jan 1
 
       const mockFs = {
         existsSync: jest.fn().mockReturnValue(true),
@@ -232,12 +234,13 @@ describe('review function', () => {
       });
 
       const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      const expectedDue = shiftDate(BASE_DATE, 8).slice(5, 10).replace('-', '/') + '/25';
       expect(plainLog).toMatch(
-        /topics\/onTime\.expl \[last: 0 days\] \[iterations: 3\] \[due in: 8 days, 1\/14\/25\]/
+        new RegExp(`topics/onTime\\.expl \\[last: 0 days\\] \\[iterations: 3\\] \\[due in: 8 days, ${expectedDue}\\]`)
       );
 
       const content = mockFs.writeFileSync.mock.calls[0][1];
-      expect(content).toMatch(`topics/onTime.expl ${shiftDate(BASE_DATE, 5)} 3`);
+      expect(content).toMatch(`topics/onTime.expl ${BASE_DATE.toISOString()} 3`);
     });
 
     it('for review within grace period, increments iterations and updates last reviewed', async () => {
