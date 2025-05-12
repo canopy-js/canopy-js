@@ -5,7 +5,6 @@ const chokidar = require('chokidar');
 const {
   recursiveDirectoryFind,
   getRecursiveSubdirectoryFiles,
-  getDirectoryFiles,
   CyclePreventer,
   logOrWriteError
 } = require('./helpers');
@@ -19,6 +18,7 @@ let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
 const readline = require('readline');
 const { spawn } = require('child_process');
+const { getExplFileObjects } = require('../build/components/fs-helpers');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
@@ -26,7 +26,7 @@ const bulk = async function(selectedFileList, options = {}) {
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
   if (options.pick && (options.files || (!options.directories && !options.recursive))) {
-    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.replace(/^topics\//, ''));
+    let optionList = Object.keys(getExplFileObjects('topics')).map(p => p.replace(/^topics\//, ''));
     const selected = await fzfSelect(optionList, { multi: true });
     selectedFileList = selectedFileList.concat(selected.map(p => `topics/${p}`));
   }
@@ -34,18 +34,22 @@ const bulk = async function(selectedFileList, options = {}) {
   if (options.pick && options.directories) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, ''));
     const selected = await fzfSelect(optionList, { multi: true });
+    const explFiles = Object.keys(getExplFileObjects('topics'));
     selectedFileList = selectedFileList.concat(
-      selected.flatMap(p => getDirectoryFiles(`topics/${p}`))
+      selected.flatMap(p =>
+        explFiles.filter(f => f.startsWith(`topics/${p}/`))
+      )
     );
   }
 
   if (options.pick && options.recursive) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, '') + '/**');
     const selected = await fzfSelect(optionList, { multi: true });
+    const explFiles = Object.keys(getExplFileObjects('topics'));
     selectedFileList = selectedFileList.concat(
       selected.flatMap(p => {
-        let dir = p.replace(/\/\*\*$/, '');
-        return getRecursiveSubdirectoryFiles(`topics/${dir}`);
+        const dir = p.replace(/\/\*\*$/, '');
+        return explFiles.filter(f => f.startsWith(`topics/${dir}/`));
       })
     );
   }
