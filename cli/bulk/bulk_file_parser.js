@@ -17,7 +17,7 @@ class BulkFileParser {
         return {
           displayCategoryPath,
           diskDirectoryPath: 'topics/' + Topic.convertSpacesToUnderscores(displayCategoryPath),
-          terminalCategory: displayCategoryPath.split('/').slice(-1)[0],
+          terminalCategory: Topic.convertSpacesToUnderscores(displayCategoryPath.split('/').slice(-1)[0]),
           files: [...sectionString
             .split(/\n/).slice(1).join('\n').trim() // In case only one newline after [category]
             .matchAll(/(?:^\n|^|\n\s*\n)((?:\*\*? )?(?:(?!\n\s*\n\*\*?\s).)+)/gs)].map(match => match[1])
