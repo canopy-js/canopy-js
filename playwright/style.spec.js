@@ -851,17 +851,34 @@ test.describe('Block entities', () => {
   });
 
   test('It allows solo period links [[.]]', async ({ page }) => {
-    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links');
+    const getSelectedSection = subtopic =>
+      page.locator(
+        'section.canopy-selected-section' +
+        '[data-display-topic-name="Solo period links"]' +
+        '[data-topic-name="Solo period links"]' +
+        `[data-subtopic-name="${subtopic}"]`
+      );
 
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_period_links');
-    await page.click('text=Back'); // [[.]] in a root topic paragraph is a self-reference which for topic is pop
+    // 1) Root topic "Solo period links"
+    await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links');
+    const rootSection = getSelectedSection('Solo period links');
+    await expect(rootSection).toBeVisible();
+    const rootBack = rootSection.locator('.canopy-selectable-link:has-text("Back")');
+    await expect(rootBack).toHaveAttribute('href', '/Solo_period_links');
+    await rootBack.click();
     await page.waitForURL('**/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
+    // 2) Subtopic "Subtopic solo period link"
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_period_links#Subtopic_solo_period_link');
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Subtopic solo period link"]')).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
-    await page.click('.canopy-selected-section .canopy-selectable-link >> text=Back'); // [[.]] in subtopic is shift to parent
-    await page.waitForURL('**/Solo_period_links#Subtopic_solo_period_link');
+    const subSection = getSelectedSection('Subtopic solo period link');
+    await expect(subSection).toBeVisible();
+    const subBack = subSection.locator('.canopy-selectable-link:has-text("Back")');
+    await expect(subBack).toHaveAttribute('href', '/Solo_period_links#Subtopic_solo_period_link');
+    await subBack.click();
+    await page.waitForFunction(() =>
+      document.querySelector('.canopy-selected-section')?.dataset.subtopicName === 'Subtopic solo period link'
+    );
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo period link');
   });
 });
