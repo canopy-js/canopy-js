@@ -26,23 +26,28 @@ const bulk = async function(selectedFileList, options = {}) {
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
   if (options.pick && (options.files || (!options.directories && !options.recursive))) {
-    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.match(/topics\/(.*)/)[1]);
-    const selected = await fzfSelect(optionList, { map: p => `topics/${p}` });
-    selectedFileList = selectedFileList.concat(selected);
+    let optionList = getRecursiveSubdirectoryFiles('topics').map(p => p.replace(/^topics\//, ''));
+    const selected = await fzfSelect(optionList, { multi: true });
+    selectedFileList = selectedFileList.concat(selected.map(p => `topics/${p}`));
   }
 
   if (options.pick && options.directories) {
-    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1]);
-    const selected = await fzfSelect(optionList, { map: p => getDirectoryFiles(`topics/${p}`) });
-    selectedFileList = selectedFileList.concat(selected.flat());
+    let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, ''));
+    const selected = await fzfSelect(optionList, { multi: true });
+    selectedFileList = selectedFileList.concat(
+      selected.flatMap(p => getDirectoryFiles(`topics/${p}`))
+    );
   }
 
   if (options.pick && options.recursive) {
-    let optionList = recursiveDirectoryFind('topics').map(p => p.match(/topics\/(.*)/)[1] + '/**');
-    const selected = await fzfSelect(optionList, {
-      map: p => getRecursiveSubdirectoryFiles(`topics/${p.match(/([^*]+)\/\*\*/)[1]}`)
-    });
-    selectedFileList = selectedFileList.concat(selected.flat());
+    let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, '') + '/**');
+    const selected = await fzfSelect(optionList, { multi: true });
+    selectedFileList = selectedFileList.concat(
+      selected.flatMap(p => {
+        let dir = p.replace(/\/\*\*$/, '');
+        return getRecursiveSubdirectoryFiles(`topics/${dir}`);
+      })
+    );
   }
 
   if (options.git) {
