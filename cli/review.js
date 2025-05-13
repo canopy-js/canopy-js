@@ -70,8 +70,7 @@ async function review(options = {}, {
         ? dueFilesWithMetadata.map(file => file.filePath)
         : [dueFilesWithMetadata[0].filePath];
     } else {
-      log(chalk.green('No reviews due at this time.'));
-      return;
+      return log(chalk.green('No reviews due at this time.'));
     }
 
     if (originalFilePaths.length) {
@@ -83,10 +82,8 @@ async function review(options = {}, {
 
       // Refresh state after bulk review.
       explFileObjects = getExplFileObjects(path.resolve('topics'), options);
-    }
 
-    // Second scan: apply decay/increment logic.
-    if (originalFilePaths.length) {
+      // Second scan: apply decay/increment logic.
       let changes = { added: [], deleted: [], modified: [] };
 
       scanFileSystem({

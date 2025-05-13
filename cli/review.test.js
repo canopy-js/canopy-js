@@ -172,6 +172,38 @@ describe('review function', () => {
         initialData
       );
     });
+
+    it('does not modify dotfile if review is aborted by editor error', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(`topics/aborted.expl ${lastReview} 1`),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({}, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/aborted.expl': {
+            contents: 'pre-review',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn().mockRejectedValue(new Error('simulated editor failure')),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      expect(plainLog).toMatch(/Review aborted/);
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    });
   });
 
   describe('review progression for due and overdue files', () => {
@@ -565,38 +597,6 @@ describe('review function', () => {
       expect(plainLog).not.toMatch(/NEW:/);
       expect(plainLog).not.toMatch(/EDITED:/);
       expect(plainLog).not.toMatch(/DELETED:/);
-    });
-
-    it('aborts cleanly if bulk fails', async () => {
-      const lastReview = shiftDate(BASE_DATE, 0);
-      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
-
-      const mockFs = {
-        existsSync: jest.fn().mockReturnValue(true),
-        readFileSync: jest.fn().mockReturnValue(`topics/failing.expl ${lastReview} 2`),
-        writeFileSync: jest.fn(),
-        statSync: jest.fn(),
-        utimesSync: jest.fn()
-      };
-
-      await review({}, {
-        fs: mockFs,
-        path,
-        getExplFileObjects: () => ({
-          'topics/failing.expl': {
-            contents: 'fail',
-            isNew: false,
-            modTime: new Date(lastReview).getTime()
-          }
-        }),
-        bulk: jest.fn().mockRejectedValue(new Error('bulk failed')),
-        now: () => fakeNow,
-        log: mockLog
-      });
-
-      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
-      expect(plainLog).toMatch(/Review aborted/);
-      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
     });
   });
 });

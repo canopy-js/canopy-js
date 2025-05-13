@@ -532,6 +532,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowDown');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('url'); // stays within paragraph
+    await page.waitForLoadState('networkidle');
   });
 
   test('Enter on path reference inlines target', async ({ page }) => {

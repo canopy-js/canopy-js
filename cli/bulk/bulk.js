@@ -141,8 +141,9 @@ const bulk = async function(selectedFileList, options = {}) {
     return openEditorAndWait(options.bulkFileName, editorCmd)
       .then(() => handleFinish({ originalSelectedFilesList: selectedFileList, deleteBulkFile: true }))
       .catch((e) => {
-        console.log(chalk.bold.red('Error:') + ' ' + e.message + '\n');
-        console.log(chalk.dim('Tip:') + ' Run ' + chalk.green('canopy bulk --resume') + ' to continue editing.');
+        let message = chalk.bold.red('Error:') + ' ' + e.message + '\n' +
+          chalk.dim('Tip:') + ' Run ' + chalk.green('canopy bulk --resume') + ' to continue editing.\n';
+        throw new Error(message);
       });
   }
 
@@ -282,7 +283,7 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
         resolve();
       } else {
         // Any non-zero exit code is treated as ZQ (abort)
-        reject(new Error(chalk.red('Operation aborted')));
+        reject(new Error(chalk.red('Bulk edit aborted')));
       }
     });
   });
