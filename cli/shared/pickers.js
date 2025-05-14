@@ -84,12 +84,12 @@ function enquirerSelect(existingPaths) {
       );
 
       return exactMatch ? filtered : [
+        ...filtered,
         {
           name: input,
           message: `Create new: ${input}`,
           value: input
-        },
-        ...filtered
+        }
       ];
     }
   });
