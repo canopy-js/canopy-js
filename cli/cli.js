@@ -150,7 +150,7 @@ program.command('bulk')
 program.command('review')
   .description('Review and edit expl files using spaced repitition')
   .addOption(new Option('--list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
-  .addOption(new Option('--all', 'show all due files in one bulk session'))
+  .addOption(new Option('--all', 'show all due files in one bulk session').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
   .action((options) => {
     review(options);
   });

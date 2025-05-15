@@ -66,9 +66,11 @@ async function review(options = {}, {
   if (!options.list) {
     let originalFilePaths = [];
     if (dueFilesWithMetadata.length > 0) {
-      originalFilePaths = options.all
-        ? dueFilesWithMetadata.map(file => file.filePath)
-        : [dueFilesWithMetadata[0].filePath];
+      originalFilePaths = options.all === true
+         ? dueFilesWithMetadata.map(file => file.filePath)
+         : typeof options.all === 'number'
+           ? dueFilesWithMetadata.slice(0, options.all).map(file => file.filePath)
+           : [dueFilesWithMetadata[0].filePath];
     } else {
       return log(chalk.green('No reviews due at this time.'));
     }

@@ -438,6 +438,62 @@ describe('review function', () => {
       expect(content).toMatch(`topics/minFloor.expl ${shiftDate(BASE_DATE, 30)} 0`);
     });
 
+    it('with --all as a number, reviews only that many due files', async () => {
+      const lastReview = shiftDate(BASE_DATE, -10);
+      const fakeNow = new Date(BASE_DATE).getTime(); // now is Jan 1
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/one.expl ${lastReview} 2\n` +
+          `topics/two.expl ${lastReview} 2\n` +
+          `topics/three.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ all: 2 }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/one.expl': {
+            contents: '1',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          },
+          'topics/two.expl': {
+            contents: '2',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          },
+          'topics/three.expl': {
+            contents: '3',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      const updated = content.split('\n').filter(Boolean);
+      expect(updated.length).toBeGreaterThanOrEqual(2);
+      expect(updated).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/topics\/one\.expl .* 3/),
+          expect.stringMatching(/topics\/two\.expl .* 3/)
+        ])
+      );
+      expect(updated).not.toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(/topics\/three\.expl .* 3/)
+        ])
+      );
+    });
   });
 
   describe('handling live file changes during active review', () => {
