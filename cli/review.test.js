@@ -173,13 +173,14 @@ describe('review function', () => {
       );
     });
 
-    it('does not modify dotfile if review is aborted by editor error', async () => {
+    it('tracks new files but does not mark any as reviewed if review is aborted by editor error', async () => {
       const lastReview = shiftDate(BASE_DATE, 0);
       const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+      const newFile = 'topics/newfile.expl';
 
       const mockFs = {
         existsSync: jest.fn().mockReturnValue(true),
-        readFileSync: jest.fn().mockReturnValue(`topics/aborted.expl ${lastReview} 1`),
+        readFileSync: jest.fn().mockReturnValue(`topics/aborted.expl ${lastReview} 1\n`),
         writeFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
@@ -193,6 +194,11 @@ describe('review function', () => {
             contents: 'pre-review',
             isNew: false,
             modTime: new Date(lastReview).getTime()
+          },
+          [newFile]: {
+            contents: 'newly added file',
+            isNew: true,
+            modTime: fakeNow
           }
         }),
         bulk: jest.fn().mockRejectedValue(new Error('simulated editor failure')),
@@ -202,7 +208,11 @@ describe('review function', () => {
 
       const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
       expect(plainLog).toMatch(/Review aborted/);
-      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+      expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
+
+      const writtenData = mockFs.writeFileSync.mock.calls[0][1];
+      expect(writtenData).toMatch(`topics/aborted.expl ${lastReview} 1`);
+      expect(writtenData).toMatch(`topics/newfile.expl ${new Date(fakeNow).toISOString()} 0`);
     });
   });
 

@@ -64,96 +64,95 @@ async function review(options = {}, {
   }
 
   if (!options.list) {
-    let originalFilePaths = [];
-    if (dueFilesWithMetadata.length > 0) {
-      originalFilePaths = options.all === true
-         ? dueFilesWithMetadata.map(file => file.filePath)
-         : typeof options.all === 'number'
+    let filesForReview = [];
+    if (dueFilesWithMetadata.length > 0) { // select the right number of due files
+      if (options.all === true) options.all = Infinity;
+      filesForReview = options.all
            ? dueFilesWithMetadata.slice(0, options.all).map(file => file.filePath)
            : [dueFilesWithMetadata[0].filePath];
     } else {
       return log(chalk.green('No reviews due at this time.'));
     }
 
-    if (originalFilePaths.length) {
+    if (filesForReview.length > 0) {
       try {
-        await bulk(originalFilePaths);
-      } catch(e) {
-        return log(chalk.red('Review aborted.'));
-      }
+        await bulk(filesForReview);
 
-      // Refresh state after bulk review.
-      explFileObjects = getExplFileObjects(path.resolve('topics'), options);
+        // Refresh state after bulk review.
+        explFileObjects = getExplFileObjects(path.resolve('topics'), options);
 
-      // Second scan: apply decay/increment logic.
-      let changes = { added: [], deleted: [], modified: [] };
+        // Second scan: apply decay/increment logic.
+        let changes = { added: [], deleted: [], modified: [] };
 
-      scanFileSystem({
-        reviewDataByFilePath,
-        explFileObjects,
-        path,
-        now,
-        onAddition: (filePath) => {
-          const currentDate = new Date(now()).toISOString();
-          changes.added.push(filePath);
-          reviewDataByFilePath[filePath] = { lastReviewed: currentDate, iterations: 0 };
-          return;  // ensure only one branch executes per file
-        },
-        onDeletion: (filePath) => {
-          changes.deleted.push(filePath);
-          delete reviewDataByFilePath[filePath];
-          return;
-        },
-        onChange: (filePath) => {
-          const currentDate = new Date(now()).toISOString();
-          changes.modified.push(filePath);
-          reviewDataByFilePath[filePath] = { lastReviewed: currentDate, iterations: 0 };
-          return;
-        },
-        onNoChange: (filePath) => {
-          if (originalFilePaths.includes(filePath)) {
-            let review = reviewDataByFilePath[filePath];
-            let lastReview = new Date(review.lastReviewed);
-            let today = new Date(now());
-            let n = review.iterations;
-            let interval = Math.pow(2, n);
-            let daysSinceLastReview = Math.floor((today - lastReview) / (1000 * 60 * 60 * 24));
+        scanFileSystem({
+          reviewDataByFilePath,
+          explFileObjects,
+          path,
+          now,
+          onAddition: (filePath) => {
+            const currentDate = new Date(now()).toISOString();
+            changes.added.push(filePath);
+            reviewDataByFilePath[filePath] = { lastReviewed: currentDate, iterations: 0 };
+            return;  // ensure only one branch executes per file
+          },
+          onDeletion: (filePath) => {
+            changes.deleted.push(filePath);
+            delete reviewDataByFilePath[filePath];
+            return;
+          },
+          onChange: (filePath) => {
+            const currentDate = new Date(now()).toISOString();
+            changes.modified.push(filePath);
+            reviewDataByFilePath[filePath] = { lastReviewed: currentDate, iterations: 0 };
+            return;
+          },
+          onNoChange: (filePath) => {
+            if (filesForReview.includes(filePath)) {
+              let review = reviewDataByFilePath[filePath];
+              let lastReview = new Date(review.lastReviewed);
+              let today = new Date(now());
+              let n = review.iterations;
+              let interval = Math.pow(2, n);
+              let daysSinceLastReview = Math.floor((today - lastReview) / (1000 * 60 * 60 * 24));
 
-            let grace = Math.max(7, Math.floor(0.25 * interval));
+              let grace = Math.max(7, Math.floor(0.25 * interval));
 
-            if (daysSinceLastReview <= interval + grace) {
-              review.iterations++;
-            } else {
-              let overdue = daysSinceLastReview - grace;
-              let penalty = Math.floor(overdue / interval);
-              let newIterations = Math.max(0, n - penalty);
+              if (daysSinceLastReview <= interval + grace) {
+                review.iterations++;
+              } else {
+                let overdue = daysSinceLastReview - grace;
+                let penalty = Math.floor(overdue / interval);
+                let newIterations = Math.max(0, n - penalty);
 
-              log(chalk.gray(
-                `Review late by ${daysSinceLastReview} days (interval ${interval}, grace ${grace}). ` +
-                `Iterations decreased from ${n} to ${newIterations}.`
-              ));
+                log(chalk.gray(
+                  `Review late by ${daysSinceLastReview} days (interval ${interval}, grace ${grace}). ` +
+                  `Iterations decreased from ${n} to ${newIterations}.`
+                ));
 
-              review.iterations = newIterations;
+                review.iterations = newIterations;
+              }
+
+              review.lastReviewed = today.toISOString();
             }
-
-            review.lastReviewed = today.toISOString();
           }
-        }
-      });
+        });
 
-      let logFilePaths = Array.from(new Set([...originalFilePaths, ...changes.added, ...changes.modified, ...changes.deleted]));
-      for (let filePath of logFilePaths) {
-        const updated = reviewDataByFilePath[filePath] && computeMetadata(filePath, reviewDataByFilePath[filePath], now);
-        log(generateLogString(updated, changes, filePath));
+        let logFilePaths = Array.from(new Set([...filesForReview, ...changes.added, ...changes.modified, ...changes.deleted]));
+        for (let filePath of logFilePaths) {
+          const updated = reviewDataByFilePath[filePath] && computeMetadata(filePath, reviewDataByFilePath[filePath], now);
+          log(generateLogString(updated, changes, filePath));
+        }
+      } catch(e) {
+        log(chalk.red('Review aborted.'));
       }
     }
   }
 
-  let reviewMetadataContent = Object.entries(reviewDataByFilePath)
+  let dotFileContents = Object.entries(reviewDataByFilePath)
     .map(([filePath, { lastReviewed, iterations }]) => `${filePath} ${lastReviewed} ${iterations}`)
     .sort()
     .join('\n') + '\n';
-  fs.writeFileSync('./.canopy_review_data', reviewMetadataContent);
+  fs.writeFileSync('./.canopy_review_data', dotFileContents);
 }
 
 function computeMetadata(filePath, fileReviewDataObject, now) {
