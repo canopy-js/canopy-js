@@ -28,12 +28,14 @@ const bulk = async function(selectedFileList, options = {}) {
   if (options.pick && (options.files || (!options.directories && !options.recursive))) {
     let optionList = Object.keys(getExplFileObjects('topics')).map(p => p.replace(/^topics\//, ''));
     const selected = await fzfSelect(optionList, { multi: true });
+    if (String(selected) == '') return;
     selectedFileList = selectedFileList.concat(selected.map(p => `topics/${p}`));
   }
 
   if (options.pick && options.directories) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, ''));
     const selected = await fzfSelect(optionList, { multi: true });
+    if (String(selected) == '') return;
     const explFiles = Object.keys(getExplFileObjects('topics'));
     selectedFileList = selectedFileList.concat(
       selected.flatMap(p =>
@@ -45,6 +47,7 @@ const bulk = async function(selectedFileList, options = {}) {
   if (options.pick && options.recursive) {
     let optionList = recursiveDirectoryFind('topics').map(p => p.replace(/^topics\//, '') + '/**');
     const selected = await fzfSelect(optionList, { multi: true });
+    if (String(selected) == '') return;
     const explFiles = Object.keys(getExplFileObjects('topics'));
     selectedFileList = selectedFileList.concat(
       selected.flatMap(p => {
