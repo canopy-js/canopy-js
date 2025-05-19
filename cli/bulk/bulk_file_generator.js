@@ -11,9 +11,9 @@ class BulkFileGenerator {
     return this.fileSet.directories.sort(this.directoryComparator)
       .filter(d => d.files.find(f => f.path.endsWith('.expl'))) // a directory must have at least one expl file to be rendered
       .map(directory => {
-        let shortestCategoryMatchFile = directory.files.filter(file => 
-          file.key?.toUpperCase()?.includes(file.terminalCategory.toUpperCase())
-        ).reduce((shortestItem, newItem) => (shortestItem && (shortestItem.key.length < newItem.key.length) ? shortestItem : newItem), null);
+        let shortestCategoryMatchFile = directory.files
+          .filter(f => f.key?.toUpperCase().includes(f.terminalCategory.toUpperCase()))
+          .sort((a, b) => a.key.length - b.key.length || a.key.localeCompare(b.key))[0] || null;
 
         return `[${directory.displayPath}]\n\n` // two newlines after the category path header
           + directory
