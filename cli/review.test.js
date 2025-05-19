@@ -37,6 +37,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockImplementation(p => p === './topics'),
         readFileSync: jest.fn(),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -65,6 +66,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(''),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -91,6 +93,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${newer} 2`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -117,6 +120,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/test.expl ${dotfileTime} 2`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -147,6 +151,7 @@ describe('review function', () => {
         ),
         readFileSync: jest.fn().mockReturnValue(initialData),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -173,46 +178,84 @@ describe('review function', () => {
       );
     });
 
-    it('tracks new files but does not mark any as reviewed if review is aborted by editor error', async () => {
-      const lastReview = shiftDate(BASE_DATE, 0);
-      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
-      const newFile = 'topics/newfile.expl';
+    it('creates backup before write and supports undo option', async () => {
+      const originalContent = 'topics/foo.expl 2025-01-01T00:00:00.000Z 1\n';
+      const modifiedContent = 'topics/foo.expl 2025-01-10T00:00:00.000Z 2\n';
+
+      const lastReviewTime = new Date('2025-01-01T00:00:00.000Z').getTime()
+      const fakeNow = new Date('2025-01-10T00:00:00.000Z').getTime();
 
       const mockFs = {
-        existsSync: jest.fn().mockReturnValue(true),
-        readFileSync: jest.fn().mockReturnValue(`topics/aborted.expl ${lastReview} 1\n`),
+        existsSync: jest.fn().mockImplementation((p) => {
+          return (
+            p === './topics' ||
+            p === './.canopy_review_data' ||
+            p === './.canopy_review_data.backup'
+          );
+        }),
+        readFileSync: jest.fn().mockImplementation((p) => {
+          if (p === './.canopy_review_data') return originalContent;
+          if (p === './.canopy_review_data.backup') return originalContent;
+          return '';
+        }),
+        copyFileSync: jest.fn(),
         writeFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
 
+      const filePath = 'topics/foo.expl';
+
+      // Simulate a review that modifies the dotfile
       await review({}, {
         fs: mockFs,
         path,
-        getExplFileObjects: () => ({
-          'topics/aborted.expl': {
-            contents: 'pre-review',
-            isNew: false,
-            modTime: new Date(lastReview).getTime()
-          },
-          [newFile]: {
-            contents: 'newly added file',
-            isNew: true,
-            modTime: fakeNow
-          }
-        }),
-        bulk: jest.fn().mockRejectedValue(new Error('simulated editor failure')),
+        getExplFileObjects: jest
+          .fn()
+          .mockImplementationOnce(() => ({
+            [filePath]: {
+              contents: 'unchanged',
+              isNew: false,
+              modTime: lastReviewTime
+            }
+          }))
+          .mockImplementationOnce(() => ({
+            [filePath]: {
+              contents: 'changed',
+              isNew: false,
+              modTime: lastReviewTime
+            }
+          })),
+        bulk: jest.fn(), // simulate successful review
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      expect(mockFs.copyFileSync).toHaveBeenCalledWith(
+        './.canopy_review_data',
+        './.canopy_review_data.backup'
+      );
+
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+        './.canopy_review_data',
+        modifiedContent
+      );
+
+      mockLog.mockClear();
+      mockFs.copyFileSync.mockClear();
+
+      // Simulate undo
+      await review({ undo: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: jest.fn(),
+        bulk: jest.fn(),
         now: () => fakeNow,
         log: mockLog
       });
 
       const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
-      expect(plainLog).toMatch(/Review aborted/);
-      expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-
-      const writtenData = mockFs.writeFileSync.mock.calls[0][1];
-      expect(writtenData).toMatch(`topics/aborted.expl ${lastReview} 1`);
-      expect(writtenData).toMatch(`topics/newfile.expl ${new Date(fakeNow).toISOString()} 0`);
+      expect(plainLog).toMatch(/Undo complete/);
     });
   });
 
@@ -225,6 +268,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/notDue.expl ${lastReview} 0`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -256,6 +300,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/onTime.expl ${lastReview} 2`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -293,6 +338,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/inGrace.expl ${lastReview} 3`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -326,6 +372,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/file.expl ${lastReview} 2`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -363,6 +410,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/slightlyLate.expl ${lastReview} 3`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -394,6 +442,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/veryLate.expl ${lastReview} 3`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -425,6 +474,7 @@ describe('review function', () => {
         existsSync: jest.fn().mockReturnValue(true),
         readFileSync: jest.fn().mockReturnValue(`topics/minFloor.expl ${lastReview} 1`),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -460,6 +510,7 @@ describe('review function', () => {
           `topics/three.expl ${lastReview} 2`
         ),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -521,6 +572,7 @@ describe('review function', () => {
           `topics/file2.expl ${base} 2`
         ),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -588,6 +640,7 @@ describe('review function', () => {
           `topics/fileB.expl ${lastReview} 2`
         ),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };
@@ -629,6 +682,7 @@ describe('review function', () => {
           `topics/file2.expl ${lastReview} 2`
         ),
         writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
         statSync: jest.fn(),
         utimesSync: jest.fn()
       };

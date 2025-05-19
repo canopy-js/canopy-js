@@ -11,6 +11,14 @@ async function review(options = {}, {
   let explFileObjects = getExplFileObjects('topics', options);
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
+  if (options.undo) {
+    const backupPath = './.canopy_review_data.backup';
+    if (!fs.existsSync(backupPath)) throw new Error(chalk.red('No backup found to undo.'));
+    fs.copyFileSync(backupPath, './.canopy_review_data');
+    log(chalk.yellow('Undo complete: .canopy_review_data has been restored from backup.'));
+    return;
+  }
+
   // Read dotfile with full ISO timestamps.
   let reviewDataByFilePath = Object.fromEntries(
     (fs.existsSync('./.canopy_review_data') &&
@@ -33,7 +41,6 @@ async function review(options = {}, {
     explFileObjects,
     reviewDataByFilePath,
     path,
-    now,
     onAddition: (filePath) => {
       const currentDate = new Date(now()).toISOString();
       log(chalk.gray(`Tracking new file: ${filePath} with review date ${currentDate}.`));
@@ -148,10 +155,15 @@ async function review(options = {}, {
     }
   }
 
+  if (fs.existsSync('./.canopy_review_data')) {
+    fs.copyFileSync('./.canopy_review_data', './.canopy_review_data.backup');
+  }
+
   let dotFileContents = Object.entries(reviewDataByFilePath)
     .map(([filePath, { lastReviewed, iterations }]) => `${filePath} ${lastReviewed} ${iterations}`)
     .sort()
     .join('\n') + '\n';
+
   fs.writeFileSync('./.canopy_review_data', dotFileContents);
 }
 
