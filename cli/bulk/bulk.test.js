@@ -102,6 +102,27 @@ describe('BulkFileGenerator', function() {
 
   });
 
+  test('it pins the shortest file whose name includes the terminal category', () => {
+    let originalSelectedFilesByContents = {
+      'topics/A/B/C/C.expl': 'C: Short match.\n',
+      'topics/A/B/C/ContainsC.expl': 'ContainsC: Medium match.\n',
+      'topics/A/B/C/AlsoContainsC.expl': 'AlsoContainsC: Long match.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/AlsoContainsC.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[A/B/C]
+
+      * C: Short match.
+
+      * ContainsC: Medium match.
+
+      * AlsoContainsC: Long match.` + '\n\n');
+  });
+
   test('it puts the inbox category last', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
