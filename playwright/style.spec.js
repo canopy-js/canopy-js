@@ -292,8 +292,6 @@ test.describe('Inline entities', () => {
         });
       }
     });
-
-    await page.waitForLoadState('networkidle');
   });
 
   test('it allows the user to set custom arrow icons', async ({ page, context }) => {

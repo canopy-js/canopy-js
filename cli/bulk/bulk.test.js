@@ -29,7 +29,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -68,7 +68,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -87,7 +87,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -102,6 +102,33 @@ describe('BulkFileGenerator', function() {
 
   });
 
+  test('it pins the file with the shortest name after removing intermediary directory names, even if raw name is longer', () => {
+    let originalSelectedFilesByContents = {
+      'topics/Literature/Shakespeare/Hamlet/Shakespeare\'s_Hamlet.expl': 'Shakespeare\'s Hamlet: Long but better match.\n',
+      'topics/Literature/Shakespeare/Hamlet/Hamlet_Act_I.expl': 'Hamlet Act I: Shorter but worse match.\n',
+      'topics/Literature/Shakespeare/Hamlet/Notes.expl': 'Notes: Short but not overlapping enclosing folder.\n',
+      'topics/Literature/Literature.expl': 'Literature: Default topic.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/Literature/Literature.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[Literature]
+
+      ** Literature: Default topic.
+
+
+      [Literature/Shakespeare/Hamlet]
+
+      * Shakespeare's Hamlet: Long but better match.
+
+      * Hamlet Act I: Shorter but worse match.
+
+      * Notes: Short but not overlapping enclosing folder.` + '\n\n');
+  });
+
   test('it puts the inbox category last', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
@@ -110,7 +137,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -130,14 +157,14 @@ describe('BulkFileGenerator', function() {
 
   });
 
-  test('it ignores files with other paths', () => {
+  test('it ignores files with other extensions', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
       'topics/X/Readme.md': 'Hello world.\n'
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -154,7 +181,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -170,7 +197,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -191,7 +218,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/C.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/C.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -213,7 +240,7 @@ describe('BulkFileGenerator', function() {
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'A/B/C', 'topics/A/B/C/#/Topic.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/A/B/C/#/Topic.expl');
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(

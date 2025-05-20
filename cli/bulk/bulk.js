@@ -69,9 +69,14 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   if (options.search) {
+    const searchPattern = options.search
+      .replace(/[-_\s]+/g, '[-_\\s]*') // turn spacey chunks into a regex class
+      .replace(/(["$`\\])/g, '\\$1'); // escape shell-sensitive characters
+
+    const cmd = `find topics | grep -i -E "${searchPattern}" | grep .expl || true`;
     selectedFileList = selectedFileList.concat(
       child_process
-        .execSync(`find topics | { grep -i ${options.search} | grep .expl || true; }`) // suppress error on no results
+        .execSync(cmd)
         .toString()
         .trim()
         .split("\n")
@@ -96,9 +101,9 @@ const bulk = async function(selectedFileList, options = {}) {
     let defaultTopic = {};
     logOrWriteError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     checkGitIgnoreForBulkFile(options);
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || defaultTopic.topicFileName || 'canopy_bulk_file';
+    options.bulkFileName = options.bulkFileName || `${defaultTopic.topicFileName}.bulk` || 'canopy_bulk_file.bulk';
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     oldBulkFileString = bulkFileString;

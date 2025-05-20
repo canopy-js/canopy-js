@@ -6,7 +6,8 @@ async function review(options = {}, {
   getExplFileObjects = require('./build/components/fs-helpers').getExplFileObjects,
   bulk = require('./bulk/bulk'),
   now = () => Date.now(),
-  log = console.log
+  log = console.log,
+  fzfSelect = require('./shared/pickers')
 } = {}) {
   let explFileObjects = getExplFileObjects('topics', options);
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
@@ -71,19 +72,29 @@ async function review(options = {}, {
   }
 
   if (!options.list) {
-    let filesForReview = [];
+    let selectedFilesForReview = [];
     if (dueFilesWithMetadata.length > 0) { // select the right number of due files
       if (options.all === true) options.all = Infinity;
-      filesForReview = options.all
-           ? dueFilesWithMetadata.slice(0, options.all).map(file => file.filePath)
-           : [dueFilesWithMetadata[0].filePath];
+      selectedFilesForReview = options.all
+        ? dueFilesWithMetadata.slice(0, options.all).map(file => file.filePath)
+        : [dueFilesWithMetadata[0].filePath];
+
+      if (options.exclude) {
+        selectedFilesForReview = selectedFilesForReview.filter(fileString =>
+          !options.exclude.some(excluded => fileString.includes(excluded)));
+      }
+
+      if (options.pick) {
+        const selectedPaths = await fzfSelect(selectedFilesForReview, { multi: true });
+        selectedFilesForReview = selectedFilesForReview.filter(f => selectedPaths.includes(f));
+      }
     } else {
       return log(chalk.green('No reviews due at this time.'));
     }
 
-    if (filesForReview.length > 0) {
+    if (selectedFilesForReview.length > 0) {
       try {
-        await bulk(filesForReview);
+        await bulk(selectedFilesForReview);
 
         // Refresh state after bulk review.
         explFileObjects = getExplFileObjects(path.resolve('topics'), options);
@@ -114,7 +125,7 @@ async function review(options = {}, {
             return;
           },
           onNoChange: (filePath) => {
-            if (filesForReview.includes(filePath)) {
+            if (selectedFilesForReview.includes(filePath)) {
               let review = reviewDataByFilePath[filePath];
               let lastReview = new Date(review.lastReviewed);
               let today = new Date(now());
@@ -144,12 +155,13 @@ async function review(options = {}, {
           }
         });
 
-        let logFilePaths = Array.from(new Set([...filesForReview, ...changes.added, ...changes.modified, ...changes.deleted]));
+        let logFilePaths = Array.from(new Set([...selectedFilesForReview, ...changes.added, ...changes.modified, ...changes.deleted]));
         for (let filePath of logFilePaths) {
           const updated = reviewDataByFilePath[filePath] && computeMetadata(filePath, reviewDataByFilePath[filePath], now);
           log(generateLogString(updated, changes, filePath));
         }
       } catch(e) {
+        if (options.error) console.error(e);
         log(chalk.red('Review aborted.'));
       }
     }
