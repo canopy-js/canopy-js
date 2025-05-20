@@ -152,6 +152,8 @@ program.command('review')
   .addOption(new Option('--list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
   .addOption(new Option('--all [count]', 'show all due files in one bulk session').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
   .addOption(new Option('--undo', 'revert to previous backup dotfile'))
+  .addOption(new Option('-x, --exclude <paths...>', 'Ignore paths containing').implies({ all: true }))
+  .addOption(new Option('-p, --pick', 'Pick from due reviews').implies({ all: true }))
   .action((options) => {
     review(options);
   });

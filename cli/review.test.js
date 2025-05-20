@@ -557,6 +557,134 @@ describe('review function', () => {
     });
   });
 
+  describe('various options', () => {
+    it('for --all, reviews multiple due files', async () => {
+      const lastReview = shiftDate(BASE_DATE, 0);
+      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/fileA.expl ${lastReview} 2\n` +
+          `topics/fileB.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ all: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/fileA.expl': {
+            contents: 'A',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          },
+          'topics/fileB.expl': {
+            contents: 'B',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(`topics/fileA.expl ${shiftDate(BASE_DATE, 5)} 3`);
+      expect(content).toMatch(`topics/fileB.expl ${shiftDate(BASE_DATE, 5)} 3`);
+    });
+
+    it('excludes matching files from review using --exclude', async () => {
+      const lastReview = shiftDate(BASE_DATE, -10);
+      const fakeNow = new Date(BASE_DATE).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/keep.expl ${lastReview} 2\n` +
+          `topics/exclude-me.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      await review({ all: true, exclude: ['exclude-me'] }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/keep.expl': {
+            contents: 'keep',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          },
+          'topics/exclude-me.expl': {
+            contents: 'ignore this',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(/topics\/keep\.expl .* 3/);
+      expect(content).toMatch(/topics\/exclude-me\.expl .* 2/); // unchanged
+    });
+
+    it('filters review list using --pick selection', async () => {
+      const lastReview = shiftDate(BASE_DATE, -10);
+      const fakeNow = new Date(BASE_DATE).getTime();
+
+      const mockFs = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue(
+          `topics/one.expl ${lastReview} 2\n` +
+          `topics/two.expl ${lastReview} 2`
+        ),
+        writeFileSync: jest.fn(),
+        copyFileSync: jest.fn(),
+        statSync: jest.fn(),
+        utimesSync: jest.fn()
+      };
+
+      const selected = ['topics/two.expl'];
+
+      await review({ all: true, pick: true }, {
+        fs: mockFs,
+        path,
+        getExplFileObjects: () => ({
+          'topics/one.expl': {
+            contents: 'one',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          },
+          'topics/two.expl': {
+            contents: 'two',
+            isNew: false,
+            modTime: new Date(lastReview).getTime()
+          }
+        }),
+        bulk: jest.fn(),
+        now: () => fakeNow,
+        log: mockLog,
+        fzfSelect: jest.fn().mockResolvedValue(selected)
+      });
+
+      const content = mockFs.writeFileSync.mock.calls[0][1];
+      expect(content).toMatch(/topics\/two\.expl .* 3/);
+      expect(content).toMatch(/topics\/one\.expl .* 2/); // still tracked, but not incremented
+    });
+  });
+
   describe('handling live file changes during active review', () => {
 
     it('during review of one file, handles file additions, edits, and deletions correctly', async () => {
@@ -627,47 +755,6 @@ describe('review function', () => {
       expect(plainLog).toMatch(/EDITED:\s+topics\/file1\.expl/);
       expect(plainLog).toMatch(/DELETED:\s+topics\/file2\.expl/);
       expect(plainLog).toMatch(/NEW:\s+topics\/file3\.expl/);
-    });
-
-    it('for --all, reviews multiple due files', async () => {
-      const lastReview = shiftDate(BASE_DATE, 0);
-      const fakeNow = new Date(shiftDate(BASE_DATE, 5)).getTime();
-
-      const mockFs = {
-        existsSync: jest.fn().mockReturnValue(true),
-        readFileSync: jest.fn().mockReturnValue(
-          `topics/fileA.expl ${lastReview} 2\n` +
-          `topics/fileB.expl ${lastReview} 2`
-        ),
-        writeFileSync: jest.fn(),
-        copyFileSync: jest.fn(),
-        statSync: jest.fn(),
-        utimesSync: jest.fn()
-      };
-
-      await review({ all: true }, {
-        fs: mockFs,
-        path,
-        getExplFileObjects: () => ({
-          'topics/fileA.expl': {
-            contents: 'A',
-            isNew: false,
-            modTime: new Date(lastReview).getTime()
-          },
-          'topics/fileB.expl': {
-            contents: 'B',
-            isNew: false,
-            modTime: new Date(lastReview).getTime()
-          }
-        }),
-        bulk: jest.fn(),
-        now: () => fakeNow,
-        log: mockLog
-      });
-
-      const content = mockFs.writeFileSync.mock.calls[0][1];
-      expect(content).toMatch(`topics/fileA.expl ${shiftDate(BASE_DATE, 5)} 3`);
-      expect(content).toMatch(`topics/fileB.expl ${shiftDate(BASE_DATE, 5)} 3`);
     });
 
     it('during review, preserves tracking if no file changes occur', async () => {

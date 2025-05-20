@@ -157,7 +157,7 @@ describe('BulkFileGenerator', function() {
 
   });
 
-  test('it ignores files with other paths', () => {
+  test('it ignores files with other extensions', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
       'topics/X/Readme.md': 'Hello world.\n'
