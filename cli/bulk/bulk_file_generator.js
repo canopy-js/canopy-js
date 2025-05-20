@@ -1,8 +1,9 @@
 let Topic = require('../shared/topic');
 
 class BulkFileGenerator {
-  constructor(fileSet, defaultTopicDisplayCategoryPath, defaultTopicFilePath) {
+  constructor(fileSet, defaultTopicFilePath) {
     this.fileSet = fileSet;
+    const defaultTopicDisplayCategoryPath = defaultTopicFilePath.split('/').slice(1, -1).join('/');
     this.directoryComparator = generateDirectoryComparator(defaultTopicDisplayCategoryPath);
     this.defaultTopicFilePath = defaultTopicFilePath;
   }
@@ -11,9 +12,7 @@ class BulkFileGenerator {
     return this.fileSet.directories.sort(this.directoryComparator)
       .filter(d => d.files.find(f => f.path.endsWith('.expl'))) // a directory must have at least one expl file to be rendered
       .map(directory => {
-        let shortestCategoryMatchFile = directory.files
-          .filter(f => f.key?.toUpperCase().includes(f.terminalCategory.toUpperCase()))
-          .sort((a, b) => a.key.length - b.key.length || a.key.localeCompare(b.key))[0] || null;
+        let shortestCategoryMatchFile = findShortestCategoryMatchFile(directory.files);
 
         return `[${directory.displayPath}]\n\n` // two newlines after the category path header
           + directory
@@ -63,12 +62,34 @@ function generateFileComparator(defaultTopicFilePath, shortestCategoryMatchFile)
     if (file1.path === defaultTopicFilePath) return -1;
     if (file2.path === defaultTopicFilePath) return 1;
 
-    if (file1 === shortestCategoryMatchFile) return -1;
-    if (file2 === shortestCategoryMatchFile) return 1;
+    if (file1.path === shortestCategoryMatchFile.path) return -1;
+    if (file2.path === shortestCategoryMatchFile.path) return 1;
 
     if (file1.path > file2.path) return 1;
     if (file1.path < file2.path) return -1;
   };
+}
+
+function findShortestCategoryMatchFile(files) {
+  return files
+    .filter(f => {
+      let immediateDir = f.path.split('/').slice(-2, -1)[0];
+      let filename = f.path.split('/').slice(-1)[0].toUpperCase();
+      return filename.includes(immediateDir.toUpperCase());
+    })
+    .map(f => {
+      let parts = f.path.split('/');
+      let intermediates = parts.slice(1, -2); // skip "topics" and file itself
+      let filename = parts.slice(-1)[0].replace(/\.expl$/, '');
+
+      // Remove intermediary substrings from filename
+      let cleaned = intermediates.reduce((name, dir) =>
+        name.replace(new RegExp(dir.replace(/_/g, ' ').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'ig'), ''), filename
+      );
+
+      return { file: f, cleanedLength: cleaned.length };
+    })
+    .sort((a, b) => a.cleanedLength - b.cleanedLength || a.file.path.localeCompare(b.file.path))[0]?.file || null;
 }
 
 module.exports = BulkFileGenerator;

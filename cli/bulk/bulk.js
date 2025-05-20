@@ -101,7 +101,7 @@ const bulk = async function(selectedFileList, options = {}) {
     let defaultTopic = {};
     logOrWriteError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     checkGitIgnoreForBulkFile(options);
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.categoryPath, defaultTopic.filePath);
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || defaultTopic.topicFileName || 'canopy_bulk_file';
 
