@@ -8,8 +8,6 @@ const dev = require('./dev');
 const review = require('./review');
 const note = require('./note');
 const bulk = require('./bulk/bulk');
-let { tryDefaultTopic } = require('./shared/fs-helpers');
-let defaultTopic = tryDefaultTopic();
 const program = new Command();
 
 program
@@ -149,11 +147,15 @@ program.command('bulk')
 
 program.command('review')
   .description('Review and edit expl files using spaced repitition')
-  .addOption(new Option('--list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
-  .addOption(new Option('--all [count]', 'show all due files in one bulk session').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
-  .addOption(new Option('--undo', 'revert to previous backup dotfile'))
-  .addOption(new Option('-x, --exclude <paths...>', 'Ignore paths containing').implies({ all: true }))
+  .addOption(new Option('-l, --list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
+  .addOption(new Option('-a, --all [count]', 'show all due files in one bulk session').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
+  .addOption(new Option('-u, --undo', 'revert to previous backup dotfile'))
+  .addOption(new Option('-x, --exclude <paths...>', 'Ignore paths containing string'))
+  .addOption(new Option('-s, --select <paths...>', 'Only paths containing string'))
   .addOption(new Option('-p, --pick', 'Pick from due reviews').implies({ all: true }))
+  .addOption(new Option('--status', 'Log status of all reviews'))
+  .addOption(new Option('-t, --touch', 'Touch files as edited today'))
+  .addOption(new Option('-r, --reset', 'Reset files to previous state'))
   .action((options) => {
     review(options);
   });
