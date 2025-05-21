@@ -813,6 +813,8 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toContainText('AA ie reference that allows GG/AA to occur in paths');
     await expect(page.locator('p:has(.canopy-selected-link)')).toContainText('GG:');
     await expect(page.locator('text=DD: >> visible=true')).toHaveCount(2); // visually inline full path
+
+    await page.waitForLoadState('networkidle');
   });
 
   test('Pressing z zooms to lowest path segment', async ({ page }) => {

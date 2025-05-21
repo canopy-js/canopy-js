@@ -23,7 +23,6 @@ function getBundledFzfPath() {
 }
 
 function fzfSelect(choices = [], {
-  allowCustomInput = true,
   multi = false,
   header = null
 } = {}) {
@@ -31,10 +30,6 @@ function fzfSelect(choices = [], {
     const fzf = getBundledFzfPath();
     const args = [];
 
-    if (allowCustomInput) {
-      args.push('--expect=enter');
-      args.push('--print-query');
-    }
     if (multi) args.push('--multi');
     if (header) args.push('--header', header);
 
@@ -47,7 +42,9 @@ function fzfSelect(choices = [], {
     proc.stdout.on('data', data => output += data.toString());
 
     proc.on('close', () => {
+      if (!output) return null;
       const lines = output.trim().split('\n');
+
       if (multi) {
         resolve(lines);
       } else {
