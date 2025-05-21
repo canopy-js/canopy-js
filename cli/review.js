@@ -7,7 +7,7 @@ async function review(options = {}, {
   bulk = require('./bulk/bulk'),
   now = () => Date.now(),
   log = console.log,
-  fzfSelect = require('./shared/pickers')
+  fzfSelect = require('./shared/pickers').fzfSelect
 } = {}) {
   let explFileObjects = getExplFileObjects('topics', options);
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
