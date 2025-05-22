@@ -8,8 +8,6 @@ const dev = require('./dev');
 const review = require('./review');
 const note = require('./note');
 const bulk = require('./bulk/bulk');
-let { tryDefaultTopic } = require('./shared/fs-helpers');
-let defaultTopic = tryDefaultTopic();
 const program = new Command();
 
 program
@@ -127,7 +125,7 @@ program.command('bulk')
   .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
   .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
   .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
-  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name').default(defaultTopic.topicFileName))
+  .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
   .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
   .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))
   .addOption(new Option('--port <number>', 'Which port to run the server on for sync mode').default(undefined).implies({sync: true}))
@@ -152,8 +150,8 @@ program.command('review')
   .addOption(new Option('-l, --list [count]', 'show expl files and due dates, optionally limited to a number').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
   .addOption(new Option('-a, --all [count]', 'show all due files in one bulk session').argParser(val => isNaN(parseInt(val)) ? true : parseInt(val)))
   .addOption(new Option('-u, --undo', 'revert to previous backup dotfile'))
-  .addOption(new Option('-x, --exclude <paths...>', 'Ignore paths containing string').implies({ all: true }))
-  .addOption(new Option('-s, --select <paths...>', 'Only paths containing string').implies({ all: true }))
+  .addOption(new Option('-x, --exclude <paths...>', 'Ignore paths containing string'))
+  .addOption(new Option('-s, --select <paths...>', 'Only paths containing string'))
   .addOption(new Option('-p, --pick', 'Pick from due reviews').implies({ all: true }))
   .addOption(new Option('--status', 'Log status of all reviews'))
   .addOption(new Option('-t, --touch', 'Touch files as edited today'))

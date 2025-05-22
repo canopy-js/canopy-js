@@ -652,22 +652,20 @@ describe('review function', () => {
       const originalContent = 'topics/foo.expl 2025-01-01T00:00:00.000Z 1\n';
       const modifiedContent = 'topics/foo.expl 2025-01-10T00:00:00.000Z 2\n';
 
-      const lastReviewTime = new Date('2025-01-01T00:00:00.000Z').getTime()
+      const lastReviewTime = new Date('2025-01-01T00:00:00.000Z').getTime();
       const fakeNow = new Date('2025-01-10T00:00:00.000Z').getTime();
 
       const mockFs = {
-        existsSync: jest.fn().mockImplementation((p) => {
-          return (
-            p === './topics' ||
-            p === './.canopy_review_data' ||
-            p === './.canopy_review_data.backup'
-          );
-        }),
-        readFileSync: jest.fn().mockImplementation((p) => {
-          if (p === './.canopy_review_data') return originalContent;
-          if (p === './.canopy_review_data.backup') return originalContent;
-          return '';
-        }),
+        existsSync: jest.fn().mockImplementation((p) =>
+          p === './topics' ||
+          p === './.canopy_review_data' ||
+          p === './.canopy_review_data.backup'
+        ),
+        readFileSync: jest.fn()
+          .mockImplementationOnce(() => originalContent) // before review
+          .mockImplementationOnce(() => originalContent) // maybe from backup
+          .mockImplementationOnce(() => modifiedContent) // now current dotfile
+          .mockImplementationOnce(() => originalContent), // backup used in undo
         copyFileSync: jest.fn(),
         writeFileSync: jest.fn(),
         statSync: jest.fn(),
@@ -676,7 +674,7 @@ describe('review function', () => {
 
       const filePath = 'topics/foo.expl';
 
-      // Simulate a review that modifies the dotfile
+      // Simulate review that updates the dotfile
       await review({}, {
         fs: mockFs,
         path,
@@ -696,7 +694,7 @@ describe('review function', () => {
               modTime: lastReviewTime
             }
           })),
-        bulk: jest.fn(), // simulate successful review
+        bulk: jest.fn(),
         now: () => fakeNow,
         log: mockLog
       });
@@ -724,8 +722,9 @@ describe('review function', () => {
         log: mockLog
       });
 
-      const plainLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
-      expect(plainLog).toMatch(/Undo complete/);
+      const flatLog = stripAnsi(mockLog.mock.calls.flat().join('\n'));
+      expect(flatLog).toMatch(/Undo complete/);
+      expect(flatLog).toMatch(/topics\/foo\.expl \[last: \d+ days\] \[iterations: 1\]/);
     });
 
     it('with --touch, resets selected files and backs up original dotfile before overwrite', async () => {

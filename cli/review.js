@@ -97,11 +97,54 @@ function persistDotfile(fs, reviewDataByFilePath) {
   fs.writeFileSync('./.canopy_review_data', dotFileContents);
 }
 
-function handleUndo(fs, log) {
+function handleUndo(fs, log, now = () => Date.now()) {
   const backupPath = './.canopy_review_data.backup';
+  const currentPath = './.canopy_review_data';
+
   if (!fs.existsSync(backupPath)) throw new Error(chalk.red('No backup found to undo.'));
-  fs.copyFileSync(backupPath, './.canopy_review_data');
-  log(chalk.yellow('Undo complete: .canopy_review_data has been restored from backup.'));
+
+  const backupData = parseDotfile(fs.readFileSync(backupPath, 'utf-8'));
+  const currentData = fs.existsSync(currentPath)
+    ? parseDotfile(fs.readFileSync(currentPath, 'utf-8'))
+    : {};
+
+  fs.copyFileSync(backupPath, currentPath);
+
+  log(chalk.yellow('Undo complete: Canopy review data has been restored from backup.'));
+
+  for (let [filePath, backupEntry] of Object.entries(backupData)) {
+    const currentEntry = currentData[filePath];
+    if (
+      !currentEntry ||
+      currentEntry.lastReviewed !== backupEntry.lastReviewed ||
+      currentEntry.iterations !== backupEntry.iterations
+    ) {
+      const meta = computeMetadata(filePath, backupEntry, now);
+      const changeType = !currentEntry
+        ? { added: [filePath] }
+        : { modified: [filePath] };
+      log(generateLogString(meta, changeType, filePath));
+    }
+  }
+
+  for (let filePath of Object.keys(currentData)) {
+    if (!backupData[filePath]) {
+      log(generateLogString(null, { deleted: [filePath] }, filePath));
+    }
+  }
+
+}
+
+function parseDotfile(contents) {
+  return Object.fromEntries(
+    contents
+      .split('\n')
+      .filter(Boolean)
+      .map(line => {
+        const [filePath, dateStr, iterStr] = line.split(' ');
+        return [filePath, { lastReviewed: dateStr, iterations: parseInt(iterStr, 10) }];
+      })
+  );
 }
 
 async function handleTouch({ getExplFileObjects, fs, fzfSelect, now, log, options }) {
@@ -387,30 +430,31 @@ function applyPostReviewUpdates({
 }
 
 async function selectFilesForReview({ dueFiles, options, fzfSelect }) {
-  let files = [];
-
-  if (options.all === true) options.all = Infinity;
-  files = options.all
-    ? dueFiles.slice(0, options.all).map(f => f.filePath)
-    : [dueFiles[0].filePath];
-
-  if (options.select) {
-    const selectors = Array.isArray(options.select) ? options.select : [options.select];
-    files = files.filter(f =>
-      selectors.some(sel => f.includes(sel)));
-  }
+  let filePaths = dueFiles.map(f => f.filePath);
 
   if (options.exclude) {
-    files = files.filter(f =>
+    filePaths = filePaths.filter(f =>
       !options.exclude.some(excluded => f.includes(excluded)));
   }
 
-  if (options.pick) {
-    const selected = await fzfSelect(files, { multi: true });
-    files = files.filter(f => selected.includes(f));
+  const limit = options.all === true ? Infinity
+              : typeof options.all === 'number' ? options.all
+              : 1;
+
+  filePaths = filePaths.slice(0, limit);
+
+  if (options.select) {
+    const selectors = Array.isArray(options.select) ? options.select : [options.select];
+    filePaths = filePaths.filter(f =>
+      selectors.some(sel => f.includes(sel)));
   }
 
-  return files;
+  if (options.pick) {
+    const selected = await fzfSelect(filePaths, { multi: true });
+    filePaths = filePaths.filter(f => selected.includes(f));
+  }
+
+  return filePaths;
 }
 
 function getDueStatus(daysUntilDue, dueDate) {
