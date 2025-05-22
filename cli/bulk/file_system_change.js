@@ -84,6 +84,12 @@ function messageComparator(messageA, messageB) {
     if (directoryPathB.includes(directoryPathA) && directoryPathA !== directoryPathB) return -1;
   }
 
+  let baseA = fullPathA.replace(/[-_]\d+(?=\.expl)/, ''); // Prefer base file names like abc.expl over abc-1.expl
+  let baseB = fullPathB.replace(/[-_]\d+(?=\.expl)/, '');
+  if (baseA === baseB) {
+    return fullPathA.length - fullPathB.length;
+  }
+
   if (fullPathA < fullPathB) return -1; // otherwise alphabetize by path, within the separated deletes and additions
   if (fullPathA > fullPathB) return 1;
 }

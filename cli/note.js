@@ -43,6 +43,7 @@ async function note(args = []) {
     throw new Error(chalk.red('Must provide a category path and a note'));
   }
 
+  noteText = noteText.replace(/(^[^-][^:;.,?!]*[^\\])(?=[:?](?=\s|$))/, '$1\\'); // escape : or ? that are part of plaintext not key delimiter
   const bulkText = `[${categoryPath}]\n\n${noteText}\n`;
   const tmpFile = '.canopy_note_input';
   fs.writeFileSync(tmpFile, bulkText);
