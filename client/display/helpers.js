@@ -195,7 +195,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
   if (linkToSelect?.isFocused) return Promise.resolve();
-  let behavior = options.scrollStyle || 'smooth';
+  let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
 
