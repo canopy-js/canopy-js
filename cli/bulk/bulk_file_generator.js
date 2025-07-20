@@ -62,8 +62,8 @@ function generateFileComparator(defaultTopicFilePath, shortestCategoryMatchFile)
     if (file1.path === defaultTopicFilePath) return -1;
     if (file2.path === defaultTopicFilePath) return 1;
 
-    if (file1.path === shortestCategoryMatchFile.path) return -1;
-    if (file2.path === shortestCategoryMatchFile.path) return 1;
+    if (file1.path === shortestCategoryMatchFile?.path) return -1;
+    if (file2.path === shortestCategoryMatchFile?.path) return 1;
 
     if (file1.path > file2.path) return 1;
     if (file1.path < file2.path) return -1;
@@ -77,6 +77,7 @@ function findShortestCategoryMatchFile(files) {
       let filename = f.path.split('/').slice(-1)[0].toUpperCase();
       return filename.includes(immediateDir.toUpperCase());
     })
+    .filter(f => f.key) // only topic files are eligible for pinning, and category notes file is hoisted separately
     .map(f => {
       let parts = f.path.split('/');
       let intermediates = parts.slice(1, -2); // skip "topics" and file itself

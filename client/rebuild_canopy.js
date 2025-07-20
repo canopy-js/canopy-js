@@ -57,9 +57,9 @@ function rebuildCanopy (bulkFileString) {
     require('./canopy.js');
 
     if (window.location.hash) {
-      Path.current.display();
+      Path.current.display({ initialLoad: true });
     } else {
-      Path.initial.display({ scrollStyle: 'instant' });
+      Path.initial.display({ initialLoad: true });
     }
   } catch(e) {
     history.replaceState(null, null, location.pathname + location.search); // clear fragment in case of invalid URL
