@@ -46,6 +46,8 @@ const Matchers = [
   toolTipMatcher
 ];
 
+const chalk = require('chalk');
+
 let Topic = require('../../shared/topic');
 let { splitOnPipes } = require('../../shared/simple-helpers');
 let Reference = require('./reference');
@@ -346,6 +348,7 @@ function fragmentReferenceMatcher({ string, parserContext }) {
 
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
+    if (!reference.simpleTarget) throw new Error(chalk.red(`Fragment reference ${reference.fullText} does not have simple target.\n${parserContext.filePathAndLineNumber}`));
 
     parserContext.registerFragmentReference(reference, currentSubtopic);
 
