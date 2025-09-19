@@ -11,7 +11,7 @@ function watch(options = {}) {
   }
 
   try { // initial build
-    tryAndWriteHtmlError(build, { initialBuild: true, ...options });
+    tryAndWriteHtmlError(build, options);
     console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
   } catch (e) {
     console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
@@ -32,7 +32,7 @@ function watch(options = {}) {
 
 function buildRegular(options = {}) {
   try {
-    tryAndWriteHtmlError(build, {...options, initialBuild: options.filesEdited.includes('canopy-js') }); // code changes skip JSON gen
+    tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js') }); // code changes skip JSON gen
   } catch (e) {
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
     console.error(e.message);
