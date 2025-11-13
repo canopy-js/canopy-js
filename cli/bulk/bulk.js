@@ -93,10 +93,10 @@ const bulk = async function(selectedFileList, options = {}) {
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopic = {};
     logOrWriteError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
-    checkGitIgnoreForBulkFile(options);
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || `${defaultTopic.topicFileName}.bulk` || 'canopy_bulk_file.bulk';
+    checkGitIgnoreForBulkFile(options);
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
     oldBulkFileString = bulkFileString;

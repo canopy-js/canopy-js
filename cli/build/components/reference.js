@@ -32,7 +32,8 @@ class Reference {
   }
 
   get hasPipe() {
-    return !!this.contents.match(/^(?:\\.|[^\\])+\|/); // requires text before and after pipe
+    return /^(?:\\.|[^\\])+\|/.test(this.contents)   // has a valid pipe with escapes, requires text before
+      && !/{[^{}]*\|[^{}]*}/.test(this.contents);   // but reject if it's inside {a|b} syntax
   }
 
   parseDisplayAndTarget() {
@@ -42,10 +43,10 @@ class Reference {
       );
     }
 
-    if (this.hasCurlyBraces) { // curly braces and pipe is interpreted as pipe literal because {a|b} is curly braces not pipe
-      this.parseCurlyBraceReference();
-    } else if (this.hasPipe) {
+    if (this.hasPipe) { // if pipe, subsequent {{ is certainly HTML insertion
       this.parsePipeReference();
+    } else if (this.hasCurlyBraces) { // if not pipe, {{ is certainly link syntax or HTML would be in link target text
+      this.parseCurlyBraceReference();
     } else {
       this.parseSimple();
     }

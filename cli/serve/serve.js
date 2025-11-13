@@ -1,25 +1,31 @@
-let runServer = require('./run_server');
-let fs = require('fs');
-let open = require('open');
-let chalk = require('chalk');
+const { fork } = require('child_process');
+const fs = require('fs');
+const chalk = require('chalk');
+const path = require('path');
 
 function serve(options = {}) {
-  options = options || {};
-  let port = options.port;
-  port = port || 4001;
+  const port = options.port || 4001;
 
-  let validBuild = ['build', 'build/index.html', 'build/_data', 'build/_canopy.js'].map(s => fs.existsSync(s)).every(Boolean);
+  const validBuild = [
+    'build',
+    'build/index.html',
+    'build/_data',
+    'build/_canopy.js'
+  ].map(s => fs.existsSync(s)).every(Boolean);
+
   if (!validBuild && !options.ignoreBuildErrors) {
     throw new Error(chalk.red(`Server aborting due to invalid build. Handle build errors and try again.`));
   }
 
-  if (options.logging) console.log(`Serving on port ${port}`);
-
-  runServer(port, options.logging);
-
-  if (options.open) {
-    open(`http://localhost:${port}`);
-  }
+  fork(path.resolve(__dirname, './fork_server.js'), [], {
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      PORT: String(port),
+      LOGGING: options.logging ? '1' : '0',
+      OPEN: options.open ? '1' : '0'
+    }
+  });
 }
 
 module.exports = serve;
