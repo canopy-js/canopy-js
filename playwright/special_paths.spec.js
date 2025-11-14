@@ -34,35 +34,41 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Special paths', () => {
-  test('Project path prefix option creates path prefix', async ({ page }, workerInfo) => {
+  test('Project path prefix option creates path prefix', async ({ browser, page }) => {
     await page.waitForLoadState('networkidle');
     await page.goto('http://localhost:3001');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States');
 
-    // For a global link
+    // Global link
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York');
-    await expect(page.locator('text=The state of New York has a southern border >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The state of New York has a southern border >> visible=true'))
+      .toHaveCount(1);
 
-    // For a local link
+    // Local link
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
-    await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('text=The southern border of New York abuts the northern border of New Jersey. >> visible=true'))
+      .toHaveCount(1);
 
     await page.waitForLoadState('networkidle');
-    await page.reload();
 
-    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York#Southern_border');
+    // --- New tab simulates reload to avoid webkit error r---
+    const newPage = await browser.newPage();
+    const deepUrl = 'http://localhost:3001/test/United_States/New_York#Southern_border';
+    await newPage.goto(deepUrl);
 
-    // Project path prefix gets added to image tokens
-    await page.waitForLoadState('networkidle');
-    await page.goto('http://localhost:3001/test/Style_examples#Local_images');
-    await expect(page).toHaveURL('http://localhost:3001/test/Style_examples#Local_images');
+    await expect(newPage.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(newPage).toHaveURL(deepUrl);
+
+    // --- Final prefix test goes back to original tab ---
+    await page.goto('http://localhost:3001/test/United_States/New_York/Style_examples#Local_images');
+    await expect(page).toHaveURL('http://localhost:3001/test/United_States/New_York/Style_examples#Local_images');
     await page.waitForSelector('img[title="Relative URL"]', { state: 'visible' });
-    await expect(page.locator('img[title="Relative URL"]')).toHaveAttribute("src", "/test/_assets/USA.svg");
+    await expect(page.locator('img[title="Relative URL"]'))
+      .toHaveAttribute('src', '/test/_assets/USA.svg');
   });
 
   test('Hash URLs option creates hash prefix', async ({ page, context }) => {

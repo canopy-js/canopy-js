@@ -414,6 +414,15 @@ This is regular text.
 < הן מימין לשמאל
 More text.
 ````
+#### Center Blocks ####
+````
+::: This is a centered line :::
+This is regular text
+::: This is three lines
+of centered
+text :::
+````
+
 #### Footnotes ####
 ````
 This is text with a footnote[^1].
