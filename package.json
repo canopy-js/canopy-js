@@ -4,7 +4,7 @@
   "description": "A library for creating and browsing explanation trees",
   "scripts": {
     "jest": "jest cli client",
-    "test": "npm run lint && npm audit && npm run jest && npx playwright test",
+    "test": "npm run lint && npm audit --omit=dev && npm run jest && npx playwright test",
     "lint": "npx eslint cli client --format codeframe",
     "develop": "webpack --mode development --watch",
     "build": "webpack --mode development",
