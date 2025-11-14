@@ -17,6 +17,7 @@ let {
   InlineCodeSnippetToken,
   UnderlineToken,
   ToolTipToken,
+  CenterBlockToken
 } = require('./tokens');
 
 const Matchers = [
@@ -43,7 +44,8 @@ const Matchers = [
   imageMatcher,
   hyperlinkMatcher,
   urlMatcher,
-  toolTipMatcher
+  toolTipMatcher,
+  centerBlockMatcher
 ];
 
 const chalk = require('chalk');
@@ -241,6 +243,24 @@ function htmlMatcher({ string, parserContext }) {
 
   // No valid fragment found
   return null;
+}
+
+function centerBlockMatcher({ string, startOfLine, parserContext }) {
+  if (!startOfLine) return;
+  if (!string.startsWith(':::')) return;
+
+  const tail = string.slice(3);
+  const m = tail.match(/:::\s*(?=\n|$)/);
+  if (!m) return;
+
+  const closeIndex = 3 + m.index;
+  const fullLen = closeIndex + m[0].length;
+  const content = string.slice(3, closeIndex);
+
+  return [
+    new CenterBlockToken(content, parserContext),
+    fullLen
+  ];
 }
 
 function htmlEntityMatcher({ string, parserContext }) {
