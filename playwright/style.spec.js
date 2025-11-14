@@ -695,6 +695,47 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section > .canopy-paragraph > ol > li > ol > li > ul > li >> text="unordered elements also."')).toHaveCount(1)
   });
 
+  test('It creates center blocks', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Center_blocks');
+
+    // normal text is not inside a center block
+    await expect(
+     page.locator('.canopy-paragraph > .canopy-text-span').filter({ hasText: 'This is normal text.' })
+    ).toHaveCount(1);
+    await expect(
+     page.locator('.canopy-center-block').filter({ hasText: 'This is normal text.' })
+    ).toHaveCount(0);
+
+    const centerBlocks = page.locator('.canopy-center-block');
+
+    // exactly three center blocks with expected content
+    await expect(centerBlocks).toHaveCount(3);
+    await expect(centerBlocks).toHaveText([
+     /This is one line of centered text/,
+     /This is two lines[\s\S]*of centered text/,
+     /The close of this block is on its own line/
+    ]);
+
+    // disqualified: text before closing colons is not in a center block
+    await expect(
+     page.locator('.canopy-center-block').filter({
+       hasText: 'This ::: line is disqualified because it has text before the closing colons. :::'
+     })
+    ).toHaveCount(0);
+
+    // disqualified: text after closing colons is not in a center block
+    await expect(
+     page.locator('.canopy-center-block').filter({
+       hasText: '::: This line is disqualified because it has text after the closing colons ::: here.'
+     })
+    ).toHaveCount(0);
+
+    // no literal ::: inside center blocks
+    await expect(
+     page.locator('.canopy-center-block').filter({ hasText: ':::' })
+    ).toHaveCount(0);
+  });
+
   test('It creates multi-line text with correct alignment', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Multi-line_text');
 

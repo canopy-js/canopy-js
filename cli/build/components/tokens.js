@@ -356,6 +356,20 @@ function FootnoteLinesToken(text, parserContext) {
   });
 }
 
+function CenterBlockToken(text, parserContext) {
+  this.type = 'center_block';
+
+  // parse inner text normally
+  let innerTokens = parseText({
+    text,
+    parserContext: parserContext.clone({
+      insideToken: true
+    })
+  });
+
+  this.tokens = innerTokens;
+}
+
 function ItalicsToken(text, parserContext) {
   this.type = 'italics';
   this.tokens = parseText({
@@ -416,5 +430,6 @@ module.exports = {
   BoldToken,
   InlineCodeSnippetToken,
   ToolTipToken,
-  UnderlineToken
+  UnderlineToken,
+  CenterBlockToken
 };

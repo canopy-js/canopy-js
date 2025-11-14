@@ -51,6 +51,8 @@ function renderTokenElements(token, renderContext) {
     return renderInlineCodeText(token, renderContext);
   } else if (token.type === 'tool_tip') {
     return renderToolTip(token, renderContext);
+  } else if (token.type === 'center_block') {
+    return renderCenterBlock(token, renderContext);
   } else {
     throw `Unhandled token type: ${token.type}`
   }
@@ -875,6 +877,20 @@ function renderToolTip(token, renderContext) {
   // Append the tooltip text span to the tooltip span
   tooltipContainerSpan.appendChild(tooltipTextSpan);
   return [tooltipContainerSpan];
+}
+
+function renderCenterBlock(token, renderContext) {
+  let container = document.createElement('div');
+  container.className = 'canopy-center-block';
+  container.style.textAlign = 'center';
+  container.dir = 'auto';
+
+  token.tokens.forEach(subtoken => {
+    let elements = renderTokenElements(subtoken, renderContext);
+    elements.forEach(el => container.appendChild(el));
+  });
+
+  return [container];
 }
 
 export default renderTokenElements;

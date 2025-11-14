@@ -55,7 +55,7 @@ test.describe('Special paths', () => {
 
     await page.waitForLoadState('networkidle');
 
-    // --- New tab simulates reload to avoid webkit error ---
+    // --- New tab simulates reload to avoid webkit error r---
     const newPage = await browser.newPage();
     const deepUrl = 'http://localhost:3001/test/United_States/New_York#Southern_border';
     await newPage.goto(deepUrl);

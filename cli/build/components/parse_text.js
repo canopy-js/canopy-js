@@ -41,7 +41,8 @@ function parseText({ text, parserContext }) {
 
     if (result) continue;
 
-    let textSpan = string.match(/^(?:(?!\S\S\S\S?\S?\S?:\/\/)(?!(?:^|\s)(?:..?.?\.|- ))(?!\s- )[A-Za-z0-9,?'":;%$#@()/\s])+/)?.[0];
+    let textSpan =
+      string.match(/^(?:(?!\S{3,6}:\/\/)(?!(?:^|\s)(?:..?.?\.|- ))(?!\s- )(?!:::)[A-Za-z0-9,?'":;%$#@()/\s])+/)?.[0];
     let initialPlaintext = textSpan || characters[i]; // obvious plaintext or special character that is really plaintext
     parserContext.buffer += initialPlaintext;
     i += initialPlaintext.length - 1; // will get incremented
