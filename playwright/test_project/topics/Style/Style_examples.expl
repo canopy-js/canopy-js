@@ -328,7 +328,7 @@ This picture of a frog is also a link. [![Alt text](https://upload.wikimedia.org
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Local images:
-![Icon](/_assets/USA.svg “Relative URL” “Relative URL”)
+![Icon](/_assets/USA.svg "Relative URL" "Relative URL")
 
 URLs:
 This is a URL, http://google.com.
