@@ -350,7 +350,10 @@ table {
   td, th {
     border: 1px solid black;
     text-align: center;
-    padding: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 25px;
+    padding-right: 25px;
     white-space: break-spaces;
 
     &.hidden {
