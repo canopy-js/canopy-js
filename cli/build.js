@@ -22,14 +22,14 @@ function build(options = {}) {
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
 
-  if (!fs.existsSync(`${canopyLocation}/dist/canopy.js`)) {
+  if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
     throw new Error(chalk.red('No Canopy.js asset found'));
   }
 
-  fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/_canopy.js');
+  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
 
-  if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) {
-    fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/_canopy.js.map');
+  if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
   }
 
   if (!options.skipInitialBuild) {

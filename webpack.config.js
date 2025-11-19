@@ -4,7 +4,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
-    canopy: './client/canopy.js',
+    _canopy: './client/canopy.js',
     'playground/playground': './playground/src.js',
     rebuild_canopy: './client/rebuild_canopy.js'
   },
