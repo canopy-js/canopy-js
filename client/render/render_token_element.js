@@ -668,10 +668,12 @@ function renderMenu(token, renderContext) {
 
     tokenElements.forEach(tokenElement => {
       const isOrHasOnlyLink = (el) => el.tagName === 'A' || (el.children.length === 1 && isOrHasOnlyLink(el.children[0]));
+      const getOnlyLink = el => el.tagName === 'A' ? el : el.children.length === 1 ? getOnlyLink(el.children[0]) : null;
+
       if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
         menuCellElement.classList.add('canopy-menu-link-cell');
         menuCellElement.classList.add('canopy-bounding-box-container');
-        menuCellElement.addEventListener('click', tokenElement._CanopyClickHandler);
+        menuCellElement.addEventListener('click', getOnlyLink(tokenElement)._CanopyClickHandler);
         tokenElement.removeEventListener('click', tokenElement._CanopyClickHandler);
       }
       contentContainer.appendChild(tokenElement);
