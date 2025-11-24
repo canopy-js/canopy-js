@@ -79,10 +79,12 @@ function goToDefaultTopic() {
 }
 
 function zoomOnLocalPath() {
-  let relativeLinkNumber = Link.selection.relativeLinkNumber;
+  let relativeLinkNumber = Link.selection?.relativeLinkNumber;
 
-  return Link.selection?.inlinePath.lastSegment.display({ renderOnly: true }).then(() => {
-    Link.from(() => Link.selection?.inlinePath.lastSegment.parentParagraph.nthLink(relativeLinkNumber)).select({ scrollStyle: 'instant' });
+  return ((Link.selection?.inlinePath?.lastSegment?.display({ renderOnly: true })) || Promise.resolve()).then(() => {
+    Path.current.lastSegment.isTopic ?
+      Path.current.lastSegment.display({ scrollStyle: 'instant' }) :
+      Link.from(() => Link.selection?.inlinePath.lastSegment.parentParagraph.nthLink(relativeLinkNumber)).select({ scrollStyle: 'instant' });
   });
 }
 
