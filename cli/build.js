@@ -28,8 +28,8 @@ function build(options = {}) {
 
   fs.copyFileSync(`${canopyLocation}/dist/canopy.js`, 'build/_canopy.js');
 
-  if (fs.existsSync(`${canopyLocation}/dist/canopy.js.map`)) {
-    fs.copyFileSync(`${canopyLocation}/dist/canopy.js.map`, 'build/_canopy.js.map');
+  if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
   }
 
   if (!options.skipInitialBuild) {
