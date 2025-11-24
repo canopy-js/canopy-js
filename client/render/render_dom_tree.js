@@ -9,6 +9,7 @@ function renderDomTree(topic, subtopic, renderContext) {
   let paragraph = new Paragraph(sectionElement);
 
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(topic, sectionElement, renderContext);
+  renderContext.claimedSubtopics = {};
 
   let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
   if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
@@ -21,22 +22,25 @@ function renderDomTree(topic, subtopic, renderContext) {
     elements.forEach(element => paragraph.paragraphElement.appendChild(element));
   });
 
+  sectionElement.postDisplayCallbacks = renderContext.postDisplayCallbacks;
   return sectionElement;
 }
 
 function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
   return (token) => {
-    let { fullPath, remainingPath } = renderContext;
+    let { fullPath, remainingPath, claimedSubtopics } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
     let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
-    let pathToParagaph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
+    let pathToParagraph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
+    if (claimedSubtopics.hasOwnProperty(token.targetSubtopic)) return; // redundant parent links
 
     let childSectionElement = renderDomTree(
       topic,
       Topic.fromMixedCase(token.targetSubtopic),
-      Object.assign({ pathToParagaph }, renderContext)
+      Object.assign({}, renderContext, { pathToParagraph, postDisplayCallbacks: [] })
     );
 
+    claimedSubtopics[token.targetSubtopic] = true;
     parentSectionElement.appendChild(childSectionElement);
   }
 }

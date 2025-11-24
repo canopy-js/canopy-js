@@ -124,19 +124,6 @@ function measureVerticalOverflow(element) {
   return [spaceAbove, spaceBelow];
 }
 
-function whenInDom(element) {
-  return function(callback) {
-    if (!element) return console.error('whenInDom received falsey element argument');
-    // Check if the element is already in the DOM
-    if (document.body.contains(element)) {
-      callback();
-    } else {
-      // Reschedule the check after a short delay if the element is not in the DOM
-      setTimeout(() => whenInDom(element)(callback), 1);
-    }
-  };
-}
-
 function getCombinedBoundingRect(elements) {
   // Helper function to check if an element is visible and takes up space
   function isVisible(el) {
@@ -208,4 +195,4 @@ function getCombinedBoundingRect(elements) {
   return combinedRect;
 }
 
-export { generateHeader, measureVerticalOverflow, whenInDom, getCombinedBoundingRect };
+export { generateHeader, measureVerticalOverflow, getCombinedBoundingRect };

@@ -8,6 +8,10 @@ test.beforeEach(async ({ page }) => {
     }
   })
 
+  page.on('pageerror', err => {
+    console.error('Page Error:', err.message);
+  });
+
   await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
     route.fulfill({
       status: 200,

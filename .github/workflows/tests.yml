@@ -29,11 +29,18 @@ jobs:
       - run: npm run jest
 
   playwright-tests:
-    name: Playwright (${{ matrix.target }})
+    name: Playwright (${{ matrix.target.id }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: true
       matrix:
-        target: [playwright:nav, playwright:style, playwright:rest]
+        target:
+          - id: nav
+            cmd: npx playwright test playwright/navigation.spec.js
+          - id: style
+            cmd: npx playwright test playwright/style.spec.js
+          - id: rest
+            cmd: npx playwright test $(find ./playwright -name '*.spec.js' ! -name 'navigation.spec.js' ! -name 'style.spec.js')
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -51,14 +58,20 @@ jobs:
       - run: npm run build-prod
       - run: npm install -g .
       - run: npx playwright install --with-deps
-      - run: |
-          if [ "${{ matrix.target }}" = "playwright:nav" ]; then
-            npx playwright test playwright/navigation.spec.js
-          elif [ "${{ matrix.target }}" = "playwright:style" ]; then
-            npx playwright test playwright/style.spec.js
-          else
-            npx playwright test $(find ./playwright -name '*.spec.js' ! -name 'navigation.spec.js' ! -name 'style.spec.js')
-          fi
+      - run: ${{ matrix.target.cmd }} --max-failures=1
+      - name: Upload test-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target.id }}
+          path: test-results/
+
+      - name: Upload playwright-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.target.id }}
+          path: playwright-report/
 
   lint:
     name: Lint

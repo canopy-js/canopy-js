@@ -17,12 +17,14 @@ class Paragraph {
   constructor(sectionElement) {
     if (!sectionElement || sectionElement.tagName !== 'SECTION' ) throw new Error("Paragraph instantiation requires section element");
     if (!sectionElement.classList.contains('canopy-section')) throw new Error("Paragraph class requires Canopy section element");
-    this.sectionElement = sectionElement;
-    // this.parentNode = sectionElement.parentNode;
-    this.transferDataset();
 
-    let existingParagraph = Paragraph.byPath(this.sectionElement.dataset.pathString);
-    if (existingParagraph) return existingParagraph;
+    const path = sectionElement.dataset.pathString;
+    let cachedParagraph = Paragraph.byPath(path);
+    if (cachedParagraph && cachedParagraph.sectionElement !== sectionElement) throw new Error(`Multiple DOM objects instantiated for single sectionElement`);
+    if (cachedParagraph) return cachedParagraph;
+
+    this.sectionElement = sectionElement;
+    this.transferDataset();
   }
 
   static from(sectionElement) {
@@ -191,14 +193,10 @@ class Paragraph {
   }
 
   get parentParagraph() {
-    if (this.parentNode && this.parentNode.tagName === 'SECTION') return Paragraph.for(this.parentNode);
-
-    if (this.sectionElement) {
-      let parentElement = this.sectionElement?.parentNode?.closest('.canopy-section');
-      return parentElement ? new Paragraph(parentElement) : null;
-    } else {
+    if (!this.parentNode || this.parentNode.tagName !== 'SECTION') { // we require this.parentNode so don't search the DOM
       return null;
     }
+    return Paragraph.for(this.parentNode);
   }
 
   get topicParagraph() {
@@ -289,8 +287,8 @@ class Paragraph {
 
   static containingLink(link) {
     if (!(link instanceof Link)) throw new Error("Must provide link instance argument");
-    let sectionElement = link.element.parentNode.closest('.canopy-section');
-    return new Paragraph(sectionElement);
+    const sectionElement = link.element.parentNode.closest('.canopy-section');
+    return Paragraph.for(sectionElement);
   }
 
   static get visible() {
@@ -318,6 +316,7 @@ class Paragraph {
   static byPath(pathString) {
     if (!pathString) return null;
     if (pathString instanceof Path) pathString = pathString.pathString;
+    if (!this.paragraphsByPath[pathString]?.parentNode) return null; // cache functions haven't run
     return this.paragraphsByPath[pathString];
   }
 
@@ -326,29 +325,48 @@ class Paragraph {
   }
 
   addToDom() {
-    if (!this.parentNode) throw new Error('Every sectionElement must have parentNode');
-    this.parentNode.appendChild(this.sectionElement); // attach bottom up so added to the DOM all at once.
-    if (this.parentParagraph) this.parentParagraph.addToDom(); // recurse
-    if (this.path.isTopic) return canopyContainer.appendChild(this.sectionElement); // base
+    if (!this.parentNode) {
+      throw new Error('sectionElement missing parentNode');
+    }
+
+    if (this.parentParagraph) {
+      this.parentParagraph.addToDom(); // ensure parent first
+    }
+
+    if (this.sectionElement.parentNode !== this.parentNode) {
+      this.parentNode.appendChild(this.sectionElement);
+    }
   }
 
-  static registerNode(sectionElement) {
-    let paragraph = Paragraph.byPath(sectionElement.dataset.pathString) || Paragraph.for(sectionElement);
-    Paragraph.paragraphsByPath[sectionElement.dataset.pathString] = paragraph;
+  executePostDisplayCallbacks() {
+    this.sectionElement.postDisplayCallbacks?.forEach(callback => callback());
+    this.sectionElement.postDisplayCallbacks = [];
   }
 
   static registerChild(childElement, parentElement) {
-    Paragraph.registerNode(childElement);
-    let childParagraph = Paragraph.byPath(childElement.dataset.pathString)
-    childParagraph.parentNode = parentElement; // including canopyContainer, to reassemble DOM later
+    const childParagraph = Paragraph.registerNode(childElement);
+    childParagraph.parentNode = parentElement; // including canopyContainer
   }
 
-  static registerSubtopics(sectionElement) { // take a rendered tree and register all nodes and adjacencies
+  static registerNode(sectionElement) {
+    const path = sectionElement.dataset.pathString;
+    const existing = Paragraph.byPath(path);
+
+    if (existing) {
+      if (existing.sectionElement !== sectionElement) throw new Error("Multiple DOM objects instantiated for single sectionElement");
+      return existing;
+    }
+
+    const paragraph = new Paragraph(sectionElement);
+    this.paragraphsByPath[path] = paragraph;
+    return paragraph;
+  }
+
+  static registerSubtopics(sectionElement) {
     Array.from(sectionElement.querySelectorAll('.canopy-section'))
-      .forEach(sectionElement => {
-        Paragraph.registerNode(sectionElement)
-        Paragraph.registerChild(sectionElement, sectionElement.parentNode);
-      })
+      .forEach(section => {
+        Paragraph.registerChild(section, section.parentNode);
+      });
   }
 
   static detachSubtopics(sectionElement) { // separate the subtopics from parents until attached to DOM
@@ -371,8 +389,7 @@ class Paragraph {
   }
 
   static for(element) {
-    if (Paragraph.byPath(element.dataset.pathString)) return Paragraph.byPath(element.dataset.pathString);
-    return new Paragraph(element);
+    return new Paragraph(element); // handles caching logic
   }
 }
 

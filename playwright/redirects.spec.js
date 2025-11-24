@@ -3,6 +3,10 @@ const { test, expect } = require('@playwright/test');
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
 
+  page.on('pageerror', err => {
+    console.error('Page Error:', err.message);
+  });
+
   await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
     route.fulfill({
       status: 200,
@@ -53,6 +57,7 @@ test.describe('Redirects', () => {
     page.on("console", (message) => {
       consoleLogs.push(`[${message.type()}] ${message.text()}`);
     });
+
     await page.goto('/United_States/New_York/Mars');
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');

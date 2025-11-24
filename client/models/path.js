@@ -627,8 +627,6 @@ class Path {
       subpath = subpath.withoutFirstSegment;
     }
 
-    if (!currentNode) console.log('element at relative path', path, rootElement, currentNode);
-
     if (currentNode === canopyContainer) return null;
 
     return currentNode;

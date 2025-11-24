@@ -6,7 +6,7 @@ import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollToWithPromise, getScrollInProgress } from 'display/helpers';
 import requestJson from 'requests/request_json';
-import { measureVerticalOverflow, whenInDom, getCombinedBoundingRect } from 'render/helpers';
+import { measureVerticalOverflow, getCombinedBoundingRect } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -118,7 +118,7 @@ function renderLinkBase(token, renderContext) {
   linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener('click', callback);
 
-  whenInDom(contentContainer)(() => {
+  renderContext.postDisplayCallbacks.push(() => {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
     linkElement.dataset.extraSpace = JSON.stringify(measureVerticalOverflow(contentContainer));
     if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
@@ -179,7 +179,7 @@ function renderGlobalLink(token, renderContext) {
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
-  whenInDom(link.element)(() => {
+  renderContext.postDisplayCallbacks.push(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
@@ -269,7 +269,7 @@ function renderExternalLink(token, renderContext) {
   linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
 
   // Add a class if the link contains an image
-  whenInDom(linkElement)(() => {
+  renderContext.postDisplayCallbacks.push(() => {
     if (linkElement.querySelector('img')) {
       linkElement.classList.add('canopy-linked-image');
     }
@@ -534,7 +534,7 @@ function renderTable(token, renderContext) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-bounding-box-container'); // rect to consider for arrow key comparisons
-                  whenInDom(tableCellElement)(() => { // need to wait for .parentNode to exist
+                  renderContext.postDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
@@ -697,7 +697,7 @@ function renderMenu(token, renderContext) {
     return menuCellElement;
   });
 
-  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
+  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section menu-render-temp-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
   let tempParagraphElement = tempSectionElement.querySelector('p');
   let tempRowElement = createNewRow();
   canopyContainer.appendChild(tempSectionElement);

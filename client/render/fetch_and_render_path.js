@@ -17,7 +17,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
 
   let pathToParagraph = fullPath.slice(0, fullPath.length - remainingPath.length + 1);
   let pathToParagraphTopic = pathToParagraph.removeTerminalSubtopic;
-  let preexistingSectionElement = Path.elementAtRelativePath(pathToParagraphTopic, canopyContainer);
+
+  let preexistingSectionElement = Path.elementAtRelativePath(pathToParagraphTopic, canopyContainer) || Paragraph.byPath(pathToParagraphTopic)?.sectionElement;
   let preexistingSectionElementPromise = preexistingSectionElement ? Promise.resolve(preexistingSectionElement) : null;
 
   let sectionElementPromise = preexistingSectionElementPromise || promiseCache[pathToParagraphTopic.string] || requestJson(remainingPath.firstTopic)
@@ -33,7 +34,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
           paragraphsBySubtopic,
           fullPath,
           pathToParagraph,
-          pathDepth: fullPath.length - remainingPath.length
+          pathDepth: fullPath.length - remainingPath.length,
+          postDisplayCallbacks: []
         },
       );
     }).catch(e => { console.error(e); return null; }); // 404
@@ -44,7 +46,9 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     if (!parentElement || !sectionElement) return Promise.resolve(); // null parent eg if appending failed
     if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader.apply(this, headerCache[sectionElement.dataset.topicName])); // regen if necessary
     if (parentElement !== canopyContainer && !Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
-    if (!Paragraph.byPath(pathToParagraphTopic)) {
+    const existingParagraph = Paragraph.byPath(pathToParagraphTopic);
+
+    if (!existingParagraph || !existingParagraph.parentNode) { // if parentNode then we have already added subtree to cache
       Paragraph.registerChild(sectionElement, parentElement);
       Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
       Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
