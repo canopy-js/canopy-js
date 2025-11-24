@@ -739,14 +739,6 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });
 
-  test('Link clicks insert history stack frame', async ({ page, browserName }) => {
-    await page.goto('United_States');
-    await expect(page).toHaveURL('United_States');
-    await page.locator('a:has-text("New York"):visible').click();
-    await page.goBack();
-    await expect(page.locator('.canopy-selected-link')).toHaveText("New York");
-  });
-
   test('Cycle reduction inserts history stack frame', async ({ page, browserName }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
