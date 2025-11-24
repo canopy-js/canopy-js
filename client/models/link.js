@@ -404,41 +404,8 @@ class Link {
     return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase); // A/B or A/B#C
   }
 
-  get isCoterminalReference() { // ie A/B/C/D with [[E/C/D]], if not coterminal, regular reduction
-    return this.literalPath.includesTopic(this.enclosingTopic) 
-      && Topic.areEqual(this.literalPath.lastTopic, this.enclosingTopic)
-      && Topic.areEqual(this.literalPath.lastSubtopic, this.enclosingSubtopic);
-  }
-
-  get pathOfCoterminalOverlap() { // e.g. A/B/C/D with reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
-    let topicMatches = this.inlinePath.array.map(([topic, _]) => Topic.areEqual(topic, this.enclosingTopic));
-    let indexOfSelfReference = topicMatches.lastIndexOf(true);
-    let indexOfCurrentSegment = this.enclosingPath.length - 1;
-
-    while(indexOfCurrentSegment !== 0 && this.inlinePath.array[indexOfCurrentSegment - 1][0].mixedCase === this.inlinePath.array[indexOfSelfReference - 1][0].mixedCase) {
-      indexOfSelfReference--;
-      indexOfCurrentSegment--;
-    }
-
-    if (indexOfCurrentSegment === 0) { // e.g. A/B/C/D [[G/A/B/C/D]], point to G's link to A because here that's context for the repetition
-      return this.inlinePath.slice(0, indexOfSelfReference + 1); // +1 so slice includes the last element which is also root topic so we get it's parent link
-    }
-
-    return this.inlinePath.slice(0, indexOfSelfReference + 1); // e.g. A/B/C/D [[G/B/C/E]] point to A/B/C/D/G/B/C/E B's link to C ie start of shared portion
-  }
-
   get isSelfReference() {
     return this.enclosingParagraph.path.lastSegment.equals(this.literalPath);
-  }
-
-  get isRehashReference() {
-    return this.enclosingPath.endsWith(this.literalPath);
-  }
-
-  get pathOfRehash() { // eg A/B/C [[B/C]] or A/B#C [[B#C]] give parent link in B
-    return this.enclosingPath.sliceBeforeLastTopicInstance(this.literalPath.firstTopic)
-      .append(Path.forTopic(this.literalPath.firstTopic))
-      .intermediaryPathsTo(this.enclosingPath)[1];
   }
 
   get isSimpleGlobal() {
@@ -474,13 +441,13 @@ class Link {
   }
 
   get isUpCycle() {
-    return this.inlinePath.reduce().subsetOf(this.enclosingPath) ||
-      this.isRehashReference; // e.g. A/B/C with [[B/C]] which focuses on B
+    return this.inlinePath.reduce().subsetOf(this.enclosingPath) || //
+      this.enclosingPath.endsWith(this.literalPath); // e.g. A/B/C with link [[B/C]]
   }
 
   get isBackCycle() {
     return this.cycle 
-      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not up cycle
+      && !this.isUpCycle // not up cycle
       && !this.isDownCycle // not down cycle
       && !this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
@@ -655,33 +622,15 @@ class Link {
       return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
 
-    if (this.isRehashReference && !this.isOpen) { // e.g. A/B/C/D with reference [[B/C/D]] indicating empasis on B's link to C
-      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      if (this.literalPath.isTopic) return updateView(this.enclosingPath, this.enclosingPath.parentLink, { ...options, scrollToParagraph: false });
-      return updateView(
-        Path.current, 
-        this.pathOfRehash.parentLink,
-        { renderOnly: options.renderOnly }
-      )
-    }
-
-    if (this.isCoterminalReference && !this.isOpen) { // e.g. A/B/C/D with reducing reference [[E/F/C/D]] inline A/B/C/D/E/F/C/D and focus on F's link to C ie divergence
-      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      return this.inlinePath.display({...options, renderOnly: true, inlineCycles: true }).then(() => {
-        return updateView(
-          this.inlinePath, 
-          this.pathOfCoterminalOverlap.parentLink, 
-          { renderOnly: options.renderOnly }
-        );
-      });
-    }
-
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      // if (this.isUpCycle) return this.inlinePath.reduce() // scroll to parent link and deselect
-      //     .intermediaryPathsTo(this.enclosingPath)[1].parentLink
-      //     .select({renderOnly: options.renderOnly})
-      //     .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+
+      if (this.isUpCycle) {
+        return this.inlinePath.reduce() // scroll to parent link and deselect
+          .linkTo(this.enclosingPath)
+          .select({renderOnly: options.renderOnly})
+          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
+      }
 
       return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
     }

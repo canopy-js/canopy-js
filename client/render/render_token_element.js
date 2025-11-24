@@ -172,7 +172,7 @@ function renderGlobalLink(token, renderContext) {
 
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     cycleIcon = document.createElement('span');
-    if (!containsUnicodeArrow(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) {
+    if (!containsUnicodeArrow(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) { // will be down-cycle
       cycleIcon.classList.add('canopy-provisional-cycle-icon');
       cycleIcon.innerText = '↩';
     }
@@ -195,7 +195,7 @@ function renderGlobalLink(token, renderContext) {
       } else if (link.isBackCycle) {
         cycleIcon.classList.add('canopy-back-cycle-icon');
         cycleIcon.innerText = '↩';
-      } else if (link.isDownCycle) { // eg in A/B/C a link to [[B/C/D]]
+      } else if (link.isDownCycle) { // eg in A/B#C a link to [[B#C/D]] i.e. a link to select a sibling.
         cycleIcon.classList.add('canopy-down-cycle-icon');
         cycleIcon.innerText = '';
       }

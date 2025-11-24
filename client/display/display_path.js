@@ -8,14 +8,14 @@ import {
   resetDom,
   beforeChangeScroll,
   afterChangeScroll,
-  waitForSelectedSection
+  waitForDisplaysInProgress
 } from 'display/helpers';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
-  return waitForSelectedSection()
+  return waitForDisplaysInProgress()
   .then(() => (Paragraph.enableDisplayInProgress()))
   .then(() => beforeChangeScroll(pathToDisplay, linkToSelect, options)) // eg long distance up or two-step path transition
   .then(() => {
