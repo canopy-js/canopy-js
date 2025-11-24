@@ -20,7 +20,7 @@ jobs:
       - run: |
           mkdir ../notebook-deploy
           cp dist/rebuild_canopy.js ../notebook-deploy/
-          cp dist/rebuild_canopy.js.map ../notebook-deploy/
+          cp dist/_rebuild_canopy.js.map ../notebook-deploy/
           cp notebook/index.html ../notebook-deploy/
           cp notebook/favicon.ico ../notebook-deploy/
           cp notebook/google_analytics_tag.txt ../notebook-deploy/

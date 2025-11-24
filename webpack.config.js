@@ -4,7 +4,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
-    canopy: './client/canopy.js',
+    _canopy: './client/canopy.js',
     'playground/playground': './playground/src.js',
     rebuild_canopy: './client/rebuild_canopy.js'
   },
@@ -44,7 +44,7 @@ module.exports = {
   devtool: false,
   plugins: [
     new webpack.SourceMapDevToolPlugin({
-      filename: '_[file].map'
+      filename: '[file].map'
     }),
     new CopyPlugin({
       patterns: [
