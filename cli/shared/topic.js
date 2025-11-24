@@ -138,13 +138,21 @@ class Topic {
     return [match[1] && Topic.fromUrl(match[1]), match[2] && Topic.fromUrl(match[2]) || null];
   }
 
-  static for(string) {
-    return new Topic(string);
-  }
-
   static areEqual(topic1, topic2) {
     return topic1.mixedCase === topic2.mixedCase;
   }
+
+  static for(string) {
+    return new Topic(string);
+  }
 }
+
+Topic.prototype.equals = function(otherTopic) {
+  return this.mixedCase === otherTopic.mixedCase;
+};
+
+Topic.prototype.matches = function(otherTopic) {
+  return this.caps === otherTopic.caps;
+};
 
 module.exports = Topic;

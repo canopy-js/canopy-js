@@ -109,7 +109,7 @@ class Path {
 
   includesTopic(topic) {
     return this.array.find(([currentTopic, _]) => {
-      return Topic.areEqual(topic, currentTopic);
+      return topic.equals(currentTopic);
     });
   }
 
@@ -126,11 +126,11 @@ class Path {
   }
 
   sliceAfterLastTopicInstance(topic) {
-    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => Topic.areEqual(t, topic)) + 1)); // after
+    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => t.equals(topic)) + 1)); // after
   }
 
   sliceBeforeLastTopicInstance(topic) {
-    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => Topic.areEqual(t, topic)))); // after
+    return new this.constructor(this.array.slice(0, this.array.findLastIndex(([t]) => t.equals(topic)))); // after
   }
 
   get segments() {
@@ -214,7 +214,7 @@ class Path {
   }
 
   get isTopic() {
-    return this.array.length === 1 && Topic.areEqual(this.array[0][0], this.array[0][1]);
+    return this.array.length === 1 && this.array[0][0].equals(this.array[0][1]);
   }
 
   get parentPath() {
@@ -236,8 +236,8 @@ class Path {
   
     return paragraphWithLinks.linksBySelector(
       (link) =>
-        (link.isGlobal && Topic.areEqual(link.childTopic, this.lastSegment.firstTopic)) ||
-        (link.isLocal && Topic.areEqual(link.targetSubtopic, this.lastSegment.firstSubtopic))
+        (link.isGlobal && link.childTopic.equals(this.lastSegment.firstTopic)) ||
+        (link.isLocal && link.targetSubtopic.equals(this.lastSegment.firstSubtopic))
     );
   }
 
@@ -250,7 +250,7 @@ class Path {
 
     // if paragraph is subtopic, parent link must be local reference in parent
     if (!this.lastSegment.isTopic) {
-      return this.parentParagraph.links.find(link => link.isLocal && Topic.areEqual(link.targetSubtopic, this.paragraph.subtopic));
+      return this.parentParagraph.links.find(link => link.isLocal && link.targetSubtopic.equals(this.paragraph.subtopic));
     }
 
     // if there are multiple global links beginning with the given topic, prefer the last selection
@@ -263,14 +263,14 @@ class Path {
     let simpleGlobalParent = this.parentParagraph && this.parentParagraph.links.find(
       link => link.isGlobal &&
         link.literalPath.length === 1 &&
-        Topic.areEqual(link.childTopic, this.lastSegment.firstTopic) &&
-        Topic.areEqual(link.childSubtopic, this.lastSegment.firstTopic)
+        link.childTopic.equals(this.lastSegment.firstTopic) &&
+        link.childSubtopic.equals(this.lastSegment.firstTopic)
     );
     if (simpleGlobalParent) return simpleGlobalParent;
 
     // otherwise pick the first matching link
     return this.parentParagraph && this.parentParagraph.links.find(
-      link => link.isGlobal && Topic.areEqual(link.childTopic, this.lastSegment.firstTopic)
+      link => link.isGlobal && link.childTopic.equals(this.lastSegment.firstTopic)
     );
   }
 
@@ -303,7 +303,7 @@ class Path {
 
     this.array.forEach((selectedSegment, selectedIndex) => {
       this.array.forEach((currentSegment, currentIndex) => {
-        if (Topic.areEqual(selectedSegment[0], currentSegment[0]) && selectedIndex < currentIndex) {
+        if (selectedSegment[0].equals(currentSegment[0]) && selectedIndex < currentIndex) {
           cycle = {
             start: selectedIndex,
             end: currentIndex
@@ -363,8 +363,8 @@ class Path {
       const [topic1, subtopic1] = this.array[i];
       const [topic2, subtopic2] = otherPath.array[i];
 
-      if (Topic.areEqual(topic1, topic2)) {
-        if (Topic.areEqual(subtopic1, subtopic2)) {
+      if (topic1.equals(topic2)) {
+        if (subtopic1.equals(subtopic2)) {
           continue;
         } else {
           break; // diversions that break within a segment require .parentPath approach
@@ -392,7 +392,7 @@ class Path {
   }
 
   overlaps(otherPath) {
-    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => Topic.areEqual(t1, t2)));
+    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.equals(t2)));
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
@@ -409,14 +409,14 @@ class Path {
   }
 
   terminalOverlap(otherPath) { // e.g A/B/C B/C/D
-    let lastInstanceOfFirstTopicOfOtherPath = this.array.findLastIndex(([t]) => Topic.areEqual(t, otherPath.firstTopic));
+    let lastInstanceOfFirstTopicOfOtherPath = this.array.findLastIndex(([t]) => t.equals(otherPath.firstTopic));
     if (lastInstanceOfFirstTopicOfOtherPath === -1) return false;
     let otherPathIndex = 0;
 
     for (let i = lastInstanceOfFirstTopicOfOtherPath; i < this.length; i++) {
       if (otherPathIndex >= otherPath.length) return false;
-      if (!Topic.areEqual(this.array[i][0], otherPath.array[otherPathIndex][0])) return false;
-      if (!Topic.areEqual(this.array[i][1], otherPath.array[otherPathIndex][1])) return false;
+      if (!this.array[i][0].equals(otherPath.array[otherPathIndex][0])) return false;
+      if (!this.array[i][1].equals(otherPath.array[otherPathIndex][1])) return false;
       otherPathIndex++;
     }
 

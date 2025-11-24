@@ -202,7 +202,7 @@ class Paragraph {
   }
 
   get isTopic() {
-    return Topic.areEqual(this.topic, this.subtopic);
+    return this.topic.equals(this.subtopic);
   }
 
   get isInDom() {
