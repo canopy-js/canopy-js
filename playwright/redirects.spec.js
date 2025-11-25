@@ -58,11 +58,7 @@ test.describe('Redirects', () => {
       consoleLogs.push(`[${message.type()}] ${message.text()}`);
     });
 
-
     await page.goto('/United_States/New_York/Mars');
-    await page.waitForTimeout(100);
-
-    console.error(consoleLogs);
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page).toHaveURL('United_States/New_York');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York/Mars');
