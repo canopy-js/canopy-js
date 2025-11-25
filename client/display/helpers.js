@@ -235,6 +235,16 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   }
 }
 
+function waitForSelectedSection() {
+  return new Promise((resolve) => {
+    function check() {
+      if (!Paragraph.contentLoaded || document.querySelector('.canopy-selected-section')) return resolve();
+      setTimeout(check, 0);
+    }
+    check();
+  });
+}
+
 export {
   setHeader,
   resetDom,
@@ -243,5 +253,6 @@ export {
   scrollElementToPosition,
   beforeChangeScroll,
   scrollToWithPromise,
-  getScrollInProgress
+  getScrollInProgress,
+  waitForSelectedSection
 };

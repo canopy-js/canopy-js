@@ -7,14 +7,17 @@ import {
   tryPathPrefix,
   resetDom,
   beforeChangeScroll,
-  afterChangeScroll
+  afterChangeScroll,
+  waitForSelectedSection
 } from 'display/helpers';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
-  return beforeChangeScroll(pathToDisplay, linkToSelect, options).then(() => {  // eg long distance up or two-step path transition
+  return waitForSelectedSection(options.initialLoad)
+  .then(() => beforeChangeScroll(pathToDisplay, linkToSelect, options)) // eg long distance up or two-step path transition
+  .then(() => {
     Paragraph.selection?.removeSelectionClass();
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
@@ -30,6 +33,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
     return afterChangeScroll(pathToDisplay, linkToSelect, options)
       .then(() => pathToDisplay.paragraphs.forEach(p => p.display()))
+      .then(() => pathToDisplay.paragraphs.forEach(p => p.executePostDisplayCallbacks()))
       .then(() => header.show())
       .then(() => pathToDisplay.paragraph.addSelectionClass()); // last for feature specs
   });

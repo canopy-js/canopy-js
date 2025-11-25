@@ -4,6 +4,10 @@ const { scrollElementToViewport } = require('./helpers');
 test.beforeEach(async ({ page }) => {
   page.on("console", logBrowserErrors);
 
+  page.on('pageerror', err => {
+    console.error('Page Error:', err.message);
+  });
+
   await page.goto('/United_States');
   await expect(page).toHaveURL("United_States");
   await page.evaluate(() => localStorage.clear()); // get rid of old link selections
