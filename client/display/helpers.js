@@ -238,7 +238,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
 function waitForSelectedSection() {
   return new Promise((resolve) => {
     function check() {
-      if (!Paragraph.contentLoaded || document.querySelector('.canopy-selected-section')) return resolve();
+      if (!Paragraph.displayInProgress) return resolve();
       setTimeout(check, 0);
     }
     check();

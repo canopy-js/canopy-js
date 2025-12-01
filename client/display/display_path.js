@@ -15,7 +15,8 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
-  return waitForSelectedSection(options.initialLoad)
+  return waitForSelectedSection()
+  .then(() => (Paragraph.enableDisplayInProgress()))
   .then(() => beforeChangeScroll(pathToDisplay, linkToSelect, options)) // eg long distance up or two-step path transition
   .then(() => {
     Paragraph.selection?.removeSelectionClass();
@@ -35,7 +36,8 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       .then(() => pathToDisplay.paragraphs.forEach(p => p.display()))
       .then(() => pathToDisplay.paragraphs.forEach(p => p.executePostDisplayCallbacks()))
       .then(() => header.show())
-      .then(() => pathToDisplay.paragraph.addSelectionClass()); // last for feature specs
+      .then(() => pathToDisplay.paragraph.addSelectionClass()) // last for feature specs
+      .then(() => (Paragraph.disableDisplayInProgress()));
   });
 }
 

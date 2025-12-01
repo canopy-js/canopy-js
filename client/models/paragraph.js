@@ -264,10 +264,6 @@ class Paragraph {
     }
   }
 
-  static removeSelectionClass() {
-    document.querySelector('.canopy-selected-section')?.classList.remove('canopy-selected-section');
-  }
-
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
   }
@@ -386,6 +382,18 @@ class Paragraph {
 
   static get contentLoaded() {
     return !!(document.querySelector('h1.canopy-header') && document.querySelector('canopy.section')); // this is a proxy for whether the first render has occured yet
+  }
+
+  static enableDisplayInProgress() {
+    canopyContainer.dataset.displayInProgress = 'true';
+  }
+
+  static disableDisplayInProgress() {
+    canopyContainer.dataset.displayInProgress = 'false';
+  }
+
+  static get displayInProgress() {
+    return canopyContainer.dataset.displayInProgress === 'true';
   }
 
   static for(element) {
