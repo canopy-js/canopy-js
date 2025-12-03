@@ -631,7 +631,6 @@ test.describe('Block entities', () => {
     // From the .canopy-linebreak-span, locate the next sibling span with the target text
     const nextSiblingSpan = nextSiblingLineBreak.locator('~ span', { hasText: 'These are two separate HTML tags' });
     await expect(nextSiblingSpan).toHaveCount(1);
-    await page.waitForLoadState('networkidle');
   });
 
   test('It allows insertions of tokens into html blocks', async ({ page }) => {
