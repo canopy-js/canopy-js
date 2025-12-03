@@ -1,24 +1,4 @@
-const { test, expect } = require('@playwright/test');
-
-test.beforeEach(async ({ page }) => {
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      console.error(message.text());
-    }
-  })
-
-  page.on('pageerror', err => {
-    console.error('Page Error:', err.message);
-  });
-
-  await page.goto('/United_States');
-  await expect(page).toHaveURL("United_States");
-  await page.evaluate(() => localStorage.clear()); // get rid of old link selections
-  await page.evaluate(() => sessionStorage.clear()); // get rid of old link selections
-  await page.waitForFunction(() => {
-    return localStorage.length === 0 && sessionStorage.length === 0;
-  });
-});
+import { test, expect } from './test-setup';
 
 test.describe('Text styles', () => {
   test('Underscores create italic text', async ({ page }) => {

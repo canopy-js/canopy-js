@@ -1,35 +1,5 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from './test-setup';
 const { scrollElementToViewport } = require('./helpers');
-
-test.beforeEach(async ({ page }) => {
-  page.on("console", logBrowserErrors);
-
-  await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
-    route.fulfill({
-      status: 200,
-      contentType: 'image/png',
-      body: '' // Empty image or placeholder content
-    });
-  });
-
-  page.on('pageerror', err => {
-    console.error('Page Error:', err.message);
-  });
-
-  await page.goto('/United_States');
-  await expect(page).toHaveURL("United_States");
-  await page.evaluate(() => localStorage.clear()); // get rid of old link selections
-  await page.evaluate(() => sessionStorage.clear());
-  await page.waitForFunction(() => {
-    return localStorage.length === 0 && sessionStorage.length === 0;
-  });
-});
-
-function logBrowserErrors(message) {
-  if (message.type() === "error") {
-    console.error(message.text());
-  }
-}
 
 const os = require('os');
 let platform = os.platform();

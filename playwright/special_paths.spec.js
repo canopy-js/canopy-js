@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from './test-setup';
 
 const os = require('os');
 let platform = os.platform();
