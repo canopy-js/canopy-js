@@ -235,7 +235,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   }
 }
 
-function waitForSelectedSection() {
+function waitForDisplaysInProgress() {
   return new Promise((resolve) => {
     function check() {
       if (!Paragraph.displayInProgress) return resolve();
@@ -254,5 +254,5 @@ export {
   beforeChangeScroll,
   scrollToWithPromise,
   getScrollInProgress,
-  waitForSelectedSection
+  waitForDisplaysInProgress
 };
