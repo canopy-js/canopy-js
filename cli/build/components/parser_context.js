@@ -121,7 +121,7 @@ class ParserContext {
   }
 
   get inTopicParagraph() {
-    return Topic.areEqual(this.currentTopic, this.currentSubtopic);
+    return this.currentTopic.equals(this.currentSubtopic);
   }
 
   set currentText(text) {

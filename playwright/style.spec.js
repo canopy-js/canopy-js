@@ -501,6 +501,7 @@ test.describe('Block entities', () => {
   test('It creates menu link icons', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Menu_link_icons');
     await expect(page).toHaveURL("United_States/New_York/Style_examples#Menu_link_icons");
+    await expect(page.locator('section.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Menu link icons'); // wait for display to finish
 
     // Assert on the first menu link
     const firstLink = await page.locator('a[data-text="Menus"]');

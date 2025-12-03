@@ -16,7 +16,7 @@ const updateView = (pathToDisplay, linkToSelect, options = {}) => {
     (new Promise(resolve => setTimeout(resolve, 400)))
   ]).then((success) => {
     if (!success && linkToSelect && Paragraph.contentLoaded && !options.renderOnly) {
-      linkToSelect?.tryElement && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect, { pending: true });
+      linkToSelect?.tryElement && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect);
     }
   });
 

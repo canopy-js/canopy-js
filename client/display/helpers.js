@@ -172,7 +172,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
   if (Link.selection.hasCloseSibling(linkToSelect)) return Promise.resolve(); // don't swoop from one link to its horizontal sibling
-  if (Path.rendered.fulcrumLink(newPath).isFocused) return Promise.resolve();
+  if (Path.rendered.fulcrumLink(newPath)?.isFocused) return Promise.resolve();
 
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;
@@ -238,7 +238,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
 function waitForSelectedSection() {
   return new Promise((resolve) => {
     function check() {
-      if (!Paragraph.contentLoaded || document.querySelector('.canopy-selected-section')) return resolve();
+      if (!Paragraph.displayInProgress) return resolve();
       setTimeout(check, 0);
     }
     check();

@@ -68,19 +68,13 @@ class Paragraph {
   }
 
   get isFocused() {
-    if (!this.element) return null;
-    const rect = this.element.getBoundingClientRect();
-
-    // Get the viewport height
+    const rect = this.paragraphElement.getBoundingClientRect();
     const viewportHeight = ScrollableContainer.visibleHeight;
 
     const topLimit = viewportHeight * 0.1;
     const bottomLimit = viewportHeight * 0.5;
 
-    const topInRange = rect.top > topLimit;
-    const bottomInRange = rect.top < bottomLimit;
-
-    return topInRange && bottomInRange;
+    return rect.top > topLimit && rect.top < bottomLimit;
   }
 
   get topic () {
@@ -92,11 +86,11 @@ class Paragraph {
   }
 
   get topicName() {
-    throw new Error("Depreciated in favor of #topic");
+    return this.topic.mixedCase;
   }
 
   get subtopicName() {
-    throw new Error("Depreciated in favor of #subtopic");
+    return this.subtopic.mixedCase;
   }
 
   get paragraphElement() {
@@ -200,21 +194,19 @@ class Paragraph {
   }
 
   get topicParagraph() {
-    if (this.isTopic) {
-      return this;
-    } else {
-      let topicParagraph = this.sectionElement.parentNode.closest('.canopy-topic-section');
-      if (!topicParagraph) throw new Error('Missing topic paragraph');
-      return new Paragraph(topicParagraph);
-    }
+    if (this.isTopic) return this;
+
+    const topicSection = this.sectionElement.parentNode.closest('.canopy-topic-section');
+    if (!topicSection) throw new Error('Missing topic paragraph');
+    return Paragraph.for(topicSection);
   }
 
   get isTopic() {
-    return Topic.areEqual(this.topic, this.subtopic);
+    return this.topic.equals(this.subtopic);
   }
 
   get isInDom() {
-    return !!this.sectionElement.closest('div#_canopy');
+    return canopyContainer.contains(this.sectionElement);
   }
 
   get isBig() {
@@ -236,19 +228,13 @@ class Paragraph {
   }
 
   get positionOnViewport() {
-    if (!this.paragraphElement) return null;
-
-    const rect = this.element.getBoundingClientRect();
+    const rect = this.paragraphElement.getBoundingClientRect();
     const viewportHeight = ScrollableContainer.visibleHeight;
-    const elementTop = rect.top;
+    const top = rect.top;
 
-    if (elementTop < 0) return -1;
-    if (elementTop > viewportHeight) return Infinity;
-
-    // Calculate the percentage of the viewport the element's top is at
-    const percentageInView = (elementTop / viewportHeight) * 100;
-
-    return percentageInView;
+    if (top < 0) return -1;
+    if (top > viewportHeight) return Infinity;
+    return (top / viewportHeight) * 100;
   }
 
   static get selection() {
@@ -256,16 +242,8 @@ class Paragraph {
   }
 
   static get current() {
-    let sectionElement = document.querySelector('.canopy-selected-section');
-    if (sectionElement) {
-      return new Paragraph(sectionElement);
-    } else {
-      return null;
-    }
-  }
-
-  static removeSelectionClass() {
-    document.querySelector('.canopy-selected-section')?.classList.remove('canopy-selected-section');
+    const sectionElement = document.querySelector('.canopy-selected-section');
+    return sectionElement ? Paragraph.for(sectionElement) : null;
   }
 
   addSelectionClass() {
@@ -385,7 +363,19 @@ class Paragraph {
   }
 
   static get contentLoaded() {
-    return !!(document.querySelector('h1.canopy-header') && document.querySelector('canopy.section')); // this is a proxy for whether the first render has occured yet
+    return !!(document.querySelector('h1.canopy-header') && document.querySelector('section.canopy-section')); // this is a proxy for whether the first render has occured yet
+  }
+
+  static enableDisplayInProgress() {
+    canopyContainer.dataset.displayInProgress = 'true';
+  }
+
+  static disableDisplayInProgress() {
+    canopyContainer.dataset.displayInProgress = 'false';
+  }
+
+  static get displayInProgress() {
+    return canopyContainer.dataset.displayInProgress === 'true';
   }
 
   static for(element) {

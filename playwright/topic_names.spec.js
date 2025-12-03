@@ -219,6 +219,7 @@ test.describe('Topic names', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("M&Ms");
 
     await scrollElementToViewport(page, '.canopy-selected-link');
+    await page.waitForLoadState('networkidle');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("100% orange juice");

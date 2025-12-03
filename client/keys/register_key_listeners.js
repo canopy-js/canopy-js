@@ -92,7 +92,8 @@ const universalShortcutRelationships = [ // shortcuts that always work, even if 
   'c',
   'd',
   'up',
-  'down'
+  'down',
+  'z'
 ];
 
 const keyNames = {

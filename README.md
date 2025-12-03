@@ -329,33 +329,23 @@ Bob:
 Bob is a nice person who lives in \[!\[New Jersey]]
 ```
 
-#### Coterminal References ####
-
-Because of cycle reduction behavior, e.g. a reference \[\[B]] at path A/B/C causing a redirect to A/C, certain coterminal links are redundant and have been reused for other things.
-
-*Self-References*
+#### Self-References ####
 
 Self-references are single-segment paths that reference their containing subtopic path. E.g., in paragraph A/B/C a reference to \[\[C]], or in paragraph A/B/C#D a reference to \[\[C#D]].
 
 In a subtopic paragraph, a self-reference will maintain the current path but scroll to the current parent link. For "pop" behavior i.e. full removal of the current paragraph in a subtopic paragraph, use \[\[^]].
 
-In a topic paragraph, a self-reference will "pop" the current paragraph from the displayed path, e.g. going from A/B/C to A/B. In order to scroll to the parent link, use a "rehash reference" described below.
+In a topic paragraph, a self-reference will "pop" the current paragraph from the displayed path, e.g. going from A/B/C to A/B. In order to scroll to the parent link, use an "up-cycle" reference, ie a link that rehashes a portion of the current path, e.g. "\[\[B/C]]" at path A/B/C.
+
+How to pop a paragraph, or focus on it:
 
 +-------+------------------------------+--------------------------------+
 |       |  From within a ST paragraph  |   From within a T paragraph    |
 +-------+------------------------------+--------------------------------+
 |  Pop  |   Parent reference \[\[^]]   | Self-reference \[\[^]] \[\[.]] |
 +-------+------------------------------+--------------------------------+
-| Shift |    Self-reference \[\[.]]    |        Rehash Reference        |
+| Focus |    Self-reference \[\[.]]    |       Up-Cycle Reference       |
 +-------+------------------------------+--------------------------------+
-
-*Rehash References*
-
-Rehash references are references that rehash some terminal portion of the current path, and only that. E.g, in path A/B/C, a reference to \[\[C]], \[\[B/C]], or \[\[A/B/C]]. Click such a link will cause the user to scroll to the first parent link in the reiterated path portion, e.g. for \[\[B/C]], to the link in B to C. This allows an author to send the user back up the page without closing the current path.
-
-*Coterminal references*
-
-References which are merely coterminal i.e. which are neither self-references nor rehash references entail a reference that begins at a different path and converges with the current, e.g. in paragraph A/B/C, a reference like \[\[X/Y/B/C]]. This link will cause the cycle path to be inlined, i.e. the reader will redirect to A/B/C/X/Y/B/C, and the reader will scroll to the point at which the paths diverged, e.g. here, Y's link to B.
 
 ### Using Markup
 
