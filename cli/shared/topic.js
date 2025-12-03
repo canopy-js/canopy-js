@@ -7,7 +7,7 @@ class Topic {
 
   constructor(string) {
     if (!string) throw new Error('String required to instantiate Topic');
-    if (Cache.hasOwnProperty(string) && Cache.hasOwnProperty(string).display) return Cache[string];
+    if (Cache.hasOwnProperty(string) && Cache[string].display) return Cache[string];
 
     this.display = string; // the string precisely as it appears in the expl file, even with backslashes which will get handled on the front-end
 
