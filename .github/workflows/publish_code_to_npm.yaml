@@ -1,39 +1,50 @@
 name: Publish to NPM
+
 on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   tests:
-     uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
+    uses: canopy-js/canopy-js/.github/workflows/tests.yml@main
+
   npm:
     needs: tests
-    if: github.ref == 'refs/heads/main' && needs.tests.outputs.done == 'true'
+    if: needs.tests.outputs.done == 'true' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4    # was @v3
       with:
-        node-version: 18
-        registry-url: https://npm.pkg.github.com/
-    - env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+        node-version: 20            # was 18
+        registry-url: https://registry.npmjs.org/
+
+    - name: Update npm
+      run: npm install -g npm@latest
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build-prod
+
+    - name: Verify tag matches package.json version
       run: |
         set -ex
-        touch .npmrc
-        npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-
-        npm install
-        npm run build-prod
-
-        PACKAGE_JSON_VERSION=$(cat package.json | grep version | cut -d "\"" -f 4)
+        PACKAGE_JSON_VERSION=$(node -p "require('./package.json').version")
 
         if [ "$PACKAGE_JSON_VERSION" = "${GITHUB_REF#refs/*/}" ]; then
-            echo "Version number in package.json matches git tag"
+          echo "Version number in package.json matches git tag"
         else
-            echo "Version number in package.json does not match git tag"
-            exit 1
+          echo "Version number in package.json does not match git tag"
+          exit 1
         fi
 
-        npm publish --access public --ignore-scripts
+    - name: Publish to npm
+      run: npm publish --access public --ignore-scripts
