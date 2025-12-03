@@ -476,6 +476,8 @@ function renderBlockQuote(token, renderContext) {
     });
   }
 
+  tempSectionElement.remove();
+
   return [blockQuoteElement];
 }
 

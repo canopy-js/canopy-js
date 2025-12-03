@@ -61,7 +61,6 @@ test.describe('Topic names', () => {
   });
 
   test('it renders everything properly for topics with pound signs marks', async ({ page, context }) => {
-    await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto(`/United_States/New_York/Martha's_Vineyard/The_word_"vinyard"`);
     await expect(page.locator('.canopy-selected-link')).toHaveText('the word "vinyard"');
 
@@ -191,7 +190,6 @@ test.describe('Topic names', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("M&Ms");
 
     await scrollElementToViewport(page, '.canopy-selected-link');
-    await page.waitForLoadState('networkidle');
     await page.locator('body').press('ArrowRight');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText("100% orange juice");

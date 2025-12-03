@@ -95,7 +95,7 @@ class Path {
     if (this.equals(otherPath)) return true;
     if (otherPath.isTopic) return false;
     if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
-    if (`${otherPath.string}/`.includes(`${this.string}/`)) return true; // / to ensure not mid-topic match
+    if (`${otherPath.string}/`.includes(`${this.string}/`)) return true; // / to ensure not mid-topic-name match
     return this.isIn(otherPath?.paragraph?.parentParagraph.path);
   }
 
@@ -241,49 +241,12 @@ class Path {
     return this.paragraph.parentParagraph;
   }
 
-  get parentLinks() {
-    if (this.isTopic) { return null; }
-
-    let paragraphWithLinks = this.lastSegment.isTopic ? this.withoutLastSegment.paragraph : this.parentParagraph;
-  
-    return paragraphWithLinks.linksBySelector(
-      (link) =>
-        (link.isGlobal && link.childTopic.equals(this.lastSegment.firstTopic)) ||
-        (link.isLocal && link.targetSubtopic.equals(this.lastSegment.firstSubtopic))
-    );
+  get parentLink() {
+    return this.paragraph.parentLink;
   }
 
-  get parentLink() {
-    if (this.isTopic) { return null; }
-
-    if (this.parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
-      return Link.selection; // when selected link is path reference and so is one of the open links also
-    }
-
-    // if paragraph is subtopic, parent link must be local reference in parent
-    if (!this.lastSegment.isTopic) {
-      return this.parentParagraph.links.find(link => link.isLocal && link.targetSubtopic.equals(this.paragraph.subtopic));
-    }
-
-    // if there are multiple global links beginning with the given topic, prefer the last selection
-    let lastSelectionOfParent = Link.lastSelectionOfParagraph(this.parentParagraph);
-    if (this.parentLinks.length > 1 && lastSelectionOfParent && this.parentLinks.find(l => l.equals(lastSelectionOfParent))) {
-      return lastSelectionOfParent;
-    }
-
-    // if one of the potential parents is a simple global reference, prefer that over a longer path
-    let simpleGlobalParent = this.parentParagraph && this.parentParagraph.links.find(
-      link => link.isGlobal &&
-        link.literalPath.length === 1 &&
-        link.childTopic.equals(this.lastSegment.firstTopic) &&
-        link.childSubtopic.equals(this.lastSegment.firstTopic)
-    );
-    if (simpleGlobalParent) return simpleGlobalParent;
-
-    // otherwise pick the first matching link
-    return this.parentParagraph && this.parentParagraph.links.find(
-      link => link.isGlobal && link.childTopic.equals(this.lastSegment.firstTopic)
-    );
+  get parentLinks() {
+    return this.paragraph.parentLinks;
   }
 
   firstParentLink() {
@@ -487,7 +450,8 @@ class Path {
   }
 
   intermediaryPathsTo(otherPath) {
-    if (!`${otherPath.string}/`.includes(`${this.string}/`)) return true; // only straight path-increases
+
+    if (!otherPath.startsWith(this)) return null; // we only handle straight path increases from shorter this to longer otherPath
     let [shorterPath, longerPath] = [this, otherPath];
     let result = [];
     let bufferPath = longerPath.clone();
@@ -505,7 +469,6 @@ class Path {
   startsWith(prefixPath) {
     if (!(prefixPath instanceof Path)) return false;
     if (prefixPath.length > this.length) return false;
-    if (prefixPath.empty) throw new Error(`Cannot find empty prefix of ${this.string}`);
 
     // Fast exact-segment prefix check.
     if (`${this.pathString}/`.startsWith(`${prefixPath.pathString}/`)) return true;

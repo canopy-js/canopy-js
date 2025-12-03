@@ -239,7 +239,6 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on global inlines link', async ({ page }) => {
-    await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');
 
@@ -251,7 +250,6 @@ test.describe('Navigation', () => {
   });
 
   test('Clicking on a selected global deselects', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
@@ -506,7 +504,6 @@ test.describe('Navigation', () => {
     await page.locator('body').press('ArrowDown');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('url'); // stays within paragraph
-    await page.waitForLoadState('networkidle');
   });
 
   test('Enter on path reference inlines target', async ({ page }) => {
@@ -544,14 +541,28 @@ test.describe('Navigation', () => {
         { has: page.locator('text="northern border"') })}
     )).toHaveCount(1);
 
-    // The global reference should not be open because it loses in the contest for parent link
+    // The global reference should lose in the contest for parent link, but now we open all parent links
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
       { has: page.locator('a:visible.canopy-open-link',
         { has: page.locator('text="New Jersey"') })}
-    )).toHaveCount(0);
+    )).toHaveCount(1);
 
     // Path reference path should be open
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
+
+    await page.locator('a:has-text("attractions"):visible').click();
+
+     // The path reference should be closed because we have navigated away from its path
+     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+       { has: page.locator('a:visible.canopy-open-link',
+         { has: page.locator('text="northern border"') })}
+     )).toHaveCount(0);
+
+     // The global reference should still be open
+     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
+       { has: page.locator('a:visible.canopy-open-link',
+         { has: page.locator('text="New Jersey"') })}
+     )).toHaveCount(1);
   });
 
   test('Alt-clicking on a path reference redirects to the reference path', async ({ page, context }) => {
@@ -781,12 +792,9 @@ test.describe('Navigation', () => {
   test('Redirecting to default topic replaces history state', async ({ page, context }) => {
     await page.goto('/United_States/New_York');
     await expect(page).toHaveURL('/United_States/New_York');
-    await page.waitForLoadState('networkidle'); // going to / cancels existing eager JSON requests which logs errors
     await page.goto('/'); // when this gets forwarded to United_States, it should replace the history state not add
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('United_States');
     await page.goBack();
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/United_States/New_York');
   });
 

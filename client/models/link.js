@@ -404,6 +404,12 @@ class Link {
     return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase); // A/B or A/B#C
   }
 
+  get isOpenPathReference() {
+    if (!this.isPathReference) return false;
+
+    return Path.current.startsWith(this.inlinePath);
+  }
+
   get isSelfReference() {
     return this.enclosingParagraph.path.lastSegment.equals(this.literalPath);
   }
@@ -593,7 +599,7 @@ class Link {
     if (options?.newTab && this.isParent) return window.open(location.origin + this.selectionPath.productionPathString, '_blank');
 
     if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
-    if (options.scrollToParagraph && !this.isFragment) return updateView(this.selectionPath, null, options);
+    if (options.scrollToParagraph && !this.isFragment) return updateView(this.selectionPath, this, { scrollToParagraph: true, options });
 
     return updateView(this.selectionPath, this, options);
   }

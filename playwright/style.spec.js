@@ -631,7 +631,6 @@ test.describe('Block entities', () => {
     // From the .canopy-linebreak-span, locate the next sibling span with the target text
     const nextSiblingSpan = nextSiblingLineBreak.locator('~ span', { hasText: 'These are two separate HTML tags' });
     await expect(nextSiblingSpan).toHaveCount(1);
-    await page.waitForLoadState('networkidle');
   });
 
   test('It allows insertions of tokens into html blocks', async ({ page }) => {
@@ -839,6 +838,63 @@ test.describe('Block entities', () => {
     await page.click('text=café');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Unicode_normalized_links/Café");
     await expect(page.locator('.canopy-selected-section')).toHaveText('Café is a cozy spot for coffee - this topic definition key uses \\u00e9.');
+  });
+
+  test('It allows redundant parent links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Redundant_parent_links');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Redundant_parent_links');
+
+    const firstParagraph = page.locator('p.canopy-paragraph', { hasText: 'These are two' });
+    const firstLink = firstParagraph.locator('a.canopy-selectable-link', { hasText: 'links' }).first();
+    const secondLink = firstParagraph.locator('a.canopy-selectable-link', { hasText: 'child paragraph' }).first();
+    const childParagraph = page.locator('p.canopy-paragraph', { hasText: 'I am a doubly-referenced child paragraph.'});
+
+    // Initial: parent section selected
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'These are two' }
+      )
+    ).toBeVisible();
+
+    // Click first link: child section selected
+    await firstLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'I am a doubly-referenced child paragraph.' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(firstLink).toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeVisible();
+
+    // Click first link again: parent section selected, child hidden
+    await firstLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'These are two' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).not.toHaveClass(/canopy-open-link/);
+    await expect(firstLink).not.toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).not.toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeHidden();
+
+    // Click second link: child section selected again
+    await secondLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'I am a doubly-referenced child paragraph.' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(secondLink).toHaveClass(/canopy-selected-link/);
+    await expect(childParagraph).toBeVisible();
   });
 
   test('It allows solo hash links [[#]]', async ({ page }) => {
