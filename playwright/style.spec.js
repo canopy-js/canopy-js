@@ -841,6 +841,63 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section')).toHaveText('Café is a cozy spot for coffee - this topic definition key uses \\u00e9.');
   });
 
+  test('It allows redundant parent links', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Redundant_parent_links');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Redundant_parent_links');
+
+    const firstParagraph = page.locator('p.canopy-paragraph', { hasText: 'These are two' });
+    const firstLink = firstParagraph.locator('a.canopy-selectable-link', { hasText: 'links' }).first();
+    const secondLink = firstParagraph.locator('a.canopy-selectable-link', { hasText: 'child paragraph' }).first();
+    const childParagraph = page.locator('p.canopy-paragraph', { hasText: 'I am a doubly-referenced child paragraph.'});
+
+    // Initial: parent section selected
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'These are two' }
+      )
+    ).toBeVisible();
+
+    // Click first link: child section selected
+    await firstLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'I am a doubly-referenced child paragraph.' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(firstLink).toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeVisible();
+
+    // Click first link again: parent section selected, child hidden
+    await firstLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'These are two' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).not.toHaveClass(/canopy-open-link/);
+    await expect(firstLink).not.toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).not.toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeHidden();
+
+    // Click second link: child section selected again
+    await secondLink.click();
+    await expect(
+      page.locator(
+        'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
+        { hasText: 'I am a doubly-referenced child paragraph.' }
+      )
+    ).toBeVisible();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(secondLink).toHaveClass(/canopy-selected-link/);
+    await expect(childParagraph).toBeVisible();
+  });
+
   test('It allows solo hash links [[#]]', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
 

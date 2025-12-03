@@ -404,6 +404,12 @@ class Link {
     return this.type === 'global' && (this.literalPath.length > 1 || this.childTopic.mixedCase !== this.childSubtopic.mixedCase); // A/B or A/B#C
   }
 
+  get isOpenPathReference() {
+    if (!this.isPathReference) return false;
+
+    return Path.current.startsWith(this.inlinePath);
+  }
+
   get isSelfReference() {
     return this.enclosingParagraph.path.lastSegment.equals(this.literalPath);
   }

@@ -124,6 +124,20 @@ class Paragraph {
     return this.linkObjects;
   }
 
+  get simpleGlobalLinks() {
+    return this.links.filter(l => l.isSimpleGlobal);
+  }
+
+  get pathReferenceLinks() {
+    return this.links.filter(l => l.isPathReference);
+  }
+
+  openPathReferenceLinksFor(currentPath) {
+    return this.pathReferenceLinks.filter(l =>
+      l.isOpenPathReferenceFor(currentPath, this.path)
+    );
+  }
+
   get linkElements() {
     return Array.from(this.paragraphElement.querySelectorAll('.canopy-selectable-link'));
   }
@@ -144,8 +158,8 @@ class Paragraph {
     return Link.lastSelectionOfParagraph(this);
   }
 
-  get isRoot() {
-    return this.sectionElement.parentNode === canopyContainer
+  get isPageRoot() {
+    return this.parentNode === canopyContainer
   }
 
   get hasLinks() {
@@ -168,18 +182,60 @@ class Paragraph {
     );
   }
 
-  get parentLink() {
-    return this.path.parentLink;
-  }
-
-  get parentLinks() {
-    if (this.sectionElement.parentNode === canopyContainer) { return null; }
-
+  get parentLinkCandidates() {
     return this.parentParagraph.linksBySelector(
       (link) =>
         (link.isGlobal && link.childTopic.caps === this.topic.caps) ||
-        (link.isLocal && link.targetSubtopic.caps === this.subtopic.caps)
+        (link.isLocal && link.targetSubtopic.caps === this.subtopic.caps));
+
+  }
+
+  get parentLinks() {
+    if (this.isPageRoot) { return null; }
+
+    const parentParagraph = this.parentParagraph;
+    if (!parentParagraph) return null; // safety
+
+    // Get all candidate parent links
+    const parentLinkCandidates = this.parentLinkCandidates;
+
+    // if paragraph is subtopic, parent link must be local reference in parent - return all to allow multiple parent links
+    if (!this.path.lastSegment.isTopic) {
+      return parentParagraph.links.filter(link => link.isLocal && Topic.areEqual(link.targetSubtopic, this.subtopic));
+    }
+
+    // If any open path references, put them first, then everything else
+    const openPathParents = parentLinkCandidates.filter(link => link.isOpenPathReference);
+    if (openPathParents.length) {
+      const rest = parentLinkCandidates.filter(l => !openPathParents.includes(l));
+      return [...openPathParents, ...rest];
+    }
+
+    // If simple globals exist: use only them, ignore closed path refs
+    const simpleGlobals = parentParagraph.simpleGlobalLinks.filter(link =>
+      Topic.areEqual(link.childTopic, this.path.lastSegment.firstTopic)
     );
+    if (simpleGlobals.length) {
+      return simpleGlobals;
+    }
+
+    // If open parent is also selected link, put it first but return all parents
+    if (parentParagraph.linkElements.includes(Link.selection?.element) && Link.selection?.childParagraph?.equals(this)) {
+      return [Link.selection, ...parentLinkCandidates.filter(link => !link.equals(Link.selection))];
+    }
+
+    // if there are multiple global links beginning with the given topic, prefer the last selection (instead of returning all for simplicity)
+    let lastSelectionOfParent = Link.lastSelectionOfParagraph(parentParagraph);
+    if (parentLinkCandidates.length > 0 && lastSelectionOfParent && parentLinkCandidates.find(l => l.equals(lastSelectionOfParent))) {
+      return [lastSelectionOfParent, ...parentLinkCandidates.filter(l => !l.equals(lastSelectionOfParent))];
+    }
+
+    // otherwise return all results
+    return parentLinkCandidates;
+  }
+
+  get parentLink() {
+    return this.parentLinks?.[0];
   }
 
   get displayTopicName() {
