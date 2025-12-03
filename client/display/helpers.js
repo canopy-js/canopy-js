@@ -24,6 +24,8 @@ function hideAllSectionElements(pathToDisplay) {
       .filter(element => element.tagName === 'SECTION')
       .forEach(element => {
         let currentParagraph = Paragraph.for(element);
+        if (!currentParagraph.valid) return; // temp used for styling
+        if (!currentParagraph.path.string) console.error(element.outerHTML, JSON.stringify(currentParagraph))
         if (!currentParagraph.path.isIn(pathToDisplay)) currentParagraph.removeFromDom();
         removeUnusedChildSections(element, pathToDisplay);
       });

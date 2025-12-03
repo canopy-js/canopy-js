@@ -321,6 +321,10 @@ class Paragraph {
     this.sectionElement.postDisplayCallbacks = [];
   }
 
+  valid() { // to avoid errors with temp sections appended for styling info
+    return !!this.dataset.topicName;
+  }
+
   static registerChild(childElement, parentElement) {
     const childParagraph = Paragraph.registerNode(childElement);
     childParagraph.parentNode = parentElement; // including canopyContainer
