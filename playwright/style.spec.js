@@ -414,6 +414,28 @@ test.describe('Block entities', () => {
     expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
   });
 
+  test('It centers big tables', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Big_Tables');
+
+    const table = page.locator('.canopy-selected-section table').first();
+    await expect(table).toBeVisible();
+
+    const box = await table.boundingBox();
+    if (!box) throw new Error('No bbox');
+
+    // table midpoint
+    const tableCenter = box.x + box.width / 2;
+
+    // viewport midpoint
+    const viewportWidth = page.viewportSize()?.width ?? 0;
+    const viewportCenter = viewportWidth / 2;
+
+    // allow small variance from subpixel layout
+    const tolerance = 4;
+
+    expect(Math.abs(tableCenter - viewportCenter)).toBeLessThanOrEqual(tolerance);
+  });
+
   test('It properly sizes menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Menus");
