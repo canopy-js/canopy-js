@@ -28,12 +28,6 @@ jobs:
           playwright-${{ runner.os }}-
 
     - run: |
-        npx serve -s dist/playground -l 5000 &
-        for i in {1..10}; do curl -sSf http://localhost:5000 && break; sleep 1; done
-        node playground/test-console.js
-      shell: bash
-
-    - run: |
         set -ex
         rev=$(git rev-parse --short HEAD)
 

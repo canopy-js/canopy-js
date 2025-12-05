@@ -117,6 +117,11 @@ const config = {
                '&& cp -r build/** root/test ' +
                '&& ruby -run -ehttpd root -p3005 > /dev/null 2>&1',
       port: 3005
+    },
+    {
+      command: 'npx serve -s dist/playground -l 3006',
+      reuseExistingServer: true,
+      port: 3006
     }
   ],
 
