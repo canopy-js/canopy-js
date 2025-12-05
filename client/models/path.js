@@ -3,6 +3,7 @@ import Paragraph from 'models/paragraph';
 import Link from 'models/link';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
+import { getCanonicalTopic } from 'requests/request_json';
 
 class Path {
   constructor(argument) {
@@ -709,6 +710,15 @@ class Path {
     if (hashUrls) productionPathString += '/#';
 
     return productionPathString + this.pathString;
+  }
+
+  get recapitalize() {
+    return new Path(
+      this.array.map(([topic, subtopic]) => [
+        getCanonicalTopic(topic, topic),
+        getCanonicalTopic(topic, subtopic),
+      ])
+    );
   }
 
   static fixOrphanSubtopics(pathString, slashSeparatedUnits) {

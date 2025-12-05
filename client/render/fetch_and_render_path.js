@@ -1,9 +1,10 @@
 import renderDomTree from 'render/render_dom_tree';
-import requestJson from 'requests/request_json';
+import { requestJson } from 'requests/request_json';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import { canopyContainer } from 'helpers/getters';
 import { generateHeader } from 'render/helpers';
+import Topic from '../../cli/shared/topic';
 let promiseCache = {};
 let headerCache = {};
 
@@ -23,7 +24,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
 
   let sectionElementPromise = preexistingSectionElementPromise || promiseCache[pathToParagraphTopic.string] || requestJson(remainingPath.firstTopic)
     .then(({ paragraphsBySubtopic, displayTopicName, topicTokens }) => {
-      headerCache[remainingPath.firstTopic.mixedCase] = [topicTokens, displayTopicName];
+      if (displayTopicName) headerCache[Topic.for(displayTopicName).mixedCase] = [topicTokens, displayTopicName]; // only cache on original request
 
       return renderDomTree(
         remainingPath.firstTopic,
@@ -44,7 +45,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
 
   let appendingPromise = Promise.all([parentElementPromise, sectionElementPromise]).then(([parentElement, sectionElement]) => {
     if (!parentElement || !sectionElement) return Promise.resolve(); // null parent eg if appending failed
-    if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader.apply(this, headerCache[sectionElement.dataset.topicName])); // regen if necessary
+    if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader(...headerCache[sectionElement.dataset.topicName])); // regen if necessary
     if (parentElement !== canopyContainer && !Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
     const existingParagraph = Paragraph.byPath(pathToParagraphTopic);
 

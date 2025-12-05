@@ -387,29 +387,29 @@ class Paragraph {
   }
 
   static registerNode(sectionElement) {
-    const path = sectionElement.dataset.pathString;
+    const path = new Path(sectionElement.dataset.pathString).recapitalize; // use canonical capitalizations in case URL version is wrong
     const existing = Paragraph.byPath(path);
 
-    if (existing) {
-      if (existing.sectionElement !== sectionElement) throw new Error("Multiple DOM objects instantiated for single sectionElement");
-      return existing;
-    }
+    if (existing && existing.sectionElement !== sectionElement) throw new Error("Multiple DOM objects instantiated for single sectionElement");
 
     const paragraph = new Paragraph(sectionElement);
-    this.paragraphsByPath[path] = paragraph;
+    sectionElement.dataset.pathString = path.string; // persist recapitalized path string
+    this.paragraphsByPath[path.string] = paragraph;
     return paragraph;
   }
 
-  static registerSubtopics(sectionElement) {
-    Array.from(sectionElement.querySelectorAll('.canopy-section'))
-      .forEach(section => {
-        Paragraph.registerChild(section, section.parentNode);
+  static registerSubtopics(topicSectionElement) {
+    Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
+      .filter(sectionElement => sectionElement.closest('.canopy-topic-section') === topicSectionElement)
+      .forEach(sectionElement => {
+        Paragraph.registerChild(sectionElement, sectionElement.parentNode);
       });
   }
 
-  static detachSubtopics(sectionElement) { // separate the subtopics from parents until attached to DOM
-    Array.from(sectionElement.querySelectorAll('.canopy-section'))
+  static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM
+    Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
       .forEach(sectionElement => {
+        if (!sectionElement.parentNode) console.error(sectionElement.dataset);
         sectionElement.parentNode.removeChild(sectionElement);
       })
   }

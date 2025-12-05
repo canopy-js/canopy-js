@@ -5,7 +5,7 @@ import Topic from '../../cli/shared/topic';
 import { projectPathPrefix, hashUrls, canopyContainer } from 'helpers/getters';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { scrollToWithPromise, getScrollInProgress } from 'display/helpers';
-import requestJson from 'requests/request_json';
+import { requestJson } from 'requests/request_json';
 import { measureVerticalOverflow, getCombinedBoundingRect } from 'render/helpers';
 
 function renderTokenElements(token, renderContext) {

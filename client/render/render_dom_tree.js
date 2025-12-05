@@ -11,7 +11,8 @@ function renderDomTree(topic, subtopic, renderContext) {
   renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(topic, sectionElement, renderContext);
   renderContext.claimedSubtopics = {};
 
-  let tokensOfParagraph = paragraphsBySubtopic[subtopic.mixedCase];
+  let mixedCaseSubtopic = Object.keys(paragraphsBySubtopic).find(key => Topic.fromMixedCase(key).matches(subtopic)) // in case our subtopic is incorrectly capitalized
+  let tokensOfParagraph = paragraphsBySubtopic[mixedCaseSubtopic];
   if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
 
   renderContext.currentTopic = topic;
@@ -58,9 +59,9 @@ function createSectionElement(topic, subtopic, renderContext) {
   sectionElement.style.display = 'none';
   sectionElement.style.opacity = '0';
   sectionElement.dataset.displayTopicName = displayTopicName;
-  sectionElement.dataset.topicName = topic.mixedCase;
-  sectionElement.topicName = topic.mixedCase; // helpful to have in debugger
-  sectionElement.dataset.subtopicName = subtopic.mixedCase;
+  sectionElement.dataset.topicName = Topic.for(displayTopicName).mixedCase;
+  sectionElement.topicName = Topic.for(displayTopicName).mixedCase; // helpful to have in debugger
+  sectionElement.dataset.subtopicName = subtopic.mixedCase; // trustworthy because not coming from user-supplied URL
   sectionElement.subtopicName = subtopic.mixedCase; // helpful to have in debugger
   sectionElement.dataset.pathDepth = pathDepth;
   sectionElement.dataset.pathString = pathToParagraph.replaceTerminalSubtopic(subtopic).string;

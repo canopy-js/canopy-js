@@ -256,8 +256,8 @@ Run-on tag HTML blocks:
 Script tags:
 <script>
  setTimeout(function checkRender() {
-    if (document.querySelector('.canopy-topic-section').offsetParent) {
-      if (document.getElementById(123).offsetParent) {
+    if (document.querySelector('.canopy-topic-section')?.offsetParent) {
+      if (document.getElementById(123)?.offsetParent) {
         alert();
       }
     } else {

@@ -1,5 +1,5 @@
 let jsonForProjectDirectory = require('./components/json_for_project_directory');
-let { updateFilesystem, getExplFileObjects } = require('./components/fs-helpers');
+let { updateFileSystem, getExplFileObjects } = require('./components/fs-helpers');
 let path = require('path');
 
 function buildProject(defaultTopicString, options) {
@@ -10,7 +10,7 @@ function buildProject(defaultTopicString, options) {
     filesToWrite
   } = jsonForProjectDirectory(explFileObjects, defaultTopicString, options);
 
-  updateFilesystem(directoriesToEnsure, filesToWrite, options);
+  updateFileSystem(directoriesToEnsure, filesToWrite, options);
 }
 
 module.exports = buildProject;

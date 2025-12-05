@@ -12,6 +12,7 @@ import {
 } from 'display/helpers';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
+  if (!pathToDisplay.recapitalize.equals(pathToDisplay)) return displayPath(pathToDisplay.recapitalize, linkToSelect, options);
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
 
