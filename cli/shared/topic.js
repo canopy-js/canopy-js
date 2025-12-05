@@ -38,8 +38,8 @@ class Topic {
       .replace(/&[Nn][Bb][Ss][Pp];/g, ' ')
       .trim(); // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
-    this.jsonFileName = encodeURIComponent(this.mixedCase);
-    this.requestFileName = encodeURIComponent(encodeURIComponent(this.mixedCase)); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+    this.jsonFileName = encodeURIComponent(this.caps);
+    this.requestFileName = encodeURIComponent(encodeURIComponent(this.caps)); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
 
     Cache[string] = this;
   }

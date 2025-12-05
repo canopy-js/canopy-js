@@ -1,6 +1,6 @@
 import { defaultTopic, defaultTopicJson } from 'helpers/getters';
 
-let REQUEST_CACHE = {};
+const REQUEST_CACHE = {};
 
 if (defaultTopicJson()) {
   REQUEST_CACHE[defaultTopic()] = Promise.resolve(JSON.parse(defaultTopicJson()));

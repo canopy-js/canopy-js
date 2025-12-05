@@ -9,4 +9,4 @@ updateView(
   Path.initial,
   Link.savedSelection,
   { scrollStyle: 'instant', initialLoad: true, scrollToParagraph: true }
-)
+);

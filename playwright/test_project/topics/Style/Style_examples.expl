@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[big tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], and [[redundant parent links]].
 
@@ -41,6 +41,9 @@ Table links:
 | [Hello](https://google.com) |
 | Normal Text |
 | [![Disabled Link]] |
+
+Big Tables:
+| This | is | a | big | table | This | is | a | big | table | This | is | a | big | table |
 
 Menus:
 For small elements we use a width of 4:
@@ -253,8 +256,8 @@ Run-on tag HTML blocks:
 Script tags:
 <script>
  setTimeout(function checkRender() {
-    if (document.querySelector('.canopy-topic-section').offsetParent) {
-      if (document.getElementById(123).offsetParent) {
+    if (document.querySelector('.canopy-topic-section')?.offsetParent) {
+      if (document.getElementById(123)?.offsetParent) {
         alert();
       }
     } else {

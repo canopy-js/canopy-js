@@ -31,6 +31,7 @@ test.describe('Redirects', () => {
     await expect(page).toHaveURL('United_States/New_York');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York/Mars');
     await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York');
+    await expect(page).toHaveURL('United_States/New_York');
   });
 
   test('For an invalid path topic adjacency it tries subpaths', async ({ page }) => {
@@ -45,6 +46,7 @@ test.describe('Redirects', () => {
     await expect(page).toHaveURL('United_States/New_York');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path: /United_States/New_York/New_Jersey');
     await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York');
+    await expect(page).toHaveURL('United_States/New_York');
   });
 
   test('For an invalid path subtopic adjacency it tries subpaths', async ({ page }) => { // if registered orphans, it would fail on addToDom's parentNode call
@@ -74,5 +76,12 @@ test.describe('Redirects', () => {
     await expect(page).toHaveURL('United_States');
     await expect(consoleLogs).toContainEqual('[error] No section element found for path: /Mars');
     await expect(consoleLogs).toContainEqual('[error] No path prefixes remain to try. Redirecting to default topic: /United_States');
+    await expect(page).toHaveURL('United_States');
+  });
+
+  test('For an incorrectly capitalized path it corrects', async ({ page }) => {
+    await page.goto('/new_york');
+    await expect(page.locator('h1:visible')).toHaveText('New York');
+    await expect(page).toHaveURL('New_York');
   });
 });

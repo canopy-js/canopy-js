@@ -333,10 +333,14 @@ code {
   font-size: 90%;
 }
 
-table {
-  margin: 21px auto auto auto;
-  table-layout: auto;
-  max-width: 90%;
+table { // center even if overflowing x
+  position: relative; // required for left 50%
+  left: 50%; // start the table at the middle of parent
+  transform: translateX(-50%); //
+  margin: 21px 0 0 0;       /* drop auto margins here */
+  width: auto;              /* or intrinsic width */
+  max-width: none;          /* drop the 90% cap */
+
   border-collapse: collapse;
   border: none; // we put the border on the TDs to allow omitted table cells
   font-size: .85em;
