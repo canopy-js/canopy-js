@@ -215,21 +215,31 @@ function containsUnicodeArrow(str) {
 }
 
 function renderDisabledLink(token, renderContext) {
-  // Call the helper to create the base link element
-  let linkElement = renderLinkBase(token, renderContext);
+  // Build the same link the user would get (local vs global), then disable.
+  let linkElement;
+  if (token.targetTopic && token.targetSubtopic) {
+    [linkElement] = renderLocalLink(token, renderContext);
+  } else if (token.pathString) {
+    [linkElement] = renderGlobalLink(token, renderContext);
+  } else {
+    // Fallback: plain base if neither local nor global fields are present
+    linkElement = renderLinkBase(token, renderContext);
+  }
 
-  linkElement.classList.remove('canopy-selectable-link'); // not selectable
+  // Disable interactivity and navigation, keep content and layout identical.
+  linkElement.classList.remove('canopy-selectable-link');
+  linkElement.classList.add('canopy-disabled-link');
+  linkElement.dataset.type = 'disabled';
   linkElement.removeAttribute('href');
+  linkElement.setAttribute('aria-disabled', 'true');
+  linkElement.setAttribute('tabindex', '-1');
 
-  // Remove the click event listener to disable interactions
   if (linkElement._CanopyClickHandler) {
     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
     delete linkElement._CanopyClickHandler;
   }
-
-  // Add disabled-specific styling and data attributes
-  linkElement.classList.add('canopy-disabled-link');
-  linkElement.dataset.type = 'disabled';
+  // Hard-stop any stray clicks (e.g., nested elements)
+  linkElement.addEventListener('click', e => e.preventDefault(), { capture: true });
 
   return [linkElement];
 }
