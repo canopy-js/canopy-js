@@ -373,18 +373,45 @@ test.describe('Block entities', () => {
     await expect(await page.locator('.canopy-selected-section table tr td').nth(19)).toHaveAttribute('colspan', '3');
   });
 
-  test('It accepts table omit syntax', async ({ page }) => {
+  test('Tables can omit cells, or entire rows and columns', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
-    await expect(page.locator('.canopy-selected-section table td:not(.hidden) >> visible=true')).toHaveCount(7);
+    const epsilon = 1;
+    const tables = page.locator('.canopy-selected-section table');
 
-    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
+    const getBox = async locator => (await locator.boundingBox()) || { width: 0, height: 0 };
+    const getMax = (arr, key) => Math.max(0, ...arr.map(x => x[key]));
 
-    await expect(page.locator('.canopy-selected-section table tr td').nth(4)).toHaveText('2');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(5)).toHaveText('4');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
+    // Table 1: visible text still present
+    const firstTable = tables.nth(0);
+    const firstTableVisibleCells = firstTable.locator('td:not(.hidden) >> visible=true');
+    await expect(firstTableVisibleCells).toHaveText(['This','is','a','table','2','4','6']);
+
+    // Table 2: all data cells hidden → negligible height
+    const secondTable = tables.nth(1);
+    const hiddenRow = secondTable.locator('tr').nth(1);
+    expect((await getBox(hiddenRow)).height).toBeLessThanOrEqual(epsilon);
+
+    const hiddenRowCells = await hiddenRow.locator('td').evaluateAll(cells =>
+      cells.map(cell => {
+        const rect = cell.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      })
+    );
+    expect(getMax(hiddenRowCells, 'width')).toBeLessThanOrEqual(epsilon);
+    expect(getMax(hiddenRowCells, 'height')).toBeLessThanOrEqual(epsilon);
+
+    // Table 3: second column hidden → negligible width
+    const thirdTable = tables.nth(2);
+    const secondColumn = await thirdTable.locator('tr').evaluateAll(rows =>
+      rows.map(row => {
+        const cell = row.querySelectorAll('td')[1];
+        if (!cell) return { width: 0, height: 0 };
+        const rect = cell.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      })
+    );
+    expect(getMax(secondColumn, 'width')).toBeLessThanOrEqual(epsilon);
+    expect(getMax(secondColumn, 'height')).toBeLessThanOrEqual(epsilon);
   });
 
   test('It supports table links with icons', async ({ page }) => {

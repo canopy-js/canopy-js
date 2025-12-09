@@ -34,6 +34,15 @@ Tables with omitted cells:
 | This | is | a | table |
 |---|---|---|-----------|
 | 2 | 4 | 6 | \x |
+<br>
+| This | is | a | table |
+|---|---|---|-----------|
+| \x | \x | \x | \x |
+<br>
+| This  | \x |
+| is    | \x |
+| a     | \x |
+| table | \x |
 
 Table links:
 | [[New York]] |
