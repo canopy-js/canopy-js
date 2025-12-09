@@ -196,7 +196,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
-  if (linkToSelect?.isFocused) return Promise.resolve();
+  // if (linkToSelect?.isFocused) return Promise.resolve();
   let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
@@ -207,12 +207,12 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
 
   if ((linkToSelect||pathToDisplay.parentLink)?.isFragment) return scrollElementToPosition(
     (linkToSelect||pathToDisplay.parentLink).element || Paragraph.root.paragraphElement, 
-    {targetRatio: LINK_TARGET_RATIO, Infinity, minDiff, behavior, side: 'top', direction}
+    {targetRatio: LINK_TARGET_RATIO, maxScrollRatio: Infinity, minDiff, behavior, side: 'top', direction}
   );
 
   let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 120))) : Promise.resolve();
   let maxScrollRatio = Infinity; // no limit on initial load and click
-  let minDiff = 50;
+  let minDiff = 0;
 
   if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
     return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
