@@ -102,16 +102,23 @@ describe('BulkFileGenerator', function() {
 
   });
 
-  test('it pins the file with the shortest name after removing intermediary directory names, even if raw name is longer', () => {
+  test('we pin file most overlapping category path, prefering closer directories', () => {
+    // Both candidate filenames contain "Hamlet" contiguously → tie at deepest level:
+    //   "Shakespeare's Hamlet" vs "Hamlet" → overlap 6 ("HAMLET")
+    //   "Hamlet Act I"         vs "Hamlet" → overlap 6 ("HAMLET")
+    // Tie-break one level up at "Shakespeare":
+    //   "Shakespeare's Hamlet" vs "Shakespeare" → overlap 11 ("SHAKESPEARE")
+    //   "Hamlet Act I"         vs "Shakespeare" → overlap 1  (at best, single-letter)
+    // So the new implementation correctly prefers Shakespeare's_Hamlet.
     let originalSelectedFilesByContents = {
-      'topics/Literature/Shakespeare/Hamlet/Shakespeare\'s_Hamlet.expl': 'Shakespeare\'s Hamlet: Long but better match.\n',
-      'topics/Literature/Shakespeare/Hamlet/Hamlet_Act_I.expl': 'Hamlet Act I: Shorter but worse match.\n',
-      'topics/Literature/Shakespeare/Hamlet/Notes.expl': 'Notes: Short but not overlapping enclosing folder.\n',
-      'topics/Literature/Literature.expl': 'Literature: Default topic.\n'
+      "topics/Literature/Shakespeare/Hamlet/Shakespeare's_Hamlet.expl": "Shakespeare's Hamlet: Long but better match.\n",
+      "topics/Literature/Shakespeare/Hamlet/Hamlet_Act_I.expl": "Hamlet Act I: Shorter but worse match.\n",
+      "topics/Literature/Shakespeare/Hamlet/Notes.expl": "Notes: Short but not overlapping enclosing folder.\n",
+      "topics/Literature/Literature.expl": "Literature: Default topic.\n"
     };
 
     let fileSet = new FileSet(originalSelectedFilesByContents);
-    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/Literature/Literature.expl');
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, "topics/Literature/Literature.expl");
     let dataFile = bulkFileGenerator.generateBulkFile();
 
     expect(dataFile).toEqual(
@@ -126,7 +133,8 @@ describe('BulkFileGenerator', function() {
 
       * Hamlet Act I: Shorter but worse match.
 
-      * Notes: Short but not overlapping enclosing folder.` + '\n\n');
+      * Notes: Short but not overlapping enclosing folder.` + '\n\n'
+    );
   });
 
   test('it puts the inbox category last', () => {

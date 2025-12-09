@@ -71,26 +71,64 @@ function generateFileComparator(defaultTopicFilePath, shortestCategoryMatchFile)
 }
 
 function findShortestCategoryMatchFile(files) {
-  return files
-    .filter(f => {
-      let immediateDir = f.path.split('/').slice(-2, -1)[0];
-      let filename = f.path.split('/').slice(-1)[0].toUpperCase();
-      return filename.includes(immediateDir.toUpperCase());
-    })
-    .filter(f => f.key) // only topic files are eligible for pinning, and category notes file is hoisted separately
-    .map(f => {
-      let parts = f.path.split('/');
-      let intermediates = parts.slice(1, -2); // skip "topics" and file itself
-      let filename = parts.slice(-1)[0].replace(/\.expl$/, '');
+  function normalizeName(name) {
+    return name.replace(/_/g, ' ').toUpperCase();
+  }
 
-      // Remove intermediary substrings from filename
-      let cleaned = intermediates.reduce((name, dir) =>
-        name.replace(new RegExp(dir.replace(/_/g, ' ').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'ig'), ''), filename
-      );
+  function getFileNameWithoutExtension(path) {
+    return path.split('/').pop().replace(/\.[^.]+$/, '');
+  }
 
-      return { file: f, cleanedLength: cleaned.length };
-    })
-    .sort((a, b) => a.cleanedLength - b.cleanedLength || a.file.path.localeCompare(b.file.path))[0]?.file || null;
+  function getParentDirectories(path) {
+    return path.split('/').slice(0, -1).reverse();
+  }
+
+  function longestCommonSubstringLength(a, b) {
+    const normalizedA = normalizeName(a);
+    const normalizedB = normalizeName(b);
+    const [shorter, longer] =
+      normalizedA.length <= normalizedB.length
+        ? [normalizedA, normalizedB]
+        : [normalizedB, normalizedA];
+
+    for (let length = shorter.length; length > 0; length--) {
+      for (let start = 0; start + length <= shorter.length; start++) {
+        const substring = shorter.slice(start, start + length);
+        if (longer.includes(substring)) return length;
+      }
+    }
+    return 0;
+  }
+
+  const candidates = files
+    .filter(file => file.key)
+    .map(file => ({
+      file,
+      fileName: getFileNameWithoutExtension(file.path),
+      parentDirectories: getParentDirectories(file.path)
+    }));
+
+  if (candidates.length === 0) return null;
+
+  const maxPathDepth = Math.max(...candidates.map(c => c.parentDirectories.length));
+
+  function compareCandidates(a, b) {
+    for (let level = 0; level < maxPathDepth; level++) {
+      const dirA = a.parentDirectories[level];
+      const dirB = b.parentDirectories[level];
+
+      const aExact = dirA && normalizeName(a.fileName) === normalizeName(dirA);
+      const bExact = dirB && normalizeName(b.fileName) === normalizeName(dirB);
+      if (aExact !== bExact) return bExact - aExact;
+
+      const aOverlap = dirA ? longestCommonSubstringLength(a.fileName, dirA) : 0;
+      const bOverlap = dirB ? longestCommonSubstringLength(b.fileName, dirB) : 0;
+      if (aOverlap !== bOverlap) return bOverlap - aOverlap;
+    }
+    return a.file.path.localeCompare(b.file.path);
+  }
+
+  return candidates.sort(compareCandidates)[0]?.file || null;
 }
 
 module.exports = BulkFileGenerator;
