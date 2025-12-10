@@ -8,7 +8,7 @@ let {
   HtmlToken,
   CodeBlockToken,
   BlockQuoteToken,
-  OutlineToken,
+  ListToken,
   TableToken,
   MenuToken,
   FootnoteLinesToken,
@@ -26,7 +26,7 @@ const Matchers = [
   fenceCodeBlockMatcher,
   prefixCodeBlockMatcher,
   blockQuoteMatcher,
-  outlineMatcher,
+  listMatcher,
   tableMatcher,
   menuMatcher,
   htmlMatcher,
@@ -105,12 +105,12 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
   }
 }
 
-function outlineMatcher({ string, parserContext, startOfLine }) {
+function listMatcher({ string, parserContext, startOfLine }) {
   let match = string.match(/^(\s*(((?:[0-9+*-]{1,3}|[a-zA-Z])\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
 
   if (match && startOfLine) {
     return [
-      new OutlineToken(match[0], parserContext),
+      new ListToken(match[0], parserContext),
       match[0].length
     ];
   }

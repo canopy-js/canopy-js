@@ -134,7 +134,7 @@ test('it parses a list block', () => {
 
   let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
 
-  expect(tokens[0].type).toEqual('outline');
+  expect(tokens[0].type).toEqual('list');
 
   expect(tokens[0].topLevelNodes.length).toEqual(2);
 
