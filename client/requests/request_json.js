@@ -16,9 +16,12 @@ const requestJson = (topic) => {
 
   const sourcePromise = embeddedJson
     ? Promise.resolve(JSON.parse(embeddedJson))
-    : fetch(dataPath).then(res => res.json());
+    : fetch(dataPath).then(res => {
+        if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
+        return res.json();
+      });
 
-  const promise = sourcePromise
+  const requestPromise = sourcePromise
     .then(json => {
       preloadImages(json);
       topicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
@@ -29,7 +32,7 @@ const requestJson = (topic) => {
       return Promise.reject(new Error(`Unable to find topic file: "${topic.jsonFileName}"`));
     });
 
-  return REQUEST_CACHE[topic.mixedCase] = promise;
+  return REQUEST_CACHE[topic.mixedCase] = requestPromise;
 };
 
 function getCanonicalTopic(topic, subtopic = topic) {
