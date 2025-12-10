@@ -36,7 +36,8 @@ function updateFileSystem(directoriesToEnsure, filesToWrite, options = {}) {
     fs.writeFileSync(filePath, filesToWrite[filePath]);
   });
 
-  if (options.logging) console.log(chalk.yellow(`Created ${Object.keys(filesToWrite).length} JSON files in build/_data`));
+  const n = Object.keys(filesToWrite).length;
+  if (options.logging) console.log(chalk.yellow(`Created ${n} JSON ${n === 1 ? 'file' : 'files'} in build/_data${n === 1 ? ` - ${Object.keys(filesToWrite)[0]}` : ''}`));
 }
 
 function getExplFileObjects(topicsPath, options = {}) {
