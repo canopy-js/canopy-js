@@ -146,9 +146,9 @@ function BlockQuoteToken(text, direction, parserContext) {
   this.direction = direction;
 }
 
-function OutlineToken(text, parserContext) {
+function ListToken(text, parserContext) {
   this.topLevelNodes = [];
-  this.type = 'outline';
+  this.type = 'list';
 
   text.split("\n").filter(Boolean).forEach((line, lineIndex) => { // filter handles terminal newline
     let initialWhitespace = line.match(/^(\s*)/)[1];
@@ -207,7 +207,7 @@ function OutlineToken(text, parserContext) {
   removeCircularListKeys([this]);
 
   function removeCircularListKeys(tokens) {
-    tokens.filter(token => token.type === 'outline').forEach(token => {
+    tokens.filter(token => token.type === 'list').forEach(token => {
       delete token.lastNode;
       token.topLevelNodes.forEach(node => removeExtraKeys(node));
     });
@@ -422,7 +422,7 @@ module.exports = {
   HtmlToken,
   CodeBlockToken,
   BlockQuoteToken,
-  OutlineToken,
+  ListToken,
   TableToken,
   MenuToken,
   FootnoteLinesToken,
