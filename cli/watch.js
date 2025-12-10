@@ -32,7 +32,7 @@ function watch(options = {}) {
 
 function buildRegular(options = {}) {
   try {
-    tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js') }); // code changes skip JSON gen
+    tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') }); // client changes skip JSON gen
   } catch (e) {
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
     console.error(e.message);
