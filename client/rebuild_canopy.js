@@ -27,8 +27,11 @@ function rebuildCanopy (bulkFileString) {
 
     let jsonForProjectDirectory = require('../cli/build/components/json_for_project_directory');
 
+    const explFileObjectsByPath = Object.fromEntries(
+      Object.entries(newFileSet.fileObjectsByPath).map(([path, file]) => [path, { contents: file.contents, isNew: true }])
+    );
     let filesToWrite;
-    ({ filesToWrite } = jsonForProjectDirectory(newFileSet.fileContentsByPath, defaultTopicKey));
+    ({ filesToWrite } = jsonForProjectDirectory(explFileObjectsByPath, defaultTopicKey));
 
     for (let key in REQUEST_CACHE) { // Remove old data
       if (REQUEST_CACHE.hasOwnProperty(key)) {

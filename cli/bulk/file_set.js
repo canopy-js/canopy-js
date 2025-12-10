@@ -67,6 +67,10 @@ class FileSet {
       map(path => this.filesObject[path]);
   }
 
+  get fileObjectsByPath() {
+    return this.filesObject;
+  }
+
   getFileContents(filePath) {
     return this.filesObject[filePath].contents;
   }

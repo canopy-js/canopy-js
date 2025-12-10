@@ -5,7 +5,7 @@ let { displaySegment } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
 
 class ParserContext {
-  constructor({ explFileStrings, defaultTopicString, priorParserContext, options }) {
+  constructor({ explFileObjectsByPath = {}, defaultTopicString, priorParserContext, options }) {
     if (priorParserContext) {
       Object.assign(this, priorParserContext, options); // create a new object with new properties, but with references to prior data properties
     } else {
@@ -30,7 +30,7 @@ class ParserContext {
       this.characterNumber = 1; // the current line number being parsed
       this.linePrefixSize = 0; // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
 
-      this.buildNamespaceObject(explFileStrings);
+      this.buildNamespaceObject(explFileObjectsByPath);
       
       this.insideToken = false; // are we parsing tokens inside another token? We use this to avoid recognizing multi-line tokens inside other tokens.
 
@@ -44,11 +44,11 @@ class ParserContext {
 
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
-  buildNamespaceObject(explFileStrings) {
+  buildNamespaceObject(explFileObjectsByPath) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
 
-    Object.keys(explFileStrings).forEach(function(filePath){
-      let fileContents = explFileStrings[filePath];
+    Object.keys(explFileObjectsByPath).forEach(function(filePath){
+      let fileContents = explFileObjectsByPath[filePath]?.contents;
       let paragraphsWithKeys = fileContents.split(/\n\n/);
       let topicParargaph = new Block(paragraphsWithKeys[0]);
       if (!topicParargaph.key) return;
