@@ -4,10 +4,10 @@ let Block = require('../../shared/block');
 let parseText = require('./parse_text');
 let { topicKeyOfString } = require('./simple-helpers');
 
-function jsonForExplFile(filePath, explFileData, parserContext, options) {
-  explFileData = Object.fromEntries(Object.entries(explFileData).map(([k, v]) => [k, typeof v === 'object' ? v.contents : v])); // convert file objects to content strings
-  if (!topicKeyOfString(explFileData[filePath])) return;
-  let paragraphsWithKeys = explFileData[filePath].trim().split(/\n\n/);
+function jsonForExplFile(filePath, explFileObjectsByPath, parserContext, options) {
+  const file = explFileObjectsByPath[filePath];
+  if (!topicKeyOfString(file.contents)) return;
+  let paragraphsWithKeys = file.contents.trim().split(/\n\n/);
   let rootParagraph = new Block(paragraphsWithKeys[0]);
   let paragraphsBySubtopic = {};
   parserContext.filePath = filePath;

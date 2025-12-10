@@ -2,11 +2,17 @@ let jsonForProjectDirectory = require('./json_for_project_directory');
 let dedent = require('dedent-js');
 let chalk = require('chalk');
 
+function asFileObjects(fileContentsByPath) {
+  return Object.fromEntries(
+    Object.entries(fileContentsByPath).map(([path, contents]) => [path, { contents, isNew: true }])
+  );
+}
+
 test('it creates a data directory', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.\n'
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(directoriesToEnsure).toEqual(['build/_data']);
 });
@@ -15,7 +21,7 @@ test('it creates text tokens', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.\n'
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -46,7 +52,7 @@ test('it matches local references', () => {
       State Capital: The state capital of Idaho is Boise.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -103,7 +109,7 @@ test('it matches local with question marks', () => {
       Why choose Idaho for your business needs? This sentence also has a question mark - ?` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -156,7 +162,7 @@ test('it matches local references with commas', () => {
       State capital, and governor: The state capital of Idaho is Boise and it has a governor.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -213,7 +219,7 @@ test('it matches local references with periods not followed by spaces', () => {
       Capital.js: The state capital of Idaho is Boise and it has a governor.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -270,7 +276,7 @@ test('it does not match local references with periods', () => {
       State capital. and governor: The state capital of Idaho is Boise and it has a governor.` + '\n'
 
   };
-  expect(() => jsonForProjectDirectory(explFileData, 'Idaho', {})).toThrow(chalk.red(
+  expect(() => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})).toThrow(chalk.red(
     dedent`Error: Reference [[State capital. and governor]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [State capital. and governor].
     topics/Idaho/Idaho.expl:1:49`
   ));
@@ -282,7 +288,7 @@ test('it matches global references', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -351,7 +357,7 @@ test('it matches global references using explicit syntax to override local refer
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -445,7 +451,7 @@ test('it matches global references using [[X#]] syntax to override local referen
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -539,7 +545,7 @@ test('it allows global self-subtopic-references using [[#X]] syntax to override 
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -633,7 +639,7 @@ test('Local references beat global for simple links', () => {
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.` + '\n'
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -709,7 +715,7 @@ test('it lets you give arbitrary display names to references like [[a|b]]', () =
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -755,7 +761,7 @@ test('it lets you select an exclusive display substring like [[{the answer} to t
     'topics/Wyoming/The_state_of_Wyoming.expl': `The state of Wyoming: Wyoming is a midwestern state.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -801,7 +807,7 @@ test('it lets you select multiple exclusive display substrings like [[{the} US{ 
     'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/SERVICES.json'])).toEqual(
     {
@@ -847,7 +853,7 @@ test('it lets you select multiple exclusive display substrings with interpolatio
     'topics/US/The_US_postal_service.expl': `The US postal service: The US has a postal service.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/SERVICES.json'])).toEqual(
     {
@@ -893,7 +899,7 @@ test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -939,7 +945,7 @@ test('it lets you interpolate different values for display and target like [[har
     'topics/Wyoming/Wyoming_territory.expl': `Wyoming territory: Wyoming is a midwestern state.\n`
 
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -984,7 +990,7 @@ test('it lets you select an exclusive display string with path references like [
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming#{Cheyenne} city]] of [[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state whose capital is [[Cheyenne city]].\n\nCheyenne city: This is the capital.`
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -1095,7 +1101,7 @@ test('it matches path references with explicit syntax and lets you rename the li
 
       Yellowstone National Park: This is a large park.` + '\n'
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -1157,7 +1163,7 @@ test('it matches back-to-back global references', () => { // this was a bug in t
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]][[Wyoming]].\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -1215,7 +1221,7 @@ test('it matches global references at the end of strings', () => {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
     'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
     {
@@ -1259,7 +1265,7 @@ test('it throws error for unrecognized link', () => {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
   };
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Reference [[Wyoming]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Wyoming].
     topics/Idaho/Idaho.expl:1:42`));
 });
@@ -1271,7 +1277,7 @@ test('it does not throw error for demarcated link', () => {
                                Wyoming:` + '\n', // a writer might do this to create a placeholder
   };
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).not.toThrow();
 });
 
@@ -1286,7 +1292,7 @@ test('it throws error for regular redundant local references', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
 
     One reference is [[Boise]] in subtopic [Idaho]
@@ -1312,7 +1318,7 @@ test('it only throws error for regular redundant local references in subsumed pa
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).not.toThrow();
 });
 
@@ -1329,7 +1335,7 @@ test('it throws error for redundant local references where both could be global 
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'England', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'England', {})
   ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [England] to subtopic [London]
 
     One reference is [[London]] in subtopic [England]
@@ -1356,7 +1362,7 @@ test('it throws error for redundantly defined topics', () => {
   `;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1374,7 +1380,7 @@ test('it throws error for redundantly defined subtopics', () => {
     `Second definition: topics/Idaho/Idaho.expl:5`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1392,7 +1398,7 @@ test('it throws error for subtopic named after topic subtopic', () => {
     `Second definition: topics/Idaho/Idaho.expl:5`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1402,7 +1408,7 @@ test('it validates that topics of paths exist', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Reference [[Idaho#Boise]] in subtopic [Wyoming, Wyoming] mentions nonexistent topic or subtopic [Idaho].
     topics/Wyoming/Wyoming.expl:1:52`));
 });
@@ -1414,7 +1420,7 @@ test('it validates that subtopics of paths exist', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] does not exist.
     topics/Wyoming/Wyoming.expl:1:52`));
 });
@@ -1429,7 +1435,7 @@ test('it validates that subtopics of paths are subsumed by their topics', () => 
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] exists but is not subsumed by given topic.
     topics/Wyoming/Wyoming.expl:1:52`));
 });
@@ -1446,7 +1452,7 @@ test('it errors when path segments are not connected', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Global reference "[[USA/Idaho#Boise]]" contains invalid adjacency:
     [USA, USA] does not reference [Idaho]
     topics/Wyoming/Wyoming.expl:1:52`));
@@ -1460,10 +1466,10 @@ test('it works when path segments of paths are connected', () => {
     Boise: This is the capital.\n`,
     'topics/Idaho/USA.expl': dedent`USA: The USA is a country, which contains [[Idaho]].`
   };
-  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(explFileData, 'Idaho', {});
+  let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).not.toThrow();
 });
 
@@ -1487,7 +1493,7 @@ test('it counts blank lines in error line numbers', () => {
     `Second definition: topics/Idaho/Idaho.expl:9`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1508,7 +1514,7 @@ test('it handles odd-numbers of blank lines', () => {
     `Second definition: topics/Idaho/Idaho.expl:8`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1521,7 +1527,7 @@ test('it handles line counting within nested block', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
     topics/Idaho/Idaho.expl:4:47`
@@ -1538,7 +1544,7 @@ test('it handles lines counting after block', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
     topics/Idaho/Idaho.expl:5:16`
@@ -1551,7 +1557,7 @@ test('it handles character counting after token', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[Boise|bad link]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
     topics/Idaho/Idaho.expl:1:52`
@@ -1566,7 +1572,7 @@ test('it gives correct line and character number for errors in tables', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [non-existent topic].
     topics/Idaho/Idaho.expl:3:30`
@@ -1581,7 +1587,7 @@ test('it gives correct line and character number for errors in lists', () => {
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [non-existent topic].
     topics/Idaho/Idaho.expl:3:23`
@@ -1597,7 +1603,7 @@ test('it gives correct line and character number for errors HTML inclusion', () 
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
     dedent`Error: Reference [[Nebraska]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Nebraska].
     topics/Idaho/Idaho.expl:3:45`
@@ -1614,7 +1620,7 @@ test('it does not throw error for redundantly defined subtopics that are not sub
   };
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).not.toThrow();
 });
 
@@ -1627,7 +1633,7 @@ test('it throws error for topic name beginning with whitespace', () => {
     `topics/Idaho/_Idaho.expl`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1643,7 +1649,7 @@ test('it throws error for subtopic name beginning with whitespace', () => {
     topics/Idaho/_Idaho.expl:3`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1656,7 +1662,7 @@ test('it throws error for topic name ending with whitespace', () => {
     `topics/Idaho/Idaho_.expl`;
 
   expect(
-    () => jsonForProjectDirectory(explFileData, 'Idaho', {})
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(message));
 });
 
@@ -1674,7 +1680,7 @@ test('it logs global orphan topics', () => {
     `Topic [Wyoming] is not connected to the default topic [Idaho]\n` +
     `topics/Wyoming/Wyoming.expl\n`);
 
-  jsonForProjectDirectory(explFileData, 'Idaho', { orphans: true });
+  jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', { orphans: true });
 
   let messagePresent = !!console.log.mock.calls.find(call => {
     return call[0] === message;
@@ -1698,7 +1704,7 @@ test('it logs local orphan subtopics', () => {
     `Subtopic [Boise] lacks a connection to its topic [Idaho]\n` +
     `topics/Idaho/Idaho.expl:3\n`);
 
-  jsonForProjectDirectory(explFileData, 'Idaho', { orphans: true });
+  jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', { orphans: true });
 
   let messagePresent = !!console.log.mock.calls.find(call => {
     return call[0] === message;
