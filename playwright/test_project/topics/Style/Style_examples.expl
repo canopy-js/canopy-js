@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[big tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[big tables]], [[snapping tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], and [[redundant parent links]].
 
@@ -34,6 +34,15 @@ Tables with omitted cells:
 | This | is | a | table |
 |---|---|---|-----------|
 | 2 | 4 | 6 | \x |
+<br>
+| This | is | a | table |
+|---|---|---|-----------|
+| \x | \x | \x | \x |
+<br>
+| This  | \x |
+| is    | \x |
+| a     | \x |
+| table | \x |
 
 Table links:
 | [[New York]] |
@@ -44,6 +53,15 @@ Table links:
 
 Big Tables:
 | This | is | a | big | table | This | is | a | big | table | This | is | a | big | table |
+
+Snapping Tables:
+| Literal | Basic | Summary |
+<br>
+| ExtremelyLongHeaderThatIsMuchLongerThanTheOthers | tiny | t |
+<br>
+| R1  | one line |
+| R2  | line1<br>line2<br>line3 |
+| R3  | line1<br>line2<br>line3<br>line4<br>line5 |
 
 Menus:
 For small elements we use a width of 4:

@@ -373,18 +373,116 @@ test.describe('Block entities', () => {
     await expect(await page.locator('.canopy-selected-section table tr td').nth(19)).toHaveAttribute('colspan', '3');
   });
 
-  test('It accepts table omit syntax', async ({ page }) => {
+  test('Tables can omit cells, or entire rows and columns', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
-    await expect(page.locator('.canopy-selected-section table td:not(.hidden) >> visible=true')).toHaveCount(7);
+    const tolerance = 1;
+    const tables = page.locator('.canopy-selected-section table');
 
-    await expect(page.locator('.canopy-selected-section table tr td').nth(0)).toHaveText('This');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(1)).toHaveText('is');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(2)).toHaveText('a');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(3)).toHaveText('table');
+    const getBox = async locator => (await locator.boundingBox()) || { width: 0, height: 0 };
+    const getMax = (arr, key) => Math.max(0, ...arr.map(x => x[key]));
 
-    await expect(page.locator('.canopy-selected-section table tr td').nth(4)).toHaveText('2');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(5)).toHaveText('4');
-    await expect(page.locator('.canopy-selected-section table tr td').nth(6)).toHaveText('6');
+    // Table 1: visible text still present
+    const firstTable = tables.nth(0);
+    const firstTableVisibleCells = firstTable.locator('td:not(.hidden) >> visible=true');
+    await expect(firstTableVisibleCells).toHaveText(['This','is','a','table','2','4','6']);
+
+    // Table 2: all data cells hidden → negligible height
+    const secondTable = tables.nth(1);
+    const hiddenRow = secondTable.locator('tr').nth(1);
+    expect((await getBox(hiddenRow)).height).toBeLessThanOrEqual(tolerance);
+
+    const hiddenRowCells = await hiddenRow.locator('td').evaluateAll(cells =>
+      cells.map(cell => {
+        const rect = cell.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      })
+    );
+    expect(getMax(hiddenRowCells, 'width')).toBeLessThanOrEqual(tolerance);
+    expect(getMax(hiddenRowCells, 'height')).toBeLessThanOrEqual(tolerance);
+
+    // Table 3: second column hidden → negligible width
+    const thirdTable = tables.nth(2);
+    const secondColumn = await thirdTable.locator('tr').evaluateAll(rows =>
+      rows.map(row => {
+        const cell = row.querySelectorAll('td')[1];
+        if (!cell) return { width: 0, height: 0 };
+        const rect = cell.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      })
+    );
+    expect(getMax(secondColumn, 'width')).toBeLessThanOrEqual(tolerance);
+    expect(getMax(secondColumn, 'height')).toBeLessThanOrEqual(tolerance);
+  });
+
+  test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Snapping_Tables');
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
+
+    const sizeTolerance = 1;
+    const minSignificantDifference = 10;
+
+    const getBoxes = locator =>
+      locator.evaluateAll(cells =>
+        cells.map(c => {
+          const r = c.getBoundingClientRect();
+          return { width: r.width, height: r.height };
+        })
+      );
+
+    const tables = page.locator('.canopy-selected-section table');
+
+    // Table 1: Literal / Basic / Summary → equal widths
+    {
+      const table = tables.filter({ hasText: 'Literal' }).first();
+      const cells = table.locator('td');
+      const texts = await cells.allInnerTexts();
+
+      expect(texts).toEqual(['Literal', 'Basic', 'Summary']);
+      expect(new Set(texts.map(t => t.length)).size).toBeGreaterThan(1);
+
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const minWidth = Math.min(...widths);
+      const maxWidth = Math.max(...widths);
+      expect(maxWidth - minWidth).toBeLessThanOrEqual(sizeTolerance);
+    }
+
+    // Table 2: ExtremelyLongHeader... / tiny / t → clearly different widths
+    {
+      const table = tables.filter({ hasText: 'ExtremelyLongHeaderThatIsMuchLongerThanTheOthers' }).first();
+      const cells = table.locator('td');
+      const texts = await cells.allInnerTexts();
+      expect(texts[0]).toContain('ExtremelyLongHeaderThatIsMuchLongerThanTheOthers');
+
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const minWidth = Math.min(...widths);
+      const maxWidth = Math.max(...widths);
+      expect(maxWidth - minWidth).toBeGreaterThan(minSignificantDifference);
+    }
+
+    // Table 3: R1 / R2 / R3 → R2,R3 same height; R1 shorter -- currently disabled
+    // {
+    //   const table = tables.filter({ hasText: 'R1' }).first();
+    //   const rowR1 = table.locator('tr', { hasText: 'R1' }).first();
+    //   const rowR2 = table.locator('tr', { hasText: 'R2' }).first();
+    //   const rowR3 = table.locator('tr', { hasText: 'R3' }).first();
+
+    //   const [b1, b2, b3] = await Promise.all([
+    //     rowR1.boundingBox(),
+    //     rowR2.boundingBox(),
+    //     rowR3.boundingBox()
+    //   ]);
+
+    //   const h1 = b1?.height ?? 0;
+    //   const h2 = b2?.height ?? 0;
+    //   const h3 = b3?.height ?? 0;
+
+    //   expect(h1).toBeGreaterThan(0);
+    //   expect(h2).toBeGreaterThan(0);
+    //   expect(h3).toBeGreaterThan(0);
+
+    //   expect(Math.abs(h2 - h3)).toBeLessThanOrEqual(sizeTolerance);
+    //   expect(h3 - h1).toBeGreaterThan(minSignificantDifference);
+    // }
   });
 
   test('It supports table links with icons', async ({ page }) => {

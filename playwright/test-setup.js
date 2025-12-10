@@ -27,55 +27,6 @@ test.beforeEach(async ({ page }) => {
     console.error('Page Error:', err.message);
   });
 
-  // track pending JSON requests
-  const pendingDataRequests = new Set();
-
-  page.on('request', req => {
-    if (req.url().includes('/_data/')) pendingDataRequests.add(req);
-  });
-
-  page.on('requestfinished', req => {
-    pendingDataRequests.delete(req);
-  });
-
-  page.on('requestfailed', req => {
-    pendingDataRequests.delete(req);
-
-    const t = req.failure()?.errorText || '';
-    if (ABORT_ERRORS.includes(t) || /abort|cancel/i.test(t)) return;
-    console.log('requestfailed REAL', req.url(), req.failure());
-  });
-
-  // helper to wait for JSON fetches to settle
-  page.waitForAllDataRequests = async () => {
-    while (pendingDataRequests.size > 0) {
-      await page.waitForTimeout(10);
-    }
-  };
-
-  // wrap goto / reload to wait before navigating
-  const originalGoto = page.goto.bind(page);
-  const originalReload = page.reload.bind(page);
-
-  async function waitForIdle() {
-    await page.waitForAllDataRequests();
-    try {
-      await page.waitForLoadState('networkidle');
-    } catch {
-      // ignore if page not fully initialized yet
-    }
-  }
-
-  page.goto = async (...args) => {
-    await waitForIdle();
-    return originalGoto(...args);
-  };
-
-  page.reload = async (...args) => {
-    await waitForIdle();
-    return originalReload(...args);
-  };
-
   // canonical start state
   await page.goto('/United_States');
   await page.evaluate(() => {
