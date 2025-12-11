@@ -246,11 +246,16 @@ const bulk = async function(selectedFileList, options = {}) {
     function topicsChangeHandler(e) {
       if (cyclePreventer.ignoreTopicsChange()) return cyclePreventer.respondToNextTopicsChange();
       let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
+      if (options.all) {
+        selectedFileList = getRecursiveSubdirectoryFiles('topics').filter(path => path.endsWith('.expl'));
+        if (options.all) fileSystemManager.storeOriginalSelectionFileList(selectedFileList);
+      }
       cyclePreventer.ignoreNextBulkFileChange();
       setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
       log(chalk.magenta(`Canopy bulk sync: Updating bulk file from topics change at ${(new Date()).toLocaleTimeString()} (pid ${process.pid}) – triggered by: ${e}`));
     }
   }
+
   function checkGitIgnoreForBulkFile(options = {}) {
     if (selectedFileList.length === 0) return; // this is clearly a temp bulk file
     if (fs.existsSync('.gitignore') && !fs.readFileSync('.gitignore').toString().match(new RegExp(`(^|\n)/${options.bulkFileName||defaultTopic().topicFileName}($|\n)`, 's'))) {
