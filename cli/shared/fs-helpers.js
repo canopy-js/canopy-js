@@ -57,6 +57,8 @@ function tryAndWriteHtmlError(func, options = {}) {
   try {
     func(options);
   } catch(e) {
+    if (options.sync) throw e; // sync code with intercept error
+
     fs.writeFileSync(
       'build/index.html',
       `<h1 style="text-align: center;">Error building project</h1>

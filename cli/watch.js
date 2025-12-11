@@ -14,6 +14,7 @@ function watch(options = {}) {
     tryAndWriteHtmlError(build, options);
     console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
   } catch (e) {
+    if (options.sync && options.onBuildError) options.onBuildError(e); // let bulk sync translate and surface, but keep watcher running
     console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     console.log(e.message);
     console.log(chalk.magenta(`If you correct the error and refresh your browser, the project should build and display properly.`));
@@ -34,6 +35,7 @@ function buildRegular(options = {}) {
   try {
     tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') }); // client changes skip JSON gen
   } catch (e) {
+    if (options.sync && options.onBuildError) return options.onBuildError(e); // handle in sync code to translate to bulk file line number
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
     console.error(e.message);
   }

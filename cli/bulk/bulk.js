@@ -178,7 +178,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     // Watch topics and rebuild JSON on change
     // We don't want to build before the user has typed anything, but we will do so if there is no build to start the server with
-    watch(options);
+    watch({...options, onBuildError: (e) => handleWatchError(e, options)});
 
     // Start server
     serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
@@ -296,3 +296,59 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
 }
 
 module.exports = bulk;
+
+function handleWatchError(error, options = {}) {
+  const { tryAndWriteHtmlError } = require('../shared/fs-helpers');
+  const translated = translateWatchErrorToBulk(error, options);
+  console.error(chalk.red(translated.message || translated));
+  try {
+    tryAndWriteHtmlError(() => { throw translated; }, options);
+  } catch (_) {
+    // tryAndWriteHtmlError rethrows; swallow here so the watcher stays alive
+  }
+}
+
+function translateWatchErrorToBulk(error, options = {}) {
+  if (!options.sync || !options.bulkFileName || !error?.message) return error;
+
+  const match = String(error.message).match(/(topics\/[\w./-]+\.expl):(\d+):(\d+)/);
+  if (!match) return error;
+
+  const [, topicPath, lineString, colString] = match;
+  const fs = require('fs');
+  const Block = require('../shared/block');
+
+  if (!fs.existsSync(topicPath) || !fs.existsSync(options.bulkFileName)) return error;
+
+  let topicContents, bulkContents;
+  try {
+    topicContents = fs.readFileSync(topicPath, 'utf8');
+    bulkContents = fs.readFileSync(options.bulkFileName, 'utf8');
+  } catch {
+    return error;
+  }
+
+  const firstParagraph = topicContents.split(/\n\n/)[0]?.trim() || '';
+  const key = Block.for(firstParagraph).key;
+  if (!key) return error;
+
+  const keyLineRegex = new RegExp(`^(\\*\\*|\\*)\\s+${key}\\b`, 'm');
+  const keyMatch = bulkContents.match(keyLineRegex);
+  if (!keyMatch) return error;
+
+  const bulkUpToKey = bulkContents.slice(0, keyMatch.index);
+  const bulkStartLine = bulkUpToKey.split('\n').length; // 1-based
+  const lastNewlineIdx = bulkUpToKey.lastIndexOf('\n');
+  const bulkStartCol = keyMatch.index - lastNewlineIdx; // 1-based
+
+  const topicLine = Number(lineString);
+  const topicCol = Number(colString);
+  const bulkLine = bulkStartLine + topicLine - 1;
+  const bulkCol = topicLine === 1 ? bulkStartCol + topicCol - 1 : topicCol;
+
+  const rewritten = `${error.message}\n${options.bulkFileName}:${bulkLine}:${bulkCol}`;
+
+  const err = new Error(rewritten);
+  err.stack = error.stack;
+  return err;
+}
