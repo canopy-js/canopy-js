@@ -27,7 +27,18 @@ app.use((req, res) => res.sendFile(buildPath + 'index.html'));
 
 function runServer(port, logging) {
   loggingFlag = logging;
-  app.listen(port);
+  const server = app.listen(port);
+
+  const shutdown = () => {
+    try {
+      server.close(() => process.exit(0));
+    } catch (_) {
+      process.exit(0);
+    }
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 module.exports = runServer;
