@@ -346,7 +346,14 @@ function translateWatchErrorToBulk(error, options = {}) {
   const bulkLine = bulkStartLine + topicLine - 1;
   const bulkCol = topicLine === 1 ? bulkStartCol + topicCol - 1 : topicCol;
 
-  const rewritten = `${error.message}\n${options.bulkFileName}:${bulkLine}:${bulkCol}`;
+  const bulkRef = `${options.bulkFileName}:${bulkLine}:${bulkCol}`;
+  let rewritten;
+  const pathLineMatch = String(error.message).match(/topics\/[\w./-]+\.expl:\d+:\d+/);
+  if (pathLineMatch) {
+    rewritten = String(error.message).replace(pathLineMatch[0], `${pathLineMatch[0]}\n${bulkRef}`);
+  } else {
+    rewritten = `${error.message}\n${bulkRef}`;
+  }
 
   const err = new Error(rewritten);
   err.stack = error.stack;
