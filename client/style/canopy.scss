@@ -269,6 +269,7 @@ blockquote {
   padding: 0 .7em;
   color: #565e67;
   white-space: pre-wrap;
+  line-height: 150%; // makes links on sequential lines not overlap
 
   a, a.canopy-selectable-link {
     color: #565e67;
