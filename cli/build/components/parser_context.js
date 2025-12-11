@@ -31,7 +31,8 @@ class ParserContext {
       this.linePrefixSize = 0; // The number of characters assumed to be on the line when we see a newline, eg '> ' for block quote
 
       this.buildNamespaceObject(explFileObjectsByPath);
-      
+      this.explFileObjectsByPath = explFileObjectsByPath; // retain contents for contextual error messages
+
       this.insideToken = false; // are we parsing tokens inside another token? We use this to avoid recognizing multi-line tokens inside other tokens.
 
       Object.assign(this, options); // add options if supplied at constructor time
@@ -47,7 +48,7 @@ class ParserContext {
   buildNamespaceObject(explFileObjectsByPath) {
     let { topicSubtopics, topicFilePaths, subtopicLineNumbers, doubleDefinedSubtopics } = this;
 
-    Object.keys(explFileObjectsByPath).forEach(function(filePath){
+    Object.keys(explFileObjectsByPath).forEach((filePath) => {
       let fileContents = explFileObjectsByPath[filePath]?.contents;
       let paragraphsWithKeys = fileContents.split(/\n\n/);
       let topicParargaph = new Block(paragraphsWithKeys[0]);
@@ -56,21 +57,23 @@ class ParserContext {
       let lineNumber = 1;
 
       if (topicSubtopics.hasOwnProperty(currentTopic.caps)) {
-        throw new Error(chalk.red(dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
+        let message = dedent`Error: Topic or similar appears twice in project: [${currentTopic.mixedCase}]
         - One file is: ${topicFilePaths[currentTopic.caps]}
         - Another file is: ${filePath}
-        `));
+        `;
+        throw new Error(chalk.red(this.formatErrorWithContext(message, filePath, 1, 1)));
       } else {
         topicFilePaths[currentTopic.caps] = filePath;
       }
 
       if (currentTopic.display.trim() !== currentTopic.display) {
-        throw new Error(chalk.red(`Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + filePath));
+        let message = `Error: Topic name [${currentTopic.display}] begins or ends with whitespace.\n` + filePath;
+        throw new Error(chalk.red(this.formatErrorWithContext(message, filePath, 1, 1)));
       }
 
       topicSubtopics[currentTopic.caps] = {};
 
-      paragraphsWithKeys.forEach(function(paragraphText) {
+      paragraphsWithKeys.forEach((paragraphText) => {
         if (paragraphText[0] === "\n") { // because we split on \n\n, there is only a chance that the first character is a newline
           lineNumber++;
           paragraphText = paragraphText.slice(1);
@@ -93,7 +96,8 @@ class ParserContext {
           }
 
           if (currentSubtopic.display.trim() !== currentSubtopic.display) {
-            throw new Error(chalk.red(`Error: Subtopic name [${currentSubtopic.display}] in topic [${currentTopic.display}] begins or ends with whitespace.\n\n${filePath}:${lineNumber}`));
+            let message = `Error: Subtopic name [${currentSubtopic.display}] in topic [${currentTopic.display}] begins or ends with whitespace.\n\n${filePath}:${lineNumber}`;
+            throw new Error(chalk.red(this.formatErrorWithContext(message, filePath, lineNumber, 1)));
           }
           topicSubtopics[currentTopic.caps][currentSubtopic.caps] = currentSubtopic;
           subtopicLineNumbers[currentTopic.caps] = subtopicLineNumbers[currentTopic.caps] || {};
@@ -264,7 +268,9 @@ class ParserContext {
   throwSubsumptionConditionalErrors() {
     this.subsumptionConditionalErrors.forEach(errorObject => {
       if (this.hasConnection(errorObject.enclosingSubtopic, errorObject.enclosingTopic, {}, true)) {
-        throw new Error(chalk.red(errorObject.errorString));
+        let path = this.topicFilePaths[errorObject.enclosingTopic.caps];
+        let line = this.subtopicLineNumbers[errorObject.enclosingTopic.caps]?.[errorObject.enclosingSubtopic.caps];
+        throw new Error(chalk.red(this.formatErrorWithContext(errorObject.errorString, path, line, 1)));
       }
     });
   }
@@ -276,9 +282,10 @@ class ParserContext {
   validateSubtopicDefinitions() {
     this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
       if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessible, it is invalid data
-        throw new Error(chalk.red(`Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
+        let message = `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
-          `Second definition: ${filePath}:${lineNumber2}`));
+          `Second definition: ${filePath}:${lineNumber2}`;
+        throw new Error(chalk.red(this.formatErrorWithContext(message, filePath, lineNumber1, 1)));
       }
     });
   }
@@ -337,7 +344,7 @@ class ParserContext {
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
     this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
-        throw new Error(chalk.red(dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
+        let message = dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             One reference is ${reference1} in subtopic ${displaySegment(topic, enclosingSubtopic1)}
             ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
@@ -349,7 +356,9 @@ class ParserContext {
 
             Consider making one of these local references a self path reference.
             That would look like using [[#${referencedSubtopic.mixedCase}]].
-            `));
+            `;
+        let line = this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps];
+        throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[topic.caps], line, 1)));
       }
     });
   }
@@ -362,15 +371,18 @@ class ParserContext {
 
           if (!this.topicExists(currentTopic)) {
             let punctuationWarning = currentTopic.mixedCase.match(/[.,:;]/) ? '\nWarning: Using punctuation like [.,;:] can terminate a paragraph key.' : '';
-            throw new Error(chalk.red(`Error: Reference ${referenceString} in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning));
+            let message = `Error: Reference ${referenceString} in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
+            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[enclosingTopic.caps], this.lineNumber, this.characterNumber)));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
-            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`));
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`;
+            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[enclosingTopic.caps], this.lineNumber, this.characterNumber)));
           }
 
           if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
-            throw new Error(chalk.red(`Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`));
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`;
+            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[enclosingTopic.caps], this.lineNumber, this.characterNumber)));
           }
 
           return segmentString;
@@ -379,9 +391,10 @@ class ParserContext {
           let [__, nextTopic] = nextSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
 
           if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
-            throw new Error(chalk.red(`Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
+            let message = `Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
-             `${pathAndLineNumberString}`));
+             `${pathAndLineNumberString}`;
+            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[currentTopic.caps], this.lineNumber, this.characterNumber)));
           }
 
           return nextSegmentString;
@@ -399,6 +412,67 @@ class ParserContext {
     if (visitedSubtopics[subtopic.caps]) return false; // ignore the cycle and allow other paths to continue
     visitedSubtopics[subtopic.caps] = true;
     return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, visitedSubtopics);
+  }
+
+  formatErrorWithContext(message, filePath, line, col, contextRadius = 1) {
+    const renderFrame = (frameFilePath, frameLine, frameCol) => {
+      if (!frameFilePath || !frameLine || frameLine < 1) return null;
+
+      let contents = this.explFileObjectsByPath?.[frameFilePath]?.contents || null;
+      if (!contents) return null;
+
+      let lines = contents.split('\n');
+      let start = Math.max(0, frameLine - 1 - contextRadius);
+      let end = Math.min(lines.length - 1, frameLine - 1 + contextRadius);
+      let width = String(end + 1).length;
+      let caret = frameCol && frameCol > 0 ? frameCol : 1;
+
+      let frame = [];
+      for (let i = start; i <= end; i++) {
+        let lineNumber = i + 1;
+        let marker = lineNumber === frameLine ? '>' : ' ';
+        let text = lines[i] || '';
+        frame.push(`${marker} ${String(lineNumber).padStart(width, ' ')} | ${text}`);
+        if (lineNumber === frameLine) {
+          frame.push(`  ${' '.repeat(width)} | ${' '.repeat(Math.max(0, caret - 1))}^`);
+        }
+      }
+
+      const locationLabel = `${frameFilePath}:${frameLine}${frameCol ? `:${frameCol}` : ''}`;
+      return `${locationLabel}\n${frame.join('\n')}`;
+    };
+
+    const primaryFrame = renderFrame(filePath, line, col);
+    if (!primaryFrame) return message;
+
+    const frames = [primaryFrame];
+
+    const referencedLocations = [];
+    const referenceRegex = /(topics\/[\w./-]+\.expl):(\d+)(?::(\d+))?/g;
+    for (const match of String(message).matchAll(referenceRegex)) {
+      const [, referencedFilePath, lineString, colString] = match;
+      const referencedLine = Number(lineString);
+      const referencedCol = colString ? Number(colString) : null;
+      referencedLocations.push([referencedFilePath, referencedLine, referencedCol]);
+    }
+
+    const primaryCol = col || null;
+
+    referencedLocations
+      .filter(([p, l, c]) => {
+        if (!(p === filePath && l === line)) return true;
+        const referencedCol = c || null;
+        return !(referencedCol === primaryCol || referencedCol === null || primaryCol === null);
+      })
+      .filter(([p, l]) => p && l && l > 0)
+      .filter(([p]) => !!this.explFileObjectsByPath?.[p]?.contents)
+      .filter(([p, l, c], idx, arr) => idx === arr.findIndex(([p2, l2, c2]) => p2 === p && l2 === l && (c2 || null) === (c || null)))
+      .forEach(([p, l, c]) => {
+        const extraFrame = renderFrame(p, l, c);
+        if (extraFrame) frames.push(extraFrame);
+      });
+
+    return `${message}\n\n${frames.join('\n\n')}\n`;
   }
 }
 
