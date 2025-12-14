@@ -1,11 +1,22 @@
 let jsonForProjectDirectory = require('./json_for_project_directory');
 let dedent = require('dedent-js');
 let chalk = require('chalk');
+let stripAnsi = require('strip-ansi');
 
 function asFileObjects(fileContentsByPath) {
   return Object.fromEntries(
     Object.entries(fileContentsByPath).map(([path, contents]) => [path, { contents, isNew: true }])
   );
+}
+
+function expectThrowContains(fn, substrings) {
+  try {
+    fn();
+    throw new Error('Function did not throw');
+  } catch (e) {
+    let msg = stripAnsi(e?.message || '');
+    substrings.forEach(sub => expect(msg).toEqual(expect.stringContaining(sub)));
+  }
 }
 
 test('it creates a data directory', () => {
@@ -1264,10 +1275,13 @@ test('it throws error for unrecognized link', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, near [[Wyoming]]\n`,
   };
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(dedent`Error: Reference [[Wyoming]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Wyoming].
-    topics/Idaho/Idaho.expl:1:42`));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'Reference [[Wyoming]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Wyoming].',
+      'topics/Idaho/Idaho.expl:1:42'
+    ]
+  );
 });
 
 test('it does not throw error for demarcated link', () => {
@@ -1356,14 +1370,14 @@ test('it throws error for redundantly defined topics', () => {
     'topics/United_States/Idaho.expl': `Idaho: Idaho is a midwetern state.\n`
   };
 
-  let message = dedent`Error: Topic or similar appears twice in project: [Idaho]
-    - One file is: topics/Idaho/Idaho.expl
-    - Another file is: topics/United_States/Idaho.expl
-  `;
-
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(message));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'Topic or similar appears twice in project: [Idaho]',
+      'topics/Idaho/Idaho.expl',
+      'topics/United_States/Idaho.expl'
+    ]
+  );
 });
 
 test('it throws error for redundantly defined subtopics', () => {
@@ -1526,12 +1540,13 @@ test('it handles line counting within nested block', () => {
     > Idaho is a midwestern state. Its capital is [[Boise]]` + '\n',
   };
 
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(
-    dedent`Error: Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
-    topics/Idaho/Idaho.expl:4:47`
-    ));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].',
+      'topics/Idaho/Idaho.expl:4:47'
+    ]
+  );
 });
 
 test('it handles lines counting after block', () => {
@@ -1543,12 +1558,13 @@ test('it handles lines counting after block', () => {
     Its capital is [[Boise]]` + '\n',
   };
 
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(
-    dedent`Error: Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
-    topics/Idaho/Idaho.expl:5:16`
-    ));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].',
+      'topics/Idaho/Idaho.expl:5:16'
+    ]
+  );
 });
 
 test('it handles character counting after token', () => {

@@ -90,7 +90,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
 
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     cycleIcon = document.createElement('span');
-    if (!containsUnicodeArrow(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) { // will be down-cycle
+    if (!containsIconOrEmoji(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) { // will be down-cycle
       cycleIcon.classList.add('canopy-provisional-cycle-icon');
       cycleIcon.innerText = '↩';
     }
@@ -118,7 +118,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         cycleIcon.innerText = '';
       }
 
-      if (containsUnicodeArrow(link.text)) { // user is taking responsibility for arrow
+      if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
         cycleIcon.innerText = '';
       }
     }
@@ -201,9 +201,10 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
   return [linkElement];
 }
 
-function containsUnicodeArrow(str) {
-  const arrowRegex = /[\u{2190}-\u{21FF}\u{27F0}-\u{27FF}\u{2900}-\u{297F}\u{2B00}-\u{2BFF}\u{1F800}-\u{1F8FF}]/u;
-  return arrowRegex.test(str);
+function containsIconOrEmoji(str) {
+  const emojiPattern = /\p{Emoji}/u;
+  const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
+  return emojiPattern.test(str) || symbolPattern.test(str);
 }
 
 export {

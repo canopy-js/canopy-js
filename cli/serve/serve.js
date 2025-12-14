@@ -17,7 +17,7 @@ function serve(options = {}) {
     throw new Error(chalk.red(`Server aborting due to invalid build. Handle build errors and try again.`));
   }
 
-  fork(path.resolve(__dirname, './fork_server.js'), [], {
+  const child = fork(path.resolve(__dirname, './fork_server.js'), [], {
     stdio: 'inherit',
     env: {
       ...process.env,
@@ -26,6 +26,16 @@ function serve(options = {}) {
       OPEN: options.open ? '1' : '0'
     }
   });
+
+  const shutdown = () => {
+    try { child.kill('SIGTERM'); } catch (_) { /* ignore */ }
+  };
+
+  ['exit', 'SIGINT', 'SIGTERM', 'SIGUSR2', 'uncaughtException'].forEach(event => {
+    process.once(event, shutdown);
+  });
+
+  return child;
 }
 
 module.exports = serve;
