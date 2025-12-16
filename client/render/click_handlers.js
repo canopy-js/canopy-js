@@ -7,7 +7,7 @@ function onLinkClick(link) {
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
-    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect global or path/cycle link
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect parent or path/cycle link
       return link.parentLink?.select({ scrollDirect: true, noAfterChangeScroll: true }) || Path.root.display({ scrollDirect: true });
     }
 

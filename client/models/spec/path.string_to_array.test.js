@@ -2,7 +2,6 @@ jest.clearAllMocks();
 jest.mock('../../helpers/getters', () => ({
   __esModule: true,
   canopyContainer: [],
-  defaultTopicJson: jest.fn(() => '{}'),
   defaultTopic: jest.fn(() => 'someDefaultTopic'), 
   projectPathPrefix: jest.fn(() => 'someDefaultTopic'), 
   hashUrls: jest.fn(() => 'someDefaultTopic')
