@@ -5,8 +5,7 @@ const chokidar = require('chokidar');
 const {
   recursiveDirectoryFind,
   getRecursiveSubdirectoryFiles,
-  CyclePreventer,
-  logOrWriteError
+  CyclePreventer
 } = require('./helpers');
 const watch = require('../watch');
 const serve = require('../serve/serve');
@@ -15,7 +14,7 @@ let FileSystemManager = require('./file_system_manager');
 let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
-let { DefaultTopic, defaultTopic } = require('../shared/fs-helpers');
+let { DefaultTopic, defaultTopic, tryAndWriteHtmlError } = require('../shared/fs-helpers');
 const readline = require('readline');
 const { spawn } = require('child_process');
 const { getExplFileObjects } = require('../build/components/fs-helpers');
@@ -92,7 +91,7 @@ const bulk = async function(selectedFileList, options = {}) {
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
     let defaultTopic = {};
-    logOrWriteError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
+    tryAndWriteHtmlError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
     options.bulkFileName = options.bulkFileName || `${defaultTopic.topicFileName}.bulk` || 'canopy_bulk_file.bulk';
@@ -165,7 +164,7 @@ const bulk = async function(selectedFileList, options = {}) {
   if (options.sync) {
     if (fs.existsSync(options.bulkFileName) && options.useExisting) { // if the user has a bulk file from a previous session
       log(chalk.magenta(`Canopy bulk sync: Reconstructing topic files from prior bulk file ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-      logOrWriteError(() => handleFinish({ deleteBulkFile: false }));
+      tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: false }), { ...options, suppressThrow: true });
     } else {
       setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
     }
@@ -184,7 +183,7 @@ const bulk = async function(selectedFileList, options = {}) {
     serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
 
     function handleSigInt() {
-      logOrWriteError(() => handleFinish({deleteBulkFile: true}), options);
+      tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: true }), { ...options, suppressThrow: true });
       log(chalk.magenta(`Canopy bulk sync: Session ending from SIGINT at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       process.exit();
     }
@@ -220,12 +219,12 @@ const bulk = async function(selectedFileList, options = {}) {
 
       oldBulkFileString = newBulkFileString;
 
-      logOrWriteError(() => handleFinish({deleteBulkFile: false}), options);
+      tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: false }), { ...options, suppressThrow: true });
     });
 
     // Watch bulk file and end session on delete
     bulkFileWatcher.on('unlink', () => {
-      logOrWriteError(() => handleFinish({deleteBulkFile: false}), options);
+      tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: false }), { ...options, suppressThrow: true });
       log(chalk.magenta(`Canopy bulk sync: Bulk file deleted at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
     });
     cyclePreventer.watchingBulkFile();
@@ -299,6 +298,7 @@ module.exports = bulk;
 
 function handleWatchError(error, options = {}) {
   const { tryAndWriteHtmlError } = require('../shared/fs-helpers');
+  const translateWatchErrorToBulk = require('./translate_watch_error_to_bulk');
   const translated = translateWatchErrorToBulk(error, options);
   console.error(chalk.red(translated.message || translated));
   try {
@@ -306,56 +306,4 @@ function handleWatchError(error, options = {}) {
   } catch (_) {
     // tryAndWriteHtmlError rethrows; swallow here so the watcher stays alive
   }
-}
-
-function translateWatchErrorToBulk(error, options = {}) {
-  if (!options.sync || !options.bulkFileName || !error?.message) return error;
-
-  const match = String(error.message).match(/(topics\/[\w./-]+\.expl):(\d+):(\d+)/);
-  if (!match) return error;
-
-  const [, topicPath, lineString, colString] = match;
-  const fs = require('fs');
-  const Block = require('../shared/block');
-
-  if (!fs.existsSync(topicPath) || !fs.existsSync(options.bulkFileName)) return error;
-
-  let topicContents, bulkContents;
-  try {
-    topicContents = fs.readFileSync(topicPath, 'utf8');
-    bulkContents = fs.readFileSync(options.bulkFileName, 'utf8');
-  } catch {
-    return error;
-  }
-
-  const firstParagraph = topicContents.split(/\n\n/)[0]?.trim() || '';
-  const key = Block.for(firstParagraph).key;
-  if (!key) return error;
-
-  const keyLineRegex = new RegExp(`^(\\*\\*|\\*)\\s+${key}\\b`, 'm');
-  const keyMatch = bulkContents.match(keyLineRegex);
-  if (!keyMatch) return error;
-
-  const bulkUpToKey = bulkContents.slice(0, keyMatch.index);
-  const bulkStartLine = bulkUpToKey.split('\n').length; // 1-based
-  const lastNewlineIdx = bulkUpToKey.lastIndexOf('\n');
-  const bulkStartCol = keyMatch.index - lastNewlineIdx; // 1-based
-
-  const topicLine = Number(lineString);
-  const topicCol = Number(colString);
-  const bulkLine = bulkStartLine + topicLine - 1;
-  const bulkCol = topicLine === 1 ? bulkStartCol + topicCol - 1 : topicCol;
-
-  const bulkRef = `${options.bulkFileName}:${bulkLine}:${bulkCol}`;
-  let rewritten;
-  const pathLineMatch = String(error.message).match(/topics\/[\w./-]+\.expl:\d+:\d+/);
-  if (pathLineMatch) {
-    rewritten = String(error.message).replace(pathLineMatch[0], `${pathLineMatch[0]}\n${bulkRef}`);
-  } else {
-    rewritten = `${error.message}\n${bulkRef}`;
-  }
-
-  const err = new Error(rewritten);
-  err.stack = error.stack;
-  return err;
 }
