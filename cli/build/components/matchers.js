@@ -264,7 +264,8 @@ function centerBlockMatcher({ string, startOfLine, parserContext }) {
 }
 
 function htmlEntityMatcher({ string, parserContext }) {
-  let match = string.match(/^&[a-zA-Z]+;/s);
+  // Support named entities (`&amp;`, `&frac12;`) and numeric entities (`&#8209;`, `&#x2011;`).
+  let match = string.match(/^&(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);/s);
 
   if (match) {
     return [

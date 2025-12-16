@@ -764,7 +764,7 @@ test.describe('Block entities', () => {
 
   test('It creates HTML entities', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#HTML_entities');
-    await expect(page.locator('.canopy-selected-section')).toHaveText("I like M&M's.");
+    await expect(page.locator('.canopy-selected-section')).toHaveText(`I like M&M's. A\u2011B and A\u2011B.`);
   });
 
   test('It creates run-on-tag html blocks', async ({ page }) => {

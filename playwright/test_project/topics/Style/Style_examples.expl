@@ -256,7 +256,7 @@ HTML blocks:
 <b></b>[[New York]]<b></b>
 These are two separate HTML tags
 
-HTML entities: I like M&amp;M's.
+HTML entities: I like M&amp;M's. A&#8209;B and A&#x2011;B.
 
 HTML blocks with insertions:
 <div style="background-color: green">
