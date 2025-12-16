@@ -12,6 +12,16 @@ import {
 } from 'display/helpers';
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
+  console.debug('[displayPath] pathToDisplay', pathToDisplay?.string, {
+    link: linkToSelect?.literalPath?.string,
+    selectionPath: linkToSelect?.selectionPath?.string,
+    inlinePath: linkToSelect?.inlinePath?.string,
+    isCycle: linkToSelect?.cycle,
+    isUpCycle: linkToSelect?.isUpCycle,
+    isDownCycle: linkToSelect?.isDownCycle,
+    isForwardCycle: linkToSelect?.isForwardCycle,
+    options
+  });
   if (!pathToDisplay.recapitalize.equals(pathToDisplay)) return displayPath(pathToDisplay.recapitalize, linkToSelect, options);
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
   options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);

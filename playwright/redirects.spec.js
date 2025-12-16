@@ -10,6 +10,17 @@ if (platform === 'darwin') {
 }
 
 test.describe('Redirects', () => {
+  test('Default topic loads from inline JSON (no fetch)', async ({ page }) => {
+    const defaultRequests = [];
+    page.on('request', req => {
+      if (req.url().includes('/_data/UNITED_STATES.json')) defaultRequests.push(req.url());
+    });
+
+    await page.goto('/');
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    expect(defaultRequests).toHaveLength(0);
+  });
+
   test('Empty path redirects to default topic', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1:visible')).toHaveText('United States');

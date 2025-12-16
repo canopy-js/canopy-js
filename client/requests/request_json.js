@@ -1,4 +1,4 @@
-import { projectPathPrefix, defaultTopic, defaultTopicJson } from 'helpers/getters';
+import { projectPathPrefix, defaultTopic } from 'helpers/getters';
 import REQUEST_CACHE from 'requests/request_cache';
 import { preloadImages } from 'requests/helpers';
 import Topic from '../../cli/shared/topic';
@@ -8,18 +8,17 @@ const topicSubtopics = {};
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
 
-  const isDefault = topic.equals(Topic.fromMixedCase(defaultTopic()));
-  const embeddedJson = isDefault && defaultTopicJson();
+  const embeddedTopicScript = document.querySelector(`script[data-topic-json="${topic.jsonFileName}.json"]`);
 
   const prefix = projectPathPrefix ? `/${projectPathPrefix}` : '';
   const dataPath = `${prefix}/_data/${topic.requestFileName}.json`;
 
-  const sourcePromise = embeddedJson
-    ? Promise.resolve(JSON.parse(embeddedJson))
-    : fetch(dataPath).then(res => {
-        if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
-        return res.json();
-      });
+  const sourcePromise =
+    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) // embedded topic JSON (single-file build)
+    || fetch(dataPath).then(res => {
+      if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
+      return res.json();
+    });
 
   const requestPromise = sourcePromise
     .then(json => {
