@@ -53,17 +53,29 @@ function defaultTopic() {
   return new DefaultTopic();
 }
 
+function writeHtmlError(error) {
+  const message = stripAnsi(error?.message || error || 'Error getting error')
+    .replace(/\n+/g, '<br><br>');
+
+  try {
+    fs.mkdirSync('build', { recursive: true });
+  } catch (_) {
+    // ignore; writeFileSync will throw if we truly can't write
+  }
+
+  fs.writeFileSync(
+    'build/index.html',
+    `<h1 style="text-align: center;">Error building project</h1>
+      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${message}</p>`
+  );
+}
+
 function tryAndWriteHtmlError(func, options = {}) {
   try {
-    func(options);
+    return func(options);
   } catch(e) {
-    if (options.sync) throw e; // sync code with intercept error
-
-    fs.writeFileSync(
-      'build/index.html',
-      `<h1 style="text-align: center;">Error building project</h1>
-      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${stripAnsi(e?.message||e||'Error getting error').replace(/\n+/g, '<br><br>')}</p>`
-    );
+    writeHtmlError(e);
+    if (options.suppressThrow) return;
     throw e;
   }
 }
@@ -81,4 +93,4 @@ function getCategoryPathStrings() {
     .sort();
 }
 
-module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, tryAndWriteHtmlError, defaultTopic, getCategoryPathStrings };
+module.exports = { DefaultTopic, canopyLocation, tryDefaultTopic, writeHtmlError, tryAndWriteHtmlError, defaultTopic, getCategoryPathStrings };

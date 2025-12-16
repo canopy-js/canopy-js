@@ -11,14 +11,17 @@ function watch(options = {}) {
   }
 
   try { // initial build
-    tryAndWriteHtmlError(build, options);
+    options.onBuildError ? build(options) : tryAndWriteHtmlError(build, options);
     console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
   } catch (e) {
-    if (options.sync && options.onBuildError) options.onBuildError(e); // let bulk sync translate and surface, but keep watcher running
+    if (options.onBuildError) {
+      options.onBuildError(e); // let caller translate/write html and keep watcher running
+    } else {
+      console.log(e.message);
+      if (options.error) console.error(e);
+    }
     console.log(chalk.magenta(`Initial build prevented by invalid data at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-    console.log(e.message);
     console.log(chalk.magenta(`If you correct the error and refresh your browser, the project should build and display properly.`));
-    if (options.error) console.error(e);
   }
 
   const watcher = chokidar.watch(['topics', 'assets', `${canopyLocation}/dist`, `${canopyLocation}/cli`], { persistent: true, ignoreInitial: true });
@@ -33,9 +36,13 @@ function watch(options = {}) {
 
 function buildRegular(options = {}) {
   try {
-    tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') }); // client changes skip JSON gen
+    if (options.onBuildError) {
+      build({ ...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') });
+    } else {
+      tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') }); // client changes skip JSON gen
+    }
   } catch (e) {
-    if (options.sync && options.onBuildError) return options.onBuildError(e); // handle in sync code to translate to bulk file line number
+    if (options.onBuildError) return options.onBuildError(e); // handle translation/html writing in caller
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
     console.error(e.message);
   }

@@ -1,6 +1,5 @@
 let fs = require('fs-extra');
 let recursiveReadSync = require('recursive-readdir-sync');
-let stripAnsi = require('strip-ansi');
 
 function fileNameFor(string) {
   return string.replace(/ /g, '_').toLowerCase();
@@ -119,23 +118,6 @@ class CyclePreventer {
   }
 }
 
-function logOrWriteError(func, options = {}) {
-  try {
-    func();
-  } catch(e) {
-    if (options.sync) {
-      fs.writeFileSync(
-        'build/index.html',
-        `<h1 style="text-align: center;">Error building project</h1>
-        <p style="font-size: 24px; width: 800px; margin: auto;">${stripAnsi(e.message).replace(/\n/g, '<br><br>')}</p>`
-      );
-    }
-    if (options.logging) {
-      console.log(e.message || e);
-    }
-  }
-}
-
 module.exports = {
   fileNameFor,
   takeDirectoryPath,
@@ -146,6 +128,5 @@ module.exports = {
   groupByPath,
   getAllFileAndDirectoryPathsRecursive,
   allFilesAndDirectoriesOf,
-  CyclePreventer,
-  logOrWriteError
+  CyclePreventer
 };
