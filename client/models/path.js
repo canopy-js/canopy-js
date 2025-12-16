@@ -604,7 +604,15 @@ class Path {
   }
 
   static get url() {
-    let pathString = window.location.href.slice(window.location.origin.length)
+    const hash = window.location.hash || '';
+
+    if (hash.startsWith('#/')) { // hash-routing: interpret entire route from hash
+      let hashPathString = hash.slice(2);
+      if (hashPathString.startsWith('/')) hashPathString = hashPathString.slice(1);
+      return new Path(hashPathString);
+    }
+
+    let pathString = window.location.href.slice(window.location.origin.length); // preserves raw ? as part of path
 
     if (projectPathPrefix && pathString.indexOf(`/${projectPathPrefix}`) === 0) {
       pathString = pathString.slice(projectPathPrefix.length + 1); // remove prefix and leading slash
@@ -675,6 +683,13 @@ class Path {
   static setPath(newPath, linkToSelect, options = {}) {
     if (!(newPath instanceof Path)) throw new Error('newPath must be Path object');
     if (options.popState) return; // the URL has already changed
+    const fileHashRouting = hashUrls && typeof window !== 'undefined' && window.location?.protocol === 'file:';
+
+    if (fileHashRouting) { // file:// cannot change pathname; rely on hash updates
+      const fileHashString = `#${newPath.pathString}`;
+      if (window.location.hash !== fileHashString) window.location.hash = fileHashString;
+      return;
+    }
 
     let oldPath = Path.url;
     let documentTitle = newPath.lastTopic.mixedCase;
@@ -707,7 +722,10 @@ class Path {
 
     if (projectPathPrefix) productionPathString += `/${projectPathPrefix}`;
 
-    if (hashUrls) productionPathString += '/#';
+    if (hashUrls) {
+      const fileProtocol = typeof window !== 'undefined' && window.location?.protocol === 'file:';
+      productionPathString += fileProtocol ? '#' : '/#'; // file:// cannot change pathname via history API
+    }
 
     return productionPathString + this.pathString;
   }

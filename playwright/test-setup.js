@@ -27,13 +27,15 @@ test.beforeEach(async ({ page }) => {
     console.error('Page Error:', err.message);
   });
 
-  // canonical start state
-  await page.goto('/United_States');
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
-  await page.waitForFunction(
-    () => localStorage.length === 0 && sessionStorage.length === 0
-  );
+  // canonical start state for hosted tests
+  if (page.url().startsWith('http')) {
+    await page.goto('/United_States');
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.waitForFunction(
+      () => localStorage.length === 0 && sessionStorage.length === 0
+    );
+  }
 });

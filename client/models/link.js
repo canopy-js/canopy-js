@@ -3,6 +3,7 @@ import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 import ScrollableContainer from 'helpers/scrollable_container';
+import { hashUrls } from 'helpers/getters';
 
 class Link {
   constructor(argument) {
@@ -739,6 +740,9 @@ class Link {
   static persistLinkSelectionInHistory(link) {
     // This has to be static because Link.selection hasn't always updated
     // between when a new link is selected and when we want to persist that selection
+    const fileHashRouting = hashUrls && typeof window !== 'undefined' && window.location?.protocol === 'file:';
+    if (fileHashRouting) return; // avoid history API limitations on file://
+
     history.replaceState(
       link && { linkSelection: link.metadata } || null,
       document.title,
@@ -747,6 +751,13 @@ class Link {
   }
 
   static pushHistoryState(path, link) {
+    const fileHashRouting = hashUrls && typeof window !== 'undefined' && window.location?.protocol === 'file:';
+
+    if (fileHashRouting) { // file:// cannot change pathname; rely on hash updates
+      const fileHashString = `#${path.pathString}`;
+      if (window.location.hash !== fileHashString) window.location.hash = fileHashString;
+      return;
+    }
 
     history.pushState(
       link ? { linkSelection: link.metadata } : null,

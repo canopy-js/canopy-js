@@ -4,6 +4,7 @@ const buildProject = require('./build/build_project');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let Topic = require('./shared/topic');
+let path = require('path');
 
 function build(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
@@ -41,6 +42,7 @@ function build(options = {}) {
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
     tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
     writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
+    if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache) tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
@@ -81,7 +83,7 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
     <!DOCTYPE html>
     <html>
     <head>
-    <script type="application/json" id="canopy_default_topic_json">\n${defaultTopicJson}\n</script>
+    <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>
     <meta charset="utf-8">` +
     dedent`${customCss ? `<style>\n${fs.readFileSync(`assets/custom.css`)}\n</style>` : ''}` +
     dedent`${customJs ? `<script>\n${fs.readFileSync(`assets/custom.js`)}\n</script>` : ''}` +
@@ -104,6 +106,61 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
 
   fs.writeFileSync('build/index.html', html);
   console.log(chalk.yellow(`Wrote to index.html at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+}
+
+function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options }) {
+  const favicon = fs.existsSync(`assets/favicon.ico`);
+  const customCss = fs.existsSync(`assets/custom.css`) && fs.readFileSync(`assets/custom.css`);
+  const customJs = fs.existsSync(`assets/custom.js`) && fs.readFileSync(`assets/custom.js`, 'utf8');
+  const customJsEscaped = customJs && customJs.replace(/<\/script/gi, '<\\/script');
+  const customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
+  const customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
+  const customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
+  const defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`);
+  const canopyJs = fs.readFileSync('build/_canopy.js', 'utf8').replace(/<\/script/gi, '<\\/script');
+
+  const dataDir = 'build/_data';
+  const topicScripts = fs.readdirSync(dataDir)
+    .filter(file => file.endsWith('.json'))
+    .map(file => {
+      const contents = fs.readFileSync(path.join(dataDir, file), 'utf8').replace(/<\/script/gi, '<\\/script');
+      return `<script type="application/json" data-topic-json="${file}">\n${contents}\n</script>`;
+    }).join('\n');
+
+  const outputPath = typeof options.file === 'string'
+    ? (path.isAbsolute(options.file) ? options.file : path.join('build', options.file))
+    : path.join('build', `${defaultTopic.topicFileName}.html`);
+
+  const html = dedent`
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>
+    ${topicScripts}
+    ${customCss ? `<style>\n${customCss}\n</style>` : ''}
+    ${customJsEscaped ? `<script>\n${customJsEscaped}\n</script>` : ''}
+    ${favicon ? `<link rel="icon" type="image/x-icon" href="data:application/octet-stream;base64,${fs.readFileSync('assets/favicon.ico').toString('base64')}">\n` : ''}
+    ${customHtmlHead ? customHtmlHead : ''}
+    </head>
+    <body>
+    ${customHtmlNav ? customHtmlNav : ''}
+    <div
+      id="_canopy"
+      data-default-topic-mixed-case="${Topic.for(defaultTopic.name).mixedCase}"
+      data-default-topic="${defaultTopic.name}"
+      data-project-path-prefix="${projectPathPrefix||''}"
+      data-hash-urls="${hashUrls || ''}">
+    </div>
+    ${customHtmlFooter ? customHtmlFooter : ''}
+    <script>
+    ${canopyJs}
+    </script>
+    </body>
+    </html>\n`;
+
+  fs.writeFileSync(outputPath, html);
+  console.log(chalk.yellow(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function getDirectories(path) {
