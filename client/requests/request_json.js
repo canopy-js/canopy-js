@@ -1,4 +1,4 @@
-import { projectPathPrefix, defaultTopic } from 'helpers/getters';
+import { projectPathPrefix } from 'helpers/getters';
 import REQUEST_CACHE from 'requests/request_cache';
 import { preloadImages } from 'requests/helpers';
 import Topic from '../../cli/shared/topic';

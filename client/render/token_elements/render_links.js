@@ -36,7 +36,7 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
   linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener('click', callback);
 
-  renderContext.postDisplayCallbacks.push(() => {
+  renderContext.preDisplayCallbacks.push(() => {
     let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
     linkElement.dataset.extraSpace = JSON.stringify(measureVerticalOverflow(contentContainer));
     if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
@@ -97,7 +97,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
     linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
   }
   
-  renderContext.postDisplayCallbacks.push(() => {
+  renderContext.preDisplayCallbacks.push(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
@@ -192,7 +192,7 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
   linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
 
   // Add a class if the link contains an image
-  renderContext.postDisplayCallbacks.push(() => {
+  renderContext.preDisplayCallbacks.push(() => {
     if (linkElement.querySelector('img')) {
       linkElement.classList.add('canopy-linked-image');
     }
