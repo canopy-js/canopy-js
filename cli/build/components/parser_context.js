@@ -11,8 +11,7 @@ class ParserContext {
     } else {
       this.subtopicLineNumbers = {}; // by topic, by subtopic, the line number of that subtopic
       this.topicSubtopics = {}; // by topic, by subtopic, topic objects for the name of that subtopic
-      this.subtopicParents = {}; // by topic, by subtopic, the parent subtopic that contains a local reference to that subtopic
-      this.subtopicParentReferences = {}; // by topic, by subtopic, the parent link reference string for the specified subtopic
+      this.localReferences = {}; // by topic, by target subtopic, { parentSubtopic, referenceText, location: { line, col } }
       this.redundantLocalReferences = []; // a list of redundant local references with metadata to validate at the end of the second-pass
       this.ambiguousLocalReferences = []; // a list of local references that are possibly global/import and possibly redundant
       this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
@@ -119,8 +118,7 @@ class ParserContext {
   setTopicAndSubtopic(topic, subtopic) {
     this.currentTopic = topic;
     this.currentSubtopic = subtopic;
-    this.subtopicParents[this.currentTopic.caps] = this.subtopicParents[this.currentTopic.caps] || {};
-    this.subtopicParentReferences[topic.caps] = this.subtopicParentReferences[topic.caps] || {};
+    this.localReferences[this.currentTopic.caps] = this.localReferences[this.currentTopic.caps] || {};
     this.topicFilePaths[topic.caps] = this.filePath;
   }
 
@@ -215,23 +213,31 @@ class ParserContext {
   }
 
   subtopicReferenceIsRedundant(targetSubtopic) {
-    return this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps];
+    return this.localReferences[this.currentTopic.caps]?.[targetSubtopic.caps]?.parentSubtopic;
   }
 
   registerPotentialRedundantLocalReference(targetSubtopic, secondReference) {
+    let firstLocation = this.localReferences[this.currentTopic.caps]?.[targetSubtopic.caps]?.location;
+    let secondLocation = { line: this.lineNumber, col: this.characterNumber };
     this.redundantLocalReferences.push([
-      this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps],
+      this.localReferences[this.currentTopic.caps]?.[targetSubtopic.caps]?.parentSubtopic,
       this.currentSubtopic,
       this.currentTopic,
       targetSubtopic,
-      this.subtopicParentReferences[this.currentTopic.caps][targetSubtopic.caps],
-      secondReference.fullText
+      this.localReferences[this.currentTopic.caps]?.[targetSubtopic.caps]?.referenceText,
+      secondReference.fullText,
+      firstLocation,
+      secondLocation
     ]);
   }
 
   registerLocalReference(targetSubtopic, index, reference) {
-    this.subtopicParents[this.currentTopic.caps][targetSubtopic.caps] = this.currentSubtopic;
-    this.subtopicParentReferences[this.currentTopic.caps][targetSubtopic.caps] = reference.fullText;
+    this.localReferences[this.currentTopic.caps] = this.localReferences[this.currentTopic.caps] || {};
+    this.localReferences[this.currentTopic.caps][targetSubtopic.caps] = {
+      parentSubtopic: this.currentSubtopic,
+      referenceText: reference.fullText,
+      location: { line: this.lineNumber, col: this.characterNumber }
+    };
   }
 
   registerFragmentReference(reference, currentSubtopic) {
@@ -246,7 +252,12 @@ class ParserContext {
     if (this.fragmentReferenceSubtopics[this.currentTopic.caps]) {
       this.fragmentReferenceSubtopics[this.currentTopic.caps].forEach(({fragmentTargetSubtopic, enclosingSubtopic}) => {
         this.topicSubtopics[this.currentTopic.caps][fragmentTargetSubtopic.caps] = fragmentTargetSubtopic;
-        this.subtopicParents[this.currentTopic.caps][fragmentTargetSubtopic.caps] = enclosingSubtopic;
+        this.localReferences[this.currentTopic.caps] = this.localReferences[this.currentTopic.caps] || {};
+        this.localReferences[this.currentTopic.caps][fragmentTargetSubtopic.caps] = {
+          parentSubtopic: enclosingSubtopic,
+          referenceText: null,
+          location: null
+        };
 
         callback(fragmentTargetSubtopic); // caller will know how to add topics to json object
       });
@@ -254,7 +265,7 @@ class ParserContext {
   }
 
   parentTopicOf(subtopic) {
-    return this.subtopicParents[this.currentTopic.caps][subtopic.caps];
+    return this.localReferences[this.currentTopic.caps]?.[subtopic.caps]?.parentSubtopic;
   }
 
   registerSubsumptionConditionalError(errorString) {
@@ -281,7 +292,7 @@ class ParserContext {
 
   validateSubtopicDefinitions() {
     this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
-      if (this.subtopicParents[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessible, it is invalid data
+      if (this.localReferences[topic.caps]?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessible, it is invalid data
         let message = `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
           `Second definition: ${filePath}:${lineNumber2}`;
@@ -327,7 +338,7 @@ class ParserContext {
   }
 
   logLocalOrphans() {
-    Object.keys(this.subtopicParents).forEach(topicCapsString => {
+    Object.keys(this.localReferences).forEach(topicCapsString => {
       let topic = this.topicSubtopics[topicCapsString][topicCapsString];
       Object.keys(this.topicSubtopics[topicCapsString]).forEach(subtopicCapsString => {
         let subtopic = this.topicSubtopics[topicCapsString][subtopicCapsString];
@@ -342,23 +353,31 @@ class ParserContext {
   }
 
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
-    this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
+    this.redundantLocalReferences.forEach(([enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2, referenceLocation1, referenceLocation2]) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
+        let defaultLine1 = this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps];
+        let defaultLine2 = this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps];
+        let line1 = referenceLocation1?.line || defaultLine1;
+        let line2 = referenceLocation2?.line || defaultLine2;
+        let col1 = referenceLocation1?.col || 1;
+        let col2 = referenceLocation2?.col || 1;
+        let filePath = this.topicFilePaths[topic.caps];
+        let referencePath1 = `${filePath}:${line1}${referenceLocation1?.col ? `:${col1}` : ''}`;
+        let referencePath2 = `${filePath}:${line2}${referenceLocation2?.col ? `:${col2}` : ''}`;
         let message = dedent`Error: Two local references exist in topic [${topic.mixedCase}] to subtopic [${referencedSubtopic.mixedCase}]
 
             One reference is ${reference1} in subtopic ${displaySegment(topic, enclosingSubtopic1)}
-            ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps]}
+            ${referencePath1}
 
             The other reference is ${reference2} in subtopic ${displaySegment(topic, enclosingSubtopic2)}
-            ${this.topicFilePaths[topic.caps]}:${this.subtopicLineNumbers[topic.caps][enclosingSubtopic2.caps]}
+            ${referencePath2}
 
             Multiple local references to the same subtopic are not permitted.
 
             Consider making one of these local references a self path reference.
             That would look like using [[#${referencedSubtopic.mixedCase}]].
             `;
-        let line = this.subtopicLineNumbers[topic.caps][enclosingSubtopic1.caps];
-        throw new Error(chalk.red(this.formatErrorWithContext(message, this.topicFilePaths[topic.caps], line, 1)));
+        throw new Error(chalk.red(this.formatErrorWithContext(message, filePath, line1, col1)));
       }
     });
   }
@@ -405,13 +424,13 @@ class ParserContext {
 
   hasConnection(subtopic, topic, visitedSubtopics = {}) { // Does a given subtopic have a local-reference path to the given topic?
     if (subtopic.caps === topic.caps) return true;
-    if (this.subtopicParents[topic.caps] === null) return true; // we will proceed assuming there is a connection because this is a cache run
-    if (this.subtopicParents[topic.caps] && !this.subtopicParents[topic.caps][subtopic.caps]) return false;
-    if (!this.subtopicParents.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
-    if (!this.subtopicParents[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
+    if (this.localReferences[topic.caps] === null) return true; // we will proceed assuming there is a connection because this is a cache run
+    if (this.localReferences[topic.caps] && !this.localReferences[topic.caps][subtopic.caps]) return false;
+    if (!this.localReferences.hasOwnProperty(topic.caps)) return false; // there were no local references in that topic
+    if (!this.localReferences[topic.caps].hasOwnProperty(subtopic.caps)) return false; // no one ever referenced the subtopic
     if (visitedSubtopics[subtopic.caps]) return false; // ignore the cycle and allow other paths to continue
     visitedSubtopics[subtopic.caps] = true;
-    return this.hasConnection(this.subtopicParents[topic.caps][subtopic.caps], topic, visitedSubtopics);
+    return this.hasConnection(this.localReferences[topic.caps][subtopic.caps].parentSubtopic, topic, visitedSubtopics);
   }
 
   formatErrorWithContext(message, filePath, line, col, contextRadius = 1) {
