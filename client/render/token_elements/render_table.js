@@ -27,7 +27,7 @@ function renderTable(token, renderContext, renderTokenElements) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-bounding-box-container'); // rect to consider for arrow key comparisons
-                  renderContext.postDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
+                  renderContext.preDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
