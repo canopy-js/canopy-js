@@ -36,7 +36,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
           fullPath,
           pathToParagraph,
           pathDepth: fullPath.length - remainingPath.length,
-          postDisplayCallbacks: []
+          preDisplayCallbacks: []
         },
       );
     }).catch(e => { console.error(e); return null; }); // 404

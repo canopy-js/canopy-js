@@ -23,7 +23,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Paragraph.selection?.removeSelectionClass();
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
-    if (linkToSelect && !linkToSelect?.element) { linkToSelect?.eraseLinkData(); return updateView(pathToDisplay, null, options); }
+    if (linkToSelect && !linkToSelect.element) { linkToSelect?.eraseLinkData(); return queueMicrotask(() => updateView(pathToDisplay, null, options)); }
     Path.setPath(linkToSelect?.urlPath || pathToDisplay, linkToSelect, options); // before link.select because selection cache by current URL
     Link.persistLinkSelection(linkToSelect); // if null, persists deselect or paragraph scroll
     Link.updateSelectionClass(linkToSelect || pathToDisplay.parentLink); // if null, removes previous selection's class
@@ -31,20 +31,20 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     document.title = pathToDisplay.pageTitle;
 
     displayPathTo(pathToDisplay.paragraph, options);
+    pathToDisplay.paragraphs.forEach(p => p.executePreDisplayCallbacks());
+    if (options.scrollStyle !== 'instant') pathToDisplay.paragraphs.forEach(p => p.display());
     Link.eagerLoadVisibleLinks();
 
     return afterChangeScroll(pathToDisplay, linkToSelect, options)
-      .then(() => pathToDisplay.paragraphs.forEach(p => p.display()))
-      .then(() => pathToDisplay.paragraphs.forEach(p => p.executePostDisplayCallbacks()))
+      .then(() => options.scrollStyle === 'instant' && pathToDisplay.paragraphs.forEach(p => p.display()))
       .then(() => header.show())
-      .then(() => pathToDisplay.paragraph.addSelectionClass()) // last for feature specs
-      .then(() => (Paragraph.disableDisplayInProgress()));
-  });
+      .then(() => pathToDisplay.paragraph.addSelectionClass()); // last for feature specs
+  }).finally(() => Paragraph.disableDisplayInProgress());
 }
 
-const displayPathTo = (paragraph, options) => {
+const displayPathTo = (paragraph) => {
   while (paragraph) {
-    options.scrollStyle === 'instant' ? paragraph.allocateSpace() : paragraph.display(); // scroll to correct location before showing content
+    paragraph.allocateSpace(); // lets us scroll to right place for instant & run predisplay callbacks for both
     if (paragraph.parentLink) paragraph.parentLinks.forEach((parentLink) => parentLink.open()); // remember open links of path reference
     Link.persistLinkSelectionInSession(paragraph.parentLink); // being an open link makes that link the most recently selected for its paragraph
     paragraph = paragraph.parentParagraph;
