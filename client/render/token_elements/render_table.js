@@ -27,7 +27,7 @@ function renderTable(token, renderContext, renderTokenElements) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-bounding-box-container'); // rect to consider for arrow key comparisons
-                  renderContext.postDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
+                  renderContext.preDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
@@ -63,6 +63,9 @@ function renderTable(token, renderContext, renderTokenElements) {
   // How strict snapping is for width
   const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
   const WIDTH_SIZE_SENSITIVITY = 2500;        // more tolerance for small widths
+  // Extra tolerance for very small cells so they're more likely to snap
+  // while keeping the old (target-based) distribution for larger cells.
+  const WIDTH_SMALL_CELL_SENSITIVITY = 230;
 
   // How strict snapping is for row height -- currently disabled
   // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -90,7 +93,8 @@ function renderTable(token, renderContext, renderTokenElements) {
     currentSize,
     targetSize,
     baseSimilarityPercent,
-    sizeSensitivity
+    sizeSensitivity,
+    smallCellSensitivity = 0
   }) {
     if (!isFinite(targetSize) || targetSize <= 0) return null;
     if (!isFinite(currentSize) || currentSize <= 0) return null;
@@ -99,9 +103,12 @@ function renderTable(token, renderContext, renderTokenElements) {
     const differencePercent =
       Math.abs(targetSize - currentSize) / targetSize * 100;
 
-    // Small targets get more tolerance; large targets get stricter
+    // Small targets get more tolerance; large targets get stricter.
+    // Very small current sizes get extra tolerance so small cells are more likely to snap.
     const allowedPercent =
-      baseSimilarityPercent + sizeSensitivity / targetSize;
+      baseSimilarityPercent +
+      sizeSensitivity / targetSize +
+      smallCellSensitivity / currentSize;
 
     return {
       differencePercent,
@@ -119,16 +126,16 @@ function renderTable(token, renderContext, renderTokenElements) {
   tempParagraphElement.appendChild(tableElement);
 
   let sizes = {
-    minContentWidth: Infinity,
-    maxContentWidth: -1,
+    minContentWidth: Infinity,       // per-column "unit" width
+    maxContentWidth: -1,             // per-column "unit" width
     minContentHeight: Infinity,  // optional: debug only
     maxContentHeight: -1,        // optional: debug only
-    maxTdBoxWidth: -1,           // true max td width for snapping
+    maxTdBoxWidth: -1,           // per-column "unit" width
     minRowHeight: Infinity,
     maxRowHeight: -1
   };
 
-  // first pass: content range (filtered) + true max box width (unfiltered)
+  // first pass: per-column "unit" widths + max per-unit box width
   [...tableElement.querySelectorAll('td')].forEach(td => {
     if (td.childNodes.length === 0) return;
 
@@ -136,20 +143,23 @@ function renderTable(token, renderContext, renderTokenElements) {
     const isColumnHeader = isColumnHeaderCell(td, tableElement);
     const excludeFromBaseline = isRowHeader || isColumnHeader;
 
-    const colspan = td.getAttribute('colspan');
+    const colspanAttribute = td.getAttribute('colspan');
+    const colspan = Number.parseInt(colspanAttribute || '1', 10);
+    const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
     const rowspan = td.getAttribute('rowspan');
 
     const contentRect = getCombinedBoundingRect([...td.childNodes]);
     const contentWidth = contentRect.width;
     const contentHeight = contentRect.height;
+    const unitContentWidth = contentWidth / columnSpan;
 
-    // Width range: only non-colspan cells and (optionally) non-headers
-    if (!colspan && !excludeFromBaseline && isFinite(contentWidth) && contentWidth > 0) {
-      if (contentWidth < sizes.minContentWidth) {
-        sizes.minContentWidth = contentWidth;
+    // Width range: use per-column unit width so colspan cells can participate
+    if (!excludeFromBaseline && isFinite(unitContentWidth) && unitContentWidth > 0) {
+      if (unitContentWidth < sizes.minContentWidth) {
+        sizes.minContentWidth = unitContentWidth;
       }
-      if (contentWidth > sizes.maxContentWidth) {
-        sizes.maxContentWidth = contentWidth;
+      if (unitContentWidth > sizes.maxContentWidth) {
+        sizes.maxContentWidth = unitContentWidth;
       }
     }
 
@@ -163,12 +173,13 @@ function renderTable(token, renderContext, renderTokenElements) {
       }
     }
 
-    // true max box width: consider all tds so we never shrink a larger one
+    // max per-unit box width: consider all tds, normalized by colspan
     const boxRect = td.getBoundingClientRect();
     const boxWidth = boxRect.width;
+    const unitBoxWidth = boxWidth / columnSpan;
 
-    if (isFinite(boxWidth) && boxWidth > sizes.maxTdBoxWidth) {
-      sizes.maxTdBoxWidth = boxWidth;
+    if (isFinite(unitBoxWidth) && unitBoxWidth > sizes.maxTdBoxWidth) {
+      sizes.maxTdBoxWidth = unitBoxWidth;
     }
   });
 
@@ -197,12 +208,17 @@ function renderTable(token, renderContext, renderTokenElements) {
 
     const contentRectangle = getCombinedBoundingRect([...cell.childNodes]);
     const currentContentWidth = contentRectangle.width;
+    const colspanAttribute = cell.getAttribute('colspan');
+    const colspan = Number.parseInt(colspanAttribute || '1', 10);
+    const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
+    const currentUnitContentWidth = currentContentWidth / columnSpan;
 
     const snapResult = shouldSnapSize({
-      currentSize: currentContentWidth,
+      currentSize: currentUnitContentWidth,
       targetSize: sizes.maxContentWidth,
       baseSimilarityPercent: WIDTH_BASE_SIMILARITY_PERCENT,
-      sizeSensitivity: WIDTH_SIZE_SENSITIVITY
+      sizeSensitivity: WIDTH_SIZE_SENSITIVITY,
+      smallCellSensitivity: WIDTH_SMALL_CELL_SENSITIVITY
     });
 
     if (!snapResult) return;
@@ -214,6 +230,8 @@ function renderTable(token, renderContext, renderTokenElements) {
     } = snapResult;
 
     cell.dataset.currentContentWidth = currentContentWidth;
+    cell.dataset.currentUnitContentWidth = currentUnitContentWidth;
+    cell.dataset.colspan = String(columnSpan);
     cell.dataset.minContentWidth = sizes.minContentWidth;
     cell.dataset.maxContentWidth = sizes.maxContentWidth;
     cell.dataset.widthDiffPercent = differencePercent;
@@ -221,7 +239,7 @@ function renderTable(token, renderContext, renderTokenElements) {
     cell.dataset.widthWillSnap = willSnap ? 'true' : 'false';
 
     if (willSnap && sizes.maxTdBoxWidth > 0) {
-      cell.style.width = sizes.maxTdBoxWidth + 'px';
+      cell.style.width = (sizes.maxTdBoxWidth * columnSpan) + 'px';
       cell.style.boxSizing = 'border-box';
     }
   });

@@ -372,9 +372,9 @@ class Paragraph {
     }
   }
 
-  executePostDisplayCallbacks() {
-    this.sectionElement.postDisplayCallbacks?.forEach(callback => callback());
-    this.sectionElement.postDisplayCallbacks = [];
+  executePreDisplayCallbacks() {
+    this.sectionElement.preDisplayCallbacks?.forEach(callback => callback());
+    this.sectionElement.preDisplayCallbacks = [];
   }
 
   valid() { // to avoid errors with temp sections appended for styling info

@@ -510,7 +510,11 @@ To load only certain files or directories, use `canopy bulk -pd` for a directory
 
 In order to produce our website, we need to convert our `expl` files in the `topics` directory into `html` and `JSON` for the browser. Run `canopy build` to build JSON files from your `expl` files in the project-level `build` directory.
 
-Build has a few options: If you are going to host your site at a subpath like `example.com/subpath/Project`, then you can build with `canopy build --project-path-prefix subdirectory`. If you want to host your site on a static assets server, you can build with hash URLs (eg `example.com/#/Topic`) using `canopy build --hash-urls`, and then host a static assets server pointing at the build directory.
+Build has a few options:
+
+- Subpath hosting: `canopy build --project-path-prefix subdirectory` (eg `example.com/subpath/Project`).
+- Hash URLs: `canopy build --hash-urls` (eg `example.com/#/Topic`) for static hosting.
+- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`.
 
 If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
 

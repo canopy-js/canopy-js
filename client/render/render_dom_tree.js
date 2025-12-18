@@ -23,7 +23,7 @@ function renderDomTree(topic, subtopic, renderContext) {
     elements.forEach(element => paragraph.paragraphElement.appendChild(element));
   });
 
-  sectionElement.postDisplayCallbacks = renderContext.postDisplayCallbacks;
+  sectionElement.preDisplayCallbacks = renderContext.preDisplayCallbacks;
   return sectionElement;
 }
 
@@ -38,7 +38,7 @@ function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
     let childSectionElement = renderDomTree(
       topic,
       Topic.fromMixedCase(token.targetSubtopic),
-      Object.assign({}, renderContext, { pathToParagraph, postDisplayCallbacks: [] })
+      Object.assign({}, renderContext, { pathToParagraph, preDisplayCallbacks: [] })
     );
 
     claimedSubtopics[token.targetSubtopic] = true;

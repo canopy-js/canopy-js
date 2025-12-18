@@ -1305,20 +1305,40 @@ test('it throws error for regular redundant local references', () => {
       Boise: Boise is the capital of Idaho.` + '\n',
   };
 
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [Idaho] to subtopic [Boise]
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'Error: Two local references exist in topic [Idaho] to subtopic [Boise]',
+      'One reference is [[Boise]] in subtopic [Idaho]',
+      'topics/Idaho/Idaho.expl:1:49',
+      'The other reference is [[Boise]] in subtopic [Idaho, Western Half]',
+      'topics/Idaho/Idaho.expl:3:57',
+      'Multiple local references to the same subtopic are not permitted.',
+      'Consider making one of these local references a self path reference.',
+      'That would look like using [[#Boise]].'
+    ]
+  );
+});
 
-    One reference is [[Boise]] in subtopic [Idaho]
-    topics/Idaho/Idaho.expl:1
+test('it appends context frames for multiple expl locations cited in one error message', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl':
+      dedent`Idaho: Idaho is a midwestern state. It contains [[Boise]]. It has a [[western half]].
 
-    The other reference is [[Boise]] in subtopic [Idaho, Western Half]
-    topics/Idaho/Idaho.expl:3
+      Western Half: Idaho's western half contains its capital [[Boise]].
 
-    Multiple local references to the same subtopic are not permitted.
+      Boise: Boise is the capital of Idaho.` + '\n',
+  };
 
-    Consider making one of these local references a self path reference.
-    That would look like using [[#Boise]].`));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    [
+      'topics/Idaho/Idaho.expl:1:49',
+      '> 1 | Idaho: Idaho is a midwestern state. It contains [[Boise]]. It has a [[western half]].',
+      'topics/Idaho/Idaho.expl:3:57',
+      '> 3 | Western Half: Idaho\'s western half contains its capital [[Boise]].'
+    ]
+  );
 });
 
 test('it only throws error for regular redundant local references in subsumed paragraphs', () => {
@@ -1348,20 +1368,19 @@ test('it throws error for redundant local references where both could be global 
     'topics/England/London.expl': `London: London is a common family name.\n`
   };
 
-  expect(
-    () => jsonForProjectDirectory(asFileObjects(explFileData), 'England', {})
-  ).toThrow(chalk.red(dedent`Error: Two local references exist in topic [England] to subtopic [London]
-
-    One reference is [[London]] in subtopic [England]
-    topics/England/England.expl:1
-
-    The other reference is [[London]] in subtopic [England, Essex]
-    topics/England/England.expl:3
-
-    Multiple local references to the same subtopic are not permitted.
-
-    Consider making one of these local references a self path reference.
-    That would look like using [[#London]].`));
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'England', {}),
+    [
+      'Error: Two local references exist in topic [England] to subtopic [London]',
+      'One reference is [[London]] in subtopic [England]',
+      'topics/England/England.expl:1:72',
+      'The other reference is [[London]] in subtopic [England, Essex]',
+      'topics/England/England.expl:3:65',
+      'Multiple local references to the same subtopic are not permitted.',
+      'Consider making one of these local references a self path reference.',
+      'That would look like using [[#London]].'
+    ]
+  );
 });
 
 test('it throws error for redundantly defined topics', () => {
