@@ -6,10 +6,6 @@ import { canopyContainer } from 'helpers/getters';
 let lastPath = null; // ensure only the last call gets displayed
 
 const updateView = (pathToDisplay, linkToSelect, options = {}) => {
-  console.debug('[updateView] from', Path.current?.string, 'to', pathToDisplay?.string, {
-    link: linkToSelect?.literalPath?.string,
-    options
-  });
   if (pathToDisplay?.empty) pathToDisplay = Path.default;
 
   let renderComplete = (lastPath = (!options?.renderOnly && pathToDisplay) || lastPath) &&

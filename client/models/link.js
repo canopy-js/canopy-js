@@ -146,7 +146,7 @@ class Link {
   }
 
   get childTopic() {
-    return this.literalPath.firstTopic;
+    return this.literalPath?.firstTopic || null;
   }
   get childSubtopic() {
     if (!this.element) return Topic.fromMixedCase(this.metadataObject.targetSubtopicString);
@@ -179,7 +179,7 @@ class Link {
   }
 
   get enclosingSectionElement() {
-    return this.element?.parentNode.closest('.canopy-section');
+    return this.element?.parentNode?.closest('.canopy-section');
   }
 
   get sectionElement() {
@@ -187,7 +187,7 @@ class Link {
   }
 
   get enclosingParagraphElement() {
-    return this.element?.parentNode.closest('.canopy-paragraph');
+    return this.element?.parentNode?.closest('.canopy-paragraph');
   }
 
   get parentParagraphElement() {
@@ -373,8 +373,10 @@ class Link {
   }
 
   get topicParagraph() {
-    if (!this.element) return null;
-    return new Paragraph(this.element.parentNode.closest('.canopy-topic-section'));
+    if (!this.element?.parentNode) return null;
+    const topicSection = this.element.parentNode.closest('.canopy-topic-section');
+    if (!topicSection) return null;
+    return new Paragraph(topicSection);
   }
 
   get selected() {
@@ -448,8 +450,7 @@ class Link {
   }
 
   get isUpCycle() {
-    return this.inlinePath.reduce().subsetOf(this.enclosingPath) || //
-      this.enclosingPath.endsWith(this.literalPath); // e.g. A/B/C with link [[B/C]]
+    return this.inlinePath.reduce().ancestorOf(this.enclosingPath); // reduced inline path is above enclosing path
   }
 
   get isBackCycle() {
@@ -461,13 +462,20 @@ class Link {
 
   get isForwardCycle() {
     return this.cycle 
-      && !this.inlinePath.reduce().subsetOf(this.enclosingPath) // not up cycle
+      && !this.inlinePath.reduce().ancestorOf(this.enclosingPath) // not up cycle
       && !this.isDownCycle // not down cycle
       && this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
 
   get isDownCycle() {
-    return this.cycle && this.inlinePath.reduce().includes(this.enclosingPath); // result includes current path
+    return this.cycle && this.inlinePath.reduce().ancestorOf(this.enclosingPath); // result includes current path
+  }
+
+  static isDownCycle(enclosingPath, literalPath) {
+    if (!enclosingPath || !literalPath) return false;
+    if (!Path.introducesNewCycle(enclosingPath, literalPath)) return false;
+    const inlinePath = enclosingPath.append(literalPath);
+    return inlinePath.reduce().ancestorOf(enclosingPath);
   }
 
   get isParent() {

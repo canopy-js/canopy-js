@@ -90,7 +90,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
 
   if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
     cycleIcon = document.createElement('span');
-    if (!containsIconOrEmoji(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) { // will be down-cycle
+    if (!containsIconOrEmoji(link.text) && !Link.isDownCycle(renderContext.pathToParagraph, Path.for(token.pathString))) { // provisional icon unless down-cycle
       cycleIcon.classList.add('canopy-provisional-cycle-icon');
       cycleIcon.innerText = '↩';
     }

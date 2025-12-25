@@ -25,11 +25,20 @@ function hideAllSectionElements(pathToDisplay) {
       .forEach(element => {
         let currentParagraph = Paragraph.for(element);
         if (!currentParagraph.valid) return; // temp used for styling
-        if (!currentParagraph.path.string) console.error(element.outerHTML, JSON.stringify(currentParagraph))
-        if (!currentParagraph.path.isIn(pathToDisplay)) currentParagraph.removeFromDom();
+        if (!currentParagraph.path.string) console.error(element.outerHTML, JSON.stringify(currentParagraph));
+        if (shouldRemove(currentParagraph.path, pathToDisplay)) {
+          currentParagraph.removeFromDom();
+        }
         removeUnusedChildSections(element, pathToDisplay);
       });
   }
+}
+
+// Keep anything that is equal, an ancestor of the target (including via parent chain)
+function shouldRemove(candidatePath, targetPath) {
+  if (candidatePath.equals(targetPath)) return false;
+  if (candidatePath.ancestorOf(targetPath)) return false; // keep ancestors of target (walks parent chain)
+  return true; // remove everything else (non-ancestors)
 }
 
 function closeAllLinks() { // now selection class management is done in Link.updateSelectionClass
@@ -172,7 +181,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.paragraph) return Promise.resolve();
   if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
-  if (Path.current.isIn(newPath)) return Promise.resolve(); // moving down
+  if (Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) return Promise.resolve(); // moving down
   if (Link.selection.hasCloseSibling(linkToSelect)) return Promise.resolve(); // don't swoop from one link to its horizontal sibling
   if (Path.rendered.fulcrumLink(newPath)?.isFocused) return Promise.resolve();
 
@@ -225,7 +234,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
     }));
   } else { // scroll to linkToSelect
     let targetElement, targetRatio;
-    if (linkToSelect.isIn(pathToDisplay.paragraph) && linkToSelect.enclosingParagraph.fits) {
+    if (linkToSelect.enclosingParagraph?.path?.ancestorOf(pathToDisplay) || linkToSelect.enclosingParagraph?.path?.equals(pathToDisplay)) {
       targetElement = linkToSelect.enclosingParagraph.paragraphElement
       targetRatio = PARAGRAPH_TARGET_RATIO;
     } else {
