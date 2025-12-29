@@ -119,7 +119,7 @@ const config = {
       port: 3005
     },
     {
-      command: 'npx serve -s dist/playground -l 3006',
+      command: 'ruby -run -ehttpd dist/playground -p3006 > /dev/null 2>&1',
       reuseExistingServer: true,
       port: 3006
     }
