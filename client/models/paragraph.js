@@ -293,8 +293,10 @@ class Paragraph {
     return (top / viewportHeight) * 100;
   }
 
+  static selectedParagraphObject = null;
+
   static get selection() {
-    return Paragraph.current;
+    return Paragraph.selectedParagraphObject || Paragraph.current;
   }
 
   static get current() {
@@ -304,10 +306,12 @@ class Paragraph {
 
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
+    Paragraph.selectedParagraphObject = this;
   }
 
   removeSelectionClass() {
     this.sectionElement.classList.remove('canopy-selected-section');
+    if (Paragraph.selectedParagraphObject?.equals(this)) Paragraph.selectedParagraphObject = null;
   }
 
   scrollComplete() {

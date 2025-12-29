@@ -1,5 +1,3 @@
-import Path from 'models/path';
-
 function onLinkClick(link) {
   return (e) => {
     e.preventDefault();
