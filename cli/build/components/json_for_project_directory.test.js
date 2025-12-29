@@ -2,12 +2,17 @@ let jsonForProjectDirectory = require('./json_for_project_directory');
 let dedent = require('dedent-js');
 let chalk = require('chalk');
 let stripAnsi = require('strip-ansi');
+const Topic = require('../../shared/topic');
 
 function asFileObjects(fileContentsByPath) {
   return Object.fromEntries(
     Object.entries(fileContentsByPath).map(([path, contents]) => [path, { contents, isNew: true }])
   );
 }
+
+const idahoJsonPath = () => `build/_data/${Topic.for('Idaho').jsonFileName}.json`;
+const servicesJsonPath = () => `build/_data/${Topic.for('Services').jsonFileName}.json`;
+const wyomingJsonPath = () => `build/_data/${Topic.for('Wyoming').jsonFileName}.json`;
 
 function expectThrowContains(fn, substrings) {
   try {
@@ -34,7 +39,7 @@ test('it creates text tokens', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -65,7 +70,7 @@ test('it matches local references', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -122,7 +127,7 @@ test('it matches local with question marks', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -175,7 +180,7 @@ test('it matches local references with commas', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -232,7 +237,7 @@ test('it matches local references with periods not followed by spaces', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -301,7 +306,7 @@ test('it matches global references', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -338,7 +343,7 @@ test('it matches global references', () => {
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -370,7 +375,7 @@ test('it matches global references using explicit syntax to override local refer
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -432,7 +437,7 @@ test('it matches global references using explicit syntax to override local refer
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -464,7 +469,7 @@ test('it matches global references using [[X#]] syntax to override local referen
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -526,7 +531,7 @@ test('it matches global references using [[X#]] syntax to override local referen
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -558,7 +563,7 @@ test('it allows global self-subtopic-references using [[#X]] syntax to override 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -620,7 +625,7 @@ test('it allows global self-subtopic-references using [[#X]] syntax to override 
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -652,7 +657,7 @@ test('Local references beat global for simple links', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -697,7 +702,7 @@ test('Local references beat global for simple links', () => {
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -728,7 +733,7 @@ test('it lets you give arbitrary display names to references like [[a|b]]', () =
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -774,7 +779,7 @@ test('it lets you select an exclusive display substring like [[{the answer} to t
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -820,7 +825,7 @@ test('it lets you select multiple exclusive display substrings like [[{the} US{ 
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/SERVICES.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[servicesJsonPath()])).toEqual(
     {
       "displayTopicName": "Services",
       "topicTokens": [
@@ -866,7 +871,7 @@ test('it lets you select multiple exclusive display substrings with interpolatio
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/SERVICES.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[servicesJsonPath()])).toEqual(
     {
       "displayTopicName": "Services",
       "topicTokens": [
@@ -912,7 +917,7 @@ test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -958,7 +963,7 @@ test('it lets you interpolate different values for display and target like [[har
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -1003,7 +1008,7 @@ test('it lets you select an exclusive display string with path references like [
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -1057,7 +1062,7 @@ test('it lets you select an exclusive display string with path references like [
     }
   );
 
-  expect(JSON.parse(filesToWrite['build/_data/WYOMING.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[wyomingJsonPath()])).toEqual(
     {
       "displayTopicName": "Wyoming",
       "topicTokens": [
@@ -1114,7 +1119,7 @@ test('it matches path references with explicit syntax and lets you rename the li
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -1176,7 +1181,7 @@ test('it matches back-to-back global references', () => { // this was a bug in t
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [
@@ -1234,7 +1239,7 @@ test('it matches global references at the end of strings', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(JSON.parse(filesToWrite['build/_data/IDAHO.json'])).toEqual(
+  expect(JSON.parse(filesToWrite[idahoJsonPath()])).toEqual(
     {
       "displayTopicName": "Idaho",
       "topicTokens": [

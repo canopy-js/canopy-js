@@ -130,12 +130,12 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   };
 
   const dataDir = 'build/_data';
-  const topicScripts = fs.readdirSync(dataDir)
-    .filter(file => file.endsWith('.json'))
-    .map(file => {
-      const contents = fs.readFileSync(path.join(dataDir, file), 'utf8');
+  const jsonScripts = fs.readdirSync(dataDir)
+    .filter(filePath => filePath.endsWith('.json'))
+    .map(filePath => {
+      const contents = fs.readFileSync(path.join(dataDir, filePath), 'utf8');
       const inlined = inlineAssetsInString(contents).replace(/<\/script/gi, '<\\/script');
-      return `<script type="application/json" data-topic-json="${file}">\n${inlined}\n</script>`;
+      return `<script type="application/json" data-topic-json="${filePath}">\n${inlined}\n</script>`;
     }).join('\n');
 
   const singleFileDir = path.join('build', '_file');
@@ -151,7 +151,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     <head>
     <meta charset="utf-8">
     <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${inlineAssetsInString(defaultTopicJson).replace(/<\/script/gi, '<\\/script')}\n</script>
-    ${topicScripts}
+    ${jsonScripts}
     ${customCss ? `<style>\n${inlineAssetsInString(customCss)}\n</style>` : ''}
     ${customJsEscaped ? `<script>\n${inlineAssetsInString(customJsEscaped)}\n</script>` : ''}
     ${favicon ? `<link rel="icon" type="image/x-icon" href="data:application/octet-stream;base64,${fs.readFileSync('assets/favicon.ico').toString('base64')}">\n` : ''}
