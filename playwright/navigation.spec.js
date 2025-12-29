@@ -720,6 +720,16 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });
 
+  test('Up-cycles reduce to the cycle root', async ({ page }) => {
+    await page.goto('/United_States/New_Jersey#Northern_border/New_York#Southern_border');
+    await expect(page).toHaveURL('/United_States/New_Jersey#Northern_border/New_York#Southern_border');
+
+    await page.locator('.canopy-selected-section a:has-text("New Jersey")').click();
+
+    await expect(page).toHaveURL('/United_States/New_Jersey');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New Jersey');
+  });
+
   test('Cycle reduction inserts history stack frame', async ({ page, browserName }) => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);

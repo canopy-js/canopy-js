@@ -118,10 +118,8 @@ class Paragraph {
   }
 
   get links() {
-    if (this.linkObjects) return this.linkObjects;
     let linkElements = this.paragraphElement.querySelectorAll('a.canopy-selectable-link');
-    this.linkObjects = Array.from(linkElements).map((element) => new Link(element));
-    return this.linkObjects;
+    return Array.from(linkElements).map((element) => new Link(element));
   }
 
   get simpleGlobalLinks() {
