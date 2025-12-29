@@ -1,5 +1,4 @@
 import { getCombinedBoundingRect } from 'render/helpers';
-import { canopyContainer } from 'helpers/getters';
 
 function renderTable(token, renderContext, renderTokenElements) {
   let tableElement = document.createElement('TABLE');
@@ -117,177 +116,168 @@ function renderTable(token, renderContext, renderTokenElements) {
     };
   }
 
-  let tempSectionElement = new DOMParser().parseFromString(
-    '<section class="canopy-section"><p class="canopy-paragraph"></p></section>',
-    'text/html'
-  ).body.firstChild;
-  let tempParagraphElement = tempSectionElement.querySelector('p');
-  canopyContainer.appendChild(tempSectionElement);
-  tempParagraphElement.appendChild(tableElement);
+  renderContext.preDisplayCallbacks.push(() => {
+    let sizes = {
+      minContentWidth: Infinity,       // per-column "unit" width
+      maxContentWidth: -1,             // per-column "unit" width
+      minContentHeight: Infinity,  // optional: debug only
+      maxContentHeight: -1,        // optional: debug only
+      maxTdBoxWidth: -1,           // per-column "unit" width
+      minRowHeight: Infinity,
+      maxRowHeight: -1
+    };
 
-  let sizes = {
-    minContentWidth: Infinity,       // per-column "unit" width
-    maxContentWidth: -1,             // per-column "unit" width
-    minContentHeight: Infinity,  // optional: debug only
-    maxContentHeight: -1,        // optional: debug only
-    maxTdBoxWidth: -1,           // per-column "unit" width
-    minRowHeight: Infinity,
-    maxRowHeight: -1
-  };
+    // first pass: per-column "unit" widths + max per-unit box width
+    [...tableElement.querySelectorAll('td')].forEach(td => {
+      if (td.childNodes.length === 0) return;
 
-  // first pass: per-column "unit" widths + max per-unit box width
-  [...tableElement.querySelectorAll('td')].forEach(td => {
-    if (td.childNodes.length === 0) return;
+      const isRowHeader = isRowHeaderCell(td);
+      const isColumnHeader = isColumnHeaderCell(td, tableElement);
+      const excludeFromBaseline = isRowHeader || isColumnHeader;
 
-    const isRowHeader = isRowHeaderCell(td);
-    const isColumnHeader = isColumnHeaderCell(td, tableElement);
-    const excludeFromBaseline = isRowHeader || isColumnHeader;
+      const colspanAttribute = td.getAttribute('colspan');
+      const colspan = Number.parseInt(colspanAttribute || '1', 10);
+      const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
+      const rowspan = td.getAttribute('rowspan');
 
-    const colspanAttribute = td.getAttribute('colspan');
-    const colspan = Number.parseInt(colspanAttribute || '1', 10);
-    const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
-    const rowspan = td.getAttribute('rowspan');
+      const contentRect = getCombinedBoundingRect([...td.childNodes]);
+      const contentWidth = contentRect.width;
+      const contentHeight = contentRect.height;
+      const unitContentWidth = contentWidth / columnSpan;
 
-    const contentRect = getCombinedBoundingRect([...td.childNodes]);
-    const contentWidth = contentRect.width;
-    const contentHeight = contentRect.height;
-    const unitContentWidth = contentWidth / columnSpan;
-
-    // Width range: use per-column unit width so colspan cells can participate
-    if (!excludeFromBaseline && isFinite(unitContentWidth) && unitContentWidth > 0) {
-      if (unitContentWidth < sizes.minContentWidth) {
-        sizes.minContentWidth = unitContentWidth;
+      // Width range: use per-column unit width so colspan cells can participate
+      if (!excludeFromBaseline && isFinite(unitContentWidth) && unitContentWidth > 0) {
+        if (unitContentWidth < sizes.minContentWidth) {
+          sizes.minContentWidth = unitContentWidth;
+        }
+        if (unitContentWidth > sizes.maxContentWidth) {
+          sizes.maxContentWidth = unitContentWidth;
+        }
       }
-      if (unitContentWidth > sizes.maxContentWidth) {
-        sizes.maxContentWidth = unitContentWidth;
+
+      // Height range (optional, for debug): only non-rowspan cells and (optionally) non-headers
+      if (!rowspan && !excludeFromBaseline && isFinite(contentHeight) && contentHeight > 0) {
+        if (contentHeight < sizes.minContentHeight) {
+          sizes.minContentHeight = contentHeight;
+        }
+        if (contentHeight > sizes.maxContentHeight) {
+          sizes.maxContentHeight = contentHeight;
+        }
       }
-    }
 
-    // Height range (optional, for debug): only non-rowspan cells and (optionally) non-headers
-    if (!rowspan && !excludeFromBaseline && isFinite(contentHeight) && contentHeight > 0) {
-      if (contentHeight < sizes.minContentHeight) {
-        sizes.minContentHeight = contentHeight;
+      // max per-unit box width: consider all tds, normalized by colspan
+      const boxRect = td.getBoundingClientRect();
+      const boxWidth = boxRect.width;
+      const unitBoxWidth = boxWidth / columnSpan;
+
+      if (isFinite(unitBoxWidth) && unitBoxWidth > sizes.maxTdBoxWidth) {
+        sizes.maxTdBoxWidth = unitBoxWidth;
       }
-      if (contentHeight > sizes.maxContentHeight) {
-        sizes.maxContentHeight = contentHeight;
-      }
-    }
-
-    // max per-unit box width: consider all tds, normalized by colspan
-    const boxRect = td.getBoundingClientRect();
-    const boxWidth = boxRect.width;
-    const unitBoxWidth = boxWidth / columnSpan;
-
-    if (isFinite(unitBoxWidth) && unitBoxWidth > sizes.maxTdBoxWidth) {
-      sizes.maxTdBoxWidth = unitBoxWidth;
-    }
-  });
-
-  // measure row heights after table is in the DOM
-  [...tableElement.querySelectorAll('tr')].forEach(row => {
-    const cells = row.querySelectorAll('td');
-    if (!cells.length) return;
-
-    const isHeaderRow = [...cells].every(td =>
-      isRowHeaderCell(td) || isColumnHeaderCell(td, tableElement)
-    );
-    if (isHeaderRow) return;
-
-    const rect = row.getBoundingClientRect();
-    const height = rect.height;
-
-    if (isFinite(height) && height > 0) {
-      if (height < sizes.minRowHeight) sizes.minRowHeight = height;
-      if (height > sizes.maxRowHeight) sizes.maxRowHeight = height;
-    }
-  });
-
-  // Width normalization (per cell)
-  [...tableElement.querySelectorAll('td')].forEach(cell => {
-    if (cell.childNodes.length === 0) return;
-
-    const contentRectangle = getCombinedBoundingRect([...cell.childNodes]);
-    const currentContentWidth = contentRectangle.width;
-    const colspanAttribute = cell.getAttribute('colspan');
-    const colspan = Number.parseInt(colspanAttribute || '1', 10);
-    const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
-    const currentUnitContentWidth = currentContentWidth / columnSpan;
-
-    const snapResult = shouldSnapSize({
-      currentSize: currentUnitContentWidth,
-      targetSize: sizes.maxContentWidth,
-      baseSimilarityPercent: WIDTH_BASE_SIMILARITY_PERCENT,
-      sizeSensitivity: WIDTH_SIZE_SENSITIVITY,
-      smallCellSensitivity: WIDTH_SMALL_CELL_SENSITIVITY
     });
 
-    if (!snapResult) return;
+    // measure row heights after table is in the DOM
+    [...tableElement.querySelectorAll('tr')].forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (!cells.length) return;
 
-    const {
-      differencePercent,
-      allowedPercent,
-      willSnap
-    } = snapResult;
+      const isHeaderRow = [...cells].every(td =>
+        isRowHeaderCell(td) || isColumnHeaderCell(td, tableElement)
+      );
+      if (isHeaderRow) return;
 
-    cell.dataset.currentContentWidth = currentContentWidth;
-    cell.dataset.currentUnitContentWidth = currentUnitContentWidth;
-    cell.dataset.colspan = String(columnSpan);
-    cell.dataset.minContentWidth = sizes.minContentWidth;
-    cell.dataset.maxContentWidth = sizes.maxContentWidth;
-    cell.dataset.widthDiffPercent = differencePercent;
-    cell.dataset.widthAllowedPercent = allowedPercent;
-    cell.dataset.widthWillSnap = willSnap ? 'true' : 'false';
+      const rect = row.getBoundingClientRect();
+      const height = rect.height;
 
-    if (willSnap && sizes.maxTdBoxWidth > 0) {
-      cell.style.width = (sizes.maxTdBoxWidth * columnSpan) + 'px';
-      cell.style.boxSizing = 'border-box';
-    }
+      if (isFinite(height) && height > 0) {
+        if (height < sizes.minRowHeight) sizes.minRowHeight = height;
+        if (height > sizes.maxRowHeight) sizes.maxRowHeight = height;
+      }
+    });
+
+    // Width normalization (per cell)
+    [...tableElement.querySelectorAll('td')].forEach(cell => {
+      if (cell.childNodes.length === 0) return;
+
+      const contentRectangle = getCombinedBoundingRect([...cell.childNodes]);
+      const currentContentWidth = contentRectangle.width;
+      const colspanAttribute = cell.getAttribute('colspan');
+      const colspan = Number.parseInt(colspanAttribute || '1', 10);
+      const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
+      const currentUnitContentWidth = currentContentWidth / columnSpan;
+
+      const snapResult = shouldSnapSize({
+        currentSize: currentUnitContentWidth,
+        targetSize: sizes.maxContentWidth,
+        baseSimilarityPercent: WIDTH_BASE_SIMILARITY_PERCENT,
+        sizeSensitivity: WIDTH_SIZE_SENSITIVITY,
+        smallCellSensitivity: WIDTH_SMALL_CELL_SENSITIVITY
+      });
+
+      if (!snapResult) return;
+
+      const {
+        differencePercent,
+        allowedPercent,
+        willSnap
+      } = snapResult;
+
+      cell.dataset.currentContentWidth = currentContentWidth;
+      cell.dataset.currentUnitContentWidth = currentUnitContentWidth;
+      cell.dataset.colspan = String(columnSpan);
+      cell.dataset.minContentWidth = sizes.minContentWidth;
+      cell.dataset.maxContentWidth = sizes.maxContentWidth;
+      cell.dataset.widthDiffPercent = differencePercent;
+      cell.dataset.widthAllowedPercent = allowedPercent;
+      cell.dataset.widthWillSnap = willSnap ? 'true' : 'false';
+
+      if (willSnap && sizes.maxTdBoxWidth > 0) {
+        cell.style.width = (sizes.maxTdBoxWidth * columnSpan) + 'px';
+        cell.style.boxSizing = 'border-box';
+      }
+    });
+
+    // Row height normalization (across rows) -- currently disabled
+    // [...tableElement.querySelectorAll('tr')].forEach(row => {
+    //   const cells = row.querySelectorAll('td');
+    //   if (!cells.length) return;
+
+    //   const rect = row.getBoundingClientRect();
+    //   const currentRowHeight = rect.height;
+
+    //   const snapResult = shouldSnapSize({
+    //     currentSize: currentRowHeight,
+    //     targetSize: sizes.maxRowHeight,
+    //     baseSimilarityPercent: HEIGHT_BASE_SIMILARITY_PERCENT,
+    //     sizeSensitivity: HEIGHT_SIZE_SENSITIVITY
+    //   });
+
+    //   if (!snapResult) return;
+
+    //   const { differencePercent, allowedPercent, willSnap } = snapResult;
+
+    //   row.dataset.currentRowHeight = currentRowHeight;
+    //   row.dataset.minRowHeight = sizes.minRowHeight;
+    //   row.dataset.maxRowHeight = sizes.maxRowHeight;
+    //   row.dataset.rowHeightDiffPercent = differencePercent;
+    //   row.dataset.rowHeightAllowedPercent = allowedPercent;
+    //   row.dataset.rowHeightWillSnap = willSnap ? 'true' : 'false';
+
+    //   if (!willSnap || sizes.maxRowHeight <= 0) return;
+
+    //   cells.forEach(td => {
+    //     td.style.height = sizes.maxRowHeight + 'px';
+    //     td.style.boxSizing = 'border-box';
+    //   });
+    // });
+
+    tableElement.dataset.minContentWidth = sizes.minContentWidth;
+    tableElement.dataset.maxContentWidth = sizes.maxContentWidth;
+    tableElement.dataset.minContentHeight = sizes.minContentHeight;
+    tableElement.dataset.maxContentHeight = sizes.maxContentHeight;
+    tableElement.dataset.maxTdBoxWidth = sizes.maxTdBoxWidth;
+    tableElement.dataset.minRowHeight = sizes.minRowHeight;
+    tableElement.dataset.maxRowHeight = sizes.maxRowHeight;
   });
-
-  // Row height normalization (across rows) -- currently disabled
-  // [...tableElement.querySelectorAll('tr')].forEach(row => {
-  //   const cells = row.querySelectorAll('td');
-  //   if (!cells.length) return;
-
-  //   const rect = row.getBoundingClientRect();
-  //   const currentRowHeight = rect.height;
-
-  //   const snapResult = shouldSnapSize({
-  //     currentSize: currentRowHeight,
-  //     targetSize: sizes.maxRowHeight,
-  //     baseSimilarityPercent: HEIGHT_BASE_SIMILARITY_PERCENT,
-  //     sizeSensitivity: HEIGHT_SIZE_SENSITIVITY
-  //   });
-
-  //   if (!snapResult) return;
-
-  //   const { differencePercent, allowedPercent, willSnap } = snapResult;
-
-  //   row.dataset.currentRowHeight = currentRowHeight;
-  //   row.dataset.minRowHeight = sizes.minRowHeight;
-  //   row.dataset.maxRowHeight = sizes.maxRowHeight;
-  //   row.dataset.rowHeightDiffPercent = differencePercent;
-  //   row.dataset.rowHeightAllowedPercent = allowedPercent;
-  //   row.dataset.rowHeightWillSnap = willSnap ? 'true' : 'false';
-
-  //   if (!willSnap || sizes.maxRowHeight <= 0) return;
-
-  //   cells.forEach(td => {
-  //     td.style.height = sizes.maxRowHeight + 'px';
-  //     td.style.boxSizing = 'border-box';
-  //   });
-  // });
-
-  tableElement.dataset.minContentWidth = sizes.minContentWidth;
-  tableElement.dataset.maxContentWidth = sizes.maxContentWidth;
-  tableElement.dataset.minContentHeight = sizes.minContentHeight;
-  tableElement.dataset.maxContentHeight = sizes.maxContentHeight;
-  tableElement.dataset.maxTdBoxWidth = sizes.maxTdBoxWidth;
-  tableElement.dataset.minRowHeight = sizes.minRowHeight;
-  tableElement.dataset.maxRowHeight = sizes.maxRowHeight;
-
-  canopyContainer.removeChild(tempSectionElement);
-  tempParagraphElement.removeChild(tableElement);
 
   return [tableElement];
 }

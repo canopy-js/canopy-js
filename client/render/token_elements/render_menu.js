@@ -1,6 +1,4 @@
 import { getCombinedBoundingRect } from 'render/helpers';
-import { canopyContainer } from 'helpers/getters';
-
 function renderMenu(token, renderContext, renderTokenElements) {
   let menuElement = document.createElement('DIV');
   menuElement.classList.add('canopy-menu');
@@ -56,60 +54,6 @@ function renderMenu(token, renderContext, renderTokenElements) {
     return menuCellElement;
   });
 
-  let tempSectionElement = new DOMParser().parseFromString('<section class="canopy-section menu-render-temp-section"><p class="canopy-paragraph"></p></section>', 'text/html').body.firstChild;
-  let tempParagraphElement = tempSectionElement.querySelector('p');
-  let tempRowElement = createNewRow();
-  canopyContainer.appendChild(tempSectionElement);
-  tempParagraphElement.appendChild(menuElement);
-  menuElement.appendChild(tempRowElement);
-
-  for (let i = 0; i < cellElements.length; i++) {
-    if (cellElements[i].style.opacity) continue;
-    let menuCellElement = cellElements[i];
-    tempRowElement.appendChild(menuCellElement);
-
-    while (true) {
-      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) 
-        tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
-
-      menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
-
-      let contentBoundingRect = getCombinedBoundingRect([menuCellElement.querySelector('.canopy-menu-content-container')]);
-
-      let container = menuCellElement.closest('.canopy-menu-cell');
-      let containerStyles = window.getComputedStyle(container);
-      let containerRect = container.getBoundingClientRect();
-
-      let containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
-      let containerPaddingRight = parseFloat(containerStyles.paddingRight);
-      let containerPaddingTop = parseFloat(containerStyles.paddingTop);
-      let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
-
-      let adjustedContainerRect = {
-        top: containerRect.top + containerPaddingTop,
-        left: containerRect.left + containerPaddingLeft,
-        bottom: containerRect.bottom - containerPaddingBottom,
-        right: containerRect.right - containerPaddingRight
-      };
-
-      let isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
-      let isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
-
-      if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
-
-      if (tableListSizeIndex >= SizesByArea.length - 1) break; // No larger sizes available
-
-      menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
-      tableListSizeIndex++;
-      i = 0; // Once we increment the size, we need to recheck all previous elements because a larger area might have a narrower width
-    }
-  }
-
-  tempParagraphElement.remove();
-  tempRowElement.remove();
-  tempSectionElement.remove();
-  menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
-
   function createNewRow() {
     let newRow = document.createElement('DIV');
     newRow.classList.add('canopy-menu-row');
@@ -118,45 +62,91 @@ function renderMenu(token, renderContext, renderTokenElements) {
     return newRow;
   }
 
-  let rowSize;
-  if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
-  if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
-  if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
-  if (SizesByArea[tableListSizeIndex].includes('eigth')) rowSize = 8;
+  // Provisional row so links exist in DOM; final rows built in preDisplay.
+  const provisionalRow = createNewRow();
+  cellElements.forEach(cell => provisionalRow.appendChild(cell));
 
-  // Create the first row
-  let tableRowElement = createNewRow();
+  renderContext.preDisplayCallbacks.push(() => {
+    for (let i = 0; i < cellElements.length; i++) {
+      if (cellElements[i].style.opacity) continue;
+      let menuCellElement = cellElements[i];
 
-  // Assuming cellElements is your array of cells
-  for (let i = 0; i < cellElements.length; i++) {
-    // Append cell to current row
-    tableRowElement.appendChild(cellElements[i]);
+      while (true) {
+        if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) 
+          tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
 
-    // If row is full and there are more cells to add, create a new row
-    if ((i + 1) % rowSize === 0 && (i + 1) !== cellElements.length) {
-      tableRowElement = createNewRow();
+        menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+
+        let contentBoundingRect = getCombinedBoundingRect([menuCellElement.querySelector('.canopy-menu-content-container')]);
+
+        let container = menuCellElement.closest('.canopy-menu-cell');
+        let containerStyles = window.getComputedStyle(container);
+        let containerRect = container.getBoundingClientRect();
+
+        let containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
+        let containerPaddingRight = parseFloat(containerStyles.paddingRight);
+        let containerPaddingTop = parseFloat(containerStyles.paddingTop);
+        let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
+
+        let adjustedContainerRect = {
+          top: containerRect.top + containerPaddingTop,
+          left: containerRect.left + containerPaddingLeft,
+          bottom: containerRect.bottom - containerPaddingBottom,
+          right: containerRect.right - containerPaddingRight
+        };
+
+        let isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
+        let isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
+
+        if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
+
+        if (tableListSizeIndex >= SizesByArea.length - 1) break; // No larger sizes available
+
+        menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
+        tableListSizeIndex++;
+        i = 0; // Once we increment the size, we need to recheck all previous elements because a larger area might have a narrower width
+      }
     }
-  }
 
-  if (menuElement.childNodes.length > 1) { // if there is more than one row
-    const remainingCells = cellElements.length % rowSize;
-    const cellsToAdd = remainingCells > 0 ? rowSize - remainingCells : 0;
-    for (let i = 0; i < cellsToAdd; i++) {
-      let paddingElement = document.createElement('DIV');
-      paddingElement.classList.add('canopy-menu-cell');
-      paddingElement.style.opacity = '0';
-      tableRowElement.appendChild(paddingElement);
+    // Rebuild rows using final size
+    const removeRows = [...menuElement.querySelectorAll('.canopy-menu-row')];
+    removeRows.forEach(r => r.remove());
+
+    let rowSize;
+    if (SizesByArea[tableListSizeIndex].includes('half')) rowSize = 2;
+    if (SizesByArea[tableListSizeIndex].includes('third')) rowSize = 3;
+    if (SizesByArea[tableListSizeIndex].includes('quarter')) rowSize = 4;
+    if (SizesByArea[tableListSizeIndex].includes('eigth')) rowSize = 8;
+
+    let tableRowElement = createNewRow();
+    for (let i = 0; i < cellElements.length; i++) {
+      tableRowElement.appendChild(cellElements[i]);
+      if ((i + 1) % rowSize === 0 && (i + 1) !== cellElements.length) {
+        tableRowElement = createNewRow();
+      }
     }
-  }
 
-  // Only inner-most of left and right aligned links need margin
-  [...tableRowElement.childNodes]
-    .filter(element => element.classList.contains('canopy-menu-cell-right-aligned'))?.[0]
-    ?.classList.add('canopy-menu-cell-first-right');
+    if (menuElement.childNodes.length > 1) {
+      const remainingCells = cellElements.length % rowSize;
+      const cellsToAdd = remainingCells > 0 ? rowSize - remainingCells : 0;
+      for (let i = 0; i < cellsToAdd; i++) {
+        let paddingElement = document.createElement('DIV');
+        paddingElement.classList.add('canopy-menu-cell');
+        paddingElement.style.opacity = '0';
+        tableRowElement.appendChild(paddingElement);
+      }
+    }
 
-  [...tableRowElement.childNodes]
-    .filter(element => element.classList.contains('canopy-menu-cell-left-aligned')).slice(-1)?.[0]
-    ?.classList.add('canopy-menu-cell-last-left');
+    [...tableRowElement.childNodes]
+      .filter(element => element.classList.contains('canopy-menu-cell-right-aligned'))?.[0]
+      ?.classList.add('canopy-menu-cell-first-right');
+
+    [...tableRowElement.childNodes]
+      .filter(element => element.classList.contains('canopy-menu-cell-left-aligned')).slice(-1)?.[0]
+      ?.classList.add('canopy-menu-cell-last-left');
+
+    menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+  });
 
   return [menuElement];
 }

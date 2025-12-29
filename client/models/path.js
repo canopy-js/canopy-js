@@ -609,8 +609,10 @@ class Path {
     return Path.rendered || Path.url;
   }
 
+  static lastRenderedPath = null;
+
   static get rendered() {
-    return Paragraph.selection?.path;  // the user may have just changed the URL, and we want to know what the current path rendered is
+    return Paragraph.selection?.path || Path.lastRenderedPath;  // fall back to last known rendered path
   }
 
   static get url() {

@@ -29,6 +29,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Link.updateSelectionClass(linkToSelect || pathToDisplay.parentLink); // if null, removes previous selection's class
     let header = setHeader(pathToDisplay.firstTopicPath.firstTopic, options);
     document.title = pathToDisplay.pageTitle;
+    Path.lastRenderedPath = pathToDisplay;
 
     displayPathTo(pathToDisplay.paragraph, options);
     pathToDisplay.paragraphs.forEach(p => p.executePreDisplayCallbacks());
