@@ -309,22 +309,26 @@ class Path {
   }
 
   reduce() {
-    const cycle = this.cycle;
-    let resultPath;
+    let topicFirstIndex = {};
+    let cycle = null;
 
-    // console.log(this.cycle)
+    for (let i = 0; i < this.array.length; i++) {
+      const topic = this.array[i][0];
+      const topicKey = topic.mixedCase;
 
-    if (cycle) {
-      const pathWithoutCycle = [
-        ...this.array.slice(0, cycle.start),
-        ...this.array.slice(cycle.end)
-      ];
-      resultPath = new Path(pathWithoutCycle);
-    } else {
-      resultPath = this.clone();
+      if (topicFirstIndex.hasOwnProperty(topicKey)) {
+        cycle = { start: topicFirstIndex[topicKey], end: i };
+        break;
+      } else {
+        topicFirstIndex[topicKey] = i;
+      }
     }
 
-    return resultPath;
+    if (cycle) {
+      return new Path(this.array.slice(0, cycle.start).concat(this.array.slice(cycle.end)));
+    }
+
+    return this.clone();
   }
 
   get containsBackCycle() {
@@ -672,6 +676,7 @@ class Path {
   static elementAtRelativePath(path, rootElement) {
     if (!(path instanceof Path)) throw new Error('pathToDisplay must be a Path object');
     rootElement = rootElement || canopyContainer;
+    if (!rootElement?.dataset?.pathDepth) return null;
 
     let currentNode = rootElement;
     let subpath = path;

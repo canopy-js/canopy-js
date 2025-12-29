@@ -159,8 +159,8 @@ a.canopy-selectable-link {
   .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
     background-color: #FFFFFF;
     
-    // padding-left: 2px;
-    // padding-right: 2px;
+    padding-left: 2px; // gives button padding inside container on the sides to match natural line height
+    padding-right: 2px;
 
     border-radius: 3px;
     border: 1px solid #dddddd;
@@ -202,12 +202,18 @@ a.canopy-selectable-link {
   }
 
   &:not(.canopy-open-link) { // if it is open, it has been inlined and isn't a cycle
-    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
+    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
       top: 2px;
       left: 1px;
       text-decoration: none;
       font-size: 9px;
       position: relative;
+    }
+  }
+
+  &.canopy-open-link {
+    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+      display: none;
     }
   }
 }
@@ -414,13 +420,19 @@ table { // center even if overflowing x
     }
 
     &:not(.canopy-open-link) {
-      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-provisional-cycle-icon {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
         font-size: 9px;
         margin-left: -2px;
         position: relative;
         top: 3px;
         left: 2px;
         white-space: nowrap;
+      }
+    }
+
+    &.canopy-open-link {
+      .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+        display: none;
       }
     }
 
@@ -564,7 +576,7 @@ table { // center even if overflowing x
     }
 
     .canopy-link-content-container {
-      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
         font-size: 11px;
         margin-left: -5px; // Negative margin to pull the icon closer to the last word
         position: relative; // Allows for position adjustment
@@ -573,8 +585,14 @@ table { // center even if overflowing x
         white-space: nowrap; // Prevents the icon from wrapping
       }
 
+      &.canopy-open-link {
+        .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+          display: none;
+        }
+      }
+
       &[dir="rtl"] {
-        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-provisional-cycle-icon {
+        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
           top: 0px; // find good values
           left: 0px;
         }

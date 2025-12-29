@@ -450,19 +450,17 @@ class Link {
   }
 
   get isUpCycle() {
-    return this.inlinePath.reduce().ancestorOf(this.enclosingPath); // reduced inline path is above enclosing path
+    return this.cycle && this.inlinePath.reduce().ancestorOf(this.enclosingPath); // reduced inline path is above enclosing path
   }
 
   get isBackCycle() {
     return this.cycle 
-      && !this.isUpCycle // not up cycle
       && !this.isDownCycle // not down cycle
       && !this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
 
   get isForwardCycle() {
     return this.cycle 
-      && !this.inlinePath.reduce().ancestorOf(this.enclosingPath) // not up cycle
       && !this.isDownCycle // not down cycle
       && this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
@@ -640,14 +638,7 @@ class Link {
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
 
-      if (this.isUpCycle) {
-        return this.inlinePath.reduce() // scroll to parent link and deselect
-          .linkTo(this.enclosingPath)
-          .select({renderOnly: options.renderOnly})
-          .then(() => this.inlinePath.reduce().display({ renderOnly: options.renderOnly, noScroll: true }));
-      }
-
-      return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // disconnect from previous options
+      return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // reduce cycle
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
