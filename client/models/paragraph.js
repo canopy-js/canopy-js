@@ -198,7 +198,7 @@ class Paragraph {
     const parentLinkCandidates = this.parentLinkCandidates;
 
     // if paragraph is subtopic, parent link must be local reference in parent - return all to allow multiple parent links
-    if (!this.path.lastSegment.isTopic) {
+    if (!this.path.lastSegment.isSingleTopic) {
       return parentParagraph.links.filter(link => link.isLocal && Topic.areEqual(link.targetSubtopic, this.subtopic));
     }
 
@@ -248,14 +248,14 @@ class Paragraph {
   }
 
   get topicParagraph() {
-    if (this.isTopic) return this;
+    if (this.isSingleTopic) return this;
 
     const topicSection = this.sectionElement.parentNode.closest('.canopy-topic-section');
     if (!topicSection) throw new Error('Missing topic paragraph');
     return Paragraph.for(topicSection);
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.topic.equals(this.subtopic);
   }
 

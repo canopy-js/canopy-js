@@ -631,7 +631,7 @@ class Link {
     }
 
     if (this.isSelfReference && !this.isOpen) {
-      if (this.enclosingPath.lastSegment.isTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
+      if (this.enclosingPath.lastSegment.isSingleTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
       return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
 

@@ -242,7 +242,7 @@ class Path {
     return true; 
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.array.length === 1 && this.array[0][0].equals(this.array[0][1]);
   }
 
@@ -252,7 +252,6 @@ class Path {
 
   get parentParagraph() {
     if (this.lastSegment.isSingleTopic) { // in case child paragraph for last segment isn't rendered yet
-    if (this.lastSegment.isTopic) { // in case child paragraph for last segment isn't rendered yet
       return this.withoutLastSegment.paragraph;
     }
 
