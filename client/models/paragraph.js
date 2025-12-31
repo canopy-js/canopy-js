@@ -118,10 +118,8 @@ class Paragraph {
   }
 
   get links() {
-    if (this.linkObjects) return this.linkObjects;
     let linkElements = this.paragraphElement.querySelectorAll('a.canopy-selectable-link');
-    this.linkObjects = Array.from(linkElements).map((element) => new Link(element));
-    return this.linkObjects;
+    return Array.from(linkElements).map((element) => new Link(element));
   }
 
   get simpleGlobalLinks() {
@@ -200,7 +198,7 @@ class Paragraph {
     const parentLinkCandidates = this.parentLinkCandidates;
 
     // if paragraph is subtopic, parent link must be local reference in parent - return all to allow multiple parent links
-    if (!this.path.lastSegment.isTopic) {
+    if (!this.path.lastSegment.isSingleTopic) {
       return parentParagraph.links.filter(link => link.isLocal && Topic.areEqual(link.targetSubtopic, this.subtopic));
     }
 
@@ -250,14 +248,14 @@ class Paragraph {
   }
 
   get topicParagraph() {
-    if (this.isTopic) return this;
+    if (this.isSingleTopic) return this;
 
     const topicSection = this.sectionElement.parentNode.closest('.canopy-topic-section');
     if (!topicSection) throw new Error('Missing topic paragraph');
     return Paragraph.for(topicSection);
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.topic.equals(this.subtopic);
   }
 
@@ -293,8 +291,10 @@ class Paragraph {
     return (top / viewportHeight) * 100;
   }
 
+  static selectedParagraphObject = null;
+
   static get selection() {
-    return Paragraph.current;
+    return Paragraph.selectedParagraphObject || Paragraph.current;
   }
 
   static get current() {
@@ -304,10 +304,12 @@ class Paragraph {
 
   addSelectionClass() {
     this.sectionElement.classList.add('canopy-selected-section');
+    Paragraph.selectedParagraphObject = this;
   }
 
   removeSelectionClass() {
     this.sectionElement.classList.remove('canopy-selected-section');
+    if (Paragraph.selectedParagraphObject?.equals(this)) Paragraph.selectedParagraphObject = null;
   }
 
   scrollComplete() {

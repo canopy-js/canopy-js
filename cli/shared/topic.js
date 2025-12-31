@@ -17,18 +17,11 @@ class Topic {
 
     this.cssMixedCase = CSS.escape(this.mixedCase);
 
-    this.url = this.mixedCase.replace(
-      new RegExp('\\' + Object.keys(Topic.urlConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
-      match => Topic.urlConversionRules[match]
-    );
+    this.url = urlConvert(this.mixedCase);
 
-    this.topicFileName = this.mixedCase.replace(
-      new RegExp('\\' + Object.keys(Topic.fileNameConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
-      match => Topic.fileNameConversionRules[match]
-    );
+    this.topicFileName = encodeFileName(this.mixedCase);
 
-    this.caps = this.mixedCase // This is the string that is used to find matches between links and topic names. Not reversible.
-      .toUpperCase() // We want matches to be case-insensitive
+    const generateKey = (string) => string // Strings we consider to be the same topic should collapse to the same key string
       .replace(/\?$/, '') // It should match whether or not both have trailing question marks
       .replace(/["”“’‘']/g, '') // We remove quotation marks so matches ignore them
       .replace(/(\\{2})*([.,])(?=["'')}\]]*$)/g, (m, bs) => bs ? m : '') // Allow links to contain terminal periods or commas eg he went to [["Spain."]]
@@ -38,13 +31,10 @@ class Topic {
       .replace(/&[Nn][Bb][Ss][Pp];/g, ' ')
       .trim(); // remove initial and leading space, eg when using interpolation syntax: [[{|display only} actual topic name]]
 
-    this.capsUrl = this.caps.replace(
-      new RegExp('\\' + Object.keys(Topic.urlConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
-      match => Topic.urlConversionRules[match]
-    );
+    this.caps = generateKey(this.mixedCase) // This is the string that is used to find matches between links and topic names. Not reversible.
+      .toUpperCase(); // We want matches to be case-insensitive
 
-    this.jsonFileName = encodeURIComponent(this.capsUrl);
-    this.requestFileName = encodeURIComponent(encodeURIComponent(this.capsUrl)); // This is the string that will be used to _request_ the file name on disk, so it needs to be encoded
+    this.jsonFileName = alphanumericSlug(firstLetterCaps(generateKey(this.mixedCase))) + `_${stableHash(generateKey(this.caps))}`;
 
     Cache[string] = this;
   }
@@ -102,23 +92,13 @@ class Topic {
   }
 
   static fromUrl(string) { // eg %5C_Topic_names_with_literal_underscores%5C_ which needs decoding and then is mixed case already _X_
-    let convertedString = string.replace(
-      new RegExp('\\' + Object.keys(Topic.underscoreToSpaceRules).join('|\\'), 'g'),
-      match => Topic.underscoreToSpaceRules[match]
-    );
-    let decodedString = decodeURIComponent(convertedString); // turns eg %5C_ into \_
-    let escapedString = decodedString.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]);
-    return Topic.fromMixedCase(escapedString);
+    let convertedString = Topic.convertUnderscoresToSpaces(string);
+    return Topic.fromMixedCase(convertedString);
   }
 
-  static fromFileName(string) {
-    let convertedString = string.replace(
-      new RegExp('\\' + Object.keys(Topic.underscoreToSpaceRules).join('|\\'), 'g'),
-      match => Topic.underscoreToSpaceRules[match]
-    );
-    let decodedString = decodeURIComponent(convertedString); // because all file name rules are simple encodings, simple decoding suffices
-    let escapedString = decodedString.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]);
-    return Topic.fromMixedCase(escapedString);
+  static fromFileName(string) { // used to generate [Category] strings in bulk file from folder names
+    let convertedString = Topic.convertUnderscoresToSpaces(string);
+    return Topic.fromMixedCase(convertedString);
   }
 
   static convertSpacesToUnderscores(string) {
@@ -133,6 +113,8 @@ class Topic {
       new RegExp('\\' + Object.keys(Topic.underscoreToSpaceRules).join('|\\'), 'g'),
       match => Topic.underscoreToSpaceRules[match]
     );
+    try { decodeURIComponent(convertedString); } catch(e){ console.trace(); throw new Error('Cannot convert underscores to spaces for non-URL-encoded string: ' + convertedString); }
+
     let decodedString = decodeURIComponent(convertedString);
     let escapedString = decodedString.replace(/\\./g, (match) => match[1] === '\\' ? '\\' : match[1]);
     return escapedString;
@@ -159,5 +141,43 @@ Topic.prototype.equals = function(otherTopic) {
 Topic.prototype.matches = function(otherTopic) {
   return this.caps === otherTopic.caps;
 };
+
+function stableHash(string) {
+  let hash = 0;
+  for (let i = 0; i < string.length; i++) {
+    hash = ((hash << 5) - hash + string.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function alphanumericSlug(str) { // URL/FS safe human readable slug
+  let slug = str.normalize('NFKD')
+    .replace(/ /g, '_') // don't need fancy conversion because not reversable
+    .replace(/__+/g, '_') // consolidate
+    .replace(/[^A-Za-z0-9-_]+/g, '');
+
+  const maxLength = 60;
+  if (slug.length > maxLength) slug = slug.slice(0, maxLength).replace(/_+$/g, '');
+  return slug;
+}
+
+function firstLetterCaps(string) {
+  return string.toLowerCase()
+    .replace(/\b([a-z])/g, (m, ch) => ch.toUpperCase());
+}
+
+function urlConvert(string) {
+  return string.replace(
+    new RegExp('\\' + Object.keys(Topic.urlConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
+    match => Topic.urlConversionRules[match]
+  );
+}
+
+function encodeFileName(string) {
+  return string.replace(
+    new RegExp('\\' + Object.keys(Topic.fileNameConversionRules).join('|\\'), 'g'), // this way the output of one rule isn't input to another
+    match => Topic.fileNameConversionRules[match]
+  );
+}
 
 module.exports = Topic;

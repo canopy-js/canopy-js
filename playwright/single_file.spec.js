@@ -13,7 +13,7 @@ let htmlPath;
 test.describe('single-file build', () => {
   test.beforeAll(() => {
     projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-single-file-'));
-    htmlPath = path.join(projectDir, 'build', `${defaultTopic}.html`);
+    htmlPath = path.join(projectDir, 'build', '_file', `${defaultTopic}.html`);
     fs.cpSync(sourceProjectDir, projectDir, { recursive: true, filter: src => !src.includes('.canopy_bulk_backups') });
     execSync('canopy build --hash-urls --file', { cwd: projectDir, stdio: 'ignore' });
   });
@@ -29,10 +29,7 @@ test.describe('single-file build', () => {
 
     page.on('pageerror', (err) => pageErrors.push(err));
     page.on('console', (msg) => {
-      if (msg.type() !== 'error') return;
-      const text = msg.text();
-      if (text.includes('_assets/') || text.includes('Failed to load resource')) return;
-      consoleErrors.push(text);
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
     await page.goto(fileUrl);

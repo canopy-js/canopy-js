@@ -9,18 +9,16 @@ const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
 
   const embeddedTopicScript = document.querySelector(`script[data-topic-json="${topic.jsonFileName}.json"]`);
-
   const prefix = projectPathPrefix ? `/${projectPathPrefix}` : '';
-  const dataPath = `${prefix}/_data/${topic.requestFileName}.json`;
+  const dataPath = `${prefix}/_data/${topic.jsonFileName}.json`;
 
-  const sourcePromise =
-    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) // embedded topic JSON (single-file build)
-    || fetch(dataPath).then(res => {
+  const dataPromise =
+    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) // embedded topic JSON (default topic / single-file build)
+    || Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
+      .then(res => {
       if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
       return res.json();
-    });
-
-  const requestPromise = sourcePromise
+    })
     .then(json => {
       preloadImages(json);
       topicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
@@ -28,10 +26,10 @@ const requestJson = (topic) => {
     })
     .catch(() => {
       REQUEST_CACHE[topic.mixedCase] = undefined;
-      return Promise.reject(new Error(`Unable to find topic file: "${topic.jsonFileName}"`));
+      return Promise.resolve(null); // ignore aborted fetches or navigation-related rejections
     });
 
-  return REQUEST_CACHE[topic.mixedCase] = requestPromise;
+  return REQUEST_CACHE[topic.mixedCase] = dataPromise;
 };
 
 function getCanonicalTopic(topic, subtopic = topic) {

@@ -91,21 +91,37 @@ class Path {
     return this.string === otherPath.string;
   }
 
-  isIn(otherPath) { // is otherPath a subpath of this
-    if (!otherPath) return false;
-    if (this.equals(otherPath)) return true;
-    if (otherPath.isTopic) return false;
-    if (this.visitsTopicNotIn(otherPath)) return false // trying to figure it out before DOM is rendered
-    if (`${otherPath.string}/`.includes(`${this.string}/`)) return true; // / to ensure not mid-topic-name match
-    return this.isIn(otherPath?.paragraph?.parentParagraph.path);
+  ancestorOf(otherPath) { // strict ancestor: lexical prefix or DOM parent within same-length subtopic chains
+    if (!(otherPath instanceof Path)) return false;
+    if (this.empty || otherPath?.empty) return false;
+    if (this.length > otherPath.length) return false;
+    if (otherPath.isSingleTopic) return false;
+    if (this.equals(otherPath)) return false; // strict: not equal
+
+    // Case 1: purely lexical, child extends this /A/B -> A/B/C or /A/B -> A/B#C
+    if (otherPath.startsWith(this)) return true;
+
+    // Case 2: topics match but some subtopic diverges, e.g. A/B#C and A/B#D, or A/B#C and A/B#D/E
+    const divergenceIndex = otherPath.segments.findIndex(([topic, subtopic], i) => {
+      const mySeg = this.segments[i];
+      if (!mySeg) return true; // other is longer but not a lexical prefix; treat as divergence
+      const topicsMatch = topic?.equals(mySeg[0]);
+      const subtopicsMatch = subtopic?.equals(mySeg[1]);
+      return !topicsMatch || !subtopicsMatch;
+    });
+
+    let cursor = otherPath.slice(0, divergenceIndex + 1); // truncate after diverging segment
+    while (cursor) { // walk DOM parents from point of divergence.
+      if (cursor.equals(this)) return true;
+      const parentPath = cursor.parentPath;
+      if (!parentPath || parentPath.equals(cursor)) break;
+      cursor = parentPath;
+    }
+    return false;
   }
 
-  visitsTopicNotIn(otherPath) {
-    return this.topicStringArray.some(topic => !otherPath.topicStringArray.includes(topic));
-  }
-
-  includes(otherPath) {
-    return otherPath.isIn(this);
+  descendantOf(otherPath) {
+    return otherPath?.ancestorOf(this);
   }
 
   includesTopic(topic) {
@@ -226,7 +242,7 @@ class Path {
     return true; 
   }
 
-  get isTopic() {
+  get isSingleTopic() {
     return this.array.length === 1 && this.array[0][0].equals(this.array[0][1]);
   }
 
@@ -235,7 +251,7 @@ class Path {
   }
 
   get parentParagraph() {
-    if (this.lastSegment.isTopic) { // in case child paragraph for last segment isn't rendered yet
+    if (this.lastSegment.isSingleTopic) { // in case child paragraph for last segment isn't rendered yet
       return this.withoutLastSegment.paragraph;
     }
 
@@ -292,26 +308,30 @@ class Path {
   }
 
   reduce() {
-    const cycle = this.cycle;
-    let resultPath;
+    let topicFirstIndex = {};
+    let cycle = null;
 
-    // console.log(this.cycle)
+    for (let i = 0; i < this.array.length; i++) {
+      const topic = this.array[i][0];
+      const topicKey = topic.mixedCase;
 
-    if (cycle) {
-      const pathWithoutCycle = [
-        ...this.array.slice(0, cycle.start),
-        ...this.array.slice(cycle.end)
-      ];
-      resultPath = new Path(pathWithoutCycle);
-    } else {
-      resultPath = this.clone();
+      if (topicFirstIndex.hasOwnProperty(topicKey)) {
+        cycle = { start: topicFirstIndex[topicKey], end: i };
+        break;
+      } else {
+        topicFirstIndex[topicKey] = i;
+      }
     }
 
-    return resultPath;
+    if (cycle) {
+      return new Path(this.array.slice(0, cycle.start).concat(this.array.slice(cycle.end)));
+    }
+
+    return this.clone();
   }
 
   get containsBackCycle() {
-    return this.reduce().subsetOf(this);
+    return this.reduce().ancestorOf(this);
   }
 
   get containsForwardCycle() {
@@ -329,6 +349,28 @@ class Path {
           /// !(parentPath.equals(parentPath.append(literalPath).reduce()))// Reject A/B/C -> C or A/B/C/C -> C, where reduction equals current path producing no-op
       });
     });
+  }
+
+  initialLexicalOverlap(otherPath) { // Purely lexical overlap that stops at the first mismatch (topic or subtopic).
+    if (this.empty || otherPath.empty) return null;
+    if (!this.firstTopic.equals(otherPath.firstTopic)) return null;
+
+    const minLen = Math.min(this.length, otherPath.length);
+    let segments = [];
+
+    for (let i = 0; i < minLen; i++) {
+      const [topic1, subtopic1] = this.array[i];
+      const [topic2, subtopic2] = otherPath.array[i];
+      if (!topic1.equals(topic2)) break;
+      if (!subtopic1.equals(subtopic2)) {
+        segments.push([topic1, topic1]); // overlap at topic boundary when subtopics diverge
+        return new Path(segments);
+      }
+      segments.push([topic1, subtopic1]);
+    }
+
+    if (segments.length === 0) return null;
+    return new Path(segments);
   }
 
   initialOverlap(otherPath) {
@@ -355,52 +397,61 @@ class Path {
       }
     }
 
-    let candidatePath = otherPath;
-    while (!candidatePath.isTopic) {
-      if (this.includes(candidatePath)) return candidatePath;
-      if (!candidatePath.parentPath) throw new Error(`Undefined parent path for ${candidatePath}`);
-      candidatePath = candidatePath.parentPath;
+    const lexicalOverlap = this.initialLexicalOverlap(otherPath);
+    if (!lexicalOverlap) return null;
+
+    const ancestorStrings = (path) => {
+      const result = [];
+      let cursor = path;
+      while (cursor) {
+        result.push(cursor.string);
+        if (cursor.lastSegment.isSingleTopic) break; // stop at topic root of current segment
+        if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
+        cursor = cursor.parentPath;
+      }
+      return result;
+    };
+
+    const thisAncestors = ancestorStrings(this);
+    let cursor = otherPath;
+    while (cursor) {
+      if (thisAncestors.includes(cursor.string)) return cursor;
+      if (cursor.lastSegment.isSingleTopic) break;
+      if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
+      cursor = cursor.parentPath;
     }
 
-    return candidatePath;
+    return lexicalOverlap;
   }
 
-  overlaps(otherPath) {
-    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.equals(t2)));
-  }
-
-  linkTo(otherPath) {  // for path e.g. A/B/C, which link in C is open for otherPath, e.g. A/B/C/D/E
-    if (this.equals(otherPath)) throw 'not equal';
-    if (!otherPath.startsWith(this)) throw 'does not start with';
-
+  linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
     let targetTopic;
     let targetSubtopic;
-    let initialOverlap = this.initialOverlap(otherPath);
+    const divergingIndex = this.length - 1;
+    const sharesPrefix = otherPath.startsWithSegments(this.slice(0, divergingIndex));
 
-    // Case where difference is on full segment eg A/B vs. A/B/C#D
-    if (initialOverlap.lastSubtopic.equals(otherPath.getSegmentSubtopic(initialOverlap.length - 1))) { // ie the last segment of overlap has matching subtopic e.g. B#B
-      targetTopic = otherPath.getSegmentTopic(this.length); // e.g C
-      targetSubtopic = otherPath.getSegmentTopic(this.length); // e.g. C
-    } else { // Case where difference is in segment e.g. A/B#C and A/B#D
-      let otherPathCursor = otherPath.slice(0, this.length); // just looking at overlapping segments
-      let previousOtherPathCursor;
+    if (sharesPrefix) {
+      const thisTopic = this.getSegmentTopic(divergingIndex);
+      const thisSubtopic = this.getSegmentSubtopic(divergingIndex);
+      const otherTopic = otherPath.getSegmentTopic(divergingIndex);
+      const otherSubtopic = otherPath.getSegmentSubtopic(divergingIndex);
 
-      while (this.length === otherPathCursor.length && !otherPathCursor.equals(this)) { // until we find path or remove the terminal segment entirely
-        previousOtherPathCursor = otherPathCursor;
-        otherPathCursor = otherPathCursor.parentPath;
-
-        if (otherPathCursor.equals(this)) {
-          targetTopic = otherPath.getSegmentTopic(this.length - 1);
-          targetSubtopic = previousOtherPathCursor.getSegmentSubtopic(this.length - 1);
-        }
+      if (thisTopic?.equals(otherTopic) && !thisSubtopic?.equals(otherSubtopic)) {
+        // Diverges within the same segment: target the differing subtopic.
+        targetTopic = otherTopic;
+        targetSubtopic = otherSubtopic;
+      } else if (otherPath.startsWithSegments(this) && otherPath.length > this.length) { // extends by full segment
+        targetTopic = otherPath.getSegmentTopic(this.length); // first segment after this
+        targetSubtopic = otherPath.getSegmentSubtopic(this.length); // matching subtopic of that segment
       }
     }
 
-    if (!targetTopic || !targetSubtopic) throw 'not child'; // e.g. A/B#D wasn't actually child of A/B#C
+    if (!targetTopic || !targetSubtopic) return null; // e.g. otherPath was not a descendant of this
 
-    return this.paragraph.links.find(link => {
-      return link.childTopic.equals(targetTopic) && link.childSubtopic.equals(targetSubtopic)
+    const found = this.paragraph.links.find(link => {
+      return link.childTopic?.equals(targetTopic) && link.childSubtopic?.equals(targetSubtopic)
     }) || null;
+    return found;
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
@@ -415,39 +466,19 @@ class Path {
     return !!(thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING);
   }
 
-  terminalOverlap(otherPath) { // e.g A/B/C B/C/D
-    let lastInstanceOfFirstTopicOfOtherPath = this.array.findLastIndex(([t]) => t.equals(otherPath.firstTopic));
-    if (lastInstanceOfFirstTopicOfOtherPath === -1) return false;
-    let otherPathIndex = 0;
-
-    for (let i = lastInstanceOfFirstTopicOfOtherPath; i < this.length; i++) {
-      if (otherPathIndex >= otherPath.length) return false;
-      if (!this.array[i][0].equals(otherPath.array[otherPathIndex][0])) return false;
-      if (!this.array[i][1].equals(otherPath.array[otherPathIndex][1])) return false;
-      otherPathIndex++;
-    }
-
-    return true; // got to the end without a difference
-  }
-
   twoStepChange(otherPath) { // an overlap that is not a subset or equivalence
     return this.initialOverlap(otherPath)
       && !this.equals(otherPath)
-      && !this.subsetOf(otherPath)
-      && !otherPath.subsetOf(this);
+      && !this.ancestorOf(otherPath)
+      && !otherPath.ancestorOf(this);
   }
 
   fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
-    if (this.startsWith(otherPath)) {
-      return otherPath.linkTo(this);
-    }
-
-    return this.initialOverlap(otherPath)?.linkTo(otherPath);
-  }
-
-  subsetOf(otherPath) { // this is subset of otherPath
-    return otherPath.includes(this) &&
-      !this.equals(otherPath); // unlike #includes, which accepts a self-match
+    const enclosingParagraphPath = this.initialOverlap(otherPath);
+    if (!enclosingParagraphPath) return null;
+    if (!enclosingParagraphPath.ancestorOf(otherPath)) return null;
+    if (enclosingParagraphPath.equals(otherPath)) return null; // nothing to link if same path
+    return enclosingParagraphPath.linkTo(otherPath);
   }
 
   intermediaryPathsTo(otherPath) {
@@ -473,30 +504,44 @@ class Path {
 
     // Fast exact-segment prefix check.
     if (`${this.pathString}/`.startsWith(`${prefixPath.pathString}/`)) return true;
+    // Fast topic-level → subtopic check (e.g., /A/B#C starts with /A/B).
+    const lastIndexFast = prefixPath.length - 1;
+    const prefixAtTopicLevelFast = Topic.areEqual(prefixPath.getSegmentTopic(lastIndexFast), prefixPath.getSegmentSubtopic(lastIndexFast));
+    if (prefixAtTopicLevelFast && `${this.pathString}`.startsWith(`${prefixPath.pathString}#`)) return true;
 
-    // All earlier segments must fully match.
-    for (let i = 0; i < prefixPath.length - 1; i++) {
-      if (!Topic.areEqual(this.getSegmentTopic(i), prefixPath.getSegmentTopic(i))) return false;
-      if (!Topic.areEqual(this.getSegmentSubtopic(i), prefixPath.getSegmentSubtopic(i))) return false;
+    for (let i = 0; i < prefixPath.length; i++) {
+      const thisSingleTopic = this.getSegmentTopic(i);
+      const thisSubtopic = this.getSegmentSubtopic(i);
+      const prefixTopic = prefixPath.getSegmentTopic(i);
+      const prefixSubtopic = prefixPath.getSegmentSubtopic(i);
+
+      if (!Topic.areEqual(thisSingleTopic, prefixTopic)) return false; // topics must match
+
+      const isLast = i === prefixPath.length - 1;
+      if (!isLast) { // earlier segments must match exactly
+        if (!Topic.areEqual(thisSubtopic, prefixSubtopic)) return false;
+      } else {
+        const prefixAtTopicLevel = Topic.areEqual(prefixTopic, prefixSubtopic);
+        if (!(prefixAtTopicLevel || Topic.areEqual(thisSubtopic, prefixSubtopic))) return false; // either /A and /A#B or /A#B and /A#B
+      }
     }
 
-    // Last segment's topic must match.
-    const lastIndex = prefixPath.length - 1;
-    if (!Topic.areEqual(this.getSegmentTopic(lastIndex), prefixPath.getSegmentTopic(lastIndex))) return false;
+    return true;
+  }
 
-    // If last subtopic matches exactly, we are done.
-    if (Topic.areEqual(this.getSegmentSubtopic(lastIndex), prefixPath.getSegmentSubtopic(lastIndex))) return true;
-
-    // Start from the subtopic of this's segment corresponding to prefixPath's last
-    // Then, trace the ancestory path backwards to the segment root.
-    // If prefix is true prefix, we will hit prefixPath's last segment before we hit the segment root.
-    let thisCursor = this.slice(0, prefixPath.length);
-    while (thisCursor.length === prefixPath.length) {
-      thisCursor = thisCursor.parentPath;
-      if (thisCursor.equals(prefixPath)) return true;
+  // Exact segment match: topics and subtopics must both match at every segment.
+  startsWithSegments(prefixPath) {
+    if (!(prefixPath instanceof Path)) return false;
+    if (prefixPath.length > this.length) return false;
+    for (let i = 0; i < prefixPath.length; i++) {
+      const thisTopic = this.getSegmentTopic(i);
+      const thisSubtopic = this.getSegmentSubtopic(i);
+      const prefixTopic = prefixPath.getSegmentTopic(i);
+      const prefixSubtopic = prefixPath.getSegmentSubtopic(i);
+      if (!Topic.areEqual(thisTopic, prefixTopic)) return false;
+      if (!Topic.areEqual(thisSubtopic, prefixSubtopic)) return false;
     }
-
-    return false;
+    return true;
   }
 
   get paragraphs() {
@@ -599,12 +644,22 @@ class Path {
     return Path.rendered || Path.url;
   }
 
+  static lastRenderedPath = null;
+
   static get rendered() {
-    return Paragraph.selection?.path;  // the user may have just changed the URL, and we want to know what the current path rendered is
+    return Paragraph.selection?.path || Path.lastRenderedPath;  // fall back to last known rendered path
   }
 
   static get url() {
     const hash = window.location.hash || '';
+    const fileProtocol = typeof window !== 'undefined' && window.location?.protocol === 'file:';
+
+    if (hashUrls && fileProtocol) { // file:// with hash routing: ignore pathname to avoid treating file path segments as topics
+      let hashPathString = '';
+      if (hash.startsWith('#/')) hashPathString = hash.slice(2);
+      else if (hash.startsWith('#')) hashPathString = hash.slice(1);
+      return new Path(hashPathString);
+    }
 
     if (hash.startsWith('#/')) { // hash-routing: interpret entire route from hash
       let hashPathString = hash.slice(2);
@@ -652,6 +707,7 @@ class Path {
   static elementAtRelativePath(path, rootElement) {
     if (!(path instanceof Path)) throw new Error('pathToDisplay must be a Path object');
     rootElement = rootElement || canopyContainer;
+    if (!rootElement?.dataset?.pathDepth) return null;
 
     let currentNode = rootElement;
     let subpath = path;

@@ -86,30 +86,20 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
   linkElement.href = Path.for(token.pathString).productionPathString;
 
   let link = new Link(linkElement);
-  let cycleIcon;
-
-  if (renderContext.pathToParagraph.overlaps(link.literalPath)) {
-    cycleIcon = document.createElement('span');
-    if (!containsIconOrEmoji(link.text) && !renderContext.pathToParagraph.terminalOverlap(link.literalPath)) { // will be down-cycle
-      cycleIcon.classList.add('canopy-provisional-cycle-icon');
-      cycleIcon.innerText = '↩';
-    }
-    linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
-  }
   
   renderContext.preDisplayCallbacks.push(() => {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
     if (link.cycle) {
-      cycleIcon.classList.remove('canopy-provisional-cycle-icon');
+      const cycleIcon = document.createElement('span');
 
-      if (link.isUpCycle) {
-        cycleIcon.classList.add('canopy-up-cycle-icon');
-        cycleIcon.innerText = '↩';
-      } else if (link.isForwardCycle) {
+      if (link.isForwardCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
+      } else if (link.isUpCycle) {
+        cycleIcon.classList.add('canopy-up-cycle-icon');
+        cycleIcon.innerText = '↩';
       } else if (link.isBackCycle) {
         cycleIcon.classList.add('canopy-back-cycle-icon');
         cycleIcon.innerText = '↩';
@@ -121,6 +111,8 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
         cycleIcon.innerText = '';
       }
+
+      linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
     }
   });
 
