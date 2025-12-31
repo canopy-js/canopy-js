@@ -14,7 +14,8 @@ const requestJson = (topic) => {
 
   const dataPromise =
     (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) // embedded topic JSON (default topic / single-file build)
-    || fetch(dataPath).then(res => {
+    || Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
+      .then(res => {
       if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
       return res.json();
     })
@@ -23,10 +24,9 @@ const requestJson = (topic) => {
       topicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
       return json;
     })
-    .catch((e) => {
+    .catch(() => {
       REQUEST_CACHE[topic.mixedCase] = undefined;
-      return Promise.reject(new Error(`Unable to find topic file: "${topic.jsonFileName}"`));
-      return Promise.reject(new Error(`Unable to find topic file: "${topic.jsonFileName}"`, topic));
+      return Promise.resolve(null); // ignore aborted fetches or navigation-related rejections
     });
 
   return REQUEST_CACHE[topic.mixedCase] = dataPromise;
