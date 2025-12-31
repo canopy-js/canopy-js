@@ -91,7 +91,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    if (renderContext.pathToParagraph.overlaps(link.literalPath) && link.cycle) {
+    if (link.cycle) {
       const cycleIcon = document.createElement('span');
 
       if (link.isForwardCycle) {

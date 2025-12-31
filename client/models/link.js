@@ -454,14 +454,16 @@ class Link {
   }
 
   get isBackCycle() {
-    return this.cycle 
-      && !this.isDownCycle // not down cycle
+    return this.cycle
+      && !this.isDownCycle
+      && !this.isUpCycle
       && !this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
 
   get isForwardCycle() {
     return this.cycle 
-      && !this.isDownCycle // not down cycle
+      && !this.isUpCycle
+      && !this.isDownCycle
       && this.enclosingPath.isBefore(this.inlinePath.reduce());
   }
 
