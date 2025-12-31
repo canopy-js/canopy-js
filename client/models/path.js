@@ -110,10 +110,10 @@ class Path {
       return !topicsMatch || !subtopicsMatch;
     });
 
-    let cursor = otherPath.slice(0, divergenceIndex + 1); // truncate at divergence
+    let cursor = otherPath.slice(0, divergenceIndex + 1); // truncate after diverging segment
     while (cursor) { // walk DOM parents from point of divergence.
       if (cursor.equals(this)) return true;
-      const parentPath = cursor.paragraph?.parentParagraph?.path;
+      const parentPath = cursor.parentPath;
       if (!parentPath || parentPath.equals(cursor)) break;
       cursor = parentPath;
     }
@@ -351,6 +351,28 @@ class Path {
     });
   }
 
+  initialLexicalOverlap(otherPath) { // Purely lexical overlap that stops at the first mismatch (topic or subtopic).
+    if (this.empty || otherPath.empty) return null;
+    if (!this.firstTopic.equals(otherPath.firstTopic)) return null;
+
+    const minLen = Math.min(this.length, otherPath.length);
+    let segments = [];
+
+    for (let i = 0; i < minLen; i++) {
+      const [topic1, subtopic1] = this.array[i];
+      const [topic2, subtopic2] = otherPath.array[i];
+      if (!topic1.equals(topic2)) break;
+      if (!subtopic1.equals(subtopic2)) {
+        segments.push([topic1, topic1]); // overlap at topic boundary when subtopics diverge
+        return new Path(segments);
+      }
+      segments.push([topic1, subtopic1]);
+    }
+
+    if (segments.length === 0) return null;
+    return new Path(segments);
+  }
+
   initialOverlap(otherPath) {
     if (this.empty || otherPath.empty) return null;
     if (this.firstTopic.mixedCase !== otherPath.firstTopic.mixedCase) return null;
@@ -375,18 +397,31 @@ class Path {
       }
     }
 
-    let candidatePath = otherPath;
-    while (!candidatePath.isSingleTopic) {
-      if (this.ancestorOf(candidatePath) || this.equals(candidatePath)) return candidatePath;
-      if (!candidatePath.parentPath) throw new Error(`Undefined parent path for ${candidatePath}`);
-      candidatePath = candidatePath.parentPath;
+    const lexicalOverlap = this.initialLexicalOverlap(otherPath);
+    if (!lexicalOverlap) return null;
+
+    const ancestorStrings = (path) => {
+      const result = [];
+      let cursor = path;
+      while (cursor) {
+        result.push(cursor.string);
+        if (cursor.lastSegment.isSingleTopic) break; // stop at topic root of current segment
+        if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
+        cursor = cursor.parentPath;
+      }
+      return result;
+    };
+
+    const thisAncestors = ancestorStrings(this);
+    let cursor = otherPath;
+    while (cursor) {
+      if (thisAncestors.includes(cursor.string)) return cursor;
+      if (cursor.lastSegment.isSingleTopic) break;
+      if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
+      cursor = cursor.parentPath;
     }
 
-    return candidatePath;
-  }
-
-  overlaps(otherPath) {
-    return this.topicArray.some(t1 => otherPath.topicArray.some(t2 => t1.equals(t2)));
+    return lexicalOverlap;
   }
 
   linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
