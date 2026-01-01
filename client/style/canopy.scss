@@ -10,7 +10,12 @@
   padding-bottom: calc(90vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
+  min-width: 700px; // trying to prevent content squish when page goes narrow
   font-family: "Times New Roman", Times, serif; // good default and standardizes layout for browser tests
+}
+
+body {
+  overflow-x: auto; // trying to prevent content squish when page goes narrow
 }
 
 h1.canopy-header {
