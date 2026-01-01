@@ -46,16 +46,16 @@ function renderTable(token, renderContext, renderTokenElements) {
       );
       tableElement.appendChild(tableRowElement);
 
-      // collapse fully hidden rows and columns
+      // collapse fully hidden rows and columns via CSS classes
       [...tableElement.rows]
         .filter(r => [...r.cells].every(c => c.classList.contains('hidden')))
-        .forEach(r => r.style.display = 'none');
+        .forEach(r => r.classList.add('canopy-hidden-row'));
 
       [...Array(Math.max(...[...tableElement.rows].map(r => r.cells.length)))]
         .map((_, i) => [...tableElement.rows].map(r => r.cells[i]).filter(Boolean))
         .filter(col => col.every(c => c.classList.contains('hidden')))
         .flat()
-        .forEach(td => td.style.display = 'none');
+        .forEach(td => td.classList.add('canopy-hidden-col'));
     }
   );
 
