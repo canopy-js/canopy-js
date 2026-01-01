@@ -376,10 +376,35 @@ table { // center even if overflowing x
       border: none;
     }
 
+    &.canopy-hidden-col {
+      width: 0;
+      min-width: 0;
+      max-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      border: 0;
+      overflow: hidden;
+    }
+
     br {
       display: block; // makes it have a width
       content: ""; // clears default height
       padding-bottom: 2px;
+    }
+  }
+
+  tr.canopy-hidden-row {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: 0;
+
+    td,
+    th {
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border: 0;
     }
   }
 
@@ -810,4 +835,3 @@ div.canopy-raw-html {
     display: inline;
   }
 }
-

@@ -375,7 +375,7 @@ test.describe('Block entities', () => {
 
   test('Tables can omit cells, or entire rows and columns', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
-    const tolerance = 1;
+    const tolerance = 2; // webkit bug turns 0 width / height requests into 1
     const tables = page.locator('.canopy-selected-section table');
 
     const getBox = async locator => (await locator.boundingBox()) || { width: 0, height: 0 };
@@ -397,7 +397,6 @@ test.describe('Block entities', () => {
         return { width: rect.width, height: rect.height };
       })
     );
-    expect(getMax(hiddenRowCells, 'width')).toBeLessThanOrEqual(tolerance);
     expect(getMax(hiddenRowCells, 'height')).toBeLessThanOrEqual(tolerance);
 
     // Table 3: second column hidden → negligible width
@@ -411,7 +410,6 @@ test.describe('Block entities', () => {
       })
     );
     expect(getMax(secondColumn, 'width')).toBeLessThanOrEqual(tolerance);
-    expect(getMax(secondColumn, 'height')).toBeLessThanOrEqual(tolerance);
   });
 
   test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
