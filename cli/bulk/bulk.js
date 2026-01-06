@@ -15,12 +15,14 @@ let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let { DefaultTopic, defaultTopic, tryAndWriteHtmlError } = require('../shared/fs-helpers');
+let translateWatchErrorToBulk = require('./translate_watch_error_to_bulk');
 const readline = require('readline');
 const { spawn } = require('child_process');
 const { getExplFileObjects } = require('../build/components/fs-helpers');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
+  if (options.sync) options.translateError = (err, opts) => translateWatchErrorToBulk(err, opts);
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
 
@@ -298,9 +300,7 @@ module.exports = bulk;
 
 function handleWatchError(error, options = {}) {
   const { tryAndWriteHtmlError } = require('../shared/fs-helpers');
-  const translateWatchErrorToBulk = require('./translate_watch_error_to_bulk');
-  const translated = translateWatchErrorToBulk(error, options);
-  console.error(chalk.red(translated.message || translated));
+  const translated = typeof options.translateError === 'function' ? options.translateError(error, options) : error;
   try {
     tryAndWriteHtmlError(() => { throw translated; }, options);
   } catch (_) {

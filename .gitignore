@@ -16,3 +16,4 @@ playwright/hash_urls_and_prefix_static_test/**
 playwright/hash_urls_test/**
 playwright/prefix_test/**
 **/.canopy_bulk_backups/**
+tmp
