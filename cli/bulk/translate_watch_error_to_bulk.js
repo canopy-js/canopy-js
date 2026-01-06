@@ -5,6 +5,7 @@ function escapeRegExp(string) {
 function translateWatchErrorToBulk(error, options = {}) {
   if (!options.sync || !options.bulkFileName || !error?.message) return error;
 
+  const stripAnsi = require('strip-ansi');
   const fs = require('fs');
   if (!fs.existsSync(options.bulkFileName)) return error;
 
@@ -17,7 +18,7 @@ function translateWatchErrorToBulk(error, options = {}) {
     return error;
   }
 
-  const refRegex = /(topics\/[\w./-]+\.expl):(\d+)(?::(\d+))?/g;
+  const refRegex = /(topics\/[^:\n]+?\.expl):(\d+)(?::(\d+))?/g;
   const topicInfoCache = new Map(); // topicPath -> { bulkStartLine, bulkStartCol }
 
   const computeBulkRef = (topicPath, topicLine, topicCol) => {
@@ -36,7 +37,7 @@ function translateWatchErrorToBulk(error, options = {}) {
       const key = Block.for(firstParagraph).key;
       if (!key) return null;
 
-      const keyLineRegex = new RegExp(`^(\\*\\*|\\*)\\s+${escapeRegExp(key)}\\b`, 'm');
+      const keyLineRegex = new RegExp(`^(\\*\\*|\\*)\\s+${escapeRegExp(key)}(?:\\s|:|$)`, 'm');
       const keyMatch = bulkContents.match(keyLineRegex);
       if (!keyMatch) return null;
 
@@ -57,20 +58,29 @@ function translateWatchErrorToBulk(error, options = {}) {
   };
 
   const original = String(error.message);
-  const rewritten = original.replace(refRegex, (full, topicPath, lineString, colString) => {
+  const sanitized = stripAnsi(original);
+  const insertBulkRefs = (text) => text.replace(refRegex, (full, topicPath, lineString, colString, offset, source) => {
     const topicLine = Number(lineString);
     const topicCol = colString ? Number(colString) : null;
     const bulkRef = computeBulkRef(topicPath, topicLine, topicCol);
     if (!bulkRef) return full;
+    const afterMatch = source.slice(offset + full.length);
+    if (afterMatch.startsWith(`\n${bulkRef}`)) return full; // already translated
     return `${full}\n${bulkRef}`;
   });
 
-  if (rewritten === original) return error;
+  const rewritten = insertBulkRefs(sanitized);
+
+  if (rewritten === sanitized) return error;
 
   const err = new Error(rewritten);
-  err.stack = error.stack;
+  if (error?.stack) { // surgically inject bulk refs into stack without duplicating message/context
+    const stackText = String(error.stack);
+    err.stack = insertBulkRefs(stackText);
+  } else {
+    err.stack = error?.stack;
+  }
   return err;
 }
 
 module.exports = translateWatchErrorToBulk;
-
