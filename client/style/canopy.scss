@@ -143,6 +143,24 @@ a.canopy-selectable-link { // even menu and table cells
 
 a.canopy-selectable-link,
 a.canopy-disabled-link {
+  padding-right: 11px; // following punctuation shouldn't wrap without link
+  margin-right: -11px;
+  
+  padding-left: 11px; // For RTL text
+  margin-left: -11px;
+
+  .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
+    background-color: #FFFFFF;
+    
+    padding-left: 2px; // gives button padding inside container on the sides to match natural line height
+    padding-right: 2px;
+
+    border-radius: 3px;
+    border: 1px solid #dddddd;
+
+    unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
+  }
+
   // shared multi-line layout
   &:first-child:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
@@ -155,23 +173,7 @@ a.canopy-disabled-link {
 }
 
 a.canopy-selectable-link {
-  padding-right: 11px; // following punctuation shouldn't wrap without link
-  margin-right: -11px;
-  
-  padding-left: 11px; // For RTL text
-  margin-left: -11px;
-  
-  .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
-    background-color: #FFFFFF;
-    
-    padding-left: 2px; // gives button padding inside container on the sides to match natural line height
-    padding-right: 2px;
-
-    border-radius: 3px;
-    border: 1px solid #dddddd;
-
-    unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
-
+  .canopy-link-content-container {
     &:hover {
       background-color: #f5f6fe;
     }
@@ -229,9 +231,9 @@ a.canopy-disabled-link {
   cursor: not-allowed;
   opacity: 0.5;
   text-decoration: none;
+
   .canopy-link-content-container {
-    border-radius: 1px;
-    border: 1px solid #dddddd;
+    border-color: #b0b0b0;
   }
 }
 
