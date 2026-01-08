@@ -20,6 +20,9 @@ function renderTextToken(token) {
     if (index !== segments.length - 1) { // even if no text segment, insert linebreak
       let lineBreakSpan = document.createElement('SPAN');
       lineBreakSpan.classList.add('canopy-linebreak-span');
+      if (!textSegment) {
+        lineBreakSpan.classList.add('canopy-blank-linebreak');
+      }
       spans.push(lineBreakSpan);
     }
   });

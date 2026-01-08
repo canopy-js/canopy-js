@@ -331,6 +331,10 @@ blockquote {
     margin-bottom: 0px; // unset default
   }
 
+  .canopy-linebreak-span.canopy-blank-linebreak {
+    height: 1em;
+  }
+
   .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
     margin-bottom: 8px;
     display: block;
