@@ -91,11 +91,8 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    if (link.cycle) {
+    if (link.cycle || link.isSelfReference) {
       if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
-        return;
-      }
-      if (link.isDownCycle) {
         return;
       }
 
@@ -107,7 +104,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       } else if (link.isUpCycle) {
         cycleIcon.classList.add('canopy-up-cycle-icon');
         cycleIcon.innerText = '↩';
-      } else if (link.isBackCycle) {
+      } else if (link.isBackCycle || link.isSelfReference) {
         cycleIcon.classList.add('canopy-back-cycle-icon');
         cycleIcon.innerText = '↩';
       }
