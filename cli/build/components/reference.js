@@ -141,7 +141,10 @@ class Reference {
   parseSimple() {
     this.targetText = this.contents;
     this.displayText = this.lastPathComponent;
-    if (!this.displayText && (this.soloPoundSign || this.soloCaretSign || this.soloPeriod)) this.displayText = 'Back';
+    if (!this.displayText) {
+      if (this.soloPoundSign) this.displayText = 'Top';
+      else if (this.soloCaretSign || this.soloPeriod) this.displayText = 'Back';
+    }
   }
 
   get isPath() {
