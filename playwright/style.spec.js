@@ -682,14 +682,19 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
     // Test for short blockquote which shouldn't get padding
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type span.canopy-text-span')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-blockquote-padded-linebreak')).toHaveCount(0);
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-linebreak-span')).toHaveCount(1);
+    const shortQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is a block quote that has two lines' });
+    await expect(shortQuote.locator('span.canopy-text-span')).toHaveCount(2);
+    await expect(shortQuote.locator('.canopy-blockquote-padded-linebreak')).toHaveCount(0);
+    await expect(shortQuote.locator('.canopy-linebreak-span')).toHaveCount(1);
 
     // Test for long blockquote where \n should get padding
-    await expect(page.locator('.canopy-selected-section blockquote:last-of-type span.canopy-text-span')).toHaveCount(2);
-    const longQuotePaddingSpan = await page.locator('.canopy-selected-section blockquote:last-of-type .canopy-blockquote-padded-linebreak');
-    await expect(longQuotePaddingSpan).toHaveCount(1); // Assuming BR gets replaced by one special span
+    const longQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is text that wraps.' });
+    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(7);
+    const longQuotePaddingSpan = await longQuote.locator('.canopy-blockquote-padded-linebreak');
+    await expect(longQuotePaddingSpan).toHaveCount(6); // padded linebreaks for each blockquote line
+
+    // Inline HTML should not create extra blank-line spacing; only the true blank line should be padded.
+    await expect(longQuote.locator('.canopy-blank-linebreak')).toHaveCount(1);
   });
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
