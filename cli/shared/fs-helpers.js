@@ -130,7 +130,7 @@ function writeHtmlError(error) {
     'build/index.html',
     `<style>
         p code {
-          font-size: 85%;
+          font-size: 65%;
           background: #f5f5f5;
           border: 1px solid #ddd;
           border-radius: 3px;

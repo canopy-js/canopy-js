@@ -454,14 +454,21 @@ class ParserContext {
   }
 
   formatErrorWithContext(message, filePath, line, col, contextRadius = 1) {
-    const findSubtopicDefinition = (frameFilePath, frameLine, lines) => {
-      let bestMatch = null;
+    const findDefinitions = (frameFilePath, frameLine, lines) => {
+      let subtopicDefinition = null;
+      let topicDefinition = null;
       Object.values(this.topics || {}).forEach(topicData => {
         if (topicData.filePath !== frameFilePath) return;
+        if (frameFilePath.endsWith('.expl') && lines.length) {
+          topicDefinition = {
+            line: 1,
+            text: lines[0] || ''
+          };
+        }
         Object.entries(topicData.lineNumbers || {}).forEach(([subtopicCaps, lineNumber]) => {
           if (!lineNumber || lineNumber > frameLine) return;
-          if (!bestMatch || lineNumber > bestMatch.line) {
-            bestMatch = {
+          if (!subtopicDefinition || lineNumber > subtopicDefinition.line) {
+            subtopicDefinition = {
               line: lineNumber,
               text: lines[lineNumber - 1] || '',
               subtopicCaps
@@ -469,7 +476,7 @@ class ParserContext {
           }
         });
       });
-      return bestMatch;
+      return { subtopicDefinition, topicDefinition };
     };
 
     const renderFrame = (frameFilePath, frameLine, frameCol, { includeLocationLabel = true } = {}) => {
@@ -479,10 +486,13 @@ class ParserContext {
       if (!contents) return null;
 
       let lines = contents.split('\n');
+      while (lines.length && lines[lines.length - 1] === '' && frameLine < lines.length) {
+        lines.pop();
+      }
       let start = Math.max(0, frameLine - 1 - contextRadius);
       let end = Math.min(lines.length - 1, frameLine - 1 + contextRadius);
-      const subtopicDefinition = findSubtopicDefinition(frameFilePath, frameLine, lines);
-      let width = String(Math.max(end + 1, frameLine, subtopicDefinition?.line || 0)).length;
+      const { subtopicDefinition, topicDefinition } = findDefinitions(frameFilePath, frameLine, lines);
+      let width = String(Math.max(end + 1, frameLine, subtopicDefinition?.line || 0, topicDefinition?.line || 0)).length;
       let caret = frameCol && frameCol > 0 ? frameCol : 1;
 
       let frame = [];
@@ -496,9 +506,39 @@ class ParserContext {
         }
       }
 
-      if (subtopicDefinition && subtopicDefinition.line < start + 1 && subtopicDefinition.line !== frameLine) {
-        frame.unshift(`  ${' '.repeat(width)} | ...`);
-        frame.unshift(`  ${String(subtopicDefinition.line).padStart(width, ' ')} | ${subtopicDefinition.text}`);
+      const addedDefinitions = [];
+      if (
+        topicDefinition &&
+        topicDefinition.line < start + 1 &&
+        topicDefinition.line !== frameLine &&
+        topicDefinition.line !== subtopicDefinition?.line
+      ) {
+        addedDefinitions.push(topicDefinition);
+      }
+      if (
+        subtopicDefinition &&
+        subtopicDefinition.line < start + 1 &&
+        subtopicDefinition.line !== frameLine
+      ) {
+        addedDefinitions.push(subtopicDefinition);
+      }
+      if (addedDefinitions.length) {
+        addedDefinitions.sort((a, b) => a.line - b.line);
+        const linesToInsert = [];
+        for (let i = 0; i < addedDefinitions.length; i++) {
+          const definition = addedDefinitions[i];
+          linesToInsert.push(`  ${String(definition.line).padStart(width, ' ')} | ${definition.text}`);
+          const nextLine = addedDefinitions[i + 1]?.line;
+          if (nextLine && nextLine - definition.line > 1) {
+            linesToInsert.push(`  ${' '.repeat(width)} | ...`);
+          }
+        }
+        const lastAddedLine = addedDefinitions[addedDefinitions.length - 1].line;
+        const gap = (start + 1) - lastAddedLine;
+        if (gap > 1) {
+          linesToInsert.push(`  ${' '.repeat(width)} | ...`);
+        }
+        linesToInsert.reverse().forEach(line => frame.unshift(line));
       }
 
       if (!includeLocationLabel) return frame.join('\n');
