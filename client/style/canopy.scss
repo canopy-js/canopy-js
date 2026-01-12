@@ -67,7 +67,7 @@ p.canopy-paragraph {
   font-weight: 400;
 
   position: relative; // to allow absolute children
-  unicode-bidi: plaintext; // to allow lines in different directions
+  //unicode-bidi: plaintext; // We want unicode bidi characters to allow overriding character direction which plaintext doesn't allow
 }//
 
 .canopy-topic-section hr + p {
