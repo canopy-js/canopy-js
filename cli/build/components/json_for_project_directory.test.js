@@ -1393,11 +1393,64 @@ test('it includes subtopic definition line when error is below the subtopic head
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
     [
       `topics/Wyoming/Wyoming.expl:6:${caretColumn}`,
+      '  1 | Wyoming: Root. See [[Subtopic A]].',
       '  3 | Subtopic A: Line one.',
       '   | ...',
       `> 6 | ${errorLine}`,
       caretSnippet
     ]
+  );
+});
+
+test('it omits ellipsis when topic or subtopic lines are already in context', () => {
+  const errorLine = 'Line two with [[Nonexistent#Missing]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root.
+      ${errorLine}
+      Line three.` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:2:${caretColumn}`,
+      '  1 | Wyoming: Root.',
+      `> 2 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+
+  expectThrowNotContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [' | ...']
+  );
+});
+
+test('it omits terminal newline in error context windows', () => {
+  const errorLine = 'Line two with [[Nonexistent#Missing]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root.
+      ${errorLine}` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:2:${caretColumn}`,
+      `> 2 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+
+  expectThrowNotContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    ['  3 | ']
   );
 });
 
