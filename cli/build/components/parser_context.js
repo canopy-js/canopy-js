@@ -454,6 +454,24 @@ class ParserContext {
   }
 
   formatErrorWithContext(message, filePath, line, col, contextRadius = 1) {
+    const findSubtopicDefinition = (frameFilePath, frameLine, lines) => {
+      let bestMatch = null;
+      Object.values(this.topics || {}).forEach(topicData => {
+        if (topicData.filePath !== frameFilePath) return;
+        Object.entries(topicData.lineNumbers || {}).forEach(([subtopicCaps, lineNumber]) => {
+          if (!lineNumber || lineNumber > frameLine) return;
+          if (!bestMatch || lineNumber > bestMatch.line) {
+            bestMatch = {
+              line: lineNumber,
+              text: lines[lineNumber - 1] || '',
+              subtopicCaps
+            };
+          }
+        });
+      });
+      return bestMatch;
+    };
+
     const renderFrame = (frameFilePath, frameLine, frameCol, { includeLocationLabel = true } = {}) => {
       if (!frameFilePath || !frameLine || frameLine < 1) return null;
 
@@ -463,7 +481,8 @@ class ParserContext {
       let lines = contents.split('\n');
       let start = Math.max(0, frameLine - 1 - contextRadius);
       let end = Math.min(lines.length - 1, frameLine - 1 + contextRadius);
-      let width = String(end + 1).length;
+      const subtopicDefinition = findSubtopicDefinition(frameFilePath, frameLine, lines);
+      let width = String(Math.max(end + 1, frameLine, subtopicDefinition?.line || 0)).length;
       let caret = frameCol && frameCol > 0 ? frameCol : 1;
 
       let frame = [];
@@ -475,6 +494,11 @@ class ParserContext {
         if (lineNumber === frameLine) {
           frame.push(`  ${' '.repeat(width)} | ${' '.repeat(Math.max(0, caret - 1))}^`);
         }
+      }
+
+      if (subtopicDefinition && subtopicDefinition.line < start + 1 && subtopicDefinition.line !== frameLine) {
+        frame.unshift(`  ${' '.repeat(width)} | ...`);
+        frame.unshift(`  ${String(subtopicDefinition.line).padStart(width, ' ')} | ${subtopicDefinition.text}`);
       }
 
       if (!includeLocationLabel) return frame.join('\n');

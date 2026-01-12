@@ -64,7 +64,12 @@ function escapeHtml(text) {
 
 function splitMessageAndContext(rawMessage) {
   const lines = String(rawMessage).split('\n');
-  const hasFrameMarkers = lines.some(line => /^\s*[> ]\s*\d+\s\|/.test(line)) &&
+  const isFrameLine = line =>
+    /^\s*[> ]\s*\d+\s\|/.test(line) || // numbered frame lines with marker
+    /^\s*\d+\s\|/.test(line) || // numbered frame lines without marker (subtopic header)
+    /^\s*\|\s*\^/.test(line) || // caret line
+    /^\s*\d*\s*\|\s*\.\.\./.test(line); // ellipsis spacer for subtopic headers
+  const hasFrameMarkers = lines.some(isFrameLine) &&
     lines.some(line => /^\s*\|\s*\^/.test(line));
 
   if (!hasFrameMarkers) {
@@ -73,7 +78,7 @@ function splitMessageAndContext(rawMessage) {
 
   let contextStart = -1;
   for (let i = lines.length - 1; i >= 0; i--) {
-    if (/^\s*[> ]\s*\d+\s\|/.test(lines[i]) || /^\s*\|\s*\^/.test(lines[i])) {
+    if (isFrameLine(lines[i])) {
       contextStart = i;
     } else if (contextStart !== -1) {
       break;
@@ -88,6 +93,10 @@ function splitMessageAndContext(rawMessage) {
   for (let i = contextStart - 1; i >= 0; i--) {
     const prevLine = lines[i].trim();
     if (prevLine === '') {
+      start = i;
+      continue;
+    }
+    if (isFrameLine(prevLine)) {
       start = i;
       continue;
     }
@@ -106,7 +115,9 @@ function splitMessageAndContext(rawMessage) {
 function writeHtmlError(error) {
   const rawMessage = stripAnsi(error?.message || error || 'Error getting error');
   const { message, context } = splitMessageAndContext(rawMessage);
-  const safeMessage = escapeHtml(message).replace(/\n+/g, '<br><br>');
+  const bracketPattern = /\[\[[^\]\n]+]]|\[[^\]\n]+]/g;
+  let safeMessage = escapeHtml(message).replace(/\n+/g, '<br><br>');
+  safeMessage = safeMessage.replace(bracketPattern, match => `<code>${match}</code>`);
   const safeContext = context ? escapeHtml(context) : '';
 
   try {
@@ -117,7 +128,22 @@ function writeHtmlError(error) {
 
   fs.writeFileSync(
     'build/index.html',
-    `<h1 style="text-align: center;">Error building project</h1>
+    `<style>
+        p code {
+          font-size: 85%;
+          background: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 3px;
+          padding: 0 4px;
+        }
+        pre code {
+          font-size: inherit;
+          background: none;
+          border: none;
+          padding: 0;
+        }
+      </style>
+      <h1 style="text-align: center;">Error building project</h1>
       <p style="font-size: 24px; width: 800px; margin: 20px auto; overflow-wrap: break-word; white-space: pre-wrap;">${safeMessage}</p>
       ${safeContext ? `<pre style="font-size: 87%; min-width: 800px; width: max-content; max-width: 100%; margin: 20px auto 20px auto; padding: 16px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; overflow-wrap: break-word; white-space: pre-wrap; font-family: "Courier New", Courier, monospace;"><code>${safeContext}</code></pre>` : ''}`
   );
