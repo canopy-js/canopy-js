@@ -461,7 +461,6 @@ class Path {
     let overlapPath = this.initialOverlap(otherPath);
     if (!overlapPath) return null;
 
-    // console.error(`finding link in ${overlapPath.string} to ${this}`);
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
     if (!thisParentLink?.element || !otherParentLink?.element) return null;

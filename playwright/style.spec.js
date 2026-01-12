@@ -1024,7 +1024,7 @@ test.describe('Block entities', () => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
 
     const rootBack = page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]');
-    await expect(rootBack.locator('.canopy-back-cycle-icon')).toHaveCount(1);
+    await expect(rootBack.locator('.canopy-up-cycle-icon')).toHaveCount(1);
     await rootBack.click(); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
     await page.waitForURL('**/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
@@ -1032,10 +1032,10 @@ test.describe('Block entities', () => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
 
     const subBack = page.locator('.canopy-selected-section[data-subtopic-name="Subtopic solo hash link"] .canopy-selectable-link[data-text="Top"]');
-    await expect(subBack.locator('.canopy-back-cycle-icon')).toHaveCount(1);
+    await expect(subBack.locator('.canopy-up-cycle-icon')).toHaveCount(1);
     await subBack.click();
     await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]')).toHaveAttribute('href', '/Solo_hash_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
   });
 
