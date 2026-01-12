@@ -53,9 +53,72 @@ function defaultTopic() {
   return new DefaultTopic();
 }
 
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function splitMessageAndContext(rawMessage) {
+  const lines = String(rawMessage).split('\n');
+  const isFrameLine = line =>
+    /^\s*[> ]\s*\d+\s\|/.test(line) || // numbered frame lines with marker
+    /^\s*\d+\s\|/.test(line) || // numbered frame lines without marker (subtopic header)
+    /^\s*\|\s*\^/.test(line) || // caret line
+    /^\s*\d*\s*\|\s*\.\.\./.test(line); // ellipsis spacer for subtopic headers
+  const hasFrameMarkers = lines.some(isFrameLine) &&
+    lines.some(line => /^\s*\|\s*\^/.test(line));
+
+  if (!hasFrameMarkers) {
+    return { message: rawMessage, context: '' };
+  }
+
+  let contextStart = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (isFrameLine(lines[i])) {
+      contextStart = i;
+    } else if (contextStart !== -1) {
+      break;
+    }
+  }
+
+  if (contextStart === -1) {
+    return { message: rawMessage, context: '' };
+  }
+
+  let start = contextStart;
+  for (let i = contextStart - 1; i >= 0; i--) {
+    const prevLine = lines[i].trim();
+    if (prevLine === '') {
+      start = i;
+      continue;
+    }
+    if (isFrameLine(prevLine)) {
+      start = i;
+      continue;
+    }
+    if (/\.(expl|bulk):\d+(?::\d+)?$/.test(prevLine)) {
+      start = i;
+      continue;
+    }
+    break;
+  }
+
+  const message = lines.slice(0, start).join('\n').trimEnd();
+  const context = lines.slice(start).join('\n');
+  return { message, context };
+}
+
 function writeHtmlError(error) {
-  const message = stripAnsi(error?.message || error || 'Error getting error')
-    .replace(/\n+/g, '<br><br>');
+  const rawMessage = stripAnsi(error?.message || error || 'Error getting error');
+  const { message, context } = splitMessageAndContext(rawMessage);
+  const bracketPattern = /\[\[[^\]\n]+]]|\[[^\]\n]+]/g;
+  let safeMessage = escapeHtml(message).replace(/\n+/g, '<br><br>');
+  safeMessage = safeMessage.replace(bracketPattern, match => `<code>${match}</code>`);
+  const safeContext = context ? escapeHtml(context) : '';
 
   try {
     fs.mkdirSync('build', { recursive: true });
@@ -65,18 +128,38 @@ function writeHtmlError(error) {
 
   fs.writeFileSync(
     'build/index.html',
-    `<h1 style="text-align: center;">Error building project</h1>
-      <p style="font-size: 24px; width: 800px; margin: auto; overflow-wrap: break-word;">${message}</p>`
+    `<style>
+        p code {
+          font-size: 65%;
+          background: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 3px;
+          padding: 0 4px;
+        }
+        pre code {
+          font-size: inherit;
+          background: none;
+          border: none;
+          padding: 0;
+        }
+      </style>
+      <h1 style="text-align: center;">Error building project</h1>
+      <p style="font-size: 24px; width: 800px; margin: 20px auto; overflow-wrap: break-word; white-space: pre-wrap;">${safeMessage}</p>
+      ${safeContext ? `<pre style="font-size: 87%; min-width: 800px; width: max-content; max-width: 100%; margin: 20px auto 20px auto; padding: 16px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; overflow-wrap: break-word; white-space: pre-wrap; font-family: "Courier New", Courier, monospace;"><code>${safeContext}</code></pre>` : ''}`
   );
 }
 
 function tryAndWriteHtmlError(func, options = {}) {
+  if (options.onBuildError) return func(options); // caller will handle logging/translation
   try {
     return func(options);
   } catch(e) {
-    writeHtmlError(e);
+    const translated = typeof options.translateError === 'function' ? options.translateError(e, options) : e;
+    if (options.error && translated?.stack) console.error(translated.stack);
+    if (!options.error) console.error(chalk.red(translated.message || translated));
+    writeHtmlError(translated, options);
     if (options.suppressThrow) return;
-    throw e;
+    throw translated;
   }
 }
 

@@ -169,6 +169,16 @@ test('it parses a list block', () => {
   expect(tokens[0].topLevelNodes[1].children[0].children.length).toEqual(0);
 });
 
+test('it does not parse lists for unsupported ordered prefixes', () => {
+  let text = 'Y. This should not be a list.\n' +
+    'X. Another line.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens[0].type).toEqual('text');
+  expect(tokens[0].text).toContain('Y. This should not be a list.');
+});
+
 test('it parses a table block', () => {
   let text = '| Header | Second column |\n' +
     '|======|=============|\n' +

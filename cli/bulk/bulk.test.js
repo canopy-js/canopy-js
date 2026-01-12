@@ -5,6 +5,15 @@ let FileSystemChangeCalculator = require('./file_system_change_calculator');
 let FileSet = require('./file_set');
 let dedent = require('dedent-js');
 let chalk = require('chalk');
+let fs = require('fs');
+let os = require('os');
+let path = require('path');
+const translateWatchErrorToBulk = require('./translate_watch_error_to_bulk');
+
+function writeFileSyncEnsuringDir(filePath, contents) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, contents, 'utf8');
+}
 
 describe('BulkFileGenerator', function() {
   test('it generates data file, alphabetizing topic files and directories, but hoisting default topic', () => {
@@ -137,6 +146,34 @@ describe('BulkFileGenerator', function() {
     );
   });
 
+  test('it ignores overlap with shared parent directories when choosing pinned file', () => {
+    // Regression: the comparator used to consider overlaps against shared parent dirs (e.g. "Binyanim").
+    // Longer filenames could accidentally match a 2-letter substring there and "win" over the shorter topic.
+    // We now skip shared-dir overlap so the shorter topic is correctly pinned.
+    let originalSelectedFilesByContents = {
+      'topics/Dikduk/Hebrew/Binyanim/Paal/Tenses/Past/Paal_Past_Tense_for_regular_shorushim.expl': 'Paal Past Tense for regular shorushim: Long.\n',
+      'topics/Dikduk/Hebrew/Binyanim/Paal/Tenses/Past/Paal_Past_Tense.expl': 'Paal Past Tense: Short.\n',
+      'topics/Dikduk/Dikduk.expl': 'Dikduk: Default.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/Dikduk/Dikduk.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[Dikduk]
+
+      ** Dikduk: Default.
+
+
+      [Dikduk/Hebrew/Binyanim/Paal/Tenses/Past]
+
+      * Paal Past Tense: Short.
+
+      * Paal Past Tense for regular shorushim: Long.` + '\n\n'
+    );
+  });
+
   test('it puts the inbox category last', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
@@ -257,6 +294,61 @@ describe('BulkFileGenerator', function() {
       ** Topic: Hello world.
 
       Subtopic: Hello.` + '\n\n');
+  });
+});
+
+describe('translateWatchErrorToBulk', () => {
+  test('it appends bulk refs for multiple expl references (with and without columns)', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-translate-'));
+
+    try {
+      process.chdir(tmpDir);
+
+      writeFileSyncEnsuringDir(
+        'topics/Foo/Foo.expl',
+        [
+          'Foo: Root paragraph',
+          'Line 2',
+          'Line 3',
+          'Line 4'
+        ].join('\n') + '\n'
+      );
+
+      writeFileSyncEnsuringDir(
+        'Foo.bulk',
+        [
+          '[Foo]',
+          '',
+          '* Foo: Root paragraph',
+          'Line 2',
+          'Line 3',
+          'Line 4',
+          ''
+        ].join('\n')
+      );
+
+      const error = new Error(
+        [
+          'Error: Something went wrong',
+          'topics/Foo/Foo.expl:1',
+          'Another location:',
+          'topics/Foo/Foo.expl:3:2'
+        ].join('\n')
+      );
+
+      const translated = translateWatchErrorToBulk(error, { sync: true, bulkFileName: 'Foo.bulk' });
+
+      expect(translated.message).toEqual(
+        expect.stringContaining('topics/Foo/Foo.expl:1\nFoo.bulk:3')
+      );
+      expect(translated.message).toEqual(
+        expect.stringContaining('topics/Foo/Foo.expl:3:2\nFoo.bulk:5:2')
+      );
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });
 

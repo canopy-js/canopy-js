@@ -183,7 +183,10 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if (Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) return Promise.resolve(); // moving down
   if (Link.selection.hasCloseSibling(linkToSelect)) return Promise.resolve(); // don't swoop from one link to its horizontal sibling
-  if (Path.rendered.fulcrumLink(newPath)?.isFocused) return Promise.resolve();
+
+  const fulcrum = Path.rendered.fulcrumLink(newPath);
+  const fulcrumTargetRatio = fulcrum?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
+  if (fulcrum?.isFocusedAtRatio?.(fulcrumTargetRatio)) return Promise.resolve();
 
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
   let minDiff = options.noMinDiff ? null : 75;

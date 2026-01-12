@@ -91,25 +91,22 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
     if (!link.element) return;
     if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
 
-    if (link.cycle) {
+    if (link.cycle || link.isSelfReference) {
+      if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
+        return;
+      }
+
       const cycleIcon = document.createElement('span');
 
       if (link.isForwardCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
-      } else if (link.isUpCycle) {
+      } else if (link.isUpCycle || link.isSelfReference) {
         cycleIcon.classList.add('canopy-up-cycle-icon');
         cycleIcon.innerText = '↩';
       } else if (link.isBackCycle) {
         cycleIcon.classList.add('canopy-back-cycle-icon');
         cycleIcon.innerText = '↩';
-      } else if (link.isDownCycle) { // eg in A/B#C a link to [[B#C/D]] i.e. a link to select a sibling.
-        cycleIcon.classList.add('canopy-down-cycle-icon');
-        cycleIcon.innerText = '';
-      }
-
-      if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
-        cycleIcon.innerText = '';
       }
 
       linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);

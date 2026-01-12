@@ -10,15 +10,20 @@ class ParserContext {
       Object.assign(this, priorParserContext, options); // create a new object with new properties, but with references to prior data properties
     } else {
       this.topics = {}; // by topic, { filePath, subtopics, lineNumbers, localReferences, fragmentReferenceSubtopics }
-      this.redundantLocalReferences = []; // { enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2, referenceLocation1, referenceLocation2 }
-      this.doubleDefinedSubtopics = []; // subtopics which are defined twice for later validation that they are subsumed and thus invalid
-      this.subsumptionConditionalErrors = []; // this is a catch-all for errors that should be thrown if an enclosing subtopic is subsumed
+      this.deferredValidations = {
+        redundantLocalReferences: [], // { enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2, referenceLocation1, referenceLocation2 }
+        doubleDefinedSubtopics: [], // subtopics which are defined twice for later validation that they are subsumed and thus invalid
+        subsumptionConditionalErrors: [] // errors that should be thrown if an enclosing subtopic is subsumed
+      };
+      this.globalReferences = {
+        topicConnections: {}, // by topic, an object of other topics that that topic has outgoing global references to
+        occurrences: [], // { pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic, location }
+        bySubtopic: {} // for each topic#subtopic combo, what global references / path references exist?
+      };
+
       this.defaultTopic = new Topic(defaultTopicString); // the default topic of the project, used to log orphan topics not connected to it
-      this.topicConnections = {}; // by topic, an object of other topics that that topic has outgoing global references to
       this.currentTopic = null; // the current topic file being parsed
       this.currentSubtopic = null; // the current subtopic paragraph being parsed
-      this.pathsReferenced = []; // { pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic }
-      this.globalReferencesBySubtopic = {}; // for each topic#subtopic combo, what global references / path references exist?
 
       this.lineNumber = 1; // the current line number being parsed
       this.characterNumber = 1; // the current line number being parsed
@@ -52,7 +57,7 @@ class ParserContext {
   // This function does a first-pass over all the expl files of the project and creates several
   // indexes of that content which will be necessary for the more in-depth second pass performed in parseBlock
   buildNamespaceObject(explFileObjectsByPath) {
-    let { topics, doubleDefinedSubtopics } = this;
+    let { topics, deferredValidations } = this;
 
     Object.keys(explFileObjectsByPath).forEach((filePath) => {
       let fileContents = explFileObjectsByPath[filePath]?.contents;
@@ -94,7 +99,7 @@ class ParserContext {
           let currentSubtopic = new Topic(paragraph.key);
 
           if (topics[currentTopic.caps].subtopics.hasOwnProperty(currentSubtopic.caps)) {
-            doubleDefinedSubtopics.push(
+            deferredValidations.doubleDefinedSubtopics.push(
               [
                 currentTopic,
                 currentSubtopic,
@@ -222,7 +227,7 @@ class ParserContext {
   registerPotentialRedundantLocalReference(targetSubtopic, secondReference) {
     let firstLocation = this.topics[this.currentTopic.caps]?.localReferences?.[targetSubtopic.caps]?.location;
     let secondLocation = { line: this.lineNumber, col: this.characterNumber };
-    this.redundantLocalReferences.push({
+    this.deferredValidations.redundantLocalReferences.push({
       enclosingSubtopic1: this.topics[this.currentTopic.caps]?.localReferences?.[targetSubtopic.caps]?.parentSubtopic,
       enclosingSubtopic2: this.currentSubtopic,
       topic: this.currentTopic,
@@ -272,7 +277,7 @@ class ParserContext {
   }
 
   registerSubsumptionConditionalError(errorString) {
-    this.subsumptionConditionalErrors.push({ // this is an error that should be thrown if the enclosing paragraph is subsumed
+    this.deferredValidations.subsumptionConditionalErrors.push({ // this is an error that should be thrown if the enclosing paragraph is subsumed
       enclosingTopic: this.currentTopic,
       enclosingSubtopic: this.currentSubtopic,
       errorString
@@ -280,7 +285,7 @@ class ParserContext {
   }
 
   throwSubsumptionConditionalErrors() {
-    this.subsumptionConditionalErrors.forEach(errorObject => {
+    this.deferredValidations.subsumptionConditionalErrors.forEach(errorObject => {
       if (this.hasConnection(errorObject.enclosingSubtopic, errorObject.enclosingTopic, {}, true)) {
         let path = this.topics[errorObject.enclosingTopic.caps]?.filePath;
         let line = this.topics[errorObject.enclosingTopic.caps]?.lineNumbers?.[errorObject.enclosingSubtopic.caps];
@@ -294,7 +299,7 @@ class ParserContext {
   }
 
   validateSubtopicDefinitions() {
-    this.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
+    this.deferredValidations.doubleDefinedSubtopics.forEach(([topic, subtopic, filePath, lineNumber1, lineNumber2]) => {
       if (this.topics[topic.caps]?.localReferences?.hasOwnProperty(subtopic.caps)) { // if the double defined subtopic gets subsumed and is accessible, it is invalid data
         let message = `Error: Subtopic [${subtopic.mixedCase}] or similar appears twice in topic: [${topic.mixedCase}]\n` +
           `First definition: ${filePath}:${lineNumber1}\n` +
@@ -305,23 +310,24 @@ class ParserContext {
   }
 
   registerGlobalReference(pathString, reference, referenceString) {
-    this.topicConnections[this.currentTopic.caps] = this.topicConnections[this.currentTopic.caps] || {};
-    this.topicConnections[this.currentTopic.caps][reference.firstTopic.caps] = true;
-    this.topicConnections[reference.firstTopic.caps] = this.topicConnections[reference.firstTopic.caps] || {};
+    this.globalReferences.topicConnections[this.currentTopic.caps] = this.globalReferences.topicConnections[this.currentTopic.caps] || {};
+    this.globalReferences.topicConnections[this.currentTopic.caps][reference.firstTopic.caps] = true;
+    this.globalReferences.topicConnections[reference.firstTopic.caps] = this.globalReferences.topicConnections[reference.firstTopic.caps] || {};
 
-    this.globalReferencesBySubtopic[this.currentTopic.caps] =
-      this.globalReferencesBySubtopic[this.currentTopic.caps] || {};
-    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] =
-      this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] || {};
-    this.globalReferencesBySubtopic[this.currentTopic.caps][this.currentSubtopic.caps][reference.firstTopic.caps] = true;
+    this.globalReferences.bySubtopic[this.currentTopic.caps] =
+      this.globalReferences.bySubtopic[this.currentTopic.caps] || {};
+    this.globalReferences.bySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] =
+      this.globalReferences.bySubtopic[this.currentTopic.caps][this.currentSubtopic.caps] || {};
+    this.globalReferences.bySubtopic[this.currentTopic.caps][this.currentSubtopic.caps][reference.firstTopic.caps] = true;
 
-    this.pathsReferenced.push({
+    this.globalReferences.occurrences.push({
       pathString,
       reference,
       pathAndLineNumberString: this.currentFilePathAndLineNumber,
       referenceString,
       enclosingTopic: this.currentTopic,
-      enclosingSubtopic: this.currentSubtopic
+      enclosingSubtopic: this.currentSubtopic,
+      location: { line: this.lineNumber, col: this.characterNumber }
     });
   }
 
@@ -343,7 +349,7 @@ class ParserContext {
   registerConnectedTopic(givenTopicCapsString) {
     if (!this.connectedTopics[givenTopicCapsString]) {
       this.connectedTopics[givenTopicCapsString] = true;
-      Object.keys(this.topicConnections[givenTopicCapsString] || {}).forEach(targetTopicCapsString => this.registerConnectedTopic(targetTopicCapsString));
+      Object.keys(this.globalReferences.topicConnections[givenTopicCapsString] || {}).forEach(targetTopicCapsString => this.registerConnectedTopic(targetTopicCapsString));
     }
   }
 
@@ -363,7 +369,7 @@ class ParserContext {
   }
 
   validateRedundantLocalReferences() { // see if redundant local links are in paragraphs that ended up getting subsumed
-    this.redundantLocalReferences.forEach(({ enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2, referenceLocation1, referenceLocation2 }) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
+    this.deferredValidations.redundantLocalReferences.forEach(({ enclosingSubtopic1, enclosingSubtopic2, topic, referencedSubtopic, reference1, reference2, referenceLocation1, referenceLocation2 }) => { // are problematic links in separate real subsumed paragraphs? (You're allowed to have redundant local references in the same paragraph.)
       if (this.hasConnection(enclosingSubtopic1, topic) && this.hasConnection(enclosingSubtopic2, topic) && enclosingSubtopic1 !== enclosingSubtopic2) { // in same p allowed
         let defaultLine1 = this.topics[topic.caps].lineNumbers[enclosingSubtopic1.caps];
         let defaultLine2 = this.topics[topic.caps].lineNumbers[enclosingSubtopic2.caps];
@@ -393,7 +399,11 @@ class ParserContext {
   }
 
   validateGlobalReferences() {
-    this.pathsReferenced.forEach(({ pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic }) => {
+    this.globalReferences.occurrences.forEach(({ pathString, reference, pathAndLineNumberString, referenceString, enclosingTopic, enclosingSubtopic, location }) => {
+      const errorFilePath = this.topics[enclosingTopic.caps].filePath;
+      const errorLine = location?.line || this.lineNumber;
+      const errorCol = location?.col || this.characterNumber;
+
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
         [...pathString.matchAll(/(?:\\.|[^/])+/g)].map(match => match[0]).map(segmentString => {
           let [currentTopic, currentSubtopic] = Topic.parseUrlSegment(segmentString);
@@ -401,17 +411,17 @@ class ParserContext {
           if (!this.topicExists(currentTopic)) {
             let punctuationWarning = currentTopic.mixedCase.match(/[.,:;]/) ? '\nWarning: Using punctuation like [.,;:] can terminate a paragraph key.' : '';
             let message = `Error: Reference ${referenceString} in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
-            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topics[enclosingTopic.caps].filePath, this.lineNumber, this.characterNumber)));
+            throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
             let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`;
-            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topics[enclosingTopic.caps].filePath, this.lineNumber, this.characterNumber)));
+            throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
             let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists but is not subsumed by given topic.\n${pathAndLineNumberString}`;
-            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topics[enclosingTopic.caps].filePath, this.lineNumber, this.characterNumber)));
+            throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           return segmentString;
@@ -419,11 +429,11 @@ class ParserContext {
           let [_, currentTopic, currentSubtopic] = currentSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
           let [__, nextTopic] = nextSegmentString.match(/^((?:\\.|[^\\])+?)(?:#(.*))?$/).map(m => m && Topic.fromUrl(m));
 
-          if (!this.cache && !this.globalReferencesBySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
+          if (!this.cache && !this.globalReferences.bySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             let message = `Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
              `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`;
-            throw new Error(chalk.red(this.formatErrorWithContext(message, this.topics[currentTopic.caps].filePath, this.lineNumber, this.characterNumber)));
+            throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           return nextSegmentString;
@@ -444,16 +454,45 @@ class ParserContext {
   }
 
   formatErrorWithContext(message, filePath, line, col, contextRadius = 1) {
-    const renderFrame = (frameFilePath, frameLine, frameCol) => {
+    const findDefinitions = (frameFilePath, frameLine, lines) => {
+      let subtopicDefinition = null;
+      let topicDefinition = null;
+      Object.values(this.topics || {}).forEach(topicData => {
+        if (topicData.filePath !== frameFilePath) return;
+        if (frameFilePath.endsWith('.expl') && lines.length) {
+          topicDefinition = {
+            line: 1,
+            text: lines[0] || ''
+          };
+        }
+        Object.entries(topicData.lineNumbers || {}).forEach(([subtopicCaps, lineNumber]) => {
+          if (!lineNumber || lineNumber > frameLine) return;
+          if (!subtopicDefinition || lineNumber > subtopicDefinition.line) {
+            subtopicDefinition = {
+              line: lineNumber,
+              text: lines[lineNumber - 1] || '',
+              subtopicCaps
+            };
+          }
+        });
+      });
+      return { subtopicDefinition, topicDefinition };
+    };
+
+    const renderFrame = (frameFilePath, frameLine, frameCol, { includeLocationLabel = true } = {}) => {
       if (!frameFilePath || !frameLine || frameLine < 1) return null;
 
       let contents = this.explFileObjectsByPath?.[frameFilePath]?.contents || null;
       if (!contents) return null;
 
       let lines = contents.split('\n');
+      while (lines.length && lines[lines.length - 1] === '' && frameLine < lines.length) {
+        lines.pop();
+      }
       let start = Math.max(0, frameLine - 1 - contextRadius);
       let end = Math.min(lines.length - 1, frameLine - 1 + contextRadius);
-      let width = String(end + 1).length;
+      const { subtopicDefinition, topicDefinition } = findDefinitions(frameFilePath, frameLine, lines);
+      let width = String(Math.max(end + 1, frameLine, subtopicDefinition?.line || 0, topicDefinition?.line || 0)).length;
       let caret = frameCol && frameCol > 0 ? frameCol : 1;
 
       let frame = [];
@@ -467,23 +506,60 @@ class ParserContext {
         }
       }
 
+      const addedDefinitions = [];
+      if (
+        topicDefinition &&
+        topicDefinition.line < start + 1 &&
+        topicDefinition.line !== frameLine &&
+        topicDefinition.line !== subtopicDefinition?.line
+      ) {
+        addedDefinitions.push(topicDefinition);
+      }
+      if (
+        subtopicDefinition &&
+        subtopicDefinition.line < start + 1 &&
+        subtopicDefinition.line !== frameLine
+      ) {
+        addedDefinitions.push(subtopicDefinition);
+      }
+      if (addedDefinitions.length) {
+        addedDefinitions.sort((a, b) => a.line - b.line);
+        const linesToInsert = [];
+        for (let i = 0; i < addedDefinitions.length; i++) {
+          const definition = addedDefinitions[i];
+          linesToInsert.push(`  ${String(definition.line).padStart(width, ' ')} | ${definition.text}`);
+          const nextLine = addedDefinitions[i + 1]?.line;
+          if (nextLine && nextLine - definition.line > 1) {
+            linesToInsert.push(`  ${' '.repeat(width)} | ...`);
+          }
+        }
+        const lastAddedLine = addedDefinitions[addedDefinitions.length - 1].line;
+        const gap = (start + 1) - lastAddedLine;
+        if (gap > 1) {
+          linesToInsert.push(`  ${' '.repeat(width)} | ...`);
+        }
+        linesToInsert.reverse().forEach(line => frame.unshift(line));
+      }
+
+      if (!includeLocationLabel) return frame.join('\n');
       const locationLabel = `${frameFilePath}:${frameLine}${frameCol ? `:${frameCol}` : ''}`;
       return `${locationLabel}\n${frame.join('\n')}`;
     };
 
-    const primaryFrame = renderFrame(filePath, line, col);
-    if (!primaryFrame) return message;
-
-    const frames = [primaryFrame];
-
     const referencedLocations = [];
-    const referenceRegex = /(topics\/[\w./-]+\.expl):(\d+)(?::(\d+))?/g;
+    const referenceRegex = /(topics\/[^:\n]+?\.expl):(\d+)(?::(\d+))?/g;
     for (const match of String(message).matchAll(referenceRegex)) {
       const [, referencedFilePath, lineString, colString] = match;
       const referencedLine = Number(lineString);
       const referencedCol = colString ? Number(colString) : null;
       referencedLocations.push([referencedFilePath, referencedLine, referencedCol]);
     }
+
+    const hasMultipleReferencedLocations = referencedLocations.length > 1;
+    const primaryFrame = renderFrame(filePath, line, col, { includeLocationLabel: hasMultipleReferencedLocations });
+    if (!primaryFrame) return message;
+
+    const frames = [primaryFrame];
 
     const primaryCol = col || null;
 

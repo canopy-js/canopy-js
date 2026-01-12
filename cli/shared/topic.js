@@ -34,7 +34,9 @@ class Topic {
     this.caps = generateKey(this.mixedCase) // This is the string that is used to find matches between links and topic names. Not reversible.
       .toUpperCase(); // We want matches to be case-insensitive
 
-    this.jsonFileName = alphanumericSlug(firstLetterCaps(generateKey(this.mixedCase))) + `_${stableHash(generateKey(this.caps))}`;
+    const slug = alphanumericSlug(firstLetterCaps(generateKey(this.mixedCase)));
+    const hash = stableHash(generateKey(this.caps));
+    this.jsonFileName = slug ? `${slug}_${hash}` : hash;
 
     Cache[string] = this;
   }

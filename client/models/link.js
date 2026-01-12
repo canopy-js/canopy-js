@@ -468,14 +468,14 @@ class Link {
   }
 
   get isDownCycle() {
-    return this.cycle && this.inlinePath.reduce().ancestorOf(this.enclosingPath); // result includes current path
+    return this.cycle && this.enclosingPath.ancestorOf(this.inlinePath.reduce());
   }
 
   static isDownCycle(enclosingPath, literalPath) {
     if (!enclosingPath || !literalPath) return false;
     if (!Path.introducesNewCycle(enclosingPath, literalPath)) return false;
     const inlinePath = enclosingPath.append(literalPath);
-    return inlinePath.reduce().ancestorOf(enclosingPath);
+    return enclosingPath.ancestorOf(inlinePath.reduce());
   }
 
   get isParent() {
@@ -544,6 +544,13 @@ class Link {
     const overlapsBottom = this.top < bottomLimit;
 
     return overlapsTop && overlapsBottom;
+  }
+
+  isFocusedAtRatio(targetRatio, tolerancePx = 20) {
+    if (!this.element) return false;
+    const targetY = ScrollableContainer.visibleHeight * targetRatio;
+    const diff = Math.abs(this.element.getBoundingClientRect().top - targetY);
+    return diff < tolerancePx;
   }
 
   get cycle() {

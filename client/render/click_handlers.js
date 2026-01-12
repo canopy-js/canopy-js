@@ -6,7 +6,12 @@ function onLinkClick(link) {
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
     if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect parent or path/cycle link
-      return link.enclosingPath.display({ scrollDirect: true, scrollToParagraph: true, noBeforeChangeScroll: true, noAfterChangeScroll: true });
+      return link.enclosingPath.display({
+        scrollDirect: true,
+        scrollToParagraph: true,
+        noBeforeChangeScroll: true,
+        noAfterChangeScroll: link.isCycle
+      });
     }
 
     if (!newTab && !e.altKey && link.isOpen) { // select open link
@@ -33,7 +38,7 @@ function onLinkClick(link) {
       selectALink: false,
       pushLinkSelection: true,
       scrollToParagraph: true,
-      noBeforeChangeScroll: true, // we don't need to highlight fulcrum if it's being clicked
+      noBeforeChangeScroll: !link.isCycle, // only allow pre-scroll for cycle reductions
       noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
     });
   }

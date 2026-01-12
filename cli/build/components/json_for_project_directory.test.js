@@ -24,6 +24,16 @@ function expectThrowContains(fn, substrings) {
   }
 }
 
+function expectThrowNotContains(fn, substrings) {
+  try {
+    fn();
+    throw new Error('Function did not throw');
+  } catch (e) {
+    let msg = stripAnsi(e?.message || '');
+    substrings.forEach(sub => expect(msg).not.toEqual(expect.stringContaining(sub)));
+  }
+}
+
 test('it creates a data directory', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': 'Idaho: Idaho is a midwestern state.\n'
@@ -1343,6 +1353,123 @@ test('it appends context frames for multiple expl locations cited in one error m
       'topics/Idaho/Idaho.expl:3:57',
       '> 3 | Western Half: Idaho\'s western half contains its capital [[Boise]].'
     ]
+  );
+});
+
+test('it points caret at global reference location in error context', () => {
+  const line = 'Wyoming: See [[Nonexistent]].';
+  const caretColumn = line.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `${line}\n`,
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      'Error: Reference [[Nonexistent]] in subtopic [Wyoming, Wyoming] mentions nonexistent topic or subtopic [Nonexistent].',
+      'topics/Wyoming/Wyoming.expl:1:14',
+      `> 1 | ${line}`,
+      caretSnippet
+    ]
+  );
+});
+
+test('it includes subtopic definition line when error is below the subtopic header', () => {
+  const errorLine = 'Line four with [[Nonexistent]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root. See [[Subtopic A]].
+
+      Subtopic A: Line one.
+      Line two.
+      Line three.
+      ${errorLine}` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:6:${caretColumn}`,
+      '  1 | Wyoming: Root. See [[Subtopic A]].',
+      '  3 | Subtopic A: Line one.',
+      '   | ...',
+      `> 6 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+});
+
+test('it omits ellipsis when topic or subtopic lines are already in context', () => {
+  const errorLine = 'Line two with [[Nonexistent#Missing]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root.
+      ${errorLine}
+      Line three.` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:2:${caretColumn}`,
+      '  1 | Wyoming: Root.',
+      `> 2 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+
+  expectThrowNotContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [' | ...']
+  );
+});
+
+test('it omits terminal newline in error context windows', () => {
+  const errorLine = 'Line two with [[Nonexistent#Missing]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root.
+      ${errorLine}` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:2:${caretColumn}`,
+      `> 2 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+
+  expectThrowNotContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    ['  3 | ']
+  );
+});
+
+test('it omits primary frame location label when only one reference is cited', () => {
+  const line = 'Wyoming: See [[Nonexistent]].';
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl': `${line}\n`,
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      '> 1 | Wyoming: See [[Nonexistent]].',
+    ]
+  );
+
+  expectThrowNotContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    ['topics/Wyoming/Wyoming.expl:1:14\n> 1 | Wyoming: See [[Nonexistent]].']
   );
 });
 

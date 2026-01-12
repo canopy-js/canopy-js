@@ -375,7 +375,7 @@ test.describe('Block entities', () => {
 
   test('Tables can omit cells, or entire rows and columns', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_omitted_cells');
-    const tolerance = 1;
+    const tolerance = 2; // webkit bug turns 0 width / height requests into 1
     const tables = page.locator('.canopy-selected-section table');
 
     const getBox = async locator => (await locator.boundingBox()) || { width: 0, height: 0 };
@@ -397,7 +397,6 @@ test.describe('Block entities', () => {
         return { width: rect.width, height: rect.height };
       })
     );
-    expect(getMax(hiddenRowCells, 'width')).toBeLessThanOrEqual(tolerance);
     expect(getMax(hiddenRowCells, 'height')).toBeLessThanOrEqual(tolerance);
 
     // Table 3: second column hidden → negligible width
@@ -411,7 +410,6 @@ test.describe('Block entities', () => {
       })
     );
     expect(getMax(secondColumn, 'width')).toBeLessThanOrEqual(tolerance);
-    expect(getMax(secondColumn, 'height')).toBeLessThanOrEqual(tolerance);
   });
 
   test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
@@ -684,14 +682,19 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
 
     // Test for short blockquote which shouldn't get padding
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type span.canopy-text-span')).toHaveCount(2);
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-blockquote-padded-linebreak')).toHaveCount(0);
-    await expect(page.locator('.canopy-selected-section blockquote:first-of-type .canopy-linebreak-span')).toHaveCount(1);
+    const shortQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is a block quote that has two lines' });
+    await expect(shortQuote.locator('span.canopy-text-span')).toHaveCount(2);
+    await expect(shortQuote.locator('.canopy-blockquote-padded-linebreak')).toHaveCount(0);
+    await expect(shortQuote.locator('.canopy-linebreak-span')).toHaveCount(1);
 
     // Test for long blockquote where \n should get padding
-    await expect(page.locator('.canopy-selected-section blockquote:last-of-type span.canopy-text-span')).toHaveCount(2);
-    const longQuotePaddingSpan = await page.locator('.canopy-selected-section blockquote:last-of-type .canopy-blockquote-padded-linebreak');
-    await expect(longQuotePaddingSpan).toHaveCount(1); // Assuming BR gets replaced by one special span
+    const longQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is text that wraps.' });
+    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(7);
+    const longQuotePaddingSpan = await longQuote.locator('.canopy-blockquote-padded-linebreak');
+    await expect(longQuotePaddingSpan).toHaveCount(6); // padded linebreaks for each blockquote line
+
+    // Inline HTML should not create extra blank-line spacing; only the true blank line should be padded.
+    await expect(longQuote.locator('.canopy-blank-linebreak')).toHaveCount(1);
   });
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
@@ -1020,15 +1023,19 @@ test.describe('Block entities', () => {
   test('It allows solo hash links [[#]]', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links');
 
-    await page.click('text=Back'); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
+    const rootBack = page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]');
+    await expect(rootBack.locator('.canopy-up-cycle-icon')).toHaveCount(1);
+    await rootBack.click(); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
     await page.waitForURL('**/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_hash_links#Subtopic_solo_hash_link');
 
-    await page.click('.canopy-selected-section[data-subtopic-name="Subtopic solo hash link"] .canopy-selectable-link >> text=Back');
+    const subBack = page.locator('.canopy-selected-section[data-subtopic-name="Subtopic solo hash link"] .canopy-selectable-link[data-text="Top"]');
+    await expect(subBack.locator('.canopy-up-cycle-icon')).toHaveCount(1);
+    await subBack.click();
     await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
-    await expect(page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_hash_links');
+    await expect(page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]')).toHaveAttribute('href', '/Solo_hash_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
   });
 

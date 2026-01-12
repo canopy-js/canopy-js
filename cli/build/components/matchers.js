@@ -106,9 +106,12 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
 }
 
 function listMatcher({ string, parserContext, startOfLine }) {
+  if (!startOfLine) return;
+  const firstLineMatch = string.match(/^\s*((?:\d+|[aAiI])\.|[+*-])[ ]+[^\n]+/);
+  if (!firstLineMatch) return;
   let match = string.match(/^(\s*(((?:[0-9+*-]{1,3}|[a-zA-Z])\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
 
-  if (match && startOfLine) {
+  if (match) {
     return [
       new ListToken(match[0], parserContext),
       match[0].length

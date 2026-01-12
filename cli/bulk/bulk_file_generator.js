@@ -71,16 +71,16 @@ function generateFileComparator(defaultTopicFilePath, shortestCategoryMatchFile)
 }
 
 function findShortestCategoryMatchFile(files) {
-  function normalizeName(name) {
-    return name.replace(/_/g, ' ').toUpperCase();
-  }
-
   function getFileNameWithoutExtension(path) {
     return path.split('/').pop().replace(/\.[^.]+$/, '');
   }
 
   function getParentDirectories(path) {
     return path.split('/').slice(0, -1).reverse();
+  }
+
+  function normalizeName(name) {
+    return name.replace(/_/g, ' ').toUpperCase();
   }
 
   function longestCommonSubstringLength(a, b) {
@@ -113,18 +113,32 @@ function findShortestCategoryMatchFile(files) {
   const maxPathDepth = Math.max(...candidates.map(c => c.parentDirectories.length));
 
   function compareCandidates(a, b) {
+    const aNameCaps = a.file.key ? Topic.for(a.file.key).caps : Topic.fromFileName(a.fileName).caps;
+    const bNameCaps = b.file.key ? Topic.for(b.file.key).caps : Topic.fromFileName(b.fileName).caps;
+
     for (let level = 0; level < maxPathDepth; level++) {
       const dirA = a.parentDirectories[level];
       const dirB = b.parentDirectories[level];
+      const dirACaps = dirA ? Topic.fromFileName(dirA).caps : null;
+      const dirBCaps = dirB ? Topic.fromFileName(dirB).caps : null;
 
-      const aExact = dirA && normalizeName(a.fileName) === normalizeName(dirA);
-      const bExact = dirB && normalizeName(b.fileName) === normalizeName(dirB);
+      const aExact = dirACaps && aNameCaps === dirACaps;
+      const bExact = dirBCaps && bNameCaps === dirBCaps;
       if (aExact !== bExact) return bExact - aExact;
 
-      const aOverlap = dirA ? longestCommonSubstringLength(a.fileName, dirA) : 0;
-      const bOverlap = dirB ? longestCommonSubstringLength(b.fileName, dirB) : 0;
+      const aOverlap = dirACaps ? longestCommonSubstringLength(aNameCaps, dirACaps) : 0;
+      const bOverlap = dirBCaps ? longestCommonSubstringLength(bNameCaps, dirBCaps) : 0;
+      if (dirA && dirB && dirA === dirB) {
+        const aFull = aOverlap === dirACaps.length;
+        const bFull = bOverlap === dirBCaps.length;
+        if (aFull !== bFull) return bFull - aFull;
+        continue;
+      }
       if (aOverlap !== bOverlap) return bOverlap - aOverlap;
     }
+
+    const nameCompare = aNameCaps.localeCompare(bNameCaps);
+    if (nameCompare !== 0) return nameCompare;
     return a.file.path.localeCompare(b.file.path);
   }
 

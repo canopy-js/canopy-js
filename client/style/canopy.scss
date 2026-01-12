@@ -10,7 +10,12 @@
   padding-bottom: calc(90vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
+  min-width: 700px; // trying to prevent content squish when page goes narrow
   font-family: "Times New Roman", Times, serif; // good default and standardizes layout for browser tests
+}
+
+body {
+  overflow-x: auto; // trying to prevent content squish when page goes narrow
 }
 
 h1.canopy-header {
@@ -62,7 +67,7 @@ p.canopy-paragraph {
   font-weight: 400;
 
   position: relative; // to allow absolute children
-  unicode-bidi: plaintext; // to allow lines in different directions
+  //unicode-bidi: plaintext; // We want unicode bidi characters to allow overriding character direction which plaintext doesn't allow
 }//
 
 .canopy-topic-section hr + p {
@@ -138,6 +143,24 @@ a.canopy-selectable-link { // even menu and table cells
 
 a.canopy-selectable-link,
 a.canopy-disabled-link {
+  padding-right: 11px; // following punctuation shouldn't wrap without link
+  margin-right: -11px;
+  
+  padding-left: 11px; // For RTL text
+  margin-left: -11px;
+
+  .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
+    background-color: #FFFFFF;
+    
+    padding-left: 2px; // gives button padding inside container on the sides to match natural line height
+    padding-right: 2px;
+
+    border-radius: 3px;
+    border: 1px solid #dddddd;
+
+    unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
+  }
+
   // shared multi-line layout
   &:first-child:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
@@ -150,23 +173,7 @@ a.canopy-disabled-link {
 }
 
 a.canopy-selectable-link {
-  padding-right: 11px; // following punctuation shouldn't wrap without link
-  margin-right: -11px;
-  
-  padding-left: 11px; // For RTL text
-  margin-left: -11px;
-  
-  .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
-    background-color: #FFFFFF;
-    
-    padding-left: 2px; // gives button padding inside container on the sides to match natural line height
-    padding-right: 2px;
-
-    border-radius: 3px;
-    border: 1px solid #dddddd;
-
-    unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
-
+  .canopy-link-content-container {
     &:hover {
       background-color: #f5f6fe;
     }
@@ -224,9 +231,9 @@ a.canopy-disabled-link {
   cursor: not-allowed;
   opacity: 0.5;
   text-decoration: none;
+
   .canopy-link-content-container {
-    border-radius: 1px;
-    border: 1px solid #dddddd;
+    border-color: #b0b0b0;
   }
 }
 
@@ -326,9 +333,17 @@ blockquote {
     margin-bottom: 0px; // unset default
   }
 
+  .canopy-linebreak-span.canopy-blank-linebreak {
+    height: 1em;
+  }
+
   .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
     margin-bottom: 8px;
     display: block;
+  }
+
+  .canopy-linebreak-span:has(+ a:not(.canopy-multiline-link)) {
+    margin-bottom: 6px; // offset extra line-height on single-line links
   }
 }
 
@@ -376,10 +391,35 @@ table { // center even if overflowing x
       border: none;
     }
 
+    &.canopy-hidden-col {
+      width: 0;
+      min-width: 0;
+      max-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      border: 0;
+      overflow: hidden;
+    }
+
     br {
       display: block; // makes it have a width
       content: ""; // clears default height
       padding-bottom: 2px;
+    }
+  }
+
+  tr.canopy-hidden-row {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: 0;
+
+    td,
+    th {
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border: 0;
     }
   }
 
@@ -810,4 +850,3 @@ div.canopy-raw-html {
     display: inline;
   }
 }
-

@@ -448,17 +448,19 @@ class Path {
 
     if (!targetTopic || !targetSubtopic) return null; // e.g. otherPath was not a descendant of this
 
-    const found = this.paragraph.links.find(link => {
-      return link.childTopic?.equals(targetTopic) && link.childSubtopic?.equals(targetSubtopic)
-    }) || null;
-    return found;
+    const matches = this.paragraph.links.filter(link => {
+      const inlinePath = link.inlinePath;
+      return inlinePath?.equals(otherPath) || inlinePath?.ancestorOf(otherPath);
+    });
+    if (!matches.length) return null;
+
+    return matches.find(link => link.inlinePath?.equals(otherPath)) || matches[0];
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
     let overlapPath = this.initialOverlap(otherPath);
     if (!overlapPath) return null;
 
-    // console.error(`finding link in ${overlapPath.string} to ${this}`);
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
     if (!thisParentLink?.element || !otherParentLink?.element) return null;
