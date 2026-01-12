@@ -468,14 +468,14 @@ class Link {
   }
 
   get isDownCycle() {
-    return this.cycle && this.inlinePath.reduce().ancestorOf(this.enclosingPath); // result includes current path
+    return this.cycle && this.enclosingPath.ancestorOf(this.inlinePath.reduce());
   }
 
   static isDownCycle(enclosingPath, literalPath) {
     if (!enclosingPath || !literalPath) return false;
     if (!Path.introducesNewCycle(enclosingPath, literalPath)) return false;
     const inlinePath = enclosingPath.append(literalPath);
-    return inlinePath.reduce().ancestorOf(enclosingPath);
+    return enclosingPath.ancestorOf(inlinePath.reduce());
   }
 
   get isParent() {
