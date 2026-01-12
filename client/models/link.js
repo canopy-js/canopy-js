@@ -546,6 +546,13 @@ class Link {
     return overlapsTop && overlapsBottom;
   }
 
+  isFocusedAtRatio(targetRatio, tolerancePx = 20) {
+    if (!this.element) return false;
+    const targetY = ScrollableContainer.visibleHeight * targetRatio;
+    const diff = Math.abs(this.element.getBoundingClientRect().top - targetY);
+    return diff < tolerancePx;
+  }
+
   get cycle() {
     return this.introducesNewCycle;
   }
