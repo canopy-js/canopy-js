@@ -146,6 +146,34 @@ describe('BulkFileGenerator', function() {
     );
   });
 
+  test('it ignores overlap with shared parent directories when choosing pinned file', () => {
+    // Regression: the comparator used to consider overlaps against shared parent dirs (e.g. "Binyanim").
+    // Longer filenames could accidentally match a 2-letter substring there and "win" over the shorter topic.
+    // We now skip shared-dir overlap so the shorter topic is correctly pinned.
+    let originalSelectedFilesByContents = {
+      'topics/Dikduk/Hebrew/Binyanim/Paal/Tenses/Past/Paal_Past_Tense_for_regular_shorushim.expl': 'Paal Past Tense for regular shorushim: Long.\n',
+      'topics/Dikduk/Hebrew/Binyanim/Paal/Tenses/Past/Paal_Past_Tense.expl': 'Paal Past Tense: Short.\n',
+      'topics/Dikduk/Dikduk.expl': 'Dikduk: Default.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/Dikduk/Dikduk.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[Dikduk]
+
+      ** Dikduk: Default.
+
+
+      [Dikduk/Hebrew/Binyanim/Paal/Tenses/Past]
+
+      * Paal Past Tense: Short.
+
+      * Paal Past Tense for regular shorushim: Long.` + '\n\n'
+    );
+  });
+
   test('it puts the inbox category last', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
