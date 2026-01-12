@@ -1375,6 +1375,32 @@ test('it points caret at global reference location in error context', () => {
   );
 });
 
+test('it includes subtopic definition line when error is below the subtopic header', () => {
+  const errorLine = 'Line four with [[Nonexistent]].';
+  const caretColumn = errorLine.indexOf('[[') + 1; // 1-based column
+  const caretSnippet = `| ${' '.repeat(caretColumn - 1)}^`;
+  let explFileData = {
+    'topics/Wyoming/Wyoming.expl':
+      dedent`Wyoming: Root. See [[Subtopic A]].
+
+      Subtopic A: Line one.
+      Line two.
+      Line three.
+      ${errorLine}` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
+    [
+      `topics/Wyoming/Wyoming.expl:6:${caretColumn}`,
+      '  3 | Subtopic A: Line one.',
+      '   | ...',
+      `> 6 | ${errorLine}`,
+      caretSnippet
+    ]
+  );
+});
+
 test('it omits primary frame location label when only one reference is cited', () => {
   const line = 'Wyoming: See [[Nonexistent]].';
   let explFileData = {
