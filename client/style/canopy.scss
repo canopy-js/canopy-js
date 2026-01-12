@@ -341,6 +341,10 @@ blockquote {
     margin-bottom: 8px;
     display: block;
   }
+
+  .canopy-linebreak-span:has(+ a:not(.canopy-multiline-link)) {
+    margin-bottom: 6px; // offset extra line-height on single-line links
+  }
 }
 
 pre {
