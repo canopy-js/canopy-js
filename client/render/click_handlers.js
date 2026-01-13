@@ -31,7 +31,7 @@ function onLinkClick(link) {
       pushLinkSelection: true,
       scrollToParagraph: true,
       noBeforeChangeScroll: !link.isCycle && !link.isAboveViewport, // allow pre-scroll when link is above viewport
-      noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
+      noAfterChangePause: !link.isCycle // allow pause on cycle reductions
     });
   }
 }
