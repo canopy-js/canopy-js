@@ -101,7 +101,12 @@ class Path {
     // Case 1: purely lexical, child extends this /A/B -> A/B/C or /A/B -> A/B#C
     if (otherPath.startsWith(this)) return true;
 
+
     // Case 2: topics match but some subtopic diverges, e.g. A/B#C and A/B#D, or A/B#C and A/B#D/E
+    if (!this.paragraph || !otherPath.paragraph) {
+      throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
+    }
+
     const divergenceIndex = otherPath.segments.findIndex(([topic, subtopic], i) => {
       const mySeg = this.segments[i];
       if (!mySeg) return true; // other is longer but not a lexical prefix; treat as divergence
@@ -616,6 +621,10 @@ class Path {
 
   get paragraph() {
     if (Paragraph.byPath(this)) return Paragraph.byPath(this);
+    const recapitalized = this.recapitalize;
+    if (recapitalized.string !== this.string && Paragraph.byPath(recapitalized)) {
+      return Paragraph.byPath(recapitalized);
+    }
     if (this.length === 0) return null;
 
     if (this.sectionElement) {
