@@ -707,6 +707,15 @@ test.describe('Navigation', () => {
     await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
   });
 
+  test('it resolves cycle links to fragment subtopics with wrong capitalization', async ({ page }) => {
+    await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard#Parking_lot");
+
+    await page.locator('a:has-text("snack bar")').click();
+    await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard#Snack_Bar");
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Snack Bar');
+  });
+
   test('it differentiates between lateral cycles and down cycles', async ({ page, context }) => {
     await page.goto(`United_States/New_York/Style_examples#Down_Cycle_References`);
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References');
