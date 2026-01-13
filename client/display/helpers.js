@@ -181,8 +181,8 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!newPath.paragraph) return Promise.resolve();
   if (!newPath.initialOverlap(Path.rendered)) return Promise.resolve();
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
-  if (Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) return Promise.resolve(); // moving down
-  if (Link.selection.hasCloseSibling(linkToSelect)) return Promise.resolve(); // don't swoop from one link to its horizontal sibling
+  if ((Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // moving down
+  if (Link.selection.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
 
   const fulcrum = Path.rendered.fulcrumLink(newPath);
   const fulcrumTargetRatio = fulcrum?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
