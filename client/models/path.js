@@ -430,29 +430,6 @@ class Path {
   }
 
   linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
-    let targetTopic;
-    let targetSubtopic;
-    const divergingIndex = this.length - 1;
-    const sharesPrefix = otherPath.startsWithSegments(this.slice(0, divergingIndex));
-
-    if (sharesPrefix) {
-      const thisTopic = this.getSegmentTopic(divergingIndex);
-      const thisSubtopic = this.getSegmentSubtopic(divergingIndex);
-      const otherTopic = otherPath.getSegmentTopic(divergingIndex);
-      const otherSubtopic = otherPath.getSegmentSubtopic(divergingIndex);
-
-      if (thisTopic?.equals(otherTopic) && !thisSubtopic?.equals(otherSubtopic)) {
-        // Diverges within the same segment: target the differing subtopic.
-        targetTopic = otherTopic;
-        targetSubtopic = otherSubtopic;
-      } else if (otherPath.startsWithSegments(this) && otherPath.length > this.length) { // extends by full segment
-        targetTopic = otherPath.getSegmentTopic(this.length); // first segment after this
-        targetSubtopic = otherPath.getSegmentSubtopic(this.length); // matching subtopic of that segment
-      }
-    }
-
-    if (!targetTopic || !targetSubtopic) return null; // e.g. otherPath was not a descendant of this
-
     const matches = this.paragraph.links.filter(link => {
       const inlinePath = link.inlinePath;
       return inlinePath?.equals(otherPath) || inlinePath?.ancestorOf(otherPath);
