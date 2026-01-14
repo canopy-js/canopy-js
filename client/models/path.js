@@ -97,10 +97,17 @@ class Path {
     if (this.length > otherPath.length) return false;
     if (otherPath.isSingleTopic) return false;
     if (this.equals(otherPath)) return false; // strict: not equal
+    if (!this.firstTopic.equals(otherPath.firstTopic)) return false;
 
-    // Case 1: purely lexical, child extends this /A/B -> A/B/C or /A/B -> A/B#C
-    if (otherPath.startsWith(this)) return true;
+    // Case 1: purely lexical checks
+    if (otherPath.startsWith(this)) return true; // child extends this /A/B -> A/B/C or /A/B -> A/B#C
 
+    // if this or other path have segment at same index with different topics, return false
+    for (let i = 0; i < Math.min(this.length, otherPath.length); i++) { // e.g. /A#B/C and /A#C/E cannot be ancestor/descendant
+      const thisTopic = this.getSegmentTopic(i);
+      const otherTopic = otherPath.getSegmentTopic(i);
+      if (!thisTopic?.equals(otherTopic)) return false;
+    }
 
     // Case 2: topics match but some subtopic diverges, e.g. A/B#C and A/B#D, or A/B#C and A/B#D/E
     if (!this.paragraph || !otherPath.paragraph) {
