@@ -436,6 +436,25 @@ describe('BulkFileParser', function() {
     ]);
   });
 
+  test('category headers require a preceding blank line', () => {
+    let bulkFileString = dedent`[A/B/C]
+    * Topic: Paragraph.
+    [X/Y/Z]` + '\n';
+
+    let bulkFileParser = new BulkFileParser(bulkFileString);
+    let { newFileSet } = bulkFileParser.generateFileSet();
+
+    expect(newFileSet.fileContentsByPath).toEqual({
+      'topics/A/B/C/Topic.expl': "Topic: Paragraph.\n[X/Y/Z]\n"
+    });
+
+    expect(newFileSet.directoryPaths).toEqual([
+      'topics/A/B/C',
+      'topics/A/B',
+      'topics/A'
+    ]);
+  });
+
   test('a data file that omits initial asterisk becomes category notes', () => {
     let bulkFileString = dedent`[A/B/C]
     Topic: Paragraph.` + '\n';
