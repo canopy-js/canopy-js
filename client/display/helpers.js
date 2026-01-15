@@ -201,7 +201,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
     (Link.for(targetElement).isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO) :
     (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
 
-  let preChangePause = () => new Promise(resolve => setTimeout(resolve, 130))
+  let preChangePause = () => new Promise(resolve => setTimeout(resolve, 120))
 
   return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
     .then((scrolled) => scrolled && preChangePause())); // we only pause before change if there was a real scroll to the fulcrum link
@@ -213,7 +213,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 200))) : Promise.resolve();
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 160))) : Promise.resolve();
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(
