@@ -9,7 +9,7 @@ class BulkFileParser {
   }
 
   parseSections() {
-    return this.bulkFileString.split(/(?=^\[[^[\]]+\]$)/mg) // split only on [XYZ] that is on its own line.
+    return this.bulkFileString.split(/(?:^|\n\s*\n)(?=\[[^[\]\r\n]+\](?:\r?\n|$))/g) // split only on [XYZ] on its own line and after a blank line or start
       .map(s => s.trim()).filter(Boolean).map((sectionString) => {
         let displayCategoryPath = sectionString.match(/\[\/?(.*?)\/?\]/)?.[1];
         if (!displayCategoryPath) throw new Error('Malformed Canopy bulk file: ' + sectionString);
