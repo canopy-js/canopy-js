@@ -385,6 +385,7 @@ table { // center even if overflowing x
     padding-left: 25px;
     padding-right: 25px;
     white-space: break-spaces;
+    line-height: 1.5; // keep links apart enough that borders don't collide
 
     &.hidden {
       opacity: 0;
