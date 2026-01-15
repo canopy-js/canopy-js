@@ -480,7 +480,6 @@ table { // center even if overflowing x
       background-color: #ffffff;
       color: #000000;
       cursor: not-allowed;
-      opacity: 0.7;
       pointer-events: none;
 
       a.canopy-disabled-link {
@@ -490,6 +489,7 @@ table { // center even if overflowing x
 
         .canopy-link-content-container {
           border: none;
+          opacity: 0.7;
         }
       }
     }
