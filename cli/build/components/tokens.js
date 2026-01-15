@@ -229,7 +229,9 @@ function TableToken(text, parserContext) {
   text.split("\n")
     .filter(Boolean) // the trailing newline will create an empty row
     .forEach((line, lineNumber) => {
-      if (line.match(/^\s*[=#\-|]+\s*$/)) return; // ignore horizontal row marker
+      let trimmedCells = splitOnPipes(line).map(cell => cell.trim());
+      let isDelimiterRow = trimmedCells.every(cell => cell === '' || cell.match(/^[=#-]+$/));
+      if (isDelimiterRow) return; // ignore horizontal row marker
 
       let cellObjects = splitOnPipes(line).map(
         (cellString, cellIndex, cellsOfRow) => {
