@@ -184,12 +184,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if ((Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // moving down
   if (linkToSelect?.isBelowFocusArea) return Promise.resolve(); // avoid double downward scrolls
   if (Link.selection.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
-
-  const fulcrum = Path.rendered.fulcrumLink(newPath);
-  const fulcrumTargetRatio = fulcrum?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
-  if (fulcrum?.isFocusedAtRatio?.(fulcrumTargetRatio)) return Promise.resolve();
-
+  const linkTargetRatio = linkToSelect?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
+
+  const targetLink = Path.rendered.twoStepChange(newPath) ? previousPath.fulcrumLink(newPath) : (linkToSelect || newPath.parentLink);
+  if (targetLink?.isFocusedAtRatio?.(linkTargetRatio)) {
+    options.afterChangePause = false;
+    return Promise.resolve();
+  }
+
   let minDiff = options.noMinDiff ? null : 75;
 
   // If it is a two step change, go to fulcrum element, otherwise go straight to final position
