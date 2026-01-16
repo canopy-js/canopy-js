@@ -138,11 +138,12 @@ function moveInDirection(direction) {
   } else if (direction === 'left') {
     let candidateLinks = Link.selection.element.closest('p.canopy-paragraph').querySelectorAll('.canopy-selectable-link');
     let currentSelectionRect = getBoundingRectInDirection(currentLinkElement, 'right');
-    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement)
+      .filter(rectObject => rectObject.width > 1);
 
     let candidateRectContainers = rectContainers.filter(rectObject => rectObject.right < currentSelectionRect.right);
     candidateRectContainers = candidateRectContainers.filter(rectObject => isVerticallyOverlapping(rectObject, currentSelectionRect));
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
+    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element.closest('a') !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let rightmostLeftRect = candidateRectContainers
@@ -172,7 +173,7 @@ function moveInDirection(direction) {
 
     candidateRectContainers = rectContainers.filter(rectObject => isInCorrectVerticalDirection(rectObject, currentSelectionRect));
     candidateRectContainers = candidateRectContainers.filter(rectObject => !isVerticallyOverlapping(rectObject, currentSelectionRect)); // if left and right accept overlap wrap must not
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
+    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element.closest('a') !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let rightmostUpwardRect = candidateRectContainers // name reflects LTR text
@@ -207,11 +208,12 @@ function moveInDirection(direction) {
   } else if (direction === 'right') {
     let candidateLinks = Link.selection.element.closest('p.canopy-paragraph').querySelectorAll('.canopy-selectable-link');
     let currentSelectionRect = getBoundingRectInDirection(currentLinkElement, 'left');
-    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement);
+    let rectContainers = getRectsOfElements(candidateLinks, currentLinkElement)
+      .filter(rectObject => rectObject.width > 1);
 
     let candidateRectContainers = rectContainers.filter(rectObject => rectObject.left > currentSelectionRect.left);
     candidateRectContainers = candidateRectContainers.filter(rectObject => isVerticallyOverlapping(rectObject, currentSelectionRect));
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
+    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element.closest('a') !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let leftmostRightRect = candidateRectContainers
@@ -238,7 +240,6 @@ function moveInDirection(direction) {
 
     candidateRectContainers = rectContainers.filter(rectObject => isInCorrectVerticalDirection(rectObject, currentSelectionRect));
     candidateRectContainers = candidateRectContainers.filter(rectObject => !isVerticallyOverlapping(rectObject, currentSelectionRect)); // if left and right accept overlap wrap must not
-    candidateRectContainers = candidateRectContainers.filter(rectObject => rectObject.element !== currentLinkElement);
 
     if (candidateRectContainers.length > 0) {
       let leftmostDownwardRect = candidateRectContainers // Name reflects LTR text

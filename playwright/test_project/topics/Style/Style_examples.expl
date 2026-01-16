@@ -368,19 +368,13 @@ Local images:
 URLs:
 This is a URL, http://google.com.
 
-Link icon special cases: There are [[links with no breaks]], [[links with prior word break]], [[links with following punctuation break]], and [[links with following non-punctuation]].
-
-Links with no breaks:
-This is a [link](http://google.com).
-
-Links with prior word break:
-This is a [link link link link link link link link link link link link link link link lii](http://google.com).
+Link icon special cases: There are [[links with following punctuation break]] and [[regular links with following punctuation break]].
 
 Links with following punctuation break:
-This is a [link link link link link link link link link link link link link link link liiiiiiii](http://google.com)-
+This is a [link link link link link link link link link link link link link link link liiiiiii<span id="external-link-last-char">i</span>](http://google.com)<span id="external-link-punct">-</span>
 
-Links with following non-punctuation:
-This is a [link link link link link link link link link link link link link link link liiiiiiiiy](http://google.com) abc.
+Regular links with following punctuation break:
+This is a lot of text followed eventually after a long series of words by [[solo hash links|regular link<span id="local-link-last-char">s</span>]]<span id="local-link-punct">-</span>
 
 Hyperlinks:
 This is a [link](http://google.com).

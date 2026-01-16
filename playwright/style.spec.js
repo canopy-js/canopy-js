@@ -99,109 +99,98 @@ test.describe('Inline entities', () => {
     await expect(await page.locator('.canopy-selected-section a').evaluate((element) => element.href)).toEqual('http://google.com/');
   });
 
-  test('It will not separate link icon from prior word', async ({ page }) => {
-    await page.goto('/United_States/New_York/Style_examples#Links_with_prior_word_break');
-    await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
+  test('It will not separate regular link from following punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Regular_links_with_following_punctuation_break');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Regular_links_with_following_punctuation_break');
 
-    const isAfterStickingToLink = async (selector) => {
-      return page.evaluate(selector => {
-        const element = document.querySelector(selector);
-        if (!element) return false;
+    await page.waitForSelector('#local-link-last-char');
+    await page.waitForSelector('#local-link-punct');
 
-        // Get the computed styles of the ::after pseudo-element
-        const afterStyles = window.getComputedStyle(element, '::after');
-        const content = afterStyles.getPropertyValue('content').replace(/['"]/g, '');
+    const isPunctuationAligned = async () => {
+      const lastCharBox = await page.locator('#local-link-last-char').boundingBox();
+      const punctuationBox = await page.locator('#local-link-punct').boundingBox();
+      if (!lastCharBox || !punctuationBox) return false;
 
-        // Create a temporary span and apply styles from ::after pseudo-element
-        const tempSpan = document.createElement('span');
-        tempSpan.textContent = content;
-
-        // Apply relevant styles to the tempSpan
-        tempSpan.style.fontSize = afterStyles.fontSize;
-        tempSpan.style.fontFamily = afterStyles.fontFamily;
-        tempSpan.style.fontWeight = afterStyles.fontWeight;
-        tempSpan.style.fontStyle = afterStyles.fontStyle;
-        tempSpan.style.letterSpacing = afterStyles.letterSpacing;
-        tempSpan.style.textTransform = afterStyles.textTransform;
-        tempSpan.style.marginRight = afterStyles.marginRight;
-        tempSpan.style.textDecoration = afterStyles.textDecoration;
-
-        const lastChildSpan = document.createElement('SPAN');
-        let lastChildNode = element.lastChild;
-        element.lastChild.remove();
-        lastChildSpan.appendChild(lastChildNode);
-        element.appendChild(lastChildSpan);
-
-        element.appendChild(tempSpan);
-        const linkRect = element.getBoundingClientRect();
-        const tempSpanRect = tempSpan.getBoundingClientRect();
-
-        // Cleanup: remove the temporary span
-        element.removeChild(tempSpan);
-
-        // Tolerance in pixels for line height differences
-        const tolerance = 5;
-
-        if (Math.abs(linkRect.bottom - tempSpanRect.bottom) > tolerance) console.error(linkRect.bottom, tempSpanRect.bottom)
-
-        return Math.abs(linkRect.bottom - tempSpanRect.bottom) <= tolerance;
-      }, selector);
+      const lastCharBottom = lastCharBox.y + lastCharBox.height;
+      const punctuationBottom = punctuationBox.y + punctuationBox.height;
+      const tolerance = 5;
+      return punctuationBottom >= lastCharBottom - tolerance
+        && punctuationBottom <= lastCharBottom + tolerance;
     };
 
-    for (let i = 0; i < 30; i++) {
-      await page.evaluate(selector => {
-        document.querySelector(selector).innerText += 'i';
-      }, '.canopy-selected-section a');
+    expect(await isPunctuationAligned()).toBeTruthy();
+    let initialTop = await page.locator('#local-link-last-char').evaluate(el => el.getBoundingClientRect().top);
+    let wrapOccurred = false;
+    for (let i = 0; i < 20; i++) {
+      await page.evaluate((selector) => {
+        const lastChar = document.querySelector(selector);
+        if (lastChar) lastChar.textContent += '.';
+      }, '#local-link-last-char');
 
-      expect(await isAfterStickingToLink('.canopy-selected-section a')).toBeTruthy();
+      const currentTop = await page.locator('#local-link-last-char').evaluate(el => el.getBoundingClientRect().top);
+      if (currentTop > initialTop + 0.5) wrapOccurred = true;
+
+      expect(await isPunctuationAligned()).toBeTruthy();
     }
+    expect(wrapOccurred).toBeTruthy();
   });
 
-  test('It will not separate link icon from following punctuation', async ({ page }) => {
+  test('It will not separate icon link from last word or following punctuation', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
     await expect(page).toHaveURL('/United_States/New_York/Style_examples#Links_with_following_punctuation_break');
 
-    // Wait for the element and punctuation to be available in the DOM
-    await page.waitForSelector('.canopy-selected-section a');
-    await page.waitForSelector('.canopy-selected-section a + span');
+    await page.waitForSelector('#external-link-last-char');
+    await page.waitForSelector('#external-link-punct');
+    await page.waitForFunction(() => {
+      const lastChar = document.querySelector('#external-link-last-char');
+      const link = lastChar?.closest('a');
+      return Boolean(link && link.querySelector('.canopy-external-link-icon'));
+    });
 
-    // Now retrieve the element handles
-    const elementHandle = await page.$('.canopy-selected-section a .canopy-link-content-container');
-    const punctuationHandle = await page.$('.canopy-selected-section a + span');
+    const isPunctuationAligned = async () => {
+      const lastCharBox = await page.locator('#external-link-last-char').boundingBox();
+      const punctuationBox = await page.locator('#external-link-punct').boundingBox();
+      if (!lastCharBox || !punctuationBox) return false;
 
-    // Assuming the element handles are now not null, get their bounding boxes
-    const elementBox = await elementHandle.boundingBox();
-    const punctuationBox = await punctuationHandle.boundingBox();
+      const lastCharBottom = lastCharBox.y + lastCharBox.height;
+      const punctuationBottom = punctuationBox.y + punctuationBox.height;
+      const tolerance = 5;
+      return punctuationBottom >= lastCharBottom - tolerance
+        && punctuationBottom <= lastCharBottom + tolerance;
+    };
 
-    // Calculate the bottom position of the element (element's position + its height)
-    const elementBottom = elementBox.y + elementBox.height;
+    const isIconAligned = async () => {
+      return page.evaluate(() => {
+        const lastChar = document.querySelector('#external-link-last-char');
+        const link = lastChar?.closest('a');
+        const iconElement = link?.querySelector('.canopy-external-link-icon');
+        if (!lastChar || !iconElement) return false;
 
-    // Define tolerance for comparison
-    const tolerance = 5;
+        const lastCharRect = lastChar.getBoundingClientRect();
+        const iconRect = iconElement.getBoundingClientRect();
+        const tolerance = 5;
+        return Math.abs(lastCharRect.bottom - iconRect.bottom) <= tolerance;
+      });
+    };
 
-    // Check if the bottom of the punctuation is within tolerance of the bottom of the element
-    const punctuationBottom = punctuationBox.y + punctuationBox.height;
-    expect(punctuationBottom).toBeGreaterThanOrEqual(elementBottom - tolerance);
-    expect(punctuationBottom).toBeLessThanOrEqual(elementBottom + tolerance);
+    expect(await isPunctuationAligned()).toBeTruthy();
+    expect(await isIconAligned()).toBeTruthy();
+    let initialTop = await page.locator('#external-link-last-char').evaluate(el => el.getBoundingClientRect().top);
+    let wrapOccurred = false;
 
-    // Iterate to verify if the positioning remains within tolerance as text changes
     for (let i = 0; i < 20; i++) {
-      // Add text to the element
-      await page.evaluate((selector) => {
-        document.querySelector(selector).innerText += 'i';
-      }, '.canopy-selected-section a .canopy-link-content-container');
+      await page.evaluate(() => {
+        const lastChar = document.querySelector('#external-link-last-char');
+        if (lastChar) lastChar.textContent += '.';
+      });
 
-      // Update bounding boxes after text change
-      const updatedElementBox = await elementHandle.boundingBox();
-      const updatedPunctuationBox = await punctuationHandle.boundingBox();
+      const currentTop = await page.locator('#external-link-last-char').evaluate(el => el.getBoundingClientRect().top);
+      if (currentTop > initialTop + 0.5) wrapOccurred = true;
 
-      const updatedElementBottom = updatedElementBox.y + updatedElementBox.height;
-      const updatedPunctuationBottom = updatedPunctuationBox.y + updatedPunctuationBox.height;
-
-      // Check if the updated punctuation bottom is within tolerance
-      expect(updatedPunctuationBottom).toBeGreaterThanOrEqual(updatedElementBottom - tolerance);
-      expect(updatedPunctuationBottom).toBeLessThanOrEqual(updatedElementBottom + tolerance);
+      expect(await isPunctuationAligned()).toBeTruthy();
+      expect(await isIconAligned()).toBeTruthy();
     }
+    expect(wrapOccurred).toBeTruthy();
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
@@ -212,10 +201,10 @@ test.describe('Inline entities', () => {
     const link = page.locator('.canopy-selected-section a');
     await expect(await link.evaluate(element => element.href)).toEqual('http://google.com/');
 
-    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-content-container');
+    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-container');
     await expect(iconContainer).toBeVisible();
 
-    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-content-container .canopy-external-link-icon').evaluate(element => {
+    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-container .canopy-external-link-icon').evaluate(element => {
       const computedStyles = window.getComputedStyle(element);
       return {
         backgroundImage: computedStyles.getPropertyValue('background-image'),
@@ -924,7 +913,7 @@ test.describe('Block entities', () => {
       hasText: 'This is a full line link'
     });
 
-    const firstLinkContentContainer = firstLink.locator('.canopy-link-content-container');
+    const firstLinkContentContainer = firstLink.locator('.canopy-link-container');
     const firstLinkContentDisplay = await firstLinkContentContainer.evaluate(el => getComputedStyle(el).display);
     expect(firstLinkContentDisplay).toBe('inline-block');
 
@@ -941,8 +930,8 @@ test.describe('Block entities', () => {
       hasText: 'This link would qualify'
     });
 
-    // Check the display style of the .canopy-link-content-container inside the second link
-    const secondLinkContentContainer = secondLink.locator('.canopy-link-content-container');
+    // Check the display style of the .canopy-link-container inside the second link
+    const secondLinkContentContainer = secondLink.locator('.canopy-link-container');
     const secondLinkContentDisplay = await secondLinkContentContainer.evaluate(el => getComputedStyle(el).display);
     expect(secondLinkContentDisplay).toBe('inline'); // we don't make it inline-block because it doesn't wrap, avoiding unicode-bidi issue
 

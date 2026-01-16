@@ -26,9 +26,9 @@ test.describe('Arrow keys', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlinks');
-    await page.locator('body').press('ArrowLeft');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
     await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
+    await page.locator('body').press('ArrowLeft');
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlinks');
     await page.locator('body').press('ArrowRight');
     await expect(page.locator('.canopy-selected-link')).toHaveText('hyperlink special cases');
@@ -703,8 +703,8 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await expect(page).toHaveURL('United_States/New_York/Martha\'s_Vineyard#Parking_lot');
 
-    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: 'cafeteria↩' })).toHaveCount(1);
-    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-content-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
+    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-container').filter({ hasText: 'cafeteria↩' })).toHaveCount(1);
+    await expect(page.locator('a.canopy-selectable-link:visible .canopy-link-container').filter({ hasText: "Martha's Vineyard↩" })).toHaveCount(1);
   });
 
   test('it resolves cycle links to fragment subtopics with wrong capitalization', async ({ page }) => {
@@ -720,9 +720,9 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Style_examples#Down_Cycle_References`);
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References');
 
-    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'go down' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: 'go down↪' })).toHaveCount(0);
+    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down' })).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down↪' })).toHaveCount(0);
 
     await page.locator('a:has-text("go down")').click()
     await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
