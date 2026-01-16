@@ -143,15 +143,14 @@ a.canopy-selectable-link { // even menu and table cells
 
 a.canopy-selectable-link,
 a.canopy-disabled-link {
-  padding-right: 11px; // following punctuation shouldn't wrap without link
-  margin-right: -11px;
-  
   padding-left: 11px; // For RTL text
   margin-left: -11px;
 
-  .canopy-link-content-container { // putting bg on inner container lets outer wrapper have non-bg padding
+  white-space: nowrap; // this prevents gap element non-breaking spaces from wrapping, which causes link content to break early with subsequent punctuation
+
+  .canopy-link-container { // putting bg on inner container lets outer wrapper have non-bg padding
     background-color: #FFFFFF;
-    
+
     padding-left: 2px; // gives button padding inside container on the sides to match natural line height
     padding-right: 2px;
 
@@ -159,6 +158,14 @@ a.canopy-disabled-link {
     border: 1px solid #dddddd;
 
     unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
+
+    white-space: nowrap; // Don't separate icon from last link content word
+
+    .canopy-link-content-container {
+      display: inline;
+
+      white-space: normal; // allow breaks between words just not between last word and icon
+    }
   }
 
   // shared multi-line layout
@@ -166,35 +173,60 @@ a.canopy-disabled-link {
   .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:last-child,
   &:only-child {
-    &.canopy-multiline-link .canopy-link-content-container {
+    &.canopy-multiline-link .canopy-link-container {
       display: inline-block;
     }
   }
 }
 
 a.canopy-selectable-link {
-  .canopy-link-content-container {
+  .canopy-link-container {
     &:hover {
       background-color: #f5f6fe;
     }
   }
 
   &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code { // open and selected
-    .canopy-link-content-container {
+    .canopy-link-container {
       background-color: #edeefc;
       border: 1px solid #e2e2e2;
       text-decoration: none;
     }
   }
 
-  &.canopy-open-link .canopy-link-content-container { // just open
+  &.canopy-open-link .canopy-link-container { // just open
     background-color: #e1dfdf;
     border: 1px solid #cbcaca;
-    border-radius: 1px;       
-    unicode-bidi: inherit;    
+    border-radius: 1px;
+    unicode-bidi: inherit;
   }
 
-  &.canopy-external-link .canopy-link-content-container .canopy-external-link-icon {
+  .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
+    margin-left: -4px;
+    &::before {
+      content: "\00a0"; // NBSP: prevents break between last word and icon
+    }
+  }
+
+  .canopy-link-icon-gap {
+    margin-right: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
+    }
+  }
+
+  .canopy-link-terminal-gap {
+    margin-right: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
+    }
+  }
+
+  &.canopy-external-link .canopy-link-container .canopy-external-link-icon {
     /* Open Iconic Icon Set, MIT License, https://iconduck.com/icons/53818/external-link */
     background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjgiIHZpZXdCb3g9IjAgMCAxMCA4IiB3aWR0aD0iOSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMSAwdjhoOHYtMmgtMXYxaC02di02aDF2LTF6bTQgMCAxLjUgMS41LTIuNSAyLjUgMSAxIDIuNS0yLjUgMS41IDEuNXYtNHoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEsIDApIiAvPgo8L3N2Zz4K);
     background-size: contain;
@@ -232,7 +264,7 @@ a.canopy-disabled-link {
   opacity: 0.5;
   text-decoration: none;
 
-  .canopy-link-content-container {
+  .canopy-link-container {
     border-color: #b0b0b0;
   }
 }
@@ -240,7 +272,7 @@ a.canopy-disabled-link {
 a.canopy-selectable-link.canopy-linked-image {
   text-decoration: none;
 
-  .canopy-link-content-container {
+  .canopy-link-container {
     border: none;
     background-color: inherit;
   }
@@ -434,15 +466,15 @@ table { // center even if overflowing x
       text-shadow: none;
       background-color: #FFFFFF00;
       border: none;
-    
+
       &, &.canopy-open-link, &.canopy-selected-link {
-        .canopy-link-content-container {
+        .canopy-link-container {
           border: none;
           background-color: inherit;
         }
       }
     }
-    
+
     &:has(.canopy-selected-link) {
       background-color: #edeefc;
     }
@@ -464,6 +496,7 @@ table { // center even if overflowing x
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
         font-size: 9px;
         margin-left: -2px;
+        padding-left: 2px;
         position: relative;
         top: 3px;
         left: 2px;
@@ -488,7 +521,7 @@ table { // center even if overflowing x
         text-decoration: none;
         text-shadow: none;
 
-        .canopy-link-content-container {
+        .canopy-link-container {
           border: none;
           opacity: 0.7;
         }
@@ -547,10 +580,10 @@ table { // center even if overflowing x
     padding: 10px; /* Add some padding inside cells */
     text-align: center; /* This will center the text inside the flex items */
     align-self: stretch; /* Stretch the child items to fill the cell's width */
-    
+
     white-space: normal; /* Allow the text to wrap */
     overflow-wrap: normal; // we don't want breaking during size evaluation
-    word-break: normal; 
+    word-break: normal;
     hyphens: none;
 
     &.canopy-menu-cell-last-left { // only the right-most left needs margin
@@ -597,7 +630,7 @@ table { // center even if overflowing x
       text-shadow: none;
       user-select: none;
 
-      span.canopy-link-content-container {
+      span.canopy-link-container {
         border: none;
         background-color: inherit;
       }
@@ -616,10 +649,11 @@ table { // center even if overflowing x
       background-color: #f5f6fe;
     }
 
-    .canopy-link-content-container {
+    .canopy-link-container {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
         font-size: 11px;
         margin-left: -5px; // Negative margin to pull the icon closer to the last word
+        padding-left: 5px;
         position: relative; // Allows for position adjustment
         top: 5px;
         left: 6px;
@@ -667,7 +701,7 @@ table { // center even if overflowing x
       opacity: 0.4; // more than tables because includes border
       pointer-events: none;
 
-      .canopy-link-content-container {
+      .canopy-link-container {
         border: none;
       }
     }
@@ -768,7 +802,7 @@ table { // center even if overflowing x
         }
       }
 
-      a.canopy-link-content-container {
+      a .canopy-link-container {
         border: none;
         background-color: inherit;
       }

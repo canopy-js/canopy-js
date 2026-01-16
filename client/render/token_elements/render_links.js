@@ -14,10 +14,20 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
 
   linkElement.dir = 'auto'; // necessary to get link icons with RTL link text on correct side and not breaking border
 
+  let linkContainer = document.createElement('SPAN');
+  linkContainer.classList.add('canopy-link-container');
+  linkContainer.dir = 'auto';
+
   let contentContainer = document.createElement('SPAN');
   contentContainer.classList.add('canopy-link-content-container');
-  contentContainer.dir = "auto";
-  linkElement.appendChild(contentContainer);
+  contentContainer.dir = 'auto';
+
+  linkContainer.appendChild(contentContainer);
+  linkElement.appendChild(linkContainer);
+
+  const terminalGap = document.createElement('span');
+  terminalGap.classList.add('canopy-link-terminal-gap');
+  linkElement.appendChild(terminalGap);
 
   // Append subtoken elements
   token.tokens.forEach(subtoken => {
@@ -109,7 +119,11 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         cycleIcon.innerText = '↩';
       }
 
-      linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
+      const linkContainer = linkElement.querySelector('.canopy-link-container');
+      const iconGap = document.createElement('span');
+      iconGap.classList.add('canopy-link-icon-gap');
+      linkContainer.appendChild(iconGap);
+      linkContainer.appendChild(cycleIcon);
     }
   });
 
@@ -178,7 +192,11 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
   // Add external link icon
   let cycleIcon = document.createElement('span');
   cycleIcon.classList.add('canopy-external-link-icon');
-  linkElement.querySelector('.canopy-link-content-container').appendChild(cycleIcon);
+  const linkContainer = linkElement.querySelector('.canopy-link-container');
+  const iconGap = document.createElement('span');
+  iconGap.classList.add('canopy-link-icon-gap');
+  linkContainer.appendChild(iconGap);
+  linkContainer.appendChild(cycleIcon);
 
   // Add a class if the link contains an image
   renderContext.preDisplayCallbacks.push(() => {
