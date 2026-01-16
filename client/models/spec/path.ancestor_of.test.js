@@ -18,6 +18,13 @@ function setParent(child, parent) {
   });
 }
 
+function setParagraph(path) {
+  Object.defineProperty(path, 'paragraph', {
+    get: () => ({}),
+    configurable: true
+  });
+}
+
 describe('Path.ancestorOf', () => {
   test('ancestor across segments', () => {
     expect(Path.for('/A/B').ancestorOf(Path.for('/A/B/C'))).toBe(true);
@@ -34,6 +41,8 @@ describe('Path.ancestorOf', () => {
   test('escaped # stays in topic name', () => {
     const parent = Path.for('/A/B');
     const child = Path.for('/A/B%5C#C');
+    setParagraph(parent);
+    setParagraph(child);
     expect(parent.ancestorOf(child)).toBe(false);
   });
 
@@ -50,14 +59,27 @@ describe('Path.ancestorOf', () => {
   test('unrelated paths are not ancestors', () => {
     const pathA = Path.for('/A/B');
     const pathB = Path.for('/C/D');
+    setParagraph(pathA);
+    setParagraph(pathB);
     expect(pathA.ancestorOf(pathB)).toBe(false);
     expect(pathB.ancestorOf(pathA)).toBe(false);
+  });
+
+  test('diverging topics at same index short-circuit without DOM', () => {
+    const left = Path.for('/A#B/C');
+    const right = Path.for('/A#C/E');
+
+    expect(left.ancestorOf(right)).toBe(false);
+    expect(right.ancestorOf(left)).toBe(false);
   });
 
   test('shared subtopic parent is detected as ancestor', () => {
     const sharedSubtopicParent = Path.for('/United_States#NYC');
     const manhattan = Path.for('/United_States#Manhattan');
     const longIsland = Path.for('/United_States#Long_Island');
+    setParagraph(sharedSubtopicParent);
+    setParagraph(manhattan);
+    setParagraph(longIsland);
 
     const sliceStubs = [
       {

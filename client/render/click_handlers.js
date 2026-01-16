@@ -18,14 +18,6 @@ function onLinkClick(link) {
       return link.select({ scrollDirect: true }); // not scrollToParagraph because returning up to parent link
     }
 
-    if (!newTab && !e.altKey && !link.isVisible) { // scroll up to see link
-      return link.select({
-        scrollDirect: true, 
-        noBeforeChangeScroll: true, // we should move straight to the link
-        noAfterChangePause: true 
-      });
-    }
-
     if (!newTab && !e.altKey && link.isInlinedCycleReference) { // un-inlining an inlined cycle reference
       return link.select();
     }
@@ -38,8 +30,8 @@ function onLinkClick(link) {
       selectALink: false,
       pushLinkSelection: true,
       scrollToParagraph: true,
-      noBeforeChangeScroll: !link.isCycle, // only allow pre-scroll for cycle reductions
-      noAfterChangePause: true // either focus on clicked link if above viewport (above), or go straight to target
+      noBeforeChangeScroll: !link.isCycle && !link.isAboveViewport, // allow pre-scroll when link is above viewport
+      noAfterChangePause: !link.isCycle // allow pause on cycle reductions
     });
   }
 }

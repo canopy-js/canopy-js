@@ -97,11 +97,23 @@ class Path {
     if (this.length > otherPath.length) return false;
     if (otherPath.isSingleTopic) return false;
     if (this.equals(otherPath)) return false; // strict: not equal
+    if (!this.firstTopic.equals(otherPath.firstTopic)) return false;
 
-    // Case 1: purely lexical, child extends this /A/B -> A/B/C or /A/B -> A/B#C
-    if (otherPath.startsWith(this)) return true;
+    // Case 1: purely lexical checks
+    if (otherPath.startsWith(this)) return true; // child extends this /A/B -> A/B/C or /A/B -> A/B#C
+
+    // if this or other path have segment at same index with different topics, return false
+    for (let i = 0; i < Math.min(this.length, otherPath.length); i++) { // e.g. /A#B/C and /A#C/E cannot be ancestor/descendant
+      const thisTopic = this.getSegmentTopic(i);
+      const otherTopic = otherPath.getSegmentTopic(i);
+      if (!thisTopic?.equals(otherTopic)) return false;
+    }
 
     // Case 2: topics match but some subtopic diverges, e.g. A/B#C and A/B#D, or A/B#C and A/B#D/E
+    if (!this.paragraph || !otherPath.paragraph) {
+      throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
+    }
+
     const divergenceIndex = otherPath.segments.findIndex(([topic, subtopic], i) => {
       const mySeg = this.segments[i];
       if (!mySeg) return true; // other is longer but not a lexical prefix; treat as divergence
@@ -425,29 +437,6 @@ class Path {
   }
 
   linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
-    let targetTopic;
-    let targetSubtopic;
-    const divergingIndex = this.length - 1;
-    const sharesPrefix = otherPath.startsWithSegments(this.slice(0, divergingIndex));
-
-    if (sharesPrefix) {
-      const thisTopic = this.getSegmentTopic(divergingIndex);
-      const thisSubtopic = this.getSegmentSubtopic(divergingIndex);
-      const otherTopic = otherPath.getSegmentTopic(divergingIndex);
-      const otherSubtopic = otherPath.getSegmentSubtopic(divergingIndex);
-
-      if (thisTopic?.equals(otherTopic) && !thisSubtopic?.equals(otherSubtopic)) {
-        // Diverges within the same segment: target the differing subtopic.
-        targetTopic = otherTopic;
-        targetSubtopic = otherSubtopic;
-      } else if (otherPath.startsWithSegments(this) && otherPath.length > this.length) { // extends by full segment
-        targetTopic = otherPath.getSegmentTopic(this.length); // first segment after this
-        targetSubtopic = otherPath.getSegmentSubtopic(this.length); // matching subtopic of that segment
-      }
-    }
-
-    if (!targetTopic || !targetSubtopic) return null; // e.g. otherPath was not a descendant of this
-
     const matches = this.paragraph.links.filter(link => {
       const inlinePath = link.inlinePath;
       return inlinePath?.equals(otherPath) || inlinePath?.ancestorOf(otherPath);
@@ -616,6 +605,10 @@ class Path {
 
   get paragraph() {
     if (Paragraph.byPath(this)) return Paragraph.byPath(this);
+    const recapitalized = this.recapitalize;
+    if (recapitalized.string !== this.string && Paragraph.byPath(recapitalized)) {
+      return Paragraph.byPath(recapitalized);
+    }
     if (this.length === 0) return null;
 
     if (this.sectionElement) {
