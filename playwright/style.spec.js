@@ -1,4 +1,5 @@
 import { test, expect } from './test-setup';
+const { scrollElementToViewport } = require('./helpers');
 
 test.describe('Text styles', () => {
   test('Underscores create italic text', async ({ page }) => {
@@ -519,6 +520,28 @@ test.describe('Block entities', () => {
     const tolerance = 4;
 
     expect(Math.abs(tableCenter - viewportCenter)).toBeLessThanOrEqual(tolerance);
+  });
+
+  test('It navigates table link grids with arrow keys', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Table_link_grid');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Table_link_grid');
+    await scrollElementToViewport(page, '.canopy-selected-section table');
+
+    await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('1');
+
+    for (const expected of ['2', '3', '4', '5', '6']) {
+      await page.locator('body').press('ArrowRight');
+      await expect(page.locator('.canopy-selected-link')).toHaveText(expected);
+    }
+
+    for (const expected of ['5', '4', '3', '2', '1', '25']) {
+      await page.locator('body').press('ArrowLeft');
+      await expect(page.locator('.canopy-selected-link')).toHaveText(expected);
+    }
+
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('1');
   });
 
   test('It properly sizes menus', async ({ page }) => {

@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[big tables]], [[snapping tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
+Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[table link grid]], [[big tables]], [[snapping tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], and [[redundant parent links]].
 
@@ -147,6 +147,13 @@ Or half-pills for N < 3
 - Thisisalongword????????????
 - A
 ===
+
+Table link grid:
+| [#[1]]  | [#[2]]  | [#[3]]  | [#[4]]  | [#[5]]  |
+| [#[6]]  | [#[7]]  | [#[8]]  | [#[9]]  | [#[10]] |
+| [#[11]] | [#[12]] | [#[13]] | [#[14]] | [#[15]] |
+| [#[16]] | [#[17]] | [#[18]] | [#[19]] | [#[20]] |
+| [#[21]] | [#[22]] | [#[23]] | [#[24]] | [#[25]] |
 
 Menu links:
 ===
