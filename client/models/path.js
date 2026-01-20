@@ -465,7 +465,9 @@ class Path {
     return this.initialOverlap(otherPath)
       && !this.equals(otherPath)
       && !this.ancestorOf(otherPath)
-      && !otherPath.ancestorOf(this);
+      && !otherPath.ancestorOf(this)
+      && !(otherPath?.isFragment && otherPath.parentPath?.ancestorOf(this)) // enclosing paragraph is fragment link path's visual target
+      && !(this.isFragment && this.parentPath?.ancestorOf(otherPath));
   }
 
   fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
