@@ -175,6 +175,7 @@ a.canopy-disabled-link {
   &:only-child {
     &.canopy-multiline-link .canopy-link-container {
       display: inline-block;
+      vertical-align: top;
     }
   }
 }
@@ -387,10 +388,6 @@ blockquote {
   .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
     margin-bottom: 8px;
     display: block;
-  }
-
-  .canopy-linebreak-span:has(+ a:not(.canopy-multiline-link)) {
-    margin-bottom: 6px; // offset extra line-height on single-line links
   }
 }
 
