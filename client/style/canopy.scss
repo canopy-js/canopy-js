@@ -201,11 +201,17 @@ a.canopy-selectable-link {
     unicode-bidi: inherit;
   }
 
-  .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
+  .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
     margin-left: -4px;
+    user-select: none;
     &::before {
       content: "\00a0"; // NBSP: prevents break between last word and icon
     }
+  }
+
+  .canopy-down-cycle-icon {
+    display: inline-block;
+    transform: rotate(90deg) scaleY(-1) scaleX(.8);
   }
 
   .canopy-link-icon-gap {
@@ -215,6 +221,10 @@ a.canopy-selectable-link {
     &::before {
       content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
     }
+  }
+
+  .canopy-link-container:has(.canopy-down-cycle-icon) .canopy-link-icon-gap {
+    font-size: 4px;
   }
 
   .canopy-link-terminal-gap {
@@ -241,12 +251,17 @@ a.canopy-selectable-link {
   }
 
   &:not(.canopy-open-link) { // if it is open, it has been inlined and isn't a cycle
-    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
       top: 2px;
       left: 1px;
       text-decoration: none;
       font-size: 9px;
       position: relative;
+    }
+
+    .canopy-down-cycle-icon {
+      top: 0px;
+      left: 3px;
     }
   }
 
@@ -493,19 +508,29 @@ table { // center even if overflowing x
     }
 
     &:not(.canopy-open-link) {
-      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 9px;
         margin-left: -2px;
         padding-left: 2px;
         position: relative;
-        top: 3px;
+        top: 4px;
         left: 2px;
         white-space: nowrap;
+        user-select: none;
+      }
+
+      .canopy-down-cycle-icon {
+        top: -0.5px;
+        left: 8px;
       }
     }
 
+    .canopy-link-icon-gap {
+      margin-right: -20px;
+    }
+
     &.canopy-open-link {
-      .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+      .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         display: none;
       }
     }
@@ -650,7 +675,7 @@ table { // center even if overflowing x
     }
 
     .canopy-link-container {
-      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
+      .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 11px;
         margin-left: -5px; // Negative margin to pull the icon closer to the last word
         padding-left: 5px;
@@ -658,20 +683,31 @@ table { // center even if overflowing x
         top: 5px;
         left: 6px;
         white-space: nowrap; // Prevents the icon from wrapping
+        user-select: none;
+      }
+
+      .canopy-down-cycle-icon {
+        transform: rotate(90deg) scaleY(-1) scaleX(.8);
+        top: -2px;
+        left: 15px;
       }
 
       &.canopy-open-link {
-        .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+        .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
           display: none;
         }
       }
 
       &[dir="rtl"] {
-        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon {
+        .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
           top: 0px; // find good values
           left: 0px;
         }
       }
+    }
+
+    .canopy-link-icon-gap {
+      margin-right: -25px;
     }
 
     &:has(.canopy-external-link) {

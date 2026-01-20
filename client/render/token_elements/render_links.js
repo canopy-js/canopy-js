@@ -111,6 +111,9 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       if (link.isForwardCycle) {
         cycleIcon.classList.add('canopy-forward-cycle-icon');
         cycleIcon.innerText = '↪';
+      } else if (link.isDownCycle) {
+        cycleIcon.classList.add('canopy-down-cycle-icon');
+        cycleIcon.innerText = '↪';
       } else if (link.isUpCycle || link.isSelfReference) {
         cycleIcon.classList.add('canopy-up-cycle-icon');
         cycleIcon.innerText = '↩';

@@ -722,7 +722,7 @@ test.describe('Navigation', () => {
 
     await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down↪' })).toHaveCount(0);
+    await expect(page.locator('.canopy-selected-section .canopy-down-cycle-icon')).toHaveCount(1);
 
     await page.locator('a:has-text("go down")').click()
     await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
