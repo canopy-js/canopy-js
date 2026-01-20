@@ -621,7 +621,7 @@ class Link {
     if (options?.newTab && this.isParent) return window.open(location.origin + this.selectionPath.productionPathString, '_blank');
 
     if (options.inlineCycles && this.isCycle) return updateView(this.inlinePath, this, options);
-    if (options.scrollToParagraph && !this.isFragment) return updateView(this.selectionPath, this, { scrollToParagraph: true, options });
+    if (options.scrollToParagraph && !this.isFragment) return updateView(this.selectionPath, this, { ...options, scrollToParagraph: true });
 
     return updateView(this.selectionPath, this, options);
   }

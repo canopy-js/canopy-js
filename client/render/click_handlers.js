@@ -30,7 +30,8 @@ function onLinkClick(link) {
       selectALink: false,
       pushLinkSelection: true,
       scrollToParagraph: true, // clicking a link should focus on child paragraph, not the link
-      noBeforeChangeScroll: !link.isCycle && !link.isAboveViewport, // allow pre-scroll when link is above viewport
+      noBeforeChangeScroll: !link.isCycle && // clicked link is the fulcrum except for cycle links
+        !link.isAboveViewport, // scroll to make link visible before descending
       noAfterChangePause: !link.isCycle // allow pause on cycle reductions
     });
   }
