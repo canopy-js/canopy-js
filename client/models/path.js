@@ -274,6 +274,10 @@ class Path {
     return this.paragraph.parentLink;
   }
 
+  get isFragment() {
+    return !!this.parentLink?.isFragment;
+  }
+
   get parentLinks() {
     return this.paragraph.parentLinks;
   }

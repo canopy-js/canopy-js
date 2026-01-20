@@ -14,7 +14,8 @@ import {
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
   if (!pathToDisplay.recapitalize.equals(pathToDisplay)) return displayPath(pathToDisplay.recapitalize, linkToSelect, options);
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
-  options.afterChangePause = !options.noAfterChangePause && Path.current.twoStepChange(pathToDisplay);
+  const isTwoStepChange = Path.current.twoStepChange(pathToDisplay);
+  options.afterChangePause = !options.noAfterChangePause && isTwoStepChange;
 
   return waitForDisplaysInProgress()
   .then(() => (Paragraph.enableDisplayInProgress()))

@@ -541,11 +541,11 @@ test.describe('Navigation', () => {
         { has: page.locator('text="northern border"') })}
     )).toHaveCount(1);
 
-    // The global reference should lose in the contest for parent link, but now we open all parent links
+    // The global reference should lose in the contest for parent link
     await expect(page.locator('.canopy-paragraph:has-text("The southern border of New York")',
       { has: page.locator('a:visible.canopy-open-link',
         { has: page.locator('text="New Jersey"') })}
-    )).toHaveCount(1);
+    )).toHaveCount(0);
 
     // Path reference path should be open
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
