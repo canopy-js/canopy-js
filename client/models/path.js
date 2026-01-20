@@ -274,6 +274,10 @@ class Path {
     return this.paragraph.parentLink;
   }
 
+  get isFragment() {
+    return !!this.parentLink?.isFragment;
+  }
+
   get parentLinks() {
     return this.paragraph.parentLinks;
   }
@@ -402,35 +406,38 @@ class Path {
             continue;
           }
         } else {
-          break; // diversions that break within a segment require DOM-based .parentPath approach
+          const thisTruncated = this.slice(0, i + 1);
+          const otherTruncated = otherPath.slice(0, i + 1);
+          if (!thisTruncated.equals(this) || !otherTruncated.equals(otherPath)) {
+            return thisTruncated.initialOverlap(otherTruncated); // produce equal-length paths diverging in last segment already
+          }
+          break; // we have equal-length paths diverging in last segment already
         }
       } else if (i > 0) { // topics not equal but previous segments matched, end initial overlap after previous segment
         return this.slice(0, i); // slicing with current index will give segments before this one
       }
     }
 
+    // Assuming recursion or input produced two equal-length paths diverging in subtopic of last segment
     const lexicalOverlap = this.initialLexicalOverlap(otherPath);
     if (!lexicalOverlap) return null;
 
-    const ancestorStrings = (path) => {
+    const ancestorStrings = (path, stopAtPath) => {
       const result = [];
       let cursor = path;
       while (cursor) {
         result.push(cursor.string);
-        if (cursor.lastSegment.isSingleTopic) break; // stop at topic root of current segment
+        if (stopAtPath && cursor.equals(stopAtPath)) break;
         if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
         cursor = cursor.parentPath;
       }
       return result;
     };
 
-    const thisAncestors = ancestorStrings(this);
-    let cursor = otherPath;
-    while (cursor) {
-      if (thisAncestors.includes(cursor.string)) return cursor;
-      if (cursor.lastSegment.isSingleTopic) break;
-      if (!cursor.parentPath || cursor.parentPath.equals(cursor)) break;
-      cursor = cursor.parentPath;
+    const thisAncestors = new Set(ancestorStrings(this, lexicalOverlap));
+    const otherAncestors = ancestorStrings(otherPath, lexicalOverlap); // deepest-first
+    for (const candidate of otherAncestors) {
+      if (thisAncestors.has(candidate)) return Path.for(candidate);
     }
 
     return lexicalOverlap;
@@ -443,7 +450,8 @@ class Path {
     });
     if (!matches.length) return null;
 
-    return matches.find(link => link.inlinePath?.equals(otherPath)) || matches[0];
+    const exact = matches.find(link => link.inlinePath?.equals(otherPath));
+    return exact || matches[0];
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
@@ -461,7 +469,9 @@ class Path {
     return this.initialOverlap(otherPath)
       && !this.equals(otherPath)
       && !this.ancestorOf(otherPath)
-      && !otherPath.ancestorOf(this);
+      && !otherPath.ancestorOf(this)
+      && !(otherPath?.isFragment && otherPath.parentPath?.ancestorOf(this)) // enclosing paragraph is fragment link path's visual target
+      && !(this.isFragment && this.parentPath?.ancestorOf(otherPath));
   }
 
   fulcrumLink(otherPath) { // parent link of first paragraph of otherPath under overlap paragraph
@@ -469,7 +479,8 @@ class Path {
     if (!enclosingParagraphPath) return null;
     if (!enclosingParagraphPath.ancestorOf(otherPath)) return null;
     if (enclosingParagraphPath.equals(otherPath)) return null; // nothing to link if same path
-    return enclosingParagraphPath.linkTo(otherPath);
+    const link = enclosingParagraphPath.linkTo(otherPath);
+    return link;
   }
 
   intermediaryPathsTo(otherPath) {

@@ -205,8 +205,7 @@ class Paragraph {
     // If any open path references, put them first, then everything else
     const openPathParents = parentLinkCandidates.filter(link => link.isOpenPathReference);
     if (openPathParents.length) {
-      const rest = parentLinkCandidates.filter(l => !openPathParents.includes(l));
-      return [...openPathParents, ...rest];
+      return [...openPathParents]; // when there is an open path reference, we only return that
     }
 
     // If simple globals exist: use only them, ignore closed path refs

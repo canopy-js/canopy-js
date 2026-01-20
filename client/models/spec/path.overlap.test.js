@@ -89,4 +89,23 @@ describe('Path.initialOverlap', () => {
 
     expect(manhattan.initialOverlap(longIsland).string).toBe('/United_States#NYC');
   });
+
+  test('uses shared lexical parent when leaf segment is single-topic', () => {
+    const root = Path.for('/A/B');
+    const parent = Path.for('/A/B#C');
+    const leaf = Path.for('/A/B#D/E');
+    const truncated = Path.for('/A/B#D');
+    const sibling = Path.for('/A/B#F');
+
+    setParent(parent, root);
+    setParent(leaf, parent);
+    setParent(truncated, parent);
+    setParent(sibling, parent);
+    const originalSlice = leaf.slice.bind(leaf);
+    leaf.slice = (...args) => (args[0] === 0 && args[1] === 2 ? truncated : originalSlice(...args));
+    const originalSiblingSlice = sibling.slice.bind(sibling);
+    sibling.slice = (...args) => (args[0] === 0 && args[1] === 2 ? sibling : originalSiblingSlice(...args));
+
+    expect(leaf.initialOverlap(sibling).string).toBe('/A/B#C');
+  });
 });

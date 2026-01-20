@@ -217,6 +217,10 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 160))) : Promise.resolve();
+  const focusedLink = linkToSelect || pathToDisplay.parentLink;
+  if (!options.scrollToParagraph && focusedLink?.isFocusedAtRatio?.(LINK_TARGET_RATIO)) {
+    return Promise.resolve();
+  }
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(
