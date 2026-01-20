@@ -29,7 +29,7 @@ function onLinkClick(link) {
       scrollDirect: true,
       selectALink: false,
       pushLinkSelection: true,
-      scrollToParagraph: true,
+      scrollToParagraph: true, // clicking a link should focus on child paragraph, not the link
       noBeforeChangeScroll: !link.isCycle && !link.isAboveViewport, // allow pre-scroll when link is above viewport
       noAfterChangePause: !link.isCycle // allow pause on cycle reductions
     });
