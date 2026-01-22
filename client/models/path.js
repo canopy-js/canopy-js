@@ -110,17 +110,22 @@ class Path {
     }
 
     // Case 2: topics match but some subtopic diverges, e.g. A/B#C and A/B#D, or A/B#C and A/B#D/E
-    if (!this.paragraph || !otherPath.paragraph) {
-      throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
-    }
-
     const divergenceIndex = otherPath.segments.findIndex(([topic, subtopic], i) => {
-      const mySeg = this.segments[i];
-      if (!mySeg) return true; // other is longer but not a lexical prefix; treat as divergence
-      const topicsMatch = topic?.equals(mySeg[0]);
-      const subtopicsMatch = subtopic?.equals(mySeg[1]);
+      const currentThisSegment = this.segments[i];
+      if (!currentThisSegment) return true; // e.g. this = A/B otherPath = A/B/C, i=2, otherPath is longer but not a lexical prefix; treat as divergence
+      const topicsMatch = topic?.equals(currentThisSegment[0]);
+      const subtopicsMatch = subtopic?.equals(currentThisSegment[1]);
       return !topicsMatch || !subtopicsMatch;
     });
+
+    if (!this.paragraph || !otherPath.paragraph) { // If asking for non-rendered paths, try to reduce question to correlary that uses rendered subpaths
+      const thisTruncated = this.slice(0, divergenceIndex + 1);
+      const otherTruncated = otherPath.slice(0, divergenceIndex + 1);
+      if (thisTruncated.equals(this) && otherTruncated.equals(otherPath)) {
+        throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
+      }
+      return thisTruncated.ancestorOf(otherTruncated);
+    }
 
     let cursor = otherPath.slice(0, divergenceIndex + 1); // truncate after diverging segment
     while (cursor) { // walk DOM parents from point of divergence.
@@ -456,13 +461,22 @@ class Path {
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
     let overlapPath = this.initialOverlap(otherPath);
-    if (!overlapPath) return null;
 
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
-    if (!thisParentLink?.element || !otherParentLink?.element) return null;
+    if (!thisParentLink || !otherParentLink) return null;
 
-    return !!(thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const paragraphLinks = overlapPath.paragraph?.links || []; // use cached links to get answer even when detached from DOM
+    const thisIndex = paragraphLinks.indexOf(thisParentLink);
+    const otherIndex = paragraphLinks.indexOf(otherParentLink);
+    if (thisIndex !== -1 && otherIndex !== -1) {
+      return thisIndex < otherIndex;
+    }
+
+    const domResult = !!(thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING); // fallback to DOM
+    if (typeof domResult !== 'boolean') throw new Error('Invalid compareDocumentPosition result for ', thisParentLink, 'and', otherParentLink.element);
+
+    return domResult;
   }
 
   twoStepChange(otherPath) { // an overlap that is not a subset or equivalence

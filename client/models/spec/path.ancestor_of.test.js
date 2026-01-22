@@ -74,6 +74,7 @@ describe('Path.ancestorOf', () => {
   });
 
   test('shared subtopic parent is detected as ancestor', () => {
+    const sharedTopicParent = Path.for('/United_States');
     const sharedSubtopicParent = Path.for('/United_States#NYC');
     const manhattan = Path.for('/United_States#Manhattan');
     const longIsland = Path.for('/United_States#Long_Island');
@@ -109,6 +110,38 @@ describe('Path.ancestorOf', () => {
     expect(sharedSubtopicParent.ancestorOf(manhattan)).toBe(true);
     expect(sharedSubtopicParent.ancestorOf(longIsland)).toBe(true);
     expect(manhattan.ancestorOf(longIsland)).toBe(false);
+
+    expect(sharedTopicParent.ancestorOf(manhattan)).toBe(true); // all lexical
+    expect(sharedTopicParent.ancestorOf(longIsland)).toBe(true);
+    expect(sharedTopicParent.ancestorOf(sharedSubtopicParent)).toBe(true);
+
+    sliceSpy.mockRestore();
+  });
+
+  test('truncates divergent path and uses shorter paragraph for ancestry', () => {
+    const parent = Path.for('/A#B');
+    const longChild = Path.for('/A#C/D');
+    const truncatedChild = Path.for('/A#C');
+
+    setParagraph(parent);
+    setParagraph(truncatedChild);
+    setParent(truncatedChild, parent);
+
+    const originalSlice = Path.prototype.slice;
+    const sliceSpy = jest.spyOn(Path.prototype, 'slice').mockImplementation(function (...args) {
+      if (this.string === parent.string && args[0] === 0 && args[1] === 1) {
+        return parent;
+      }
+      if (this.string === truncatedChild.string && args[0] === 0 && args[1] === 1) {
+        return truncatedChild;
+      }
+      if (this.string === longChild.string && args[0] === 0 && args[1] === 1) {
+        return truncatedChild;
+      }
+      return originalSlice.apply(this, args);
+    });
+
+    expect(parent.ancestorOf(longChild)).toBe(true);
 
     sliceSpy.mockRestore();
   });
