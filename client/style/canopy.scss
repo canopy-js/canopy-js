@@ -455,7 +455,7 @@ blockquote {
   margin-left: 0px;
   margin-right: 0px;
   margin-top: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 0px; // Paragraph elements should be responsible for their upper margin
 
   /* a.canopy-selectable-link {
     .canopy-link-content-container {
@@ -525,9 +525,6 @@ table { // center even if overflowing x
   min-width: 250px;
   table-layout: fixed;
 
-  &:not(:last-child) {
-    margin-bottom: 25px;
-  }
 
   td, th {
     border: 1px solid black;
@@ -690,7 +687,7 @@ table { // center even if overflowing x
   }
 
   &:not(:first-child) {
-    margin-top: 25px; // has to be in sync with size between section elements for button-paragraph sequences
+    margin-top: 20px; // has to be in sync with size between section elements for button-paragraph sequences
   }
 
   &:not(:last-child) {

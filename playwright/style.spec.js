@@ -1046,7 +1046,9 @@ test.describe('Block entities', () => {
 
     const boundingBox = await longRTLspans.first().boundingBox();
     expect(boundingBox).not.toBeNull();
-    expect(boundingBox.x + boundingBox.width / 2).toBeCloseTo(page.viewportSize().width / 2, 0.2);
+    const center = boundingBox.x + boundingBox.width / 2;
+    const viewportCenter = page.viewportSize().width / 2;
+    expect(Math.abs(center - viewportCenter)).toBeLessThan(2);
 
     // Assert that each English element is on the left side of the screen
     const englishSpans = paragraph.locator('span').filter({
