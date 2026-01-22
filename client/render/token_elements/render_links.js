@@ -243,9 +243,11 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
 }
 
 function containsIconOrEmoji(str) {
+  if (!str) return false;
+  const plainText = str.replace(/<[^>]*>/g, ''); // avoid treating HTML markup as symbols
   const emojiPattern = /\p{Emoji}/u;
   const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
-  return emojiPattern.test(str) || symbolPattern.test(str);
+  return emojiPattern.test(plainText) || symbolPattern.test(plainText);
 }
 
 export {
