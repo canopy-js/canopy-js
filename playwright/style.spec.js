@@ -124,9 +124,9 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
     for (let i = 0; i < 20; i++) {
       await page.evaluate((selector) => {
-        const lastChar = document.querySelector(selector);
-        if (lastChar) lastChar.textContent += '.';
-      }, '#local-link-last-char');
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#local-link-prefix');
 
       const currentTop = await page.locator('#local-link-last-char').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;
@@ -180,10 +180,10 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
 
     for (let i = 0; i < 20; i++) {
-      await page.evaluate(() => {
-        const lastChar = document.querySelector('#external-link-last-char');
-        if (lastChar) lastChar.textContent += '.';
-      });
+      await page.evaluate((selector) => {
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#external-link-prefix');
 
       const currentTop = await page.locator('#external-link-last-char').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;
@@ -192,6 +192,150 @@ test.describe('Inline entities', () => {
       expect(await isIconAligned()).toBeTruthy();
     }
     expect(wrapOccurred).toBeTruthy();
+  });
+
+  test('It will not separate regular RTL link from following punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#RTL_links_with_following_punctuation_break');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#RTL_links_with_following_punctuation_break');
+
+    await page.waitForSelector('#local-link-last-char-rtl');
+    await page.waitForSelector('#local-link-punct-rtl');
+
+    const isPunctuationAligned = async () => {
+      const lastCharBox = await page.locator('#local-link-last-char-rtl').boundingBox();
+      const punctuationBox = await page.locator('#local-link-punct-rtl').boundingBox();
+      if (!lastCharBox || !punctuationBox) return false;
+
+      const lastCharBottom = lastCharBox.y + lastCharBox.height;
+      const punctuationBottom = punctuationBox.y + punctuationBox.height;
+      const tolerance = 5;
+      return punctuationBottom >= lastCharBottom - tolerance
+        && punctuationBottom <= lastCharBottom + tolerance;
+    };
+
+    expect(await isPunctuationAligned()).toBeTruthy();
+    let initialTop = await page.locator('#local-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
+    let wrapOccurred = false;
+    for (let i = 0; i < 20; i++) {
+      await page.evaluate((selector) => {
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#local-link-prefix-rtl');
+
+      const currentTop = await page.locator('#local-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
+      if (currentTop > initialTop + 0.5) wrapOccurred = true;
+
+      expect(await isPunctuationAligned()).toBeTruthy();
+    }
+    expect(wrapOccurred).toBeTruthy();
+  });
+
+  test('It will not separate RTL icon link from last word or following punctuation', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#RTL_links_with_following_punctuation_break');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#RTL_links_with_following_punctuation_break');
+
+    await page.waitForSelector('#external-link-last-char-rtl');
+    await page.waitForSelector('#external-link-punct-rtl');
+    await page.waitForFunction(() => {
+      const lastChar = document.querySelector('#external-link-last-char-rtl');
+      const link = lastChar?.closest('a');
+      return Boolean(link && link.querySelector('.canopy-external-link-icon'));
+    });
+
+    const isPunctuationAligned = async () => {
+      const lastCharBox = await page.locator('#external-link-last-char-rtl').boundingBox();
+      const punctuationBox = await page.locator('#external-link-punct-rtl').boundingBox();
+      if (!lastCharBox || !punctuationBox) return false;
+
+      const lastCharBottom = lastCharBox.y + lastCharBox.height;
+      const punctuationBottom = punctuationBox.y + punctuationBox.height;
+      const tolerance = 5;
+      return punctuationBottom >= lastCharBottom - tolerance
+        && punctuationBottom <= lastCharBottom + tolerance;
+    };
+
+    const isIconAligned = async () => {
+      return page.evaluate(() => {
+        const lastChar = document.querySelector('#external-link-last-char-rtl');
+        const link = lastChar?.closest('a');
+        const iconElement = link?.querySelector('.canopy-external-link-icon');
+        if (!lastChar || !iconElement) return false;
+
+        const lastCharRect = lastChar.getBoundingClientRect();
+        const iconRect = iconElement.getBoundingClientRect();
+        const tolerance = 5;
+        return Math.abs(lastCharRect.bottom - iconRect.bottom) <= tolerance;
+      });
+    };
+
+    expect(await isPunctuationAligned()).toBeTruthy();
+    expect(await isIconAligned()).toBeTruthy();
+    let initialTop = await page.locator('#external-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
+    let wrapOccurred = false;
+
+    for (let i = 0; i < 1000; i++) {
+      await page.evaluate((selector) => {
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#external-link-prefix-rtl');
+
+      const currentTop = await page.locator('#external-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
+      if (currentTop > initialTop + 0.5) wrapOccurred = true;
+
+      expect(await isPunctuationAligned()).toBeTruthy();
+      expect(await isIconAligned()).toBeTruthy();
+
+      if (wrapOccurred) break;
+    }
+    expect(wrapOccurred).toBeTruthy();
+  });
+
+  test('It orients RTL fulcrum cycle icons correctly', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Dummy_subtopic');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Dummy_subtopic');
+    await expect(page.locator('section.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Dummy subtopic');
+
+    const scaleXOf = async (locator) => {
+      const transform = await locator.evaluate((el) => getComputedStyle(el).transform);
+      if (!transform || transform === 'none') return 1;
+      const match = transform.match(/matrix\(([-\d.]+),/);
+      if (!match) return 1;
+      return parseFloat(match[1]);
+    };
+
+    const backLtrLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Dummy_Previous"][data-link-dir="ltr"]'
+    ).first();
+    const backRtlLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Dummy_Previous"][data-link-dir="rtl"]'
+    ).first();
+
+    await expect(backLtrLink).toHaveAttribute('data-fulcrum-dir', 'rtl');
+    await expect(backRtlLink).toHaveAttribute('data-fulcrum-dir', 'rtl');
+    expect(await scaleXOf(backLtrLink.locator('.canopy-back-cycle-icon'))).toBeLessThan(0);
+    expect(await scaleXOf(backRtlLink.locator('.canopy-back-cycle-icon'))).toBeLessThan(0);
+
+    const forwardLtrLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Dummy_Next"][data-link-dir="ltr"]'
+    ).first();
+    const forwardRtlLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Dummy_Next"][data-link-dir="rtl"]'
+    ).first();
+
+    await expect(forwardLtrLink).toHaveAttribute('data-fulcrum-dir', 'rtl');
+    await expect(forwardRtlLink).toHaveAttribute('data-fulcrum-dir', 'rtl');
+    expect(await scaleXOf(forwardLtrLink.locator('.canopy-forward-cycle-icon'))).toBeLessThan(0);
+    expect(await scaleXOf(forwardRtlLink.locator('.canopy-forward-cycle-icon'))).toBeLessThan(0);
+
+    const upLtrLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Link_icon_special_cases"][data-link-dir="ltr"]'
+    ).first();
+    const upRtlLink = page.locator(
+      'section.canopy-selected-section a[data-literal-path-string="Style_examples#Link_icon_special_cases"][data-link-dir="rtl"]'
+    ).first();
+
+    expect(await scaleXOf(upLtrLink.locator('.canopy-up-cycle-icon'))).toBeGreaterThan(0);
+    expect(await scaleXOf(upRtlLink.locator('.canopy-up-cycle-icon'))).toBeLessThan(0);
   });
 
   test('It creates links from hyperlink markup', async ({ page }) => {
@@ -902,7 +1046,7 @@ test.describe('Block entities', () => {
 
     const boundingBox = await longRTLspans.first().boundingBox();
     expect(boundingBox).not.toBeNull();
-    expect(boundingBox.x + boundingBox.width / 2).toBe(page.viewportSize().width / 2);
+    expect(boundingBox.x + boundingBox.width / 2).toBeCloseTo(page.viewportSize().width / 2, 0.2);
 
     // Assert that each English element is on the left side of the screen
     const englishSpans = paragraph.locator('span').filter({

@@ -57,6 +57,8 @@ jobs:
       - run: npm ci
       - run: npm run build-prod
       - run: npm install -g .
+      - name: Install Times New Roman font
+        run: sudo apt-get update && sudo apt-get install -y ttf-mscorefonts-installer && sudo fc-cache -f
       - run: npx playwright install --with-deps
       - run: ${{ matrix.target.cmd }} --max-failures=1
       - name: Upload test-results

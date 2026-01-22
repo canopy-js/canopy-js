@@ -5,6 +5,12 @@ import Path from 'models/path';
 import { projectPathPrefix, hashUrls } from 'helpers/getters';
 import { measureVerticalOverflow } from 'render/helpers';
 
+const rtlPattern = /[\p{Script=Hebrew}\p{Script=Arabic}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Samaritan}\p{Script=Mandaic}\p{Script=Adlam}\p{Script=Hanifi_Rohingya}\p{Script=Phoenician}\p{Script=Imperial_Aramaic}]/u;
+
+function isRtlText(text) {
+  return rtlPattern.test((text || '').trim());
+}
+
 function renderLinkBase(token, renderContext, renderTokenElements) {
   let linkElement = document.createElement('a');
   linkElement.classList.add('canopy-selectable-link');
@@ -34,6 +40,8 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
     let subtokenElements = renderTokenElements(subtoken, renderContext);
     subtokenElements.forEach(subtokenElement => contentContainer.appendChild(subtokenElement));
   });
+  const linkDirectionText = (contentContainer.textContent || '').trim();
+  linkElement.dataset.linkDir = isRtlText(linkDirectionText) ? 'rtl' : 'ltr';
 
   // Prevent dragging for easier text selection in tables
   linkElement.addEventListener('dragstart', (e) => {
@@ -62,6 +70,23 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       linkElement.dataset.lineHeight = lineHeight;
       linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
     }
+
+    let direction = null;
+    let cursor = linkElement;
+    while (cursor && cursor.tagName !== 'P') {
+      const dirAttr = cursor.getAttribute?.('dir');
+      if (dirAttr && dirAttr !== 'auto') {
+        direction = dirAttr;
+        break;
+      }
+      cursor = cursor.parentNode;
+    }
+    if (!direction) {
+      direction = window.getComputedStyle(contentContainer).direction;
+    }
+    linkElement.dir = direction;
+    linkContainer.dir = direction;
+    contentContainer.dir = direction;
   });
 
   return linkElement;
@@ -99,9 +124,15 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
   
   renderContext.preDisplayCallbacks.push(() => {
     if (!link.element) return;
-    if (!link.element.closest('.canopy-paragraph')) console.error('No paragraph for link', linkElement);
-
     if (link.cycle || link.isSelfReference) {
+      const targetPath = link.inlinePath?.reduce();
+      const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;
+      const fulcrumParagraph = fulcrumPath?.paragraph;
+      if (fulcrumParagraph?.paragraphElement) {
+        const fulcrumText = fulcrumParagraph.paragraphElement.textContent;
+        link.element.dataset.fulcrumDir = isRtlText(fulcrumText) ? 'rtl' : 'ltr';
+      }
+
       if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
         return;
       }

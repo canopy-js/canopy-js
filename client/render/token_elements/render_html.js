@@ -3,6 +3,7 @@ import { handleDelayedImageLoad } from './render_image';
 function renderHtmlElement(token, renderContext, renderTokenElements) {
   let divElement = document.createElement('DIV');
   divElement.classList.add('canopy-raw-html');
+  divElement.dir = 'auto';
 
   let fragment = document.createRange().createContextualFragment(token.html); // make script tags functional
   divElement.appendChild(fragment);

@@ -143,8 +143,8 @@ a.canopy-selectable-link { // even menu and table cells
 
 a.canopy-selectable-link,
 a.canopy-disabled-link {
-  padding-left: 11px; // For RTL text
-  margin-left: -11px;
+  padding-inline-start: 11px; // Direction agnostic to work with RTL text
+  margin-inline-start: -11px;
 
   white-space: nowrap; // this prevents gap element non-breaking spaces from wrapping, which causes link content to break early with subsequent punctuation
 
@@ -157,8 +157,7 @@ a.canopy-disabled-link {
     border-radius: 3px;
     border: 1px solid #dddddd;
 
-    unicode-bidi: inherit; // prevents dir=auto from making RTL text align left
-
+    direction: inherit; // We want icon position to follow text direction we put programmatically on <a> element
     white-space: nowrap; // Don't separate icon from last link content word
 
     .canopy-link-content-container {
@@ -166,6 +165,11 @@ a.canopy-disabled-link {
 
       white-space: normal; // allow breaks between words just not between last word and icon
     }
+  }
+
+  &[data-link-dir="rtl"] .canopy-link-container,
+  &:dir(rtl) .canopy-link-container {
+    display: inline-block;
   }
 
   // shared multi-line layout
@@ -187,7 +191,8 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code { // open and selected
+  // open and selected
+  &.canopy-selected-link, &.canopy-selected-link.canopy-open-link, &.canopy-selected-link.canopy-open-link code {
     .canopy-link-container {
       background-color: #edeefc;
       border: 1px solid #e2e2e2;
@@ -195,55 +200,34 @@ a.canopy-selectable-link {
     }
   }
 
-  &.canopy-open-link .canopy-link-container { // just open
+  // just open
+  &.canopy-open-link .canopy-link-container {
     background-color: #e1dfdf;
     border: 1px solid #cbcaca;
     border-radius: 1px;
     unicode-bidi: inherit;
   }
 
-  .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
-    margin-left: -4px;
-    user-select: none;
-    &::before {
-      content: "\00a0"; // NBSP: prevents break between last word and icon
-    }
-  }
+  ///// Icons ///////
 
+  // Base icon box + selection behavior
+  .canopy-external-link-icon,
+  .canopy-forward-cycle-icon,
+  .canopy-back-cycle-icon,
+  .canopy-up-cycle-icon,
   .canopy-down-cycle-icon {
-    display: inline-block;
-    transform: rotate(90deg) scaleY(-1) scaleX(.8);
+    display: inline-block; // allows rotations/reflections for icons in RTL text
+    user-select: none; // don't put icon in copy-paste results
   }
 
-  .canopy-link-icon-gap {
-    margin-right: -12px;
-    font-size: 5px;
-    user-select: none;
-    &::before {
-      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
-  .canopy-link-container:has(.canopy-down-cycle-icon) .canopy-link-icon-gap {
-    font-size: 4px;
-  }
-
-  .canopy-link-terminal-gap {
-    margin-right: -12px;
-    font-size: 5px;
-    user-select: none;
-    &::before {
-      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
+  // Base external icon asset
   &.canopy-external-link .canopy-link-container .canopy-external-link-icon {
     /* Open Iconic Icon Set, MIT License, https://iconduck.com/icons/53818/external-link */
     background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjgiIHZpZXdCb3g9IjAgMCAxMCA4IiB3aWR0aD0iOSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMSAwdjhoOHYtMmgtMXYxaC02di02aDF2LTF6bTQgMCAxLjUgMS41LTIuNSAyLjUgMSAxIDIuNS0yLjUgMS41IDEuNXYtNHoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEsIDApIiAvPgo8L3N2Zz4K);
     background-size: contain;
     background-repeat: no-repeat;
     top: -3px;
-    left: 0px;
+    inset-inline-start: -3px;
     position: relative;
     vertical-align: text-bottom;
     width: 8px;
@@ -251,18 +235,142 @@ a.canopy-selectable-link {
     display: inline-block;
   }
 
+  // Icon direction mapping (based on link dir or fulcrum dir)
+  &[data-link-dir="rtl"] .canopy-external-link-icon {
+    transform: scaleX(-1);
+  }
+
+  &:not([data-link-dir="rtl"]) .canopy-down-cycle-icon { // facing right-down
+    transform: rotate(90deg) scaleY(-1) scaleX(0.8);
+  }
+
+  &[data-link-dir="rtl"] .canopy-down-cycle-icon { // facing left-down
+    transform: rotate(270deg) scaleY(-1) scaleX(-0.8);
+  }
+
+  &[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon,
+  &[data-fulcrum-dir="rtl"] .canopy-back-cycle-icon {
+    transform: scaleX(-1);
+  }
+
+  &[data-link-dir="rtl"] .canopy-up-cycle-icon { // up cycle direction is somewhat arbitrary so we point towards link body
+    transform: scaleX(-1);
+  }
+
+  // Base gap behavior
+  .canopy-link-icon-gap { // gap expands link forward and negative margin pushes icon back onto gap, so that both only break together
+    margin-inline-end: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
+    }
+  }
+
+  .canopy-link-terminal-gap {
+    margin-inline-end: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
+    }
+  }
+
+  // Gap sizing and icon margin by link dir + icon type
+
+  // LTR link + ↪ arrow (forward+LTR fulcrum, back+RTL fulcrum)
+  &[data-link-dir="ltr"] {
+    &[data-fulcrum-dir="ltr"] .canopy-forward-cycle-icon,
+    &[data-fulcrum-dir="rtl"] .canopy-back-cycle-icon {
+      inset-inline-start: 0px;
+    }
+
+    &:has(.canopy-forward-cycle-icon, .canopy-back-cycle-icon) .canopy-link-icon-gap {
+      margin-inline-end: -12px;
+    }
+  }
+
+  // LTR link + ↩ arrow (back+LTR fulcrum, forward+RTL fulcrum, up+LTR link)
+  &[data-link-dir="ltr"] {
+    &[data-fulcrum-dir="ltr"] .canopy-back-cycle-icon,
+    &[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon,
+    .canopy-up-cycle-icon {
+      inset-inline-start: 0px;
+    }
+
+    &:has(.canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon) .canopy-link-icon-gap {
+      margin-inline-end: -16px;
+    }
+  }
+
+  // RTL link + ↪ arrow (forward+LTR fulcrum, back+RTL fulcrum)
+  &[data-link-dir="rtl"] {
+    &[data-fulcrum-dir="ltr"] .canopy-forward-cycle-icon,
+    &[data-fulcrum-dir="rtl"] .canopy-back-cycle-icon {
+      inset-inline-start: 0px;
+    }
+
+    &:has(.canopy-forward-cycle-icon, .canopy-back-cycle-icon) .canopy-link-icon-gap {
+      margin-inline-end: -16px;
+    }
+  }
+
+  // RTL link + ↩ arrow (back+LTR fulcrum, forward+RTL fulcrum, up+RTL link)
+  &[data-link-dir="rtl"] {
+    &[data-fulcrum-dir="ltr"] .canopy-back-cycle-icon,
+    &[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon,
+    .canopy-up-cycle-icon {
+      inset-inline-start: 1px;
+    }
+
+    &:has(.canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon) .canopy-link-icon-gap {
+      margin-inline-end: -15px;
+    }
+  }
+
+  // LTR link + external icon (arrow direction follows link dir)
+  &[data-link-dir="ltr"].canopy-external-link .canopy-link-icon-gap {
+    margin-inline-end: -12px;
+    font-size: 5px;
+  }
+
+  // RTL link + external icon (arrow direction follows link dir)
+  &[data-link-dir="rtl"].canopy-external-link .canopy-link-icon-gap {
+    margin-inline-end: -5px;
+    font-size: 3px;
+  }
+
+  // LTR link + down-cycle icon (arrow direction follows link dir)
+  &[data-link-dir="ltr"] .canopy-link-container:has(.canopy-down-cycle-icon) .canopy-link-icon-gap {
+    margin-inline-end: -14px;
+    font-size: 4px;
+  }
+
+  // RTL link + down-cycle icon (arrow direction follows link dir)
+  &[data-link-dir="rtl"] .canopy-link-container:has(.canopy-down-cycle-icon) .canopy-link-icon-gap {
+    margin-inline-end: -14px;
+    font-size: 4px;
+  }
+
+  // Icon placement (only when icons exist)
   &:not(.canopy-open-link) { // if it is open, it has been inlined and isn't a cycle
     .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
-      top: 2px;
-      left: 1px;
       text-decoration: none;
       font-size: 9px;
       position: relative;
     }
 
+    .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon {
+      top: 2px;
+    }
+
     .canopy-down-cycle-icon {
       top: 0px;
-      left: 3px;
+      inset-inline-start: 2px;
+    }
+
+    &[data-link-dir="rtl"] .canopy-down-cycle-icon {
+      inset-inline-start: 3px;
     }
   }
 
@@ -507,8 +615,8 @@ table { // center even if overflowing x
     &:not(.canopy-open-link) {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 9px;
-        margin-left: -2px;
-        padding-left: 2px;
+        margin-inline-start: -2px;
+        padding-inline-start: 2px;
         position: relative;
         top: 4px;
         left: 2px;
@@ -523,7 +631,7 @@ table { // center even if overflowing x
     }
 
     .canopy-link-icon-gap {
-      margin-right: -20px;
+      margin-inline-end: -20px;
     }
 
     &.canopy-open-link {
@@ -674,8 +782,8 @@ table { // center even if overflowing x
     .canopy-link-container {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 11px;
-        margin-left: -5px; // Negative margin to pull the icon closer to the last word
-        padding-left: 5px;
+        margin-inline-start: -5px; // Negative margin to pull the icon closer to the last word
+        padding-inline-start: 5px;
         position: relative; // Allows for position adjustment
         top: 5px;
         left: 6px;
@@ -704,7 +812,7 @@ table { // center even if overflowing x
     }
 
     .canopy-link-icon-gap {
-      margin-right: -25px;
+      margin-inline-end: -25px;
     }
 
     &:has(.canopy-external-link) {
@@ -912,7 +1020,7 @@ ol, ul {
 }
 
 div.canopy-raw-html {
-  display: inline;
+  display: contents;
 
   .canopy-html-insertion {
     display: inline;
