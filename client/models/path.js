@@ -461,13 +461,22 @@ class Path {
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
     let overlapPath = this.initialOverlap(otherPath);
-    if (!overlapPath) return null;
 
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
-    if (!thisParentLink?.element || !otherParentLink?.element) return null;
+    if (!thisParentLink || !otherParentLink) return null;
 
-    return !!(thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const paragraphLinks = overlapPath.paragraph?.links || []; // use cached links to get answer even when detached from DOM
+    const thisIndex = paragraphLinks.indexOf(thisParentLink);
+    const otherIndex = paragraphLinks.indexOf(otherParentLink);
+    if (thisIndex !== -1 && otherIndex !== -1) {
+      return thisIndex < otherIndex;
+    }
+
+    const domResult = !!(thisParentLink.element.compareDocumentPosition(otherParentLink.element) & Node.DOCUMENT_POSITION_FOLLOWING); // fallback to DOM
+    if (typeof domResult !== 'boolean') throw new Error('Invalid compareDocumentPosition result for ', thisParentLink, 'and', otherParentLink.element);
+
+    return domResult;
   }
 
   twoStepChange(otherPath) { // an overlap that is not a subset or equivalence
