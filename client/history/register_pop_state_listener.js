@@ -22,7 +22,7 @@ function registerPopStateListener() {
     updateView(
       Path.url,
       linkSelection,
-      { scrollStyle, scrollDirect: true, popState: true }
+      { scrollStyle, popState: true }
     );
   });
 }
