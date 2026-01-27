@@ -250,9 +250,19 @@ class ParserContext {
 
   registerFragmentReference(reference, currentSubtopic) {
     const topicData = this.ensureTopicData(this.currentTopic.caps, this.filePath);
+    const existing = topicData.fragmentReferenceSubtopics.find(
+      ({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === reference.targetAsTopic.caps
+    );
+    if (existing) {
+      const message = `Error: Fragment reference [[#${reference.targetAsTopic.mixedCase}]] is defined twice in topic [${this.currentTopic.mixedCase}].\n` +
+        `${this.filePath}:${existing.location.line}:${existing.location.col}\n` +
+        `${this.filePath}:${this.lineNumber}:${this.characterNumber}`;
+      throw new Error(chalk.red(this.formatErrorWithContext(message, this.filePath, this.lineNumber, this.characterNumber)));
+    }
     topicData.fragmentReferenceSubtopics.push({
       fragmentTargetSubtopic: reference.targetAsTopic,
-      enclosingSubtopic: currentSubtopic
+      enclosingSubtopic: currentSubtopic,
+      location: { line: this.lineNumber, col: this.characterNumber }
     });
   }
 
