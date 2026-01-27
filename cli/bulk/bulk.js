@@ -96,7 +96,7 @@ const bulk = async function(selectedFileList, options = {}) {
     tryAndWriteHtmlError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || `${defaultTopic.topicFileName}.bulk` || 'canopy_bulk_file.bulk';
+    options.bulkFileName = options.bulkFileName || (defaultTopic.topicFileName ? `${defaultTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
     checkGitIgnoreForBulkFile(options);
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
@@ -106,7 +106,8 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
-    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    const fallbackTopic = defaultTopic();
+    options.bulkFileName = options.bulkFileName || (fallbackTopic.topicFileName ? `${fallbackTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
 
     let originalSelectionFileSet = originalSelectedFilesList
       ? fileSystemManager.getFileSet(originalSelectedFilesList)
@@ -114,7 +115,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
 
-    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let bulkFileParser = new BulkFileParser(newBulkFileString, options.bulkFileName);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
     if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 
