@@ -250,9 +250,19 @@ class ParserContext {
 
   registerFragmentReference(reference, currentSubtopic) {
     const topicData = this.ensureTopicData(this.currentTopic.caps, this.filePath);
+    const existing = topicData.fragmentReferenceSubtopics.find(
+      ({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === reference.targetAsTopic.caps
+    );
+    if (existing) {
+      const message = `Error: Fragment reference [[#${reference.targetAsTopic.mixedCase}]] is defined twice in topic [${this.currentTopic.mixedCase}].\n` +
+        `${this.filePath}:${existing.location.line}:${existing.location.col}\n` +
+        `${this.filePath}:${this.lineNumber}:${this.characterNumber}`;
+      throw new Error(chalk.red(this.formatErrorWithContext(message, this.filePath, this.lineNumber, this.characterNumber)));
+    }
     topicData.fragmentReferenceSubtopics.push({
       fragmentTargetSubtopic: reference.targetAsTopic,
-      enclosingSubtopic: currentSubtopic
+      enclosingSubtopic: currentSubtopic,
+      location: { line: this.lineNumber, col: this.characterNumber }
     });
   }
 
@@ -577,7 +587,16 @@ class ParserContext {
         if (extraFrame) frames.push(extraFrame);
       });
 
-    return `${message}\n\n${frames.join('\n\n')}\n`;
+    const explRefLineRegex = /^\s*topics\/[^:\n]+?\.expl:\d+(?::\d+)?\s*$/;
+    const bulkRefLineRegex = /^\s*[^:\n]+\.bulk:\d+(?::\d+)?\s*$/;
+    const cleanedMessage = String(message)
+      .split('\n')
+      .filter(line => !explRefLineRegex.test(line) && !bulkRefLineRegex.test(line))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trimEnd();
+
+    return `${cleanedMessage}\n\n${frames.join('\n\n')}\n`;
   }
 }
 
