@@ -378,14 +378,14 @@ This is a URL, http://google.com.
 Link icon special cases: There are [[links with following punctuation break]], [[regular links with following punctuation break]], and [[RTL links with following punctuation break]].
 
 Links with following punctuation break:
-This is a [link link link link link link link link link link link link link link link liiiiiii<span id="external-link-last-char">i</span>](http://google.com)<span id="external-link-punct">-</span>
+<span id="external-link-prefix">This is a </span>[link link link link link link link link link link link link link link link liiiiiii<span id="external-link-last-char">i</span>](http://google.com)<span id="external-link-punct">-</span>
 
 Regular links with following punctuation break:
-This is a lot of text followed eventually after a long series of words by [[solo hash links|regular link<span id="local-link-last-char">s</span>]]<span id="local-link-punct">-</span>
+<span id="local-link-prefix">This is a lot of text followed eventually after a long series of words by </span>[[solo hash links|regular link<span id="local-link-last-char">s</span>]]<span id="local-link-punct">-</span>
 
 RTL links with following punctuation break:
-בדיקת איקון ופיסוק ברצף RTL: זהו טקסט ארוך יותר לפני הקישור כדי [קישור חיצונ<span id="external-link-last-char-rtl">י</span>](http://google.com)<span id="external-link-punct-rtl">-</span> ועוד טקסט.
-בדיקת פיסוק לקישור מקומי ברצף RTL: זהו טקסט ארוך יותר לפני הקישור כדי לכפות [[#קישור ראשון|קישור<span id="local-link-last-char-rtl">א</span>]]<span id="local-link-punct-rtl">-</span> ועוד טקסט.
+<span id="external-link-prefix-rtl">בדיקת איקון ופיסוק ברצף RTL: זהו טקסט ארוך יותר לפני הקישור כדי </span>[קישור חיצונ<span id="external-link-last-char-rtl">י</span>](http://google.com)<span id="external-link-punct-rtl">-</span> ועוד טקסט.
+<span id="local-link-prefix-rtl">בדיקת פיסוק לקישור מקומי ברצף RTL: זהו טקסט ארוך יותר לפני הקישור כדי לכפות </span>[[#קישור ראשון|קישור<span id="local-link-last-char-rtl">א</span>]]<span id="local-link-punct-rtl">-</span> ועוד טקסט.
 בדיקת קישור מחזור ירידה ברצף RTL: זהו טקסט ארוך יותר לפני הקישור כדי לכפות שבירה [[Style Examples#Down Cycle references/Solo Hash Links|קישור ירידת מחזור<span id="down-cycle-last-char-rtl">י</span>]]<span id="down-cycle-punct-rtl">-</span> ועוד טקסט.
 *External*
 English line with English external link: This is some English text with an [English link](http://google.com) and more text.

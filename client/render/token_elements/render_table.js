@@ -60,11 +60,8 @@ function renderTable(token, renderContext, renderTokenElements) {
   );
 
   // How strict snapping is for width
-  const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
-  const WIDTH_SIZE_SENSITIVITY = 2500;        // more tolerance for small widths
-  // Extra tolerance for very small cells so they're more likely to snap
-  // while keeping the old (target-based) distribution for larger cells.
-  const WIDTH_SMALL_CELL_SENSITIVITY = 230;
+  const WIDTH_BASE_SIMILARITY_PERCENT = 20;   // baseline strictness
+  const WIDTH_SIZE_SENSITIVITY = 3700;        // more tolerance for small table max widths
 
   // How strict snapping is for row height -- currently disabled
   // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -92,8 +89,7 @@ function renderTable(token, renderContext, renderTokenElements) {
     currentSize,
     targetSize,
     baseSimilarityPercent,
-    sizeSensitivity,
-    smallCellSensitivity = 0
+    sizeSensitivity
   }) {
     if (!isFinite(targetSize) || targetSize <= 0) return null;
     if (!isFinite(currentSize) || currentSize <= 0) return null;
@@ -106,8 +102,7 @@ function renderTable(token, renderContext, renderTokenElements) {
     // Very small current sizes get extra tolerance so small cells are more likely to snap.
     const allowedPercent =
       baseSimilarityPercent +
-      sizeSensitivity / targetSize +
-      smallCellSensitivity / currentSize;
+      sizeSensitivity / targetSize;
 
     return {
       differencePercent,
@@ -209,8 +204,7 @@ function renderTable(token, renderContext, renderTokenElements) {
         currentSize: currentUnitContentWidth,
         targetSize: sizes.maxContentWidth,
         baseSimilarityPercent: WIDTH_BASE_SIMILARITY_PERCENT,
-        sizeSensitivity: WIDTH_SIZE_SENSITIVITY,
-        smallCellSensitivity: WIDTH_SMALL_CELL_SENSITIVITY
+      sizeSensitivity: WIDTH_SIZE_SENSITIVITY
       });
 
       if (!snapResult) return;

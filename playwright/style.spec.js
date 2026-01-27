@@ -124,9 +124,9 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
     for (let i = 0; i < 20; i++) {
       await page.evaluate((selector) => {
-        const lastChar = document.querySelector(selector);
-        if (lastChar) lastChar.textContent += '.';
-      }, '#local-link-last-char');
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#local-link-prefix');
 
       const currentTop = await page.locator('#local-link-last-char').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;
@@ -180,10 +180,10 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
 
     for (let i = 0; i < 20; i++) {
-      await page.evaluate(() => {
-        const lastChar = document.querySelector('#external-link-last-char');
-        if (lastChar) lastChar.textContent += '.';
-      });
+      await page.evaluate((selector) => {
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#external-link-prefix');
 
       const currentTop = await page.locator('#external-link-last-char').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;
@@ -218,9 +218,9 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
     for (let i = 0; i < 20; i++) {
       await page.evaluate((selector) => {
-        const lastChar = document.querySelector(selector);
-        if (lastChar) lastChar.textContent += '.';
-      }, '#local-link-last-char-rtl');
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#local-link-prefix-rtl');
 
       const currentTop = await page.locator('#local-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;
@@ -274,10 +274,10 @@ test.describe('Inline entities', () => {
     let wrapOccurred = false;
 
     for (let i = 0; i < 1000; i++) {
-      await page.evaluate(() => {
-        const lastChar = document.querySelector('#external-link-last-char-rtl');
-        if (lastChar) lastChar.textContent += '.';
-      });
+      await page.evaluate((selector) => {
+        const prefix = document.querySelector(selector);
+        if (prefix) prefix.textContent += '.';
+      }, '#external-link-prefix-rtl');
 
       const currentTop = await page.locator('#external-link-last-char-rtl').evaluate(el => el.getBoundingClientRect().top);
       if (currentTop > initialTop + 0.5) wrapOccurred = true;

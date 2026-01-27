@@ -114,7 +114,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
 
-    let bulkFileParser = new BulkFileParser(newBulkFileString);
+    let bulkFileParser = new BulkFileParser(newBulkFileString, options.bulkFileName);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
     if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 

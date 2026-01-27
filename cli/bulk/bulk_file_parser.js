@@ -4,8 +4,9 @@ let Topic = require('../shared/topic.js');
 let chalk = require('chalk');
 
 class BulkFileParser {
-  constructor(bulkFileString) {
+  constructor(bulkFileString, bulkFileName = 'bulk file') {
     this.bulkFileString = bulkFileString;
+    this.bulkFileName = bulkFileName;
   }
 
   parseSections() {
@@ -55,7 +56,7 @@ class BulkFileParser {
           let topicFilePath = `${section.diskDirectoryPath}/${Topic.for(file.key).topicFileName}.expl`;
 
           if (fileContentsByPath.hasOwnProperty(topicFilePath)) {
-            throw new Error(chalk.bgRed(chalk.white(`Error: Topic [${file.key}] is defined twice in bulk file.`)));
+            throw duplicateTopicErrorForBulk(this.bulkFileString, this.bulkFileName, file.key);
           }
 
           fileContentsByPath[topicFilePath] = file.text.replace(/\n\n+/g, '\n\n').trim() + '\n';
@@ -86,6 +87,19 @@ class BulkFileParser {
 
     return { newFileSet: new FileSet(fileContentsByPath), defaultTopicPath, defaultTopicKey };
   }
+}
+
+function duplicateTopicErrorForBulk(bulkFileString, bulkFileName, key) {
+  const escapedKey = String(key).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape regex-sensitive characters
+  const keyRegex = new RegExp(`^(\\*\\*|\\*)\\s+${escapedKey}(?:\\s|:|$)`, 'gm');
+  const matches = [...bulkFileString.matchAll(keyRegex)];
+  const lineAt = (index) => bulkFileString.slice(0, index).split('\n').length;
+  const lineRefs = matches
+    .slice(0, 2)
+    .map(match => `- ${bulkFileName}:${lineAt(match.index)}`)
+    .join('\n');
+  const locationNote = lineRefs ? `\n${lineRefs}` : '';
+  return new Error(chalk.bgRed(chalk.white(`Error: Topic [${key}] is defined twice in bulk file.${locationNote}`)));
 }
 
 module.exports = BulkFileParser;

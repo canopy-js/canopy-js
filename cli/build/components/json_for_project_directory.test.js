@@ -1601,7 +1601,7 @@ test('it validates that subtopics of paths are subsumed by their topics', () => 
 
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] exists but is not subsumed by given topic.
+  ).toThrow(chalk.red(dedent`Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] exists, but is not subsumed by given topic.
     topics/Wyoming/Wyoming.expl:1:52`));
 });
 

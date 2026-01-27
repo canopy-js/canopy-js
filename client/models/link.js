@@ -627,7 +627,7 @@ class Link {
   }
 
   execute(options = {}) {
-    options = { scrollDirect: true, ...options };
+    options = { ...options };
 
     if (!options.renderOnly) Link.persistLinkSelectionInSession(this); // even if execution selects different link, this link was last touched within paragraph
 
@@ -653,13 +653,19 @@ class Link {
     if (this.isCycle && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
 
-      return this.inlinePath.reduce().display({ renderOnly: options.renderOnly }); // reduce cycle
+      // Clicks on a fully visible link that trigger downward motion don't need a scroll up because link is fulcrum and click is focus.
+      const noBeforeChangeScroll = (this.isDownCycle || !this.isCycle) && !this.isAboveViewport;
+
+      return this.inlinePath.reduce().display({
+        renderOnly: options.renderOnly, // preserve eager render path
+        noBeforeChangeScroll
+      });
     }
 
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
-        () => this.inlinePath.parentLink.select({ ...options, scrollDirect: true, scrollToParagraph: false })
+        () => this.inlinePath.parentLink.select({ ...options, scrollToParagraph: false })
       );
     }
 
