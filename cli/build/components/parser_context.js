@@ -587,7 +587,16 @@ class ParserContext {
         if (extraFrame) frames.push(extraFrame);
       });
 
-    return `${message}\n\n${frames.join('\n\n')}\n`;
+    const explRefLineRegex = /^\s*topics\/[^:\n]+?\.expl:\d+(?::\d+)?\s*$/;
+    const bulkRefLineRegex = /^\s*[^:\n]+\.bulk:\d+(?::\d+)?\s*$/;
+    const cleanedMessage = String(message)
+      .split('\n')
+      .filter(line => !explRefLineRegex.test(line) && !bulkRefLineRegex.test(line))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trimEnd();
+
+    return `${cleanedMessage}\n\n${frames.join('\n\n')}\n`;
   }
 }
 
