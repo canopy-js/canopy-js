@@ -428,6 +428,8 @@ describe('BulkFileParser', function() {
     const bulkFileParser = new BulkFileParser(bulkFileString, 'Foo.bulk');
     expect(() => bulkFileParser.generateFileSet()).toThrow('Foo.bulk:3');
     expect(() => bulkFileParser.generateFileSet()).toThrow('Foo.bulk:5');
+    expect(() => bulkFileParser.generateFileSet()).toThrow('> 3 | * Topic: Paragraph.');
+    expect(() => bulkFileParser.generateFileSet()).toThrow('> 5 | * Topic: Paragraph.');
   });
 
   test('it parses normal data file', () => {
