@@ -350,9 +350,86 @@ describe('translateWatchErrorToBulk', () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  test('it resolves bulk refs using category and subtopic headers', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-translate-'));
+
+    try {
+      process.chdir(tmpDir);
+
+      writeFileSyncEnsuringDir(
+        'topics/A/B/Topic.expl',
+        [
+          'Topic: Root paragraph',
+          '',
+          'Sub1:',
+          'Sub1 line 1',
+          'Sub1 line 2',
+          '',
+          'Sub2:',
+          'Sub2 line 1',
+          'Sub2 line 2'
+        ].join('\n') + '\n'
+      );
+
+      writeFileSyncEnsuringDir(
+        'Foo.bulk',
+        [
+          '[Other]',
+          '',
+          '* Topic: Root paragraph',
+          'Sub2:',
+          'Sub2 line 1',
+          '',
+          '[A/B]',
+          '',
+          '* Topic: Root paragraph',
+          '',
+          'Sub1:',
+          'Sub1 line 1',
+          'Sub1 line 2',
+          '',
+          'Sub2:',
+          'Sub2 line 1',
+          'Sub2 line 2',
+          ''
+        ].join('\n')
+      );
+
+      const error = new Error(
+        [
+          'Error: Something went wrong',
+          'topics/A/B/Topic.expl:8:5'
+        ].join('\n')
+      );
+
+      const translated = translateWatchErrorToBulk(error, { sync: true, bulkFileName: 'Foo.bulk' });
+
+      expect(translated.message).toEqual(
+        expect.stringContaining('topics/A/B/Topic.expl:8:5\nFoo.bulk:16:5')
+      );
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('BulkFileParser', function() {
+  test('it includes bulk file line refs for duplicate topics', () => {
+    const bulkFileString = dedent`[A/B]
+
+    * Topic: Paragraph.
+
+    * Topic: Paragraph.
+    ` + '\n';
+
+    const bulkFileParser = new BulkFileParser(bulkFileString, 'Foo.bulk');
+    expect(() => bulkFileParser.generateFileSet()).toThrow('Foo.bulk:3');
+    expect(() => bulkFileParser.generateFileSet()).toThrow('Foo.bulk:5');
+  });
+
   test('it parses normal data file', () => {
     let bulkFileString = dedent`[A/B/C]
 
