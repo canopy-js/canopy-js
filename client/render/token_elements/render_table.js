@@ -26,12 +26,13 @@ function renderTable(token, renderContext, renderTokenElements) {
                 if (cellObject.tokens.length === 1 && isOrHasOnlyLink(tokenElement)) {
                   tableCellElement.classList.add('canopy-table-link-cell');
                   tableCellElement.classList.add('canopy-bounding-box-container'); // rect to consider for arrow key comparisons
-                  renderContext.preDisplayCallbacks.push(() => { // need to wait for .parentNode to exist
+                  const preDisplayTableCellLinkWiring = () => { // need to wait for .parentNode to exist
                     let linkElement = tokenElement.parentNode.querySelector('a');
                     linkElement.classList.add('canopy-table-link');
                     linkElement.removeEventListener('click', linkElement._CanopyClickHandler);
                     tableCellElement.addEventListener('click', linkElement._CanopyClickHandler);
-                  });
+                  };
+                  renderContext.preDisplayCallbacks.push(preDisplayTableCellLinkWiring);
                 }
 
                 tableCellElement.appendChild(tokenElement);
@@ -111,7 +112,7 @@ function renderTable(token, renderContext, renderTokenElements) {
     };
   }
 
-  renderContext.preDisplayCallbacks.push(() => {
+  const preDisplayTableSizeNormalization = () => {
     let sizes = {
       minContentWidth: Infinity,       // per-column "unit" width
       maxContentWidth: -1,             // per-column "unit" width
@@ -271,7 +272,8 @@ function renderTable(token, renderContext, renderTokenElements) {
     tableElement.dataset.maxTdBoxWidth = sizes.maxTdBoxWidth;
     tableElement.dataset.minRowHeight = sizes.minRowHeight;
     tableElement.dataset.maxRowHeight = sizes.maxRowHeight;
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayTableSizeNormalization);
 
   return [tableElement];
 }

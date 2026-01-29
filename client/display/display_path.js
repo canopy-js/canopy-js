@@ -33,7 +33,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Path.lastRenderedPath = pathToDisplay;
 
     displayPathTo(pathToDisplay.paragraph, options);
-    pathToDisplay.paragraphs.forEach(p => queueMicrotask(() => p.executePreDisplayCallbacks()));
+    pathToDisplay.paragraphs.forEach(p => queueMicrotask(() => p.executePreDisplayCallbacks())); // for initial load when didn't run at render
     if (options.scrollStyle !== 'instant') pathToDisplay.paragraphs.forEach(p => p.display());
     Link.eagerLoadVisibleLinks();
 

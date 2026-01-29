@@ -54,21 +54,20 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
   linkElement._CanopyClickHandler = callback;
   linkElement.addEventListener('click', callback);
 
-  renderContext.preDisplayCallbacks.push(() => {
-    let [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
-    linkElement.dataset.extraSpace = JSON.stringify(measureVerticalOverflow(contentContainer));
-    if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
-    if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
+  const preDisplayLinkLayout = () => {
+    const singletonTableOrMenuButton = !!linkElement.closest('.canopy-table-link-cell, .canopy-menu-link-cell');
+    const inlineLayoutEnabled = !singletonTableOrMenuButton;
+    let spaceAbove = 0;
+    let spaceBelow = 0;
 
-    // Detect if a link wraps over a newline
-    const computedStyle = window.getComputedStyle(linkElement);
-    const lineHeight = parseFloat(computedStyle.lineHeight);
-    const height = linkElement.getBoundingClientRect().height;
-
-    if (height > lineHeight * 1.5) {
-      linkElement.dataset.height = height;
-      linkElement.dataset.lineHeight = lineHeight;
-      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+    // Read phase: collect measurements before mutating styles/classes.
+    let lineHeight = 0;
+    let height = 0;
+    if (inlineLayoutEnabled) {
+      [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
+      const computedStyle = window.getComputedStyle(linkElement);
+      lineHeight = parseFloat(computedStyle.lineHeight);
+      height = linkElement.getBoundingClientRect().height;
     }
 
     let direction = null;
@@ -84,10 +83,25 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
     if (!direction) {
       direction = window.getComputedStyle(contentContainer).direction;
     }
+
+    // Write phase: apply style/class/attribute changes after reads.
+    if (inlineLayoutEnabled) {
+      linkElement.dataset.extraSpace = JSON.stringify([spaceAbove, spaceBelow]);
+      if (spaceAbove) contentContainer.style.paddingTop = `${spaceAbove}px`;
+      if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
+    }
+
+    if (inlineLayoutEnabled && height > lineHeight * 1.5) {
+      linkElement.dataset.height = height;
+      linkElement.dataset.lineHeight = lineHeight;
+      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+    }
+
     linkElement.dir = direction;
     linkContainer.dir = direction;
     contentContainer.dir = direction;
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayLinkLayout);
 
   return linkElement;
 }
@@ -122,7 +136,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
 
   let link = new Link(linkElement);
   
-  renderContext.preDisplayCallbacks.push(() => {
+  const preDisplayGlobalLinkCycleIcon = () => {
     if (!link.element) return;
     if (link.cycle || link.isSelfReference) {
       const targetPath = link.inlinePath?.reduce();
@@ -159,7 +173,8 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       linkContainer.appendChild(iconGap);
       linkContainer.appendChild(cycleIcon);
     }
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayGlobalLinkCycleIcon);
 
   return [linkElement];
 }
@@ -233,11 +248,12 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
   linkContainer.appendChild(cycleIcon);
 
   // Add a class if the link contains an image
-  renderContext.preDisplayCallbacks.push(() => {
+  const preDisplayExternalLinkedImageClass = () => {
     if (linkElement.querySelector('img')) {
       linkElement.classList.add('canopy-linked-image');
     }
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayExternalLinkedImageClass);
 
   return [linkElement];
 }

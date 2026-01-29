@@ -374,7 +374,8 @@ class Paragraph {
   }
 
   executePreDisplayCallbacks() {
-    this.sectionElement.preDisplayCallbacks?.forEach(callback => callback());
+    const callbacks = this.sectionElement.preDisplayCallbacks || [];
+    callbacks.forEach(callback => callback());
     this.sectionElement.preDisplayCallbacks = [];
   }
 
@@ -390,7 +391,6 @@ class Paragraph {
   static registerNode(sectionElement) {
     const path = new Path(sectionElement.dataset.pathString).recapitalize; // use canonical capitalizations in case URL version is wrong
     const existing = Paragraph.byPath(path);
-
     if (existing && existing.sectionElement !== sectionElement) throw new Error("Multiple DOM objects instantiated for single sectionElement");
 
     const paragraph = new Paragraph(sectionElement);
@@ -408,11 +408,27 @@ class Paragraph {
   }
 
   static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM
-    Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
-      .forEach(sectionElement => {
-        if (!sectionElement.parentNode) console.error(sectionElement.dataset);
-        sectionElement.parentNode.removeChild(sectionElement);
-      })
+    const sectionsToDetach = Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
+
+    sectionsToDetach.forEach(sectionElement => {
+      sectionElement.parentNode.removeChild(sectionElement);
+    });
+
+    if (Paragraph.contentLoaded) { // pre-running callbacks is optimization except on initial load
+      [topicSectionElement, ...sectionsToDetach].forEach(sectionElement => {
+        this.executePreDisplayCallbacks(sectionElement);
+      });
+    }
+  }
+
+  static executePreDisplayCallbacks(sectionElement) {
+    sectionElement.dataset.decorated = true;
+    let paragraph = Paragraph.for(sectionElement);
+    canopyContainer.appendChild(paragraph.sectionElement);
+    sectionElement.style.display = 'block';
+    paragraph.executePreDisplayCallbacks();
+    sectionElement.style.removeProperty('display');
+    canopyContainer.removeChild(paragraph.sectionElement);
   }
 
   static get all() {
