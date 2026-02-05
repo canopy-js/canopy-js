@@ -3,7 +3,7 @@ import REQUEST_CACHE from 'requests/request_cache';
 import { preloadImages } from 'requests/helpers';
 import Topic from '../../cli/shared/topic';
 
-const topicSubtopics = {};
+const TopicSubtopics = {};
 
 const requestJson = (topic) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
@@ -13,15 +13,17 @@ const requestJson = (topic) => {
   const dataPath = `${prefix}/_data/${topic.jsonFileName}.json`;
 
   const dataPromise =
-    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) // embedded topic JSON (default topic / single-file build)
-    || Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
+    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) || // embedded topic JSON (default topic / single-file build)
+    Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
       .then(res => {
-      if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
-      return res.json();
-    })
+        if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
+        return res.json();
+      });
+
+  const requestPromise = dataPromise
     .then(json => {
       preloadImages(json);
-      topicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
+      TopicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
       return json;
     })
     .catch(() => {
@@ -29,13 +31,13 @@ const requestJson = (topic) => {
       return Promise.resolve(null); // ignore aborted fetches or navigation-related rejections
     });
 
-  return REQUEST_CACHE[topic.mixedCase] = dataPromise;
+  return REQUEST_CACHE[topic.mixedCase] = requestPromise;
 };
 
 function getCanonicalTopic(topic, subtopic = topic) {
-  let correctTopicKey = Object.keys(topicSubtopics).find(key => Topic.fromMixedCase(key).matches(topic));
+  let correctTopicKey = Object.keys(TopicSubtopics).find(key => Topic.fromMixedCase(key).matches(topic));
   if (!correctTopicKey) return subtopic;
-  let correctSubtopicKey = Object.keys(topicSubtopics[correctTopicKey]).find(key => Topic.fromMixedCase(key).matches(subtopic));
+  let correctSubtopicKey = Object.keys(TopicSubtopics[correctTopicKey]).find(key => Topic.fromMixedCase(key).matches(subtopic));
   if (!correctSubtopicKey) return subtopic;
   return Topic.fromMixedCase(correctSubtopicKey);
 }
