@@ -2,9 +2,10 @@ let FileSet = require('./file_set');
 let Block = require('../shared/block.js');
 let Topic = require('../shared/topic.js');
 let chalk = require('chalk');
+let { formatErrorWithFrames, renderContextFrame } = require('../shared/error_context');
 
 class BulkFileParser {
-  constructor(bulkFileString, bulkFileName = 'bulk file') {
+  constructor(bulkFileString, bulkFileName) {
     this.bulkFileString = bulkFileString;
     this.bulkFileName = bulkFileName;
   }
@@ -94,12 +95,33 @@ function duplicateTopicErrorForBulk(bulkFileString, bulkFileName, key) {
   const keyRegex = new RegExp(`^(\\*\\*|\\*)\\s+${escapedKey}(?:\\s|:|$)`, 'gm');
   const matches = [...bulkFileString.matchAll(keyRegex)];
   const lineAt = (index) => bulkFileString.slice(0, index).split('\n').length;
+  const lineStartAt = (index) => bulkFileString.lastIndexOf('\n', index - 1) + 1;
+  const frames = matches
+    .slice(0, 2)
+    .map(match => {
+      const line = lineAt(match.index);
+      const col = match.index - lineStartAt(match.index) + 1;
+      const label = `${bulkFileName}:${line}${col ? `:${col}` : ''}`;
+      return renderContextFrame({
+        sourceText: bulkFileString,
+        line,
+        col,
+        label,
+        radius: 1,
+        includeLabel: true
+      });
+    })
+    .filter(Boolean);
+  const message = `Error: Topic [${key}] is defined twice in bulk file.`;
+  if (frames.length) {
+    return new Error(chalk.bgRed(chalk.white(formatErrorWithFrames(message, frames))));
+  }
   const lineRefs = matches
     .slice(0, 2)
     .map(match => `- ${bulkFileName}:${lineAt(match.index)}`)
     .join('\n');
   const locationNote = lineRefs ? `\n${lineRefs}` : '';
-  return new Error(chalk.bgRed(chalk.white(`Error: Topic [${key}] is defined twice in bulk file.${locationNote}`)));
+  return new Error(chalk.bgRed(chalk.white(`${message}${locationNote}`)));
 }
 
 module.exports = BulkFileParser;

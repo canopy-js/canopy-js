@@ -114,8 +114,9 @@ class Reference {
 
 
   parsePipeReference() {
-    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw `Reference has too many pipes: ${this.fullText}`;
-    const [_, target, display] = [...this.contents.match(/((?:\\.|[^\\])+?)\|((?:\\.|[^\\])+?)$/)];
+    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw new Error(`Reference has too many pipes: ${this.fullText}`);
+    const [_, target, display] = [...(this.contents.match(/((?:\\.|[^\\])+?)\|((?:\\.|[^\\])+?)$/)||[])];
+    if (!target || !display) throw new Error(`Reference has empty pipe segment: ${this.fullText}`);
     this.targetText = target;
     this.displayText = display;
   }

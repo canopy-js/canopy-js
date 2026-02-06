@@ -3,6 +3,7 @@ let dedent = require('dedent-js');
 let Block = require('../../shared/block');
 let { displaySegment } = require('../../shared/simple-helpers');
 let chalk = require('chalk');
+let { formatErrorWithFrames } = require('../../shared/error_context');
 
 class ParserContext {
   constructor({ explFileObjectsByPath = {}, defaultTopicString, priorParserContext, options }) {
@@ -565,8 +566,7 @@ class ParserContext {
       referencedLocations.push([referencedFilePath, referencedLine, referencedCol]);
     }
 
-    const hasMultipleReferencedLocations = referencedLocations.length > 1;
-    const primaryFrame = renderFrame(filePath, line, col, { includeLocationLabel: hasMultipleReferencedLocations });
+    const primaryFrame = renderFrame(filePath, line, col, { includeLocationLabel: true });
     if (!primaryFrame) return message;
 
     const frames = [primaryFrame];
@@ -587,16 +587,7 @@ class ParserContext {
         if (extraFrame) frames.push(extraFrame);
       });
 
-    const explRefLineRegex = /^\s*topics\/[^:\n]+?\.expl:\d+(?::\d+)?\s*$/;
-    const bulkRefLineRegex = /^\s*[^:\n]+\.bulk:\d+(?::\d+)?\s*$/;
-    const cleanedMessage = String(message)
-      .split('\n')
-      .filter(line => !explRefLineRegex.test(line) && !bulkRefLineRegex.test(line))
-      .join('\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .trimEnd();
-
-    return `${cleanedMessage}\n\n${frames.join('\n\n')}\n`;
+    return formatErrorWithFrames(message, frames);
   }
 }
 

@@ -66,46 +66,53 @@ function renderMenu(token, renderContext, renderTokenElements) {
   const provisionalRow = createNewRow();
   cellElements.forEach(cell => provisionalRow.appendChild(cell));
 
-  renderContext.preDisplayCallbacks.push(() => {
-    for (let i = 0; i < cellElements.length; i++) {
-      if (cellElements[i].style.opacity) continue;
-      let menuCellElement = cellElements[i];
+  const preDisplayMenuLayout = () => {
+    const visibleCells = cellElements
+      .filter(cell => !cell.style.opacity)
+      .map(menuCellElement => ({
+        menuCellElement,
+        contentContainer: menuCellElement.querySelector('.canopy-menu-content-container')
+      }));
 
-      while (true) {
-        if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) 
-          tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
+    while (true) {
+      if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) {
+        tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
+      }
 
-        menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
+      const sizeClass = `canopy-${SizesByArea[tableListSizeIndex]}`;
+      menuElement.classList.add(sizeClass);
 
-        let contentBoundingRect = getCombinedBoundingRect([menuCellElement.querySelector('.canopy-menu-content-container')]);
+      let overflowFound = false;
+      for (const { menuCellElement, contentContainer } of visibleCells) {
+        const contentBoundingRect = getCombinedBoundingRect([contentContainer]);
+        const containerStyles = window.getComputedStyle(menuCellElement);
+        const containerRect = menuCellElement.getBoundingClientRect();
 
-        let container = menuCellElement.closest('.canopy-menu-cell');
-        let containerStyles = window.getComputedStyle(container);
-        let containerRect = container.getBoundingClientRect();
+        const containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
+        const containerPaddingRight = parseFloat(containerStyles.paddingRight);
+        const containerPaddingTop = parseFloat(containerStyles.paddingTop);
+        const containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
 
-        let containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
-        let containerPaddingRight = parseFloat(containerStyles.paddingRight);
-        let containerPaddingTop = parseFloat(containerStyles.paddingTop);
-        let containerPaddingBottom = parseFloat(containerStyles.paddingBottom);
-
-        let adjustedContainerRect = {
+        const adjustedContainerRect = {
           top: containerRect.top + containerPaddingTop,
           left: containerRect.left + containerPaddingLeft,
           bottom: containerRect.bottom - containerPaddingBottom,
           right: containerRect.right - containerPaddingRight
         };
 
-        let isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
-        let isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
+        const isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
+        const isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
 
-        if (!isOverflowingHorizontally && !isOverflowingVertically) break; // try next menu element
+        if (!isOverflowingHorizontally && !isOverflowingVertically) continue;
 
-        if (tableListSizeIndex >= SizesByArea.length - 1) break; // No larger sizes available
-
-        menuElement.classList.remove(`canopy-${SizesByArea[tableListSizeIndex]}`);
-        tableListSizeIndex++;
-        i = 0; // Once we increment the size, we need to recheck all previous elements because a larger area might have a narrower width
+        overflowFound = true;
+        break;
       }
+
+      if (!overflowFound || tableListSizeIndex >= SizesByArea.length - 1) break;
+
+      menuElement.classList.remove(sizeClass);
+      tableListSizeIndex++;
     }
 
     // Rebuild rows using final size
@@ -146,7 +153,8 @@ function renderMenu(token, renderContext, renderTokenElements) {
       ?.classList.add('canopy-menu-cell-last-left');
 
     menuElement.classList.add(`canopy-${SizesByArea[tableListSizeIndex]}`);
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayMenuLayout);
 
   return [menuElement];
 }

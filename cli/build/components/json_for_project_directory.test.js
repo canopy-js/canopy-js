@@ -1477,7 +1477,7 @@ test('it omits terminal newline in error context windows', () => {
   );
 });
 
-test('it omits primary frame location label when only one reference is cited', () => {
+test('it includes primary frame location label when only one reference is cited', () => {
   const line = 'Wyoming: See [[Nonexistent]].';
   let explFileData = {
     'topics/Wyoming/Wyoming.expl': `${line}\n`,
@@ -1486,13 +1486,14 @@ test('it omits primary frame location label when only one reference is cited', (
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
     [
+      'topics/Wyoming/Wyoming.expl:1:14',
       '> 1 | Wyoming: See [[Nonexistent]].',
     ]
   );
 
   expectThrowNotContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
-    ['topics/Wyoming/Wyoming.expl:1:14']
+    ['topics/Wyoming/Wyoming.expl:1:14\ntopics/Wyoming/Wyoming.expl:1:14']
   );
 });
 

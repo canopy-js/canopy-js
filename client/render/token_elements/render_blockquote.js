@@ -7,7 +7,7 @@ function renderBlockQuote(token, renderContext, renderTokenElements) {
     subtokenElements.forEach(subtokenElement => blockQuoteElement.appendChild(subtokenElement));
   });
 
-  renderContext.preDisplayCallbacks.push(() => {
+  const preDisplayBlockQuoteWrapDetection = () => {
     // Convert all text nodes to single character spans for measurement
     function wrapEachLetterInSpan(element) {
       [...element.querySelectorAll('*')].forEach(parentElement => {
@@ -66,7 +66,8 @@ function renderBlockQuote(token, renderContext, renderTokenElements) {
     }
 
     clone.remove();
-  });
+  };
+  renderContext.preDisplayCallbacks.push(preDisplayBlockQuoteWrapDetection);
 
   return [blockQuoteElement];
 }

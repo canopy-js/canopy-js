@@ -96,7 +96,7 @@ const bulk = async function(selectedFileList, options = {}) {
     tryAndWriteHtmlError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
     var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || `${defaultTopic.topicFileName}.bulk` || 'canopy_bulk_file.bulk';
+    options.bulkFileName = options.bulkFileName || (defaultTopic.topicFileName ? `${defaultTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
     checkGitIgnoreForBulkFile(options);
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
@@ -106,7 +106,8 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
-    options.bulkFileName = options.bulkFileName || 'canopy_bulk_file';
+    const fallbackTopic = defaultTopic();
+    options.bulkFileName = options.bulkFileName || (fallbackTopic.topicFileName ? `${fallbackTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
 
     let originalSelectionFileSet = originalSelectedFilesList
       ? fileSystemManager.getFileSet(originalSelectedFilesList)
@@ -121,6 +122,11 @@ const bulk = async function(selectedFileList, options = {}) {
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+    if (fileSystemChange.noop && buildInErrorState()) { // no-op edit prevents clearing error state
+      touchDefaultTopicOnInvalidBuild({ defaultTopicPath, newFileSet, log });
+      cyclePreventer.ignoreNextTopicsChange();
+    }
 
     fileSystemManager.deleteOriginalSelectionFile();
     let storeNewSelection = options.sync && !deleteBulkFile; // if we're not deleting bulk file, we are continuing the session
@@ -305,5 +311,20 @@ function handleWatchError(error, options = {}) {
     tryAndWriteHtmlError(() => { throw translated; }, options);
   } catch (_) {
     // tryAndWriteHtmlError rethrows; swallow here so the watcher stays alive
+  }
+}
+
+function buildInErrorState() {
+  const html = fs.existsSync('build/index.html') ? fs.readFileSync('build/index.html', 'utf8') : '';
+  return !html || html.includes('Error building project');
+}
+
+function touchDefaultTopicOnInvalidBuild({ defaultTopicPath, newFileSet, log }) {
+  const touchPath = defaultTopicPath || newFileSet.files.find(file => file.path.endsWith('.expl'))?.path;
+  if (!touchPath) return;
+  const now = new Date();
+  fs.utimesSync(touchPath, now, now);
+  if (typeof log === 'function') {
+    log(chalk.magenta(`Bulk file no-op with invalid build triggering default topic touch - ${touchPath}`));
   }
 }
