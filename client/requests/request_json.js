@@ -3,14 +3,17 @@ import REQUEST_CACHE from 'requests/request_cache';
 import { preloadImages } from 'requests/helpers';
 import Topic from '../../cli/shared/topic';
 
-const TopicSubtopics = {};
-
 const requestJson = (topic) => {
-  if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase];
+  if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase].promise;
 
   const embeddedTopicScript = document.querySelector(`script[data-topic-json="${topic.jsonFileName}.json"]`);
   const prefix = projectPathPrefix ? `/${projectPathPrefix}` : '';
   const dataPath = `${prefix}/_data/${topic.jsonFileName}.json`;
+  const cacheEntry = {
+    status: 'pending',
+    json: null,
+    promise: null
+  };
 
   const dataPromise =
     (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) || // embedded topic JSON (default topic / single-file build)
@@ -23,21 +26,32 @@ const requestJson = (topic) => {
   const requestPromise = dataPromise
     .then(json => {
       preloadImages(json);
-      TopicSubtopics[Topic.for(json.displayTopicName).mixedCase] = json.paragraphsBySubtopic;
+      cacheEntry.status = 'fulfilled';
+      cacheEntry.json = json;
       return json;
     })
     .catch(() => {
-      REQUEST_CACHE[topic.mixedCase] = undefined;
-      return Promise.resolve(null); // ignore aborted fetches or navigation-related rejections
+      delete REQUEST_CACHE[topic.mixedCase];
+      return null; // ignore aborted fetches or navigation-related rejections
     });
 
-  return REQUEST_CACHE[topic.mixedCase] = requestPromise;
+  cacheEntry.promise = requestPromise;
+
+  REQUEST_CACHE[topic.mixedCase] = cacheEntry;
+  return requestPromise;
 };
 
 function getCanonicalTopic(topic, subtopic = topic) {
-  let correctTopicKey = Object.keys(TopicSubtopics).find(key => Topic.fromMixedCase(key).matches(topic));
-  if (!correctTopicKey) return subtopic;
-  let correctSubtopicKey = Object.keys(TopicSubtopics[correctTopicKey]).find(key => Topic.fromMixedCase(key).matches(subtopic));
+  const matchingEntry = Object.values(REQUEST_CACHE).find(entry =>
+    entry.status === 'fulfilled' &&
+    entry.json &&
+    Topic.for(entry.json.displayTopicName).matches(topic)
+  );
+
+  if (!matchingEntry) return subtopic;
+
+  const correctSubtopicKey = Object.keys(matchingEntry.json.paragraphsBySubtopic)
+    .find(key => Topic.fromMixedCase(key).matches(subtopic));
   if (!correctSubtopicKey) return subtopic;
   return Topic.fromMixedCase(correctSubtopicKey);
 }
