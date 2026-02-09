@@ -49,10 +49,6 @@ section.canopy-section {
   unicode-bidi: unset;
 }
 
-.canopy-topic-section hr + p {
-  margin-top: 27px;
-}//
-
 p.canopy-paragraph {
   overflow: visible; // In case external link icon is at end of line
   font-size: 20px;
@@ -62,7 +58,7 @@ p.canopy-paragraph {
   //hyphens: auto; // not sure we want this, rather put whole word on next line?
   margin: auto;
 
-  line-height: 1.3;
+  line-height: 1.4;
   letter-spacing: -.003em;
   font-weight: 400;
 
@@ -133,6 +129,24 @@ p .canopy-linebreak-span:last-child {
   margin-bottom: 0;
 }
 
+// Default to slightly tighter spacing after line content to account for descenders.
+p.canopy-paragraph > :not(.canopy-linebreak-span) + .canopy-linebreak-span {
+  margin-bottom: 7px;
+}
+
+// Keep normal spacing after block-like canopy content.
+table + .canopy-linebreak-span,
+.canopy-menu + .canopy-linebreak-span,
+.canopy-image-container + .canopy-linebreak-span,
+code.canopy-code-block + .canopy-linebreak-span,
+hr.canopy-footnote-rule + .canopy-linebreak-span,
+.canopy-raw-html:has(
+  table,
+  div
+) + .canopy-linebreak-span {
+  margin-bottom: 12px;
+}
+
 ///////////// Link styles /////////////////
 
 a.canopy-selectable-link { // even menu and table cells
@@ -176,7 +190,7 @@ a.canopy-disabled-link {
     display: inline-block;
   }
 
-  // shared multi-line layout
+  // link is between newlines or paragraph start/end, i.e. is full line
   &:first-child:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:last-child,
@@ -280,6 +294,16 @@ a.canopy-selectable-link {
     }
   }
 
+  // Full-line and multiline links don't need terminal gap padding.
+  &.canopy-full-line-link .canopy-link-terminal-gap,
+  &.canopy-multiline-link .canopy-link-terminal-gap {
+    margin-inline-end: 0;
+    font-size: 0;
+    &::before {
+      content: "";
+    }
+  }
+
   // Gap sizing and icon margin by link dir + icon type
 
   // LTR link + ↪ arrow (forward+LTR fulcrum, back+RTL fulcrum)
@@ -328,7 +352,7 @@ a.canopy-selectable-link {
     }
 
     &:has(.canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon) .canopy-link-icon-gap {
-      margin-inline-end: -15px;
+      margin-inline-end: -16px;
     }
   }
 
@@ -340,7 +364,7 @@ a.canopy-selectable-link {
 
   // RTL link + external icon (arrow direction follows link dir)
   &[data-link-dir="rtl"].canopy-external-link .canopy-link-icon-gap {
-    margin-inline-end: -5px;
+    margin-inline-end: -6px;
     font-size: 3px;
   }
 
@@ -369,7 +393,7 @@ a.canopy-selectable-link {
     }
 
     .canopy-down-cycle-icon {
-      top: 0px;
+      top: 1px;
       inset-inline-start: 2px;
     }
 
@@ -448,6 +472,19 @@ blockquote {
     color: #4b535b;
   }
 
+  // Let linebreak spans control spacing between full-line blockquote links.
+  > a.canopy-selectable-link.canopy-full-line-link:not(.canopy-multiline-link),
+  > a.canopy-disabled-link.canopy-full-line-link:not(.canopy-multiline-link) {
+    display: block;
+    line-height: 0;
+    font-size: 0;
+
+    .canopy-link-container {
+      line-height: 1.4;
+      font-size: 20px;
+    }
+  }
+
   &[dir="rtl"] {
     border-right: 0.25em solid lightgray;
   }
@@ -489,17 +526,22 @@ blockquote {
     }
   } */
 
-  .canopy-linebreak-span {
-    margin-bottom: 0px; // unset default
+  .canopy-linebreak-span:not(.canopy-blockquote-padded-linebreak) {
+    margin-bottom: 0px;
   }
 
   .canopy-linebreak-span.canopy-blank-linebreak {
     height: 1em;
   }
 
-  .canopy-blockquote-padded-linebreak { // we replace break tags to be able to give them padding
+  .canopy-linebreak-span.canopy-blockquote-padded-linebreak {
     margin-bottom: 8px;
     display: block;
+  }
+
+  // Reduce top margin of elements that follow a blockquote linebreak to offset descender padding
+  & + .canopy-linebreak-span + * {
+    margin-top: 20px;
   }
 }
 
@@ -519,7 +561,7 @@ table { // center even if overflowing x
   position: relative; // required for left 50%
   left: 50%; // start the table at the middle of parent
   transform: translateX(-50%); //
-  margin: 21px 0 0 0;       /* drop auto margins here */
+  margin: 24px 0 0 0;       /* drop auto margins here */
   width: auto;              /* or intrinsic width */
   max-width: none;          /* drop the 90% cap */
 
@@ -667,6 +709,7 @@ table { // center even if overflowing x
   align-items: center; /* This centers the rows within the container */
   margin: 0 auto;
   gap: 10px;
+  line-height: 1.3;
 
   .canopy-menu-row {
     display: flex;
@@ -691,7 +734,7 @@ table { // center even if overflowing x
   }
 
   &:not(:first-child) {
-    margin-top: 20px; // has to be in sync with size between section elements for button-paragraph sequences
+    margin-top: 28px; // has to be in sync with size between section elements for button-paragraph sequences
   }
 
   &:not(:last-child) {
@@ -783,7 +826,7 @@ table { // center even if overflowing x
     .canopy-link-container {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 11px;
-        margin-inline-start: -5px; // Negative margin to pull the icon closer to the last word
+        margin-inline-start: -11px; // Negative margin to pull the icon closer to the last word
         padding-inline-start: 5px;
         position: relative; // Allows for position adjustment
         top: 5px;
@@ -794,8 +837,8 @@ table { // center even if overflowing x
 
       .canopy-down-cycle-icon {
         transform: rotate(90deg) scaleY(-1) scaleX(.8);
-        top: -2px;
-        left: 15px;
+        top: -1px;
+        left: 12px;
       }
 
       &.canopy-open-link {
