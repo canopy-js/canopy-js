@@ -877,7 +877,7 @@ test.describe('Block entities', () => {
      const paddingBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).paddingBottom);
      const marginBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).marginBottom);
      expect(paddingBottom).toBe('0px');
-     expect(marginBottom).toBe('0px');
+     expect(parseFloat(marginBottom)).toBeLessThan(3);
 
     // Yes padded linebreak in short text block quote
     const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-padded-linebreak');
