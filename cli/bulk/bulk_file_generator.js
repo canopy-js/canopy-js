@@ -100,6 +100,22 @@ function findShortestCategoryMatchFile(files) {
     return 0;
   }
 
+  function extraWordCharactersOutsideCategoryPath(topicCaps, parentDirectories) {
+    const categoryWordSet = new Set(
+      parentDirectories
+        .slice()
+        .reverse()
+        .flatMap(dir => Topic.fromFileName(dir).caps.split(' '))
+        .filter(Boolean)
+    );
+
+    return topicCaps
+      .split(' ')
+      .filter(Boolean)
+      .filter(word => !categoryWordSet.has(word))
+      .reduce((sum, word) => sum + word.length, 0);
+  }
+
   const candidates = files
     .filter(file => file.key)
     .map(file => ({
@@ -136,6 +152,10 @@ function findShortestCategoryMatchFile(files) {
       }
       if (aOverlap !== bOverlap) return bOverlap - aOverlap;
     }
+
+    const aExtraWordChars = extraWordCharactersOutsideCategoryPath(aNameCaps, a.parentDirectories);
+    const bExtraWordChars = extraWordCharactersOutsideCategoryPath(bNameCaps, b.parentDirectories);
+    if (aExtraWordChars !== bExtraWordChars) return aExtraWordChars - bExtraWordChars;
 
     const nameCompare = aNameCaps.localeCompare(bNameCaps);
     if (nameCompare !== 0) return nameCompare;

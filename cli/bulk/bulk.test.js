@@ -174,6 +174,31 @@ describe('BulkFileGenerator', function() {
     );
   });
 
+  test('it penalizes extra topic letters not found in the category path when overlap ties', () => {
+    let originalSelectedFilesByContents = {
+      'topics/AA/BB/CC/CCD.expl': 'CCD: Fewer extra letters.\n',
+      'topics/AA/BB/CC/CCEFG.expl': 'CCEFG: More extra letters.\n',
+      'topics/AA/AA.expl': 'AA: Default.\n'
+    };
+
+    let fileSet = new FileSet(originalSelectedFilesByContents);
+    let bulkFileGenerator = new BulkFileGenerator(fileSet, 'topics/AA/AA.expl');
+    let dataFile = bulkFileGenerator.generateBulkFile();
+
+    expect(dataFile).toEqual(
+      dedent`[AA]
+
+      ** AA: Default.
+
+
+      [AA/BB/CC]
+
+      * CCD: Fewer extra letters.
+
+      * CCEFG: More extra letters.` + '\n\n'
+    );
+  });
+
   test('it puts the inbox category last', () => {
     let originalSelectedFilesByContents = {
       'topics/X/Topic.expl': 'Topic: Hello world.\n',
