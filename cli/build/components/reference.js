@@ -11,7 +11,9 @@ class Reference {
     this.targetText = '';
     this.exclusiveDisplayText = '';
     this.exclusiveTargetText = '';
-    if (!this.contents) throw new Error(`Link has no contents: ${string}`);
+    if (!this.contents) {
+      throw new Error(chalk.red('Link has no contents: ' + string + `\n${this.parserContext.currentFilePathAndLineNumber}`));
+    }
     this.parseDisplayAndTarget(); // populates this.displayText and this.targetText
   }
 
@@ -87,7 +89,7 @@ class Reference {
 
   validateBraces(opening, closing) {
     if (opening.length !== closing.length) {
-      throw new Error(`Unbalanced curly braces in reference: ${this.fullText}`);
+      throw new Error(chalk.red('Unbalanced curly braces in reference: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
     }
   }
 
@@ -114,9 +116,13 @@ class Reference {
 
 
   parsePipeReference() {
-    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) throw new Error(`Reference has too many pipes: ${this.fullText}`);
+    if (this.contents.matchAll(/((?:\\.|[^\\])+?)\|/g).length > 1) {
+      throw new Error(chalk.red('Reference has too many pipes: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
+    }
     const [_, target, display] = [...(this.contents.match(/((?:\\.|[^\\])+?)\|((?:\\.|[^\\])+?)$/)||[])];
-    if (!target || !display) throw new Error(`Reference has empty pipe segment: ${this.fullText}`);
+    if (!target || !display) {
+      throw new Error(chalk.red('Reference has empty pipe segment: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
+    }
     this.targetText = target;
     this.displayText = display;
   }
