@@ -67,7 +67,7 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
       const contentStyle = window.getComputedStyle(contentContainer);
       lineHeight = parseFloat(contentStyle.lineHeight);
-      height = linkElement.getBoundingClientRect().height;
+      height = contentContainer.getBoundingClientRect().height;
     }
 
     let direction = null;
