@@ -426,6 +426,7 @@ class ParserContext {
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
+            if (this.cache && !currentTopic.matches(this.currentTopic)) return segmentString; // we don't know about fragments yet so may be valid
             let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
