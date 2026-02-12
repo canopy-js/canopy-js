@@ -91,7 +91,7 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
     }
 
-    if (inlineLayoutEnabled && lineHeight > 0 && height > lineHeight * 1.5) {
+    if (inlineLayoutEnabled && lineHeight > 0 && height >= lineHeight * 1.7) {
       linkElement.dataset.height = height;
       linkElement.dataset.lineHeight = lineHeight;
       linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
