@@ -8,6 +8,7 @@ let path = require('path');
 
 function build(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
+  const buildStart = Date.now();
   let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
@@ -45,7 +46,10 @@ function build(options = {}) {
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache) tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
-    if (options.logging) console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+    if (options.logging) {
+      const elapsedSeconds = ((Date.now() - buildStart) / 1000).toFixed(1);
+      console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid}) in ${elapsedSeconds}s`));
+    }
     if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
   }
 
