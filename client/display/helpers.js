@@ -184,14 +184,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if ((Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // moving down
   if (linkToSelect?.isBelowFocusArea) return Promise.resolve(); // avoid double downward scrolls
   if (Link.selection.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
-  const linkTargetRatio = linkToSelect?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
-
-  const targetLink = Path.rendered.twoStepChange(newPath) ? previousPath.fulcrumLink(newPath) : (linkToSelect || newPath.parentLink);
-  if (targetLink?.isFocusedAtRatio?.(linkTargetRatio)) {
-    options.afterChangePause = false;
-    return Promise.resolve();
-  }
 
   let minDiff = options.noMinDiff ? null : 75;
 
@@ -212,19 +205,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
-  // if (linkToSelect?.isFocused) return Promise.resolve();
+  const minDiff = 15;
   let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 200))) : Promise.resolve();
-  const focusedLink = linkToSelect || pathToDisplay.parentLink;
-  if (!options.scrollToParagraph && focusedLink?.isFocusedAtRatio?.(LINK_TARGET_RATIO)) {
-    return Promise.resolve();
-  }
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(
-      Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
+      Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, minDiff, behavior, side: 'top' }
     );
   }
 
@@ -236,7 +225,6 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   }
 
   let maxScrollRatio = Infinity; // no limit on initial load and click
-  let minDiff = 0;
 
   if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
     return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
