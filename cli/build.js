@@ -14,7 +14,6 @@ function build(options = {}) {
 
   if (!keepBuildDirectory) {
     fs.rmSync('build', { recursive: true, force: true });
-    fs.rmSync('build/_data', { recursive: true, force: true });
   }
 
   fs.ensureDirSync('build');
