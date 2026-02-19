@@ -645,6 +645,10 @@ table { // center even if overflowing x
       margin-inline-end: -20px;
     }
 
+    .canopy-link-terminal-gap {
+      display: none;
+    }
+
     &.canopy-open-link {
       .canopy-back-cycle-icon, .canopy-forward-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         display: none;
@@ -825,6 +829,10 @@ table { // center even if overflowing x
 
     .canopy-link-icon-gap {
       margin-inline-end: -25px;
+    }
+
+    .canopy-link-terminal-gap {
+      display: none;
     }
 
     &:has(.canopy-external-link) {
