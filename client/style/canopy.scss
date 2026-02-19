@@ -530,7 +530,8 @@ table { // center even if overflowing x
   left: 50%; // start the table at the middle of parent
   transform: translateX(-50%); //
   margin: 0 0 0 0;       /* drop auto margins here */
-  width: auto;              /* or intrinsic width */
+  display: table;
+  width: auto;
   max-width: none;          /* drop the 90% cap */
 
   border-collapse: collapse;
