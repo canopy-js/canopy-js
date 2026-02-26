@@ -102,9 +102,9 @@ function applyLinebreakSpacing(paragraphElement) {
     } else if (inBlockquote) {
       linebreak.style.marginBottom = '2px';
     } else if (nextIsMenu) {
-      linebreak.style.marginBottom = '28px';
+      linebreak.style.marginBottom = '19px';
     } else if (previousIsBlockLike) {
-      linebreak.style.marginBottom = '14px';
+      linebreak.style.marginBottom = '19px';
     } else {
       linebreak.style.marginBottom = '14px';
     }
