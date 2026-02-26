@@ -581,7 +581,7 @@ class Path {
 
   display(options = {}) {
     if (options?.newTab) return window.open(location.origin + this.string, '_blank');
-    if (this.empty) return console.error('Cannot display empty path');
+    if (this.empty) throw new Error('Cannot display empty path');
     if (options.options) throw 'Caller produced malformed options object';
 
     return updateView(this, null, options);
