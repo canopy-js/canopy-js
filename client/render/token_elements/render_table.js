@@ -4,6 +4,18 @@ import { getCombinedBoundingRect } from 'render/helpers';
 const WIDTH_BASE_SIMILARITY_PERCENT = 20;   // baseline strictness
 const WIDTH_SIZE_SENSITIVITY = 3700;        // more tolerance for small table max widths
 
+// Select one mode by changing this value.
+// strict_all_columns:
+// Approach: assign computed widths to every column and lock total table width to that sum.
+// Pros: most deterministic column geometry; easiest to compare snapping output.
+// Cons: can exceed container width and cause overflow/horizontal squeeze in tight layouts.
+//
+// scale_data_columns_to_container:
+// Approach: keep non-target columns (like row headers) at their width, and scale snap-target/data columns down to fit container.
+// Pros: avoids crushing header columns and keeps table within available width.
+// Cons: data columns become proportionally scaled, so absolute snapped widths are not preserved.
+const TABLE_FIXED_WIDTH_MODE = 'scale_data_columns_to_container';
+
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
 // const HEIGHT_SIZE_SENSITIVITY = 2500;       // more tolerance for small heights
@@ -129,7 +141,6 @@ function setTableLayoutForMeasure(tableElement) {
 
 function setTableLayoutForFixed(tableElement) {
   tableElement.style.tableLayout = 'fixed';
-  tableElement.style.width = 'auto';
   tableElement.style.minWidth = '0';
   tableElement.style.maxWidth = 'none';
 }
@@ -454,21 +465,91 @@ function computeSnapPlan({ columnSizes }) {
   };
 }
 
+function getObservedColumnBoxWidths(tableElement, columnCount) {
+  const observedWidths = new Array(columnCount).fill(0);
+
+  [...tableElement.rows].forEach(row => {
+    let colIndex = 0;
+    [...row.cells].forEach(cell => {
+      const { columnSpan } = getCellSpan(cell);
+      const unitBoxWidth = cell.getBoundingClientRect().width / columnSpan;
+      if (isFinite(unitBoxWidth) && unitBoxWidth > 0) {
+        for (let i = 0; i < columnSpan; i++) {
+          if (unitBoxWidth > observedWidths[colIndex + i]) observedWidths[colIndex + i] = unitBoxWidth;
+        }
+      }
+      colIndex += columnSpan;
+    });
+  });
+
+  return observedWidths;
+}
+
 function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
   const { columnSnapResults } = snapPlan;
   const colgroup = ensureColgroup(tableElement, columnSizes.length);
+  const observedWidths = getObservedColumnBoxWidths(tableElement, columnSizes.length);
 
-  columnSizes.forEach((column, index) => {
+  let widths = columnSizes.map((column, index) => {
     const snapResult = columnSnapResults[index];
     const snappedWidth = snapResult?.snapResult?.willSnap
       ? snapResult?.snapTarget?.target?.unitBoxWidth
       : null;
     const fallbackWidth = column?.maxUnitBoxWidth;
-    const width = isFinite(snappedWidth) && snappedWidth > 0 ? snappedWidth : fallbackWidth;
-    if (!isFinite(width) || width <= 0) return;
+    const observedWidth = observedWidths[index];
+    const width = isFinite(snappedWidth) && snappedWidth > 0
+      ? snappedWidth
+      : ((isFinite(fallbackWidth) && fallbackWidth > 0)
+        ? fallbackWidth
+        : observedWidth);
+    return isFinite(width) && width > 0 ? width : NaN;
+  });
+
+  const validWidths = widths.filter(width => isFinite(width) && width > 0);
+  const averageWidth = validWidths.length
+    ? validWidths.reduce((sum, width) => sum + width, 0) / validWidths.length
+    : 120;
+
+  widths = widths.map(width => (isFinite(width) && width > 0 ? width : averageWidth));
+
+  let finalWidths = widths;
+
+  if (TABLE_FIXED_WIDTH_MODE === 'strict_all_columns') {
+    finalWidths = widths;
+  } else if (TABLE_FIXED_WIDTH_MODE === 'scale_data_columns_to_container') {
+    const containerWidth = tableElement.parentElement?.getBoundingClientRect?.().width;
+
+    const scalableIndices = widths
+      .map((_, index) => index)
+      .filter(index => !!columnSnapResults[index]);
+    const fixedIndices = widths
+      .map((_, index) => index)
+      .filter(index => !columnSnapResults[index]);
+
+    const fixedTotalWidth = fixedIndices.reduce((sum, index) => sum + widths[index], 0);
+    const scalableTotalWidth = scalableIndices.reduce((sum, index) => sum + widths[index], 0);
+
+    let scale = 1;
+    if (isFinite(containerWidth) && containerWidth > 0 && scalableIndices.length > 0) {
+      const availableForScalable = Math.max(containerWidth - fixedTotalWidth, 0);
+      if (scalableTotalWidth > 0 && scalableTotalWidth > availableForScalable) {
+        scale = availableForScalable / scalableTotalWidth;
+      }
+    }
+
+    finalWidths = widths.map((width, index) =>
+      scalableIndices.includes(index) ? width * scale : width
+    );
+  }
+
+  finalWidths.forEach((width, index) => {
     colgroup.children[index].style.width = width + 'px';
   });
+
+  const totalWidth = finalWidths.reduce((sum, width) => sum + width, 0);
+  tableElement.style.width = totalWidth + 'px';
 }
+
 
 function writeSnapDebug(tableElement, { rows, columnSizes, sizes }, snapPlan) {
   const { snapTargets, columnTargets, columnDebugAttempts, columnSnapResults } = snapPlan;
