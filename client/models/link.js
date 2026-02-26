@@ -638,7 +638,7 @@ class Link {
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
     }
 
-    if (this.isSelfReference && !this.isOpen) {
+    if (this.isSelfReference && !this.isOpen && !this.enclosingParagraph.isPageRoot) {
       if (this.enclosingPath.lastSegment.isSingleTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
       return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
