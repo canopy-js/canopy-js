@@ -106,7 +106,7 @@ function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  const regex = /(^|[^\\])(\{\{)((?:.|\n)*[^\\])(}})/g;
+  const regex = /(^|[^\\])(\{\{)([\s\S]*?[^\\])(}})/g;
 
   this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
     const isEscaped = precedingChar === '\\';
