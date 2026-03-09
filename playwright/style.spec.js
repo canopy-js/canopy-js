@@ -431,6 +431,7 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section')).toContainText("This is regular text with a footnote1.");
     await expect(page.locator('.canopy-selected-section sup')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-footnote-span')).toHaveText('1. This is that footnote.');
+    await expect(page.locator('.canopy-selected-section .canopy-footnotes + .canopy-linebreak-span')).toHaveCount(1);
   });
 
   test('It creates tooltips', async ({ page }) => {

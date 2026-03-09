@@ -7,6 +7,7 @@ function renderFootnoteSymbol(token) {
 
 function renderFootnoteLines(footnoteLinesToken, renderContext, renderTokenElements) {
   let div = document.createElement('DIV');
+  div.classList.add('canopy-footnotes');
   let horizonalRule = document.createElement('HR');
   horizonalRule.classList.add('canopy-footnote-rule');
   div.appendChild(horizonalRule);
@@ -24,7 +25,10 @@ function renderFootnoteLines(footnoteLinesToken, renderContext, renderTokenEleme
     div.appendChild(footnoteSpan);
   });
 
-  return [div];
+  let lineBreakSpan = document.createElement('SPAN');
+  lineBreakSpan.classList.add('canopy-linebreak-span');
+
+  return [div, lineBreakSpan];
 }
 
 export {

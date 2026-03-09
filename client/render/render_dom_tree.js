@@ -89,7 +89,7 @@ function applyLinebreakSpacing(paragraphElement) {
     const inBlockquote = !!linebreak.closest('blockquote');
     const isLastChild = linebreak === linebreak.parentElement?.lastElementChild;
     const previousIsBlockLike = !!previous?.matches(
-      'table, .canopy-menu, .canopy-image-container, code.canopy-code-block, hr.canopy-footnote-rule'
+      'table, .canopy-menu, .canopy-image-container, code.canopy-code-block, hr.canopy-footnote-rule, .canopy-footnotes'
     ) || !!(previous?.matches('div.canopy-raw-html') && previous.querySelector('table'));
     const nextIsMenu = linebreak.nextElementSibling?.classList.contains('canopy-menu');
 
