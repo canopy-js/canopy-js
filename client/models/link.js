@@ -658,7 +658,7 @@ class Link {
     if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
       return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
-        () => this.inlinePath.parentLink.select({ ...options, scrollToParagraph: false })
+        () => this.inlinePath.parentLink.select({ ...options, scrollToParagraph: true, targetRatio: 0.4 }) // put child p and link both somewhat in view
       );
     }
 

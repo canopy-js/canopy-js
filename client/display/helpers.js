@@ -227,8 +227,9 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let maxScrollRatio = Infinity; // no limit on initial load and click
 
   if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
+    const paragraphTargetRatio = options.targetRatio ?? (pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
     return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
-      targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
+      targetRatio: paragraphTargetRatio,
       maxScrollRatio,
       minDiff,
       behavior, 
