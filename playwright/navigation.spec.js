@@ -120,7 +120,7 @@ test.describe('Arrow keys', () => {
   });
 
   test('Menu links', async ({ page }) => {
-    page.setViewportSize({ width: 1920, height: 1080 });
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/United_States/New_York/Style_examples#Menu_links');
     await expect(page.locator('.canopy-selected-section')).toContainText("Menu cell 01");
     await page.locator('body').press('Enter');
