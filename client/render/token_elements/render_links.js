@@ -156,7 +156,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         link.element.dataset.fulcrumDir = isRtlText(fulcrumText) ? 'rtl' : 'ltr';
       }
 
-      if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
+      if (containsIconOrEmoji(link.text) || isSingleCharacterLink(link.text)) { // user is taking responsibility for arrow
         return;
       }
 
@@ -273,6 +273,13 @@ function containsIconOrEmoji(str) {
   const emojiPattern = /\p{Emoji}/u;
   const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
   return emojiPattern.test(plainText) || symbolPattern.test(plainText);
+}
+
+function isSingleCharacterLink(str) {
+  if (!str) return false;
+  const plainText = str.replace(/<[^>]*>/g, '').trim();
+  if (!plainText) return false;
+  return Array.from(plainText).length === 1;
 }
 
 export {
