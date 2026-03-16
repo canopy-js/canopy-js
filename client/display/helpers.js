@@ -171,10 +171,10 @@ function scrollToWithPromise(options) {
   }));
 }
 
-const LINK_TARGET_RATIO = .22;
+const LINK_TARGET_RATIO = .32;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
-const BIG_LINK_TARGET_RATIO = .1;
+const BIG_LINK_TARGET_RATIO = .2;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!Path.rendered) return Promise.resolve();  // user may be changing URL first so we use path from DOM
@@ -237,16 +237,14 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
       direction // up on root needs direction to do nothing
     }));
   } else { // scroll to linkToSelect
-    let targetElement, targetRatio;
-    if (linkToSelect.enclosingParagraph?.path?.ancestorOf(pathToDisplay) || linkToSelect.enclosingParagraph?.path?.equals(pathToDisplay)) {
-      targetElement = linkToSelect.enclosingParagraph.paragraphElement
-      targetRatio = PARAGRAPH_TARGET_RATIO;
-    } else {
-      targetElement = linkToSelect.element;
-      targetRatio = LINK_TARGET_RATIO;
-    }
-
-    return postChangePause().then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
+    const linkTargetRatio = options.targetRatio ?? LINK_TARGET_RATIO;
+    return postChangePause().then(() => scrollElementToPosition(linkToSelect.element, {
+      targetRatio: linkTargetRatio,
+      maxScrollRatio,
+      minDiff,
+      behavior,
+      direction
+    }));
   }
 }
 

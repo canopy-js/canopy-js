@@ -147,7 +147,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
   
   const preDisplayGlobalLinkCycleIcon = () => {
     if (!link.element) return;
-    if (link.cycle || link.isSelfReference) {
+    if ((link.cycle || link.isSelfReference) && !link.isSelfTerminalReference) {
       const targetPath = link.inlinePath?.reduce();
       const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;
       const fulcrumParagraph = fulcrumPath?.paragraph;

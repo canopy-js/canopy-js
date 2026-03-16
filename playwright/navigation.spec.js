@@ -565,6 +565,28 @@ test.describe('Navigation', () => {
      )).toHaveCount(1);
   });
 
+  test('Clicking on a self-terminal reference inlines and focuses the child parent-link', async ({ page }) => {
+    await page.goto('/California');
+
+    const selfTerminalLink = page.locator(
+      'section.canopy-selected-section[data-topic-name="California"][data-subtopic-name="California"] ' +
+      'a:has-text("California in the states-by-region table"):visible'
+    ).first();
+    await expect(selfTerminalLink.locator('.canopy-down-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-forward-cycle-icon')).toHaveCount(0);
+
+    await selfTerminalLink.click();
+
+    await expect(page).toHaveURL('/California/States_by_Region');
+    const selectedCaliforniaRowLink = page.locator(
+      'a.canopy-selected-link[data-text="California"][data-enclosing-topic="States by Region"]'
+    );
+    await expect(selectedCaliforniaRowLink).toHaveCount(1);
+    await expect(selectedCaliforniaRowLink).toHaveText(/California/);
+    await expect(selectedCaliforniaRowLink).toHaveAttribute('data-enclosing-topic', 'States by Region');
+    await expect(page.locator('text=California profile. >> visible=true')).toHaveCount(2);
+    await expect(selectedCaliforniaRowLink).toBeInViewport();
+  });
+
   test('Alt-clicking on a path reference redirects to the reference path', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
