@@ -124,8 +124,6 @@ const config = {
       port: 3006
     }
   ],
-
-  globalTeardown: './playwright/global_teardown.js'
 };
 
 module.exports = config;
