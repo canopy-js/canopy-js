@@ -1,20 +1,11 @@
 import { getCombinedBoundingRect } from 'render/helpers';
+import { writeSnapDebug, writeTableDebug } from 'render/token_elements/render_table_debug';
 
 // How strict snapping is for width
-const WIDTH_BASE_SIMILARITY_PERCENT = 20;   // baseline strictness
-const WIDTH_SIZE_SENSITIVITY = 3700;        // more tolerance for small table max widths
+const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
+const WIDTH_SIZE_SENSITIVITY = 3000;        // more tolerance for small table max widths
 
-// Select one mode by changing this value.
-// strict_all_columns:
-// Approach: assign computed widths to every column and lock total table width to that sum.
-// Pros: most deterministic column geometry; easiest to compare snapping output.
-// Cons: can exceed container width and cause overflow/horizontal squeeze in tight layouts.
-//
-// scale_data_columns_to_container:
-// Approach: keep non-target columns (like row headers) at their width, and scale snap-target/data columns down to fit container.
-// Pros: avoids crushing header columns and keeps table within available width.
-// Cons: data columns become proportionally scaled, so absolute snapped widths are not preserved.
-const TABLE_FIXED_WIDTH_MODE = 'scale_data_columns_to_container';
+const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
 
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -25,18 +16,59 @@ function renderTable(token, renderContext, renderTokenElements) {
   applyHiddenRowColClasses(tableElement);
 
   renderContext.preDisplayCallbacks.push(() => {
-    clearCellWidths(tableElement);
-    removeColgroup(tableElement);
-    setTableLayoutForMeasure(tableElement);
-    const measurements = measureTable(tableElement);
-    const snapPlan = computeSnapPlan(measurements);
-    applyColumnGroupWidths(tableElement, measurements, snapPlan);
+    const { measurements, snapPlan, totalWidth, containerWidth } = layoutTable(tableElement);
+
     setTableLayoutForFixed(tableElement);
-    writeSnapDebug(tableElement, measurements, snapPlan);
+    writeSnapDebug(tableElement, measurements, snapPlan, {
+      getCellMeta,
+      isBoldOnlyCell,
+      measureCellContent,
+      getRangeBoundingRect
+    });
     writeTableDebug(tableElement, measurements);
+    if (isFinite(totalWidth) && totalWidth > 0) {
+      tableElement.dataset.appliedTableWidth = String(totalWidth);
+    }
+    if (isFinite(containerWidth) && containerWidth > 0) {
+      tableElement.dataset.containerWidth = String(containerWidth);
+    }
+    const { minPadding, maxPadding } = getAppliedHorizontalPaddingRange(tableElement);
+    if (isFinite(minPadding)) tableElement.dataset.minHorizontalCellPadding = String(minPadding);
+    if (isFinite(maxPadding)) tableElement.dataset.maxHorizontalCellPadding = String(maxPadding);
   });
 
   return [tableElement];
+}
+
+function layoutTable(tableElement) {
+  let { measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement);
+  const containerWidth = tableElement.parentElement?.getBoundingClientRect?.().width;
+
+  if (
+    isFinite(containerWidth) &&
+    containerWidth > 0 &&
+    isFinite(totalWidth) &&
+    totalWidth > containerWidth
+  ) {
+    ({ measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement, {
+      forcedHorizontalPadding: OVERFLOW_HORIZONTAL_CELL_PADDING_PX
+    }));
+  }
+
+  return { measurements, snapPlan, totalWidth, containerWidth };
+}
+
+function runTableWidthPass(tableElement, { forcedHorizontalPadding } = {}) {
+  clearCellWidths(tableElement);
+  removeColgroup(tableElement);
+  setTableLayoutForMeasure(tableElement);
+  if (isFinite(forcedHorizontalPadding) && forcedHorizontalPadding >= 0) {
+    setTableHorizontalPadding(tableElement, forcedHorizontalPadding);
+  }
+  const measurements = measureTable(tableElement);
+  const snapPlan = computeSnapPlan(measurements);
+  const totalWidth = applyColumnGroupWidths(tableElement, measurements, snapPlan);
+  return { measurements, snapPlan, totalWidth };
 }
 
 function buildTableDOM(token, renderContext, renderTokenElements) {
@@ -93,7 +125,7 @@ function applyHiddenRowColClasses(tableElement) {
     .filter(row => [...row.cells].every(cell => cell.classList.contains('hidden')))
     .forEach(row => row.classList.add('canopy-hidden-row'));
 
-  const columnCount = Math.max(...[...tableElement.rows].map(row => row.cells.length));
+  const columnCount = getLogicalColumnCount([...tableElement.rows]);
   [...Array(columnCount)]
     .map((_, i) => [...tableElement.rows].map(row => row.cells[i]).filter(Boolean))
     .filter(col => col.every(cell => cell.classList.contains('hidden')))
@@ -106,6 +138,8 @@ function clearCellWidths(tableElement) {
     [...row.cells].forEach(cell => {
       cell.style.width = '';
       cell.style.boxSizing = '';
+      cell.style.paddingLeft = '';
+      cell.style.paddingRight = '';
     });
   });
 }
@@ -145,8 +179,52 @@ function setTableLayoutForFixed(tableElement) {
   tableElement.style.maxWidth = 'none';
 }
 
+function getAppliedHorizontalPaddingRange(tableElement) {
+  const values = [...tableElement.querySelectorAll('td, th')]
+    .map(cell => {
+      const style = window.getComputedStyle(cell);
+      const left = Number.parseFloat(style.paddingLeft);
+      const right = Number.parseFloat(style.paddingRight);
+      if (!isFinite(left) || !isFinite(right)) return NaN;
+      return (left + right) / 2;
+    })
+    .filter(value => isFinite(value) && value >= 0);
+
+  if (!values.length) return { minPadding: NaN, maxPadding: NaN };
+  return {
+    minPadding: Math.min(...values),
+    maxPadding: Math.max(...values)
+  };
+}
+
+function setTableHorizontalPadding(tableElement, paddingPx) {
+  tableElement.querySelectorAll('td, th').forEach(cell => {
+    cell.style.paddingLeft = paddingPx + 'px';
+    cell.style.paddingRight = paddingPx + 'px';
+  });
+}
+
+function getMeaningfulElementChildren(element) {
+  return [...(element?.children || [])].filter(child =>
+    !child.classList?.contains('canopy-link-terminal-gap')
+  );
+}
+
+function hasOnlyChildChainToBold(element) {
+  let current = element;
+  while (current) {
+    const meaningfulChildren = getMeaningfulElementChildren(current);
+    if (meaningfulChildren.length !== 1) return false;
+    const onlyChild = meaningfulChildren[0];
+    if (!onlyChild) return false;
+    if (onlyChild.tagName === 'B') return true;
+    current = onlyChild;
+  }
+  return false;
+}
+
 function isBoldOnlyCell(td) {
-  return td.children.length === 1 && td.firstElementChild?.tagName === 'B';
+  return hasOnlyChildChainToBold(td);
 }
 
 function isRowHeaderCell(td) {
@@ -167,6 +245,21 @@ function getChildElements(element) {
   return Array.from(element.children || []);
 }
 
+function getCellMeta(cell, tableElement) {
+  const { columnSpan, rowspan } = getCellSpan(cell);
+  const isRowHeader = isRowHeaderCell(cell);
+  const isColumnHeader = isColumnHeaderCell(cell, tableElement);
+
+  return {
+    columnSpan,
+    rowspan,
+    hasChildElements: getChildElements(cell).length > 0,
+    isRowHeader,
+    isColumnHeader,
+    excludeFromBaseline: isRowHeader || isColumnHeader
+  };
+}
+
 function getRangeBoundingRect(element) {
   const range = document.createRange();
   range.selectNodeContents(element);
@@ -183,12 +276,18 @@ function measureCellContent(cell, { useChildNodes = false } = {}) {
   const rangeRect = getRangeBoundingRect(cell);
   const contentWidth = contentRect.width;
   const contentHeight = contentRect.height;
-  const measuredContentWidth = isFinite(contentWidth) && contentWidth > 0
-    ? contentWidth
-    : (rangeRect ? rangeRect.width : contentWidth);
-  const measuredContentHeight = isFinite(contentHeight) && contentHeight > 0
-    ? contentHeight
-    : (rangeRect ? rangeRect.height : contentHeight);
+  const rangeWidth = rangeRect?.width;
+  const rangeHeight = rangeRect?.height;
+  const scrollWidth = cell.scrollWidth;
+  const scrollHeight = cell.scrollHeight;
+
+  const widthCandidates = [contentWidth, rangeWidth, scrollWidth]
+    .filter(width => isFinite(width) && width > 0);
+  const heightCandidates = [contentHeight, rangeHeight, scrollHeight]
+    .filter(height => isFinite(height) && height > 0);
+
+  const measuredContentWidth = widthCandidates.length ? Math.max(...widthCandidates) : contentWidth;
+  const measuredContentHeight = heightCandidates.length ? Math.max(...heightCandidates) : contentHeight;
   return {
     contentRect,
     rangeRect,
@@ -214,6 +313,15 @@ function getCellSpan(cell) {
   const columnSpan = Number.isFinite(colspan) && colspan > 0 ? colspan : 1;
   const rowspan = cell.getAttribute('rowspan');
   return { columnSpan, rowspan };
+}
+
+function getLogicalColumnCount(rows) {
+  return Math.max(
+    0,
+    ...rows.map(row =>
+      [...row.cells].reduce((sum, cell) => sum + getCellSpan(cell).columnSpan, 0)
+    )
+  );
 }
 
 function shouldSnapSize({
@@ -303,7 +411,7 @@ function buildGreedyColumnTargets(columnSizes) {
 
 function measureTable(tableElement) {
   const rows = [...tableElement.rows];
-  const columnCount = Math.max(...rows.map(row => row.cells.length));
+  const columnCount = getLogicalColumnCount(rows);
   const columnSizes = Array.from({ length: columnCount }, () => ({
     maxUnitContentWidth: 0,
     maxUnitBoxWidth: 0
@@ -322,23 +430,23 @@ function measureTable(tableElement) {
   [...tableElement.querySelectorAll('td')].forEach(cell => {
     if (cell.childNodes.length === 0) return;
 
-    const isRowHeader = isRowHeaderCell(cell);
-    const isColumnHeader = isColumnHeaderCell(cell, tableElement);
-    const excludeFromBaseline = isRowHeader || isColumnHeader;
-    const { columnSpan, rowspan } = getCellSpan(cell);
-    const { measuredContentWidth, measuredContentHeight, contentWidth, contentHeight } = measureCellContent(cell, { useChildNodes: true });
+    const {
+      columnSpan,
+      rowspan,
+      excludeFromBaseline
+    } = getCellMeta(cell, tableElement);
+    const { measuredContentWidth, measuredContentHeight } = measureCellContent(cell, { useChildNodes: true });
     const { boxWidth } = measureCellBox(cell);
 
-    const unitContentWidth = contentWidth / columnSpan;
     const measuredUnitContentWidth = measuredContentWidth / columnSpan;
     if (!excludeFromBaseline && isFinite(measuredUnitContentWidth) && measuredUnitContentWidth > 0) {
-      if (unitContentWidth < sizes.minContentWidth) sizes.minContentWidth = measuredUnitContentWidth;
-      if (unitContentWidth > sizes.maxContentWidth) sizes.maxContentWidth = measuredUnitContentWidth;
+      if (measuredUnitContentWidth < sizes.minContentWidth) sizes.minContentWidth = measuredUnitContentWidth;
+      if (measuredUnitContentWidth > sizes.maxContentWidth) sizes.maxContentWidth = measuredUnitContentWidth;
     }
 
     if (!rowspan && !excludeFromBaseline && isFinite(measuredContentHeight) && measuredContentHeight > 0) {
-      if (contentHeight < sizes.minContentHeight) sizes.minContentHeight = measuredContentHeight;
-      if (contentHeight > sizes.maxContentHeight) sizes.maxContentHeight = measuredContentHeight;
+      if (measuredContentHeight < sizes.minContentHeight) sizes.minContentHeight = measuredContentHeight;
+      if (measuredContentHeight > sizes.maxContentHeight) sizes.maxContentHeight = measuredContentHeight;
     }
 
     const unitBoxWidth = boxWidth / columnSpan;
@@ -351,20 +459,20 @@ function measureTable(tableElement) {
   rows.forEach(row => {
     let colIndex = 0;
     [...row.cells].forEach(cell => {
-      const { columnSpan } = getCellSpan(cell);
-      const isRowHeader = isRowHeaderCell(cell);
-      const isColumnHeader = isColumnHeaderCell(cell, tableElement);
-      const excludeFromBaseline = isRowHeader || isColumnHeader;
-      const childElements = getChildElements(cell);
-      const hasChildNodes = childElements.length > 0;
+      const {
+        columnSpan,
+        hasChildElements,
+        isRowHeader,
+        excludeFromBaseline
+      } = getCellMeta(cell, tableElement);
 
       if (excludeFromBaseline) {
         cell.dataset.columnSizeSkipReason = isRowHeader ? 'row_header' : 'column_header';
-      } else if (!hasChildNodes) {
+      } else if (!hasChildElements) {
         cell.dataset.columnSizeSkipReason = 'no_children';
       }
 
-      if (!excludeFromBaseline && hasChildNodes) {
+      if (!excludeFromBaseline && hasChildElements) {
         const { measuredContentWidth } = measureCellContent(cell);
         const { boxWidth } = measureCellBox(cell);
         const unitContentWidth = isFinite(measuredContentWidth) && measuredContentWidth > 0
@@ -485,24 +593,61 @@ function getObservedColumnBoxWidths(tableElement, columnCount) {
   return observedWidths;
 }
 
+function getObservedColumnScrollWidths(tableElement, columnCount) {
+  const observedWidths = new Array(columnCount).fill(0);
+
+  [...tableElement.rows].forEach(row => {
+    let colIndex = 0;
+    [...row.cells].forEach(cell => {
+      const { columnSpan } = getCellSpan(cell);
+      const unitScrollWidth = cell.scrollWidth / columnSpan;
+      if (isFinite(unitScrollWidth) && unitScrollWidth > 0) {
+        for (let i = 0; i < columnSpan; i++) {
+          if (unitScrollWidth > observedWidths[colIndex + i]) observedWidths[colIndex + i] = unitScrollWidth;
+        }
+      }
+      colIndex += columnSpan;
+    });
+  });
+
+  return observedWidths;
+}
+
+function resolveAppliedColumnWidth({ column, snapResult, observedWidth, observedScrollWidth }) {
+  const snappedWidth = snapResult?.snapResult?.willSnap
+    ? snapResult?.snapTarget?.target?.unitBoxWidth
+    : null;
+  const fallbackWidth = column?.maxUnitBoxWidth;
+
+  const candidates = [snappedWidth, fallbackWidth, observedWidth, observedScrollWidth]
+    .filter(width => isFinite(width) && width > 0);
+  if (!candidates.length) return NaN;
+
+  // Never let snapping shrink a column below the observed/fallback size.
+  return Math.max(...candidates);
+}
+
 function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
   const { columnSnapResults } = snapPlan;
-  const colgroup = ensureColgroup(tableElement, columnSizes.length);
-  const observedWidths = getObservedColumnBoxWidths(tableElement, columnSizes.length);
+  const logicalColumnCount = getLogicalColumnCount([...tableElement.rows]);
+  const columnCount = Math.max(columnSizes.length, logicalColumnCount);
+  tableElement.dataset.logicalColumnCount = String(logicalColumnCount);
+  tableElement.dataset.appliedColumnCount = String(columnCount);
+  const colgroup = ensureColgroup(tableElement, columnCount);
+  const observedWidths = getObservedColumnBoxWidths(tableElement, columnCount);
+  const observedScrollWidths = getObservedColumnScrollWidths(tableElement, columnCount);
 
-  let widths = columnSizes.map((column, index) => {
+  let widths = Array.from({ length: columnCount }, (_, index) => {
+    const column = columnSizes[index];
     const snapResult = columnSnapResults[index];
-    const snappedWidth = snapResult?.snapResult?.willSnap
-      ? snapResult?.snapTarget?.target?.unitBoxWidth
-      : null;
-    const fallbackWidth = column?.maxUnitBoxWidth;
     const observedWidth = observedWidths[index];
-    const width = isFinite(snappedWidth) && snappedWidth > 0
-      ? snappedWidth
-      : ((isFinite(fallbackWidth) && fallbackWidth > 0)
-        ? fallbackWidth
-        : observedWidth);
-    return isFinite(width) && width > 0 ? width : NaN;
+    const observedScrollWidth = observedScrollWidths[index];
+    return resolveAppliedColumnWidth({
+      column,
+      snapResult,
+      observedWidth,
+      observedScrollWidth
+    });
   });
 
   const validWidths = widths.filter(width => isFinite(width) && width > 0);
@@ -512,35 +657,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
 
   widths = widths.map(width => (isFinite(width) && width > 0 ? width : averageWidth));
 
-  let finalWidths = widths;
-
-  if (TABLE_FIXED_WIDTH_MODE === 'strict_all_columns') {
-    finalWidths = widths;
-  } else if (TABLE_FIXED_WIDTH_MODE === 'scale_data_columns_to_container') {
-    const containerWidth = tableElement.parentElement?.getBoundingClientRect?.().width;
-
-    const scalableIndices = widths
-      .map((_, index) => index)
-      .filter(index => !!columnSnapResults[index]);
-    const fixedIndices = widths
-      .map((_, index) => index)
-      .filter(index => !columnSnapResults[index]);
-
-    const fixedTotalWidth = fixedIndices.reduce((sum, index) => sum + widths[index], 0);
-    const scalableTotalWidth = scalableIndices.reduce((sum, index) => sum + widths[index], 0);
-
-    let scale = 1;
-    if (isFinite(containerWidth) && containerWidth > 0 && scalableIndices.length > 0) {
-      const availableForScalable = Math.max(containerWidth - fixedTotalWidth, 0);
-      if (scalableTotalWidth > 0 && scalableTotalWidth > availableForScalable) {
-        scale = availableForScalable / scalableTotalWidth;
-      }
-    }
-
-    finalWidths = widths.map((width, index) =>
-      scalableIndices.includes(index) ? width * scale : width
-    );
-  }
+  const finalWidths = widths;
 
   finalWidths.forEach((width, index) => {
     colgroup.children[index].style.width = width + 'px';
@@ -548,138 +665,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
 
   const totalWidth = finalWidths.reduce((sum, width) => sum + width, 0);
   tableElement.style.width = totalWidth + 'px';
-}
-
-
-function writeSnapDebug(tableElement, { rows, columnSizes, sizes }, snapPlan) {
-  const { snapTargets, columnTargets, columnDebugAttempts, columnSnapResults } = snapPlan;
-
-  rows.forEach(row => {
-    let colIndex = 0;
-    [...row.cells].forEach(cell => {
-      const { columnSpan } = getCellSpan(cell);
-      const columnStartIndex = colIndex;
-      colIndex += columnSpan;
-
-      if (cell.childNodes.length === 0) return;
-
-      const childElements = getChildElements(cell);
-      if (childElements.length === 0) return;
-
-      const { contentWidth } = measureCellContent(cell);
-      const rangeRect = getRangeBoundingRect(cell);
-      const currentBoxWidth = cell.getBoundingClientRect().width;
-      const fallbackContentWidth = currentBoxWidth;
-      const currentContentWidth = isFinite(contentWidth) && contentWidth > 0
-        ? contentWidth
-        : (rangeRect ? rangeRect.width : fallbackContentWidth);
-      const currentUnitContentWidth = currentContentWidth / columnSpan;
-
-      const spanResults = columnSnapResults.slice(columnStartIndex, columnStartIndex + columnSpan);
-      if (!spanResults.length || spanResults.some(result => !result)) {
-        cell.dataset.columnSnapSkipReason = 'no_column_target';
-        return;
-      }
-
-      const targetUnitContentWidth = spanResults.reduce((sum, result) => sum + result.snapTarget.target.unitContentWidth, 0);
-      const targetUnitBoxWidth = spanResults.reduce((sum, result) => sum + (result.snapTarget.target.unitBoxWidth || 0), 0);
-      const combinedDifferencePercent = spanResults.reduce((sum, result) => sum + result.snapResult.differencePercent, 0) / columnSpan;
-      const combinedAllowedPercent = spanResults.reduce((sum, result) => sum + result.snapResult.allowedPercent, 0) / columnSpan;
-      const willSnap = spanResults.every(result => result.snapResult.willSnap);
-
-      writeCellDebug(cell, {
-        currentContentWidth,
-        currentUnitContentWidth,
-        columnSpan,
-        sizes,
-        combinedDifferencePercent,
-        combinedAllowedPercent,
-        willSnap,
-        columnStartIndex,
-        columnSizes,
-        columnDebugAttempts,
-        targetUnitContentWidth,
-        targetUnitBoxWidth,
-        snapTargets,
-        spanResults,
-        columnTargets
-      });
-
-    });
-  });
-}
-
-function writeCellDebug(cell, {
-  currentContentWidth,
-  currentUnitContentWidth,
-  columnSpan,
-  sizes,
-  combinedDifferencePercent,
-  combinedAllowedPercent,
-  willSnap,
-  columnStartIndex,
-  columnSizes,
-  columnDebugAttempts,
-  targetUnitContentWidth,
-  targetUnitBoxWidth,
-  snapTargets,
-  spanResults,
-  columnTargets
-}) {
-  cell.dataset.currentContentWidth = currentContentWidth;
-  cell.dataset.currentUnitContentWidth = currentUnitContentWidth;
-  const naturalContentWidth = cell.scrollWidth;
-  if (isFinite(naturalContentWidth) && naturalContentWidth > 0) {
-    cell.dataset.naturalContentWidth = naturalContentWidth;
-  }
-  cell.dataset.colspan = String(columnSpan);
-  cell.dataset.minContentWidth = sizes.minContentWidth;
-  cell.dataset.maxContentWidth = sizes.maxContentWidth;
-  cell.dataset.widthDiffPercent = combinedDifferencePercent;
-  cell.dataset.widthAllowedPercent = combinedAllowedPercent;
-  cell.dataset.widthWillSnap = willSnap ? 'true' : 'false';
-  cell.dataset.columnIndex = String(columnStartIndex);
-  cell.dataset.columnSpan = String(columnSpan);
-  cell.dataset.columnMaxUnitBoxWidth = String(columnSizes[columnStartIndex]?.maxUnitBoxWidth || 0);
-  cell.dataset.columnMaxUnitContentWidth = String(columnSizes[columnStartIndex]?.maxUnitContentWidth || 0);
-  cell.dataset.columnSnapAttempts = JSON.stringify(columnDebugAttempts[columnStartIndex] || []);
-  cell.dataset.snapTargetUnitContentWidth = targetUnitContentWidth;
-  cell.dataset.snapTargetUnitBoxWidth = targetUnitBoxWidth;
-
-  if (spanResults[0]) {
-    const anchorWidth = spanResults[0].snapTarget.target?.unitContentWidth;
-    const snapIndex = snapTargets.findIndex(t => t.unitContentWidth === anchorWidth);
-    cell.dataset.snapTargetIndex = String(snapIndex);
-  } else {
-    cell.dataset.snapTargetIndex = String(-1);
-  }
-  cell.dataset.snapTargetCount = String(snapTargets.length);
-
-  if (columnTargets[columnStartIndex]?.anchorIndex != null) {
-    cell.dataset.columnSnapAnchorIndex = String(columnTargets[columnStartIndex].anchorIndex);
-    cell.dataset.columnSnapAnchorWidth = String(columnTargets[columnStartIndex].target?.unitContentWidth || 0);
-    if (columnTargets[columnStartIndex].snapResult) {
-      cell.dataset.columnSnapAnchorDiffPercent = String(columnTargets[columnStartIndex].snapResult.differencePercent);
-      cell.dataset.columnSnapAnchorAllowedPercent = String(columnTargets[columnStartIndex].snapResult.allowedPercent);
-      cell.dataset.columnSnapAnchorWillSnap = columnTargets[columnStartIndex].snapResult.willSnap ? 'true' : 'false';
-    }
-    if (columnTargets[columnStartIndex].anchorSource) {
-      cell.dataset.columnSnapAnchorSource = columnTargets[columnStartIndex].anchorSource;
-    }
-    if (columnTargets[columnStartIndex].anchorCandidates) {
-      cell.dataset.columnSnapAnchorCandidates = JSON.stringify(columnTargets[columnStartIndex].anchorCandidates);
-    }
-  }
-}
-
-function writeTableDebug(tableElement, { sizes }) {
-  tableElement.dataset.minContentWidth = sizes.minContentWidth;
-  tableElement.dataset.maxContentWidth = sizes.maxContentWidth;
-  tableElement.dataset.minContentHeight = sizes.minContentHeight;
-  tableElement.dataset.maxContentHeight = sizes.maxContentHeight;
-  tableElement.dataset.maxTdBoxWidth = sizes.maxTdBoxWidth;
-  tableElement.dataset.minRowHeight = sizes.minRowHeight;
-  tableElement.dataset.maxRowHeight = sizes.maxRowHeight;
+  return totalWidth;
 }
 
 export default renderTable;
