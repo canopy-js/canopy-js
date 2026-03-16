@@ -208,6 +208,67 @@ function buildAssetDataUriMap() {
 }
 
 function toDataUri(filePath) {
+  const mime = mimeTypeForPath(filePath);
+  const data = fs.readFileSync(filePath);
+  return `data:${mime};base64,${data.toString('base64')}`;
+}
+
+function inlineRemoteAssetsInString(string, remoteAssetCache, logging) {
+  return string
+    .replace(/(<img\s[^>]*?src=\\?["'])(https?:\/\/[^"']+?)(\\?["'])/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    })
+    .replace(/("resourceUrl":\s*")((?:https?:\/\/)[^"]+?)(")/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    })
+    .replace(/(url\((?:\\?["'])?)(https?:\/\/[^)"']+?)((?:\\?["'])?\))/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    });
+}
+
+function fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging) {
+  if (remoteAssetCache[url]) return remoteAssetCache[url];
+
+  const candidateUrls = [url, originalWikimediaAssetUrl(url)].filter((candidate, index, array) =>
+    candidate && array.indexOf(candidate) === index
+  );
+
+  for (let candidateUrl of candidateUrls) {
+    let tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-remote-asset-'));
+    let tempFilePath = path.join(tempDir, 'asset');
+
+    try {
+      let contentType = execFileSync(
+        'curl',
+        ['-L', '--fail', '--silent', '--show-error', '--output', tempFilePath, '--write-out', '%{content_type}', candidateUrl],
+        { encoding: 'utf8' }
+      ).trim();
+
+      const data = fs.readFileSync(tempFilePath);
+      const mime = contentType || mimeTypeForPath(new URL(candidateUrl).pathname);
+      const dataUri = `data:${mime};base64,${data.toString('base64')}`;
+      remoteAssetCache[url] = dataUri;
+      return dataUri;
+    } catch (_error) {
+      continue;
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  if (logging) console.warn(chalk.yellow(`Could not inline remote asset for single-file build: ${url}`));
+  remoteAssetCache[url] = url;
+  return url;
+}
+
+function originalWikimediaAssetUrl(url) {
+  const match = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/thumb\/(.+?)\/[^/]+$/);
+  if (!match) return null;
+
+  return `${match[1]}/${match[2]}`;
+}
+
+function mimeTypeForPath(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const mimeTypes = {
     '.png': 'image/png',
