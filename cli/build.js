@@ -33,7 +33,11 @@ function runBuild(options = {}) {
 
   fs.ensureDirSync('build');
 
-  if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
+  const projectHasAssets = fs.existsSync('assets');
+  const buildAssetsMissing = !fs.existsSync('build/_assets');
+  const shouldCopyAssets = projectHasAssets && (!options.keepBuildDirectory || buildAssetsMissing);
+
+  if (shouldCopyAssets) {
     fs.rmSync('build/_assets', { recursive: true, force: true });
     fs.copySync('assets', 'build/_assets', { overwrite: true });
   }
