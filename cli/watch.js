@@ -82,7 +82,7 @@ function spawnBackgroundFullBuild(options, requestedAt) {
 
   const childOptions = {
     cache: false,
-    keepBuildDirectory: true,
+    replaceBuildDirectory: false,
     logging: options.logging,
     pretty: options.pretty,
     orphans: options.orphans,

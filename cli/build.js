@@ -8,26 +8,13 @@ let path = require('path');
 let os = require('os');
 let { execFileSync } = require('child_process');
 
-const BUILD_LOCK_PATH = '.canopy-build.lock';
-
 function build(options = {}) {
-  const shouldLockBuild = !options.keepBuildDirectory;
-  if (shouldLockBuild && !acquireBuildLock()) return;
-
-  try {
-    runBuild(options);
-  } finally {
-    if (shouldLockBuild) fs.rmSync(BUILD_LOCK_PATH, { force: true });
-  }
-}
-
-function runBuild(options = {}) {
-  let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
+  let { symlinks, projectPathPrefix, hashUrls, manualHtml, logging, replaceBuildDirectory } = options;
   const buildStart = Date.now();
   let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
-  if (!keepBuildDirectory) {
+  if (replaceBuildDirectory) {
     fs.rmSync('build', { recursive: true, force: true });
   }
 
@@ -35,7 +22,7 @@ function runBuild(options = {}) {
 
   const projectHasAssets = fs.existsSync('assets');
   const buildAssetsMissing = !fs.existsSync('build/_assets');
-  const shouldCopyAssets = projectHasAssets && (!options.keepBuildDirectory || buildAssetsMissing);
+  const shouldCopyAssets = projectHasAssets && (replaceBuildDirectory || buildAssetsMissing);
 
   if (shouldCopyAssets) {
     fs.rmSync('build/_assets', { recursive: true, force: true });
@@ -326,42 +313,6 @@ function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
     return fs.statSync( path + '/' + file).isDirectory() && !file.startsWith('_');
   });
-}
-
-function acquireBuildLock() {
-  try {
-    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-    return true;
-  } catch (error) {
-    if (error.code !== 'EEXIST') throw error;
-  }
-
-  let existingPid = null;
-
-  try {
-    existingPid = Number(fs.readFileSync(BUILD_LOCK_PATH, 'utf8').trim());
-  } catch (_error) {
-    fs.rmSync(BUILD_LOCK_PATH, { force: true });
-    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-    return true;
-  }
-
-  if (pidIsRunning(existingPid)) return false;
-
-  fs.rmSync(BUILD_LOCK_PATH, { force: true });
-  fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-  return true;
-}
-
-function pidIsRunning(pid) {
-  if (!Number.isInteger(pid) || pid <= 0) return false;
-
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return error.code === 'EPERM';
-  }
 }
 
 module.exports = build;

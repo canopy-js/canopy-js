@@ -14,11 +14,11 @@ function addBuildOptions(cmd) {
     .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
     .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
     .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
-    .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
-    .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
+    .option('-x, --replace-build-directory', 'Replace the build directory before building', false)
+    .addOption(new Option('--cache', 'whether to build touched topics first')) // cache requires old files for time comparison
     .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
     .addOption(new Option('--file [output]', 'Also write a single-file HTML (default: build/<DefaultTopic>.html)').implies({ hashUrls: true }))
-    .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
+    .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change'))
     .addOption(new Option('--pretty', 'Pretty print JSON'));
 }
 
