@@ -15,73 +15,79 @@ function build(options = {}) {
   if (shouldLockBuild && !acquireBuildLock()) return;
 
   try {
-    let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
-    const buildStart = Date.now();
-    let defaultTopic = new DefaultTopic();
-    if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
-
-    if (!keepBuildDirectory) {
-      fs.rmSync('build', { recursive: true, force: true });
-    }
-
-    fs.ensureDirSync('build');
-
-    if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
-      fs.rmSync('build/_assets', { recursive: true, force: true });
-      fs.copySync('assets', 'build/_assets', { overwrite: true });
-    }
-
-    if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
-      throw new Error(chalk.red('No Canopy.js asset found'));
-    }
-
-    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
-
-    if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
-      fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
-    }
-
-    if (!options.skipInitialBuild) {
-      if (options.logging) console.log(chalk.cyan(
-        `Canopy build: Rebuilding JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
-        + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
-      ));
-
-      if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
-      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
-      writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
-
-      if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
-      if (options.cache && !options.deferFullBuild) {
-        tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
-      }
-      if (options.logging) {
-        const elapsedSeconds = ((Date.now() - buildStart) / 1000).toFixed(1);
-        console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid}) in ${elapsedSeconds}s`));
-      }
-      if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
-    }
-
-    if (symlinks) {
-      let topicDirectories = getDirectories('build');
-      topicDirectories.forEach((currentTopicDirectory) => {
-        topicDirectories.forEach((targetTopicDirectory) => {
-          if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
-          fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
-          if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
-            fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
-          }
-        });
-        if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
-          fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
-        }
-      });
-    }
-
-    if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
+    runBuild(options);
   } finally {
     if (shouldLockBuild) fs.rmSync(BUILD_LOCK_PATH, { force: true });
   }
+}
+
+function runBuild(options = {}) {
+  let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
+  const buildStart = Date.now();
+  let defaultTopic = new DefaultTopic();
+  if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
+
+  if (!keepBuildDirectory) {
+    fs.rmSync('build', { recursive: true, force: true });
+  }
+
+  fs.ensureDirSync('build');
+
+  if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
+    fs.rmSync('build/_assets', { recursive: true, force: true });
+    fs.copySync('assets', 'build/_assets', { overwrite: true });
+  }
+
+  if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
+    throw new Error(chalk.red('No Canopy.js asset found'));
+  }
+
+  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
+
+  if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
+  }
+
+  if (!options.skipInitialBuild) {
+    if (options.logging) console.log(chalk.cyan(
+      `Canopy build: Rebuilding JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
+      + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
+    ));
+
+    if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
+    tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
+    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
+
+    if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
+    if (options.cache && !options.deferFullBuild) {
+      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+    }
+
+    if (options.logging) {
+      const elapsedSeconds = ((Date.now() - buildStart) / 1000).toFixed(1);
+      console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid}) in ${elapsedSeconds}s`));
+    }
+
+    if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
+  }
+
+  if (symlinks) {
+    let topicDirectories = getDirectories('build');
+    topicDirectories.forEach((currentTopicDirectory) => {
+      topicDirectories.forEach((targetTopicDirectory) => {
+        if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
+        fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
+        if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
+          fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+        }
+      });
+      if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
+        fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
+      }
+    });
+  }
+
+  if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
