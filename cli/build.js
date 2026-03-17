@@ -5,8 +5,23 @@ let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let Topic = require('./shared/topic');
 let path = require('path');
+let os = require('os');
+let { execFileSync } = require('child_process');
+
+const BUILD_LOCK_PATH = '.canopy-build.lock';
 
 function build(options = {}) {
+  const shouldLockBuild = !options.keepBuildDirectory;
+  if (shouldLockBuild && !acquireBuildLock()) return;
+
+  try {
+    runBuild(options);
+  } finally {
+    if (shouldLockBuild) fs.rmSync(BUILD_LOCK_PATH, { force: true });
+  }
+}
+
+function runBuild(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
   const buildStart = Date.now();
   let defaultTopic = new DefaultTopic();
@@ -44,11 +59,15 @@ function build(options = {}) {
     writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
-    if (options.cache) tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+    if (options.cache && !options.deferFullBuild) {
+      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+    }
+
     if (options.logging) {
       const elapsedSeconds = ((Date.now() - buildStart) / 1000).toFixed(1);
       console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid}) in ${elapsedSeconds}s`));
     }
+
     if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
   }
 
@@ -123,13 +142,16 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   const canopyJs = fs.readFileSync('build/_canopy.js', 'utf8').replace(/<\/script/gi, '<\\/script');
 
   const assetMap = buildAssetDataUriMap();
+  const remoteAssetCache = {};
   const inlineAssetsInString = (string) => {
     if (!string) return string;
     const asString = typeof string === 'string' ? string : string.toString('utf8');
-    return asString.replace(/((?:\.\.?\/|\/)?_assets\/[^"'\\)\s]+)/g, (match) => {
+    const withLocalAssets = asString.replace(/((?:\.\.?\/|\/)?_assets\/[^"'\\)\s]+)/g, (match) => {
       const replacement = assetMap[normalizeAssetKey(match)] || match;
       return replacement.replace(/^\/(?=data:)/, ''); // strip leading slash if present on data URIs
     });
+
+    return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging);
   };
 
   const dataDir = 'build/_data';
@@ -286,9 +308,8 @@ function mimeTypeForPath(filePath) {
     '.mp3': 'audio/mpeg',
     '.mp4': 'video/mp4'
   };
-  const mime = mimeTypes[ext] || 'application/octet-stream';
-  const data = fs.readFileSync(filePath);
-  return `data:${mime};base64,${data.toString('base64')}`;
+
+  return mimeTypes[ext] || 'application/octet-stream';
 }
 
 function normalizeAssetKey(key) {
@@ -301,6 +322,42 @@ function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
     return fs.statSync( path + '/' + file).isDirectory() && !file.startsWith('_');
   });
+}
+
+function acquireBuildLock() {
+  try {
+    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+    return true;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+
+  let existingPid = null;
+
+  try {
+    existingPid = Number(fs.readFileSync(BUILD_LOCK_PATH, 'utf8').trim());
+  } catch (_error) {
+    fs.rmSync(BUILD_LOCK_PATH, { force: true });
+    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+    return true;
+  }
+
+  if (pidIsRunning(existingPid)) return false;
+
+  fs.rmSync(BUILD_LOCK_PATH, { force: true });
+  fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+  return true;
+}
+
+function pidIsRunning(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
+  }
 }
 
 module.exports = build;

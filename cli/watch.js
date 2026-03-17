@@ -1,8 +1,13 @@
 const fs = require('fs-extra');
 const build = require('./build');
 const chokidar = require('chokidar');
+const path = require('path');
+const { spawn } = require('child_process');
 let chalk = require('chalk');
 let { canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
+
+let fullBuildChild = null;
+let fullBuildRequestedAt = 0;
 
 function watch(options = {}) {
   if (!fs.existsSync('topics')) {
@@ -11,7 +16,7 @@ function watch(options = {}) {
   }
 
   try { // initial build
-    options.onBuildError ? build(options) : tryAndWriteHtmlError(build, options);
+    buildRegular(options, { rethrowErrors: true });
     console.log(chalk.magenta(`Initial build completed successfully at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
   } catch (e) {
     if (options.onBuildError) {
@@ -32,16 +37,25 @@ function watch(options = {}) {
     .on('change', handler)
     .on('unlink', handler)
     .on('unlinkDir', handler);
+
+  process.on('exit', cleanupBackgroundFullBuild);
 }
 
-function buildRegular(options = {}) {
+function buildRegular(options = {}, { rethrowErrors = false } = {}) {
+  const requestedAt = nextRequestedAt();
+  const buildOptions = shouldRunFullBuildInBackground(options)
+    ? { ...options, deferFullBuild: true }
+    : options;
+
   try {
     if (options.onBuildError) {
-      build({ ...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') });
+      build({ ...buildOptions, skipInitialBuild: options.filesEdited?.includes('canopy-js/client') });
     } else {
-      tryAndWriteHtmlError(build, {...options, skipInitialBuild: options.filesEdited.includes('canopy-js/client') }); // client changes skip JSON gen
+      tryAndWriteHtmlError(build, { ...buildOptions, skipInitialBuild: options.filesEdited?.includes('canopy-js/client') }); // client changes skip JSON gen
     }
+    if (shouldRunFullBuildInBackground(options)) spawnBackgroundFullBuild(options, requestedAt);
   } catch (e) {
+    if (rethrowErrors) throw e;
     if (options.onBuildError) return options.onBuildError(e); // handle translation/html writing in caller
     console.error(chalk.bgRed(chalk.black(`Canopy watch process (pid ${process.pid}) failed to build topic files`)));
     console.error(e.message);
@@ -52,6 +66,50 @@ let debounceTimer;
 function debounce(callback, time) {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(callback, time);
+}
+
+function shouldRunFullBuildInBackground(options) {
+  return Boolean(options.cache && !options.skipInitialBuild && !options.filesEdited?.includes('canopy-js/client'));
+}
+
+function nextRequestedAt() {
+  fullBuildRequestedAt = Math.max(Date.now(), fullBuildRequestedAt + 1);
+  return fullBuildRequestedAt;
+}
+
+function spawnBackgroundFullBuild(options, requestedAt) {
+  if (fullBuildChild) fullBuildChild.kill();
+
+  const childOptions = {
+    cache: false,
+    keepBuildDirectory: true,
+    logging: options.logging,
+    pretty: options.pretty,
+    orphans: options.orphans,
+    reciprocals: options.reciprocals
+  };
+
+  const child = spawn(
+    process.execPath,
+    [path.join(__dirname, 'build', 'run_background_full_build.js'), JSON.stringify(childOptions)],
+    {
+      cwd: process.cwd(),
+      stdio: 'inherit'
+    }
+  );
+
+  fullBuildChild = child;
+  child.requestedAt = requestedAt;
+  child.on('exit', (_code, signal) => {
+    if (fullBuildChild !== child) return;
+    if (signal === 'SIGTERM') return;
+    if (child.requestedAt !== fullBuildRequestedAt) return;
+    fullBuildChild = null;
+  });
+}
+
+function cleanupBackgroundFullBuild() {
+  if (fullBuildChild) fullBuildChild.kill();
 }
 
 module.exports = watch;
