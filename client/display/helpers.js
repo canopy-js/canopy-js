@@ -171,10 +171,10 @@ function scrollToWithPromise(options) {
   }));
 }
 
-const LINK_TARGET_RATIO = .22;
+const LINK_TARGET_RATIO = .32;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
-const BIG_LINK_TARGET_RATIO = .1;
+const BIG_LINK_TARGET_RATIO = .2;
 
 function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (!Path.rendered) return Promise.resolve();  // user may be changing URL first so we use path from DOM
@@ -184,14 +184,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if ((Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // moving down
   if (linkToSelect?.isBelowFocusArea) return Promise.resolve(); // avoid double downward scrolls
   if (Link.selection.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
-  const linkTargetRatio = linkToSelect?.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO;
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
-
-  const targetLink = Path.rendered.twoStepChange(newPath) ? previousPath.fulcrumLink(newPath) : (linkToSelect || newPath.parentLink);
-  if (targetLink?.isFocusedAtRatio?.(linkTargetRatio)) {
-    options.afterChangePause = false;
-    return Promise.resolve();
-  }
 
   let minDiff = options.noMinDiff ? null : 75;
 
@@ -212,19 +205,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
 function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   if (options.noScroll || options.noAfterChangeScroll) return Promise.resolve();
-  // if (linkToSelect?.isFocused) return Promise.resolve();
+  const minDiff = 15;
   let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
   let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 200))) : Promise.resolve();
-  const focusedLink = linkToSelect || pathToDisplay.parentLink;
-  if (!options.scrollToParagraph && focusedLink?.isFocusedAtRatio?.(LINK_TARGET_RATIO)) {
-    return Promise.resolve();
-  }
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(
-      Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, behavior, side: 'top' }
+      Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, minDiff, behavior, side: 'top' }
     );
   }
 
@@ -236,11 +225,11 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   }
 
   let maxScrollRatio = Infinity; // no limit on initial load and click
-  let minDiff = 0;
 
   if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
+    const paragraphTargetRatio = options.targetRatio ?? (pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
     return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
-      targetRatio: pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO,
+      targetRatio: paragraphTargetRatio,
       maxScrollRatio,
       minDiff,
       behavior, 
@@ -248,16 +237,14 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
       direction // up on root needs direction to do nothing
     }));
   } else { // scroll to linkToSelect
-    let targetElement, targetRatio;
-    if (linkToSelect.enclosingParagraph?.path?.ancestorOf(pathToDisplay) || linkToSelect.enclosingParagraph?.path?.equals(pathToDisplay)) {
-      targetElement = linkToSelect.enclosingParagraph.paragraphElement
-      targetRatio = PARAGRAPH_TARGET_RATIO;
-    } else {
-      targetElement = linkToSelect.element;
-      targetRatio = LINK_TARGET_RATIO;
-    }
-
-    return postChangePause().then(() => scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio, minDiff, behavior, direction}));
+    const linkTargetRatio = options.targetRatio ?? LINK_TARGET_RATIO;
+    return postChangePause().then(() => scrollElementToPosition(linkToSelect.element, {
+      targetRatio: linkTargetRatio,
+      maxScrollRatio,
+      minDiff,
+      behavior,
+      direction
+    }));
   }
 }
 

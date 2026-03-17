@@ -65,9 +65,9 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
     let height = 0;
     if (inlineLayoutEnabled) {
       [spaceAbove, spaceBelow] = measureVerticalOverflow(contentContainer);
-      const computedStyle = window.getComputedStyle(linkElement);
-      lineHeight = parseFloat(computedStyle.lineHeight);
-      height = linkElement.getBoundingClientRect().height;
+      const contentStyle = window.getComputedStyle(contentContainer);
+      lineHeight = parseFloat(contentStyle.lineHeight);
+      height = contentContainer.getBoundingClientRect().height;
     }
 
     let direction = null;
@@ -91,11 +91,20 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
     }
 
-    if (inlineLayoutEnabled && height > lineHeight * 1.5) {
+    if (inlineLayoutEnabled && lineHeight > 0 && height >= lineHeight * 1.7) {
       linkElement.dataset.height = height;
       linkElement.dataset.lineHeight = lineHeight;
       linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
     }
+
+    const parent = linkElement.parentElement;
+    const isBlockParent = parent?.tagName === 'P' || parent?.tagName === 'BLOCKQUOTE';
+    const isFirst = linkElement === parent?.firstElementChild;
+    const isLast = linkElement === parent?.lastElementChild;
+    const prevIsBreak = linkElement.previousElementSibling?.classList.contains('canopy-linebreak-span');
+    const nextIsBreak = linkElement.nextElementSibling?.classList.contains('canopy-linebreak-span');
+    const isFullLine = isBlockParent && ((isFirst || prevIsBreak) && (isLast || nextIsBreak));
+    linkElement.classList.toggle('canopy-full-line-link', isFullLine);
 
     linkElement.dir = direction;
     linkContainer.dir = direction;
@@ -138,7 +147,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
   
   const preDisplayGlobalLinkCycleIcon = () => {
     if (!link.element) return;
-    if (link.cycle || link.isSelfReference) {
+    if ((link.cycle || link.isSelfReference) && !link.isSelfTerminalReference) {
       const targetPath = link.inlinePath?.reduce();
       const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;
       const fulcrumParagraph = fulcrumPath?.paragraph;
@@ -147,7 +156,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         link.element.dataset.fulcrumDir = isRtlText(fulcrumText) ? 'rtl' : 'ltr';
       }
 
-      if (containsIconOrEmoji(link.text)) { // user is taking responsibility for arrow
+      if (containsIconOrEmoji(link.text) || isSingleCharacterLink(link.text)) { // user is taking responsibility for arrow
         return;
       }
 
@@ -264,6 +273,13 @@ function containsIconOrEmoji(str) {
   const emojiPattern = /\p{Emoji}/u;
   const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
   return emojiPattern.test(plainText) || symbolPattern.test(plainText);
+}
+
+function isSingleCharacterLink(str) {
+  if (!str) return false;
+  const plainText = str.replace(/<[^>]*>/g, '').trim();
+  if (!plainText) return false;
+  return Array.from(plainText).length === 1;
 }
 
 export {

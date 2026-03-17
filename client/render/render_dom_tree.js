@@ -23,6 +23,9 @@ function renderDomTree(topic, subtopic, renderContext) {
     elements.forEach(element => paragraph.paragraphElement.appendChild(element));
   });
 
+  // Run after token-level layout callbacks so classes like canopy-blockquote-padded-linebreak are final.
+  renderContext.preDisplayCallbacks.push(() => applyLinebreakSpacing(paragraph.paragraphElement));
+
   sectionElement.preDisplayCallbacks = renderContext.preDisplayCallbacks;
   return sectionElement;
 }
@@ -76,6 +79,44 @@ function createSectionElement(topic, subtopic, renderContext) {
   }
 
   return sectionElement;
+}
+
+function applyLinebreakSpacing(paragraphElement) {
+  const linebreaks = paragraphElement.querySelectorAll('.canopy-linebreak-span');
+
+  linebreaks.forEach(linebreak => {
+    const previous = linebreak.previousElementSibling;
+    const next = linebreak.nextElementSibling;
+    const inBlockquote = !!linebreak.closest('blockquote');
+    const isLastChild = linebreak === linebreak.parentElement?.lastElementChild;
+    const previousIsBlockLike = isBlockBoundaryElement(previous);
+    const nextIsBlockLike = isBlockBoundaryElement(next);
+    const nextIsMenu = next?.classList.contains('canopy-menu');
+
+    linebreak.style.removeProperty('margin-bottom');
+
+    if (linebreak.classList.contains('canopy-blockquote-padded-linebreak')) {
+      linebreak.style.marginBottom = '8px';
+    } else if (isLastChild) {
+      linebreak.style.marginBottom = '0px';
+    } else if (inBlockquote) {
+      linebreak.style.marginBottom = '2px';
+    } else if (nextIsMenu) {
+      linebreak.style.marginBottom = '20px';
+    } else if (previousIsBlockLike) {
+      linebreak.style.marginBottom = '20px';
+    } else if (nextIsBlockLike) {
+      linebreak.style.marginBottom = '17px';
+    } else {
+      linebreak.style.marginBottom = '13px';
+    }
+  });
+}
+
+function isBlockBoundaryElement(element) {
+  if (!element || element.nodeType !== Node.ELEMENT_NODE) return false;
+  if (element.matches('table, .canopy-menu, .canopy-image-container, code.canopy-code-block, hr.canopy-footnote-rule, .canopy-footnotes')) return true;
+  return element.matches('div.canopy-raw-html') && !!element.querySelector('table');
 }
 
 export default renderDomTree;

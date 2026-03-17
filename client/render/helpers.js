@@ -82,12 +82,9 @@ function getCombinedBoundingRect(elements) {
   // Helper function to check if an element is visible and takes up space
   function isVisible(el) {
     const style = window.getComputedStyle(el);
-    return (
-      el.offsetWidth > 0 &&
-      el.offsetHeight > 0 &&
-      style.display !== "none" &&
-      style.visibility !== "hidden"
-    );
+    if (style.display === "none" || style.visibility === "hidden") return false;
+    const rects = el.getClientRects();
+    return rects && rects.length > 0;
   }
 
   if (!Array.isArray(elements) || elements.length === 0) {

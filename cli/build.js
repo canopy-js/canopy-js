@@ -5,67 +5,83 @@ let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let Topic = require('./shared/topic');
 let path = require('path');
+let os = require('os');
+let { execFileSync } = require('child_process');
+
+const BUILD_LOCK_PATH = '.canopy-build.lock';
 
 function build(options = {}) {
-  let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
-  let defaultTopic = new DefaultTopic();
-  if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
+  const shouldLockBuild = !options.keepBuildDirectory;
+  if (shouldLockBuild && !acquireBuildLock()) return;
 
-  if (!keepBuildDirectory) {
-    fs.rmSync('build', { recursive: true, force: true });
-    fs.rmSync('build/_data', { recursive: true, force: true });
-  }
+  try {
+    let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
+    const buildStart = Date.now();
+    let defaultTopic = new DefaultTopic();
+    if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
-  fs.ensureDirSync('build');
+    if (!keepBuildDirectory) {
+      fs.rmSync('build', { recursive: true, force: true });
+    }
 
-  if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
-    fs.rmSync('build/_assets', { recursive: true, force: true });
-    fs.copySync('assets', 'build/_assets', { overwrite: true });
-  }
+    fs.ensureDirSync('build');
 
-  if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
-    throw new Error(chalk.red('No Canopy.js asset found'));
-  }
+    if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
+      fs.rmSync('build/_assets', { recursive: true, force: true });
+      fs.copySync('assets', 'build/_assets', { overwrite: true });
+    }
 
-  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
+    if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
+      throw new Error(chalk.red('No Canopy.js asset found'));
+    }
 
-  if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
-    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
-  }
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
 
-  if (!options.skipInitialBuild) {
-    if (options.logging) console.log(chalk.cyan(
-      `Canopy build: Rebuilding JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
-      + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
-    ));
+    if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
+      fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
+    }
 
-    if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
-    tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
-    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
+    if (!options.skipInitialBuild) {
+      if (options.logging) console.log(chalk.cyan(
+        `Canopy build: Rebuilding JSON at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`
+        + (options.filesEdited ? ` – file changed: ${options.filesEdited}` : '')
+      ));
 
-    if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
-    if (options.cache) tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
-    if (options.logging) console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
-    if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
-  }
+      if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
+      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
+      writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
 
-  if (symlinks) {
-    let topicDirectories = getDirectories('build');
-    topicDirectories.forEach((currentTopicDirectory) => {
-      topicDirectories.forEach((targetTopicDirectory) => {
-        if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
-        fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
-        if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
-          fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+      if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
+      if (options.cache && !options.deferFullBuild) {
+        tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+      }
+      if (options.logging) {
+        const elapsedSeconds = ((Date.now() - buildStart) / 1000).toFixed(1);
+        console.log(chalk.cyan(`Canopy build: build finished at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid}) in ${elapsedSeconds}s`));
+      }
+      if (options.file) writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options });
+    }
+
+    if (symlinks) {
+      let topicDirectories = getDirectories('build');
+      topicDirectories.forEach((currentTopicDirectory) => {
+        topicDirectories.forEach((targetTopicDirectory) => {
+          if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
+          fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
+          if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
+            fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+          }
+        });
+        if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
+          fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
         }
       });
-      if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
-        fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
-      }
-    });
-  }
+    }
 
-  if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
+    if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
+  } finally {
+    if (shouldLockBuild) fs.rmSync(BUILD_LOCK_PATH, { force: true });
+  }
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
@@ -120,13 +136,16 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   const canopyJs = fs.readFileSync('build/_canopy.js', 'utf8').replace(/<\/script/gi, '<\\/script');
 
   const assetMap = buildAssetDataUriMap();
+  const remoteAssetCache = {};
   const inlineAssetsInString = (string) => {
     if (!string) return string;
     const asString = typeof string === 'string' ? string : string.toString('utf8');
-    return asString.replace(/((?:\.\.?\/|\/)?_assets\/[^"'\\)\s]+)/g, (match) => {
+    const withLocalAssets = asString.replace(/((?:\.\.?\/|\/)?_assets\/[^"'\\)\s]+)/g, (match) => {
       const replacement = assetMap[normalizeAssetKey(match)] || match;
       return replacement.replace(/^\/(?=data:)/, ''); // strip leading slash if present on data URIs
     });
+
+    return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging);
   };
 
   const dataDir = 'build/_data';
@@ -205,6 +224,67 @@ function buildAssetDataUriMap() {
 }
 
 function toDataUri(filePath) {
+  const mime = mimeTypeForPath(filePath);
+  const data = fs.readFileSync(filePath);
+  return `data:${mime};base64,${data.toString('base64')}`;
+}
+
+function inlineRemoteAssetsInString(string, remoteAssetCache, logging) {
+  return string
+    .replace(/(<img\s[^>]*?src=\\?["'])(https?:\/\/[^"']+?)(\\?["'])/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    })
+    .replace(/("resourceUrl":\s*")((?:https?:\/\/)[^"]+?)(")/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    })
+    .replace(/(url\((?:\\?["'])?)(https?:\/\/[^)"']+?)((?:\\?["'])?\))/g, (match, prefix, url, suffix) => {
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+    });
+}
+
+function fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging) {
+  if (remoteAssetCache[url]) return remoteAssetCache[url];
+
+  const candidateUrls = [url, originalWikimediaAssetUrl(url)].filter((candidate, index, array) =>
+    candidate && array.indexOf(candidate) === index
+  );
+
+  for (let candidateUrl of candidateUrls) {
+    let tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-remote-asset-'));
+    let tempFilePath = path.join(tempDir, 'asset');
+
+    try {
+      let contentType = execFileSync(
+        'curl',
+        ['-L', '--fail', '--silent', '--show-error', '--output', tempFilePath, '--write-out', '%{content_type}', candidateUrl],
+        { encoding: 'utf8' }
+      ).trim();
+
+      const data = fs.readFileSync(tempFilePath);
+      const mime = contentType || mimeTypeForPath(new URL(candidateUrl).pathname);
+      const dataUri = `data:${mime};base64,${data.toString('base64')}`;
+      remoteAssetCache[url] = dataUri;
+      return dataUri;
+    } catch (_error) {
+      continue;
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  if (logging) console.warn(chalk.yellow(`Could not inline remote asset for single-file build: ${url}`));
+  remoteAssetCache[url] = url;
+  return url;
+}
+
+function originalWikimediaAssetUrl(url) {
+  const match = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/thumb\/(.+?)\/[^/]+$/);
+  if (!match) return null;
+
+  return `${match[1]}/${match[2]}`;
+}
+
+function mimeTypeForPath(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const mimeTypes = {
     '.png': 'image/png',
@@ -222,9 +302,8 @@ function toDataUri(filePath) {
     '.mp3': 'audio/mpeg',
     '.mp4': 'video/mp4'
   };
-  const mime = mimeTypes[ext] || 'application/octet-stream';
-  const data = fs.readFileSync(filePath);
-  return `data:${mime};base64,${data.toString('base64')}`;
+
+  return mimeTypes[ext] || 'application/octet-stream';
 }
 
 function normalizeAssetKey(key) {
@@ -237,6 +316,42 @@ function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
     return fs.statSync( path + '/' + file).isDirectory() && !file.startsWith('_');
   });
+}
+
+function acquireBuildLock() {
+  try {
+    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+    return true;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+
+  let existingPid = null;
+
+  try {
+    existingPid = Number(fs.readFileSync(BUILD_LOCK_PATH, 'utf8').trim());
+  } catch (_error) {
+    fs.rmSync(BUILD_LOCK_PATH, { force: true });
+    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+    return true;
+  }
+
+  if (pidIsRunning(existingPid)) return false;
+
+  fs.rmSync(BUILD_LOCK_PATH, { force: true });
+  fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
+  return true;
+}
+
+function pidIsRunning(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
+  }
 }
 
 module.exports = build;

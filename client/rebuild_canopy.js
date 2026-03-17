@@ -41,8 +41,13 @@ function rebuildCanopy (bulkFileString) {
 
     // Copy new data into the cache
     Object.keys(filesToWrite).forEach(filePath => {
-      let { displayTopicName } = JSON.parse(filesToWrite[filePath]);
-      REQUEST_CACHE[Topic.for(displayTopicName).mixedCase] = Promise.resolve(JSON.parse(filesToWrite[filePath]));
+      const json = JSON.parse(filesToWrite[filePath]);
+      let { displayTopicName } = json;
+      REQUEST_CACHE[Topic.for(displayTopicName).mixedCase] = {
+        status: 'fulfilled',
+        json,
+        promise: Promise.resolve(json)
+      };
     });
 
     // New data might invalidate old URL

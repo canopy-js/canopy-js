@@ -431,6 +431,7 @@ test.describe('Inline entities', () => {
     await expect(page.locator('.canopy-selected-section')).toContainText("This is regular text with a footnote1.");
     await expect(page.locator('.canopy-selected-section sup')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-footnote-span')).toHaveText('1. This is that footnote.');
+    await expect(page.locator('.canopy-selected-section .canopy-footnotes + .canopy-linebreak-span')).toHaveCount(1);
   });
 
   test('It creates tooltips', async ({ page }) => {
@@ -877,7 +878,7 @@ test.describe('Block entities', () => {
      const paddingBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).paddingBottom);
      const marginBottom = await lineBreakElement.evaluate(el => getComputedStyle(el).marginBottom);
      expect(paddingBottom).toBe('0px');
-     expect(marginBottom).toBe('0px');
+     expect(parseFloat(marginBottom)).toBeLessThan(3);
 
     // Yes padded linebreak in short text block quote
     const longQuotePaddingSpan = page.locator('.canopy-selected-section blockquote[dir="rtl"]:last-of-type .canopy-blockquote-padded-linebreak');

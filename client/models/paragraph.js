@@ -407,18 +407,24 @@ class Paragraph {
       });
   }
 
-  static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM
-    const sectionsToDetach = Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
+  static executePreDisplayCallbacksTree(rootSectionElement) {
+    if (!Paragraph.contentLoaded) return; // pre-running callbacks is optimization except on initial load
 
-    sectionsToDetach.forEach(sectionElement => {
-      sectionElement.parentNode.removeChild(sectionElement);
+    canopyContainer.appendChild(rootSectionElement);
+
+    [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')].forEach(sectionElement => {
+      sectionElement.style.display = 'block';
+      Paragraph.for(sectionElement).executePreDisplayCallbacks();
+      sectionElement.style.removeProperty('display');
     });
 
-    if (Paragraph.contentLoaded) { // pre-running callbacks is optimization except on initial load
-      [topicSectionElement, ...sectionsToDetach].forEach(sectionElement => {
-        this.executePreDisplayCallbacks(sectionElement);
-      });
-    }
+    canopyContainer.removeChild(rootSectionElement);
+  }
+
+  static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM
+    Array.from(topicSectionElement.querySelectorAll('.canopy-section')).forEach(sectionElement => {
+      sectionElement.parentNode.removeChild(sectionElement);
+    });
   }
 
   static executePreDisplayCallbacks(sectionElement) {

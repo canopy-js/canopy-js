@@ -417,6 +417,12 @@ class Link {
     return this.enclosingParagraph.path.lastSegment.equals(this.literalPath);
   }
 
+  get isSelfTerminalReference() {
+    return this.isPathReference &&
+      this.literalPath.length > 1 &&
+      this.literalPath.lastSegment.equals(this.enclosingPath.lastSegment);
+  }
+
   get isSimpleGlobal() {
     return this.isGlobal && !this.isPathReference; // a global reference to a single global topic
   }
@@ -455,6 +461,7 @@ class Link {
 
   get isBackCycle() {
     return this.cycle
+      && !this.isSelfTerminalReference
       && !this.isDownCycle
       && !this.isUpCycle
       && !this.enclosingPath.isBefore(this.inlinePath.reduce());
@@ -552,13 +559,6 @@ class Link {
     return this.top > bottomLimit;
   }
 
-  isFocusedAtRatio(targetRatio, tolerancePx = 20) {
-    if (!this.element) return false;
-    const targetY = ScrollableContainer.visibleHeight * targetRatio;
-    const diff = Math.abs(this.element.getBoundingClientRect().top - targetY);
-    return diff < tolerancePx;
-  }
-
   get cycle() {
     return this.introducesNewCycle;
   }
@@ -635,6 +635,7 @@ class Link {
       return window.open(this.element.href, '_blank'); // external links must open in new tab
     }
 
+    if (options?.newTab && this.isSelfTerminalReference) return window.open(location.origin + this.inlinePath.productionPathString, '_blank');
     if (options?.newTab && this.isCycle && options.inlineCycles) return window.open(location.origin + this.inlinePath.productionPathString, '_blank');
     if (options?.newTab && this.isCycle) return window.open(location.origin + this.inlinePath.reduce().productionPathString, '_blank');
 
@@ -645,12 +646,12 @@ class Link {
       return this.literalPath.display({ scrollStyle: 'instant', ...options}); // handles new tab
     }
 
-    if (this.isSelfReference && !this.isOpen) {
+    if (this.isSelfReference && !this.isOpen && !this.enclosingParagraph.isPageRoot) {
       if (this.enclosingPath.lastSegment.isSingleTopic) return this.enclosingPath.withoutLastSegment.display({ renderOnly: options.renderOnly }); // pop
       return this.enclosingPath.parentLink.select({ renderOnly: options.renderOnly }); // shift up
     }
 
-    if (this.isCycle && !options.inlineCycles) { // reduction
+    if (this.isCycle && !this.isSelfTerminalReference && !options.inlineCycles) { // reduction
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
 
       // Clicks on a fully visible link that trigger downward motion don't need a scroll up because link is fulcrum and click is focus.
@@ -662,10 +663,29 @@ class Link {
       });
     }
 
-    if ((this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles)) { // path reference down
+    if (this.isSelfTerminalReference) {
       if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
-      return this.inlinePath.display({ noScroll: true, ...options }).then( // path reference means interested in parent
-        () => this.inlinePath.parentLink.select({ ...options, scrollToParagraph: false })
+
+      return this.inlinePath.display({ noScroll: true, ...options }).then(() =>
+        this.inlinePath.parentLink.select({
+          renderOnly: options.renderOnly,
+          inlineCycles: true,
+          targetRatio: 0.35
+        })
+      );
+    }
+
+    const inlinePathReference = (this.isPathReference && !this.cycle) || (this.cycle && options.inlineCycles);
+    if (inlinePathReference) { // path reference down
+      if (!options.renderOnly) Link.pushHistoryState(this.selectionPath, this);
+
+      return this.inlinePath.display({ noScroll: true, ...options }).then(() =>
+        this.inlinePath.parentLink.select({
+          ...options,
+          inlineCycles: !!options.inlineCycles,
+          scrollToParagraph: true,
+          targetRatio: 0.4
+        })
       );
     }
 

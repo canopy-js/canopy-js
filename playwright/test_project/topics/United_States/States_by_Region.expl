@@ -1,0 +1,8 @@
+States by Region: States by region table. This view groups selected U.S. states by region and shows their capitals and approximate populations.
+| State | Region | Capital | Population (approx.) |
+|---|---|---|---|
+| [[California]] | West | Sacramento | 39.0M |
+| Texas | South | Austin | 30.5M |
+| New York | Northeast | Albany | 19.6M |
+| Illinois | Midwest | Springfield | 12.5M |
+This table is a compact regional snapshot rather than a full census listing.

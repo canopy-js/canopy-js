@@ -34,30 +34,33 @@ function renderBlockQuote(token, renderContext, renderTokenElements) {
     blockQuoteElement.parentNode?.appendChild(clone);
     wrapEachLetterInSpan(clone);
 
-    // Check direction consistency among characters in the clone
+    // Detect soft-wrap by checking whether any explicit line segment spans multiple visual rows.
     let wraps = false;
-    let direction = null; // neutral
+    const lineTolerance = 1;
+    const segmentChars = [];
 
-    [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element, index, elements) => {
-      if (element.classList.contains('canopy-linebreak-span')) { // we switched spans ie linebreak
-        direction = null;
-      } else { // The element is a character span
-        let elementRect = element.getBoundingClientRect();
-        let previousElement = elements[index - 1];
-        let previousRect = elements[index - 1]?.getBoundingClientRect();
+    function segmentWraps(chars) {
+      if (chars.length < 2) return false;
 
-        let previousElementWasNewline = previousElement && (previousElement?.classList.contains('canopy-linebreak-span') 
-          || previousElement.tagName === "BR" || previousElement.innerText === '\n');
-        
-        if (previousElement && !previousElementWasNewline) {  // don't compare first letter to last of last line
-          if (direction === null) {
-            direction = elementRect.right > previousRect.right ? 1 : -1;
-          } else {
-            wraps = wraps || (elementRect.right > previousRect.right ? 1 : -1) !== direction; // direction is not the same
-          }
-        }
+      const nonLinkChars = chars.filter(char => !char.closest('a.canopy-selectable-link, a.canopy-disabled-link'));
+      const effectiveChars = nonLinkChars.length ? nonLinkChars : chars; // preserve behavior for link-only segments
+      if (effectiveChars.length < 2) return false;
+
+      const firstTop = effectiveChars[0].getBoundingClientRect().top;
+      return effectiveChars.some(char => Math.abs(char.getBoundingClientRect().top - firstTop) > lineTolerance);
+    }
+
+    [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element) => {
+      if (element.classList.contains('canopy-linebreak-span')) {
+        wraps = wraps || segmentWraps(segmentChars);
+        segmentChars.length = 0;
+        return;
       }
+
+      segmentChars.push(element);
     });
+
+    wraps = wraps || segmentWraps(segmentChars);
 
     if (wraps) {
       blockQuoteElement.querySelectorAll('.canopy-linebreak-span').forEach((span) => {

@@ -95,12 +95,12 @@ function blockQuoteMatcher({ string, parserContext, startOfLine }) {
       .map(m => m?.[1] || '')
       .join('\n');
 
-    if (text[text.length - 1] === "\n") text = text.slice(0, -1); // remove trailing newline
     let direction = match[2] === '>' ? 'ltr' : 'rtl';
 
+    const matchLength = match[0].endsWith('\n') ? match[0].length - 1 : match[0].length; // leave terminal newline for next token
     return [
       new BlockQuoteToken(text, direction, parserContext),
-      match[0].length
+      matchLength
     ];
   }
 }
@@ -112,9 +112,10 @@ function listMatcher({ string, parserContext, startOfLine }) {
   let match = string.match(/^(\s*(((?:[0-9+*-]{1,3}|[a-zA-Z])\.)|[+*-])([ ]+[^\n]+)(\n|$))+/s);
 
   if (match) {
+    const matchLength = match[0].endsWith('\n') ? match[0].length - 1 : match[0].length; // leave terminal newline for next token
     return [
       new ListToken(match[0], parserContext),
-      match[0].length
+      matchLength
     ];
   }
 }

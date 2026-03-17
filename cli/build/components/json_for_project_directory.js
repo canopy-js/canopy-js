@@ -31,7 +31,7 @@ function jsonForProjectDirectory(explFileObjectsByPath, defaultTopicString, opti
 
   if (options.orphans) parserContext.logGlobalOrphans();
   if (options.orphans) parserContext.logLocalOrphans();
-  if (!options.cache) parserContext.validateGlobalReferences();
+  parserContext.validateGlobalReferences();
 
   return { directoriesToEnsure, filesToWrite };
 }

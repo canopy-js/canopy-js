@@ -52,6 +52,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     if (!existingParagraph || !existingParagraph.parentNode) { // if parentNode then we have already added subtree to cache
       Paragraph.registerChild(sectionElement, parentElement);
       Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
+      Paragraph.executePreDisplayCallbacksTree(sectionElement);
       Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
     }
     return Promise.resolve(true);
