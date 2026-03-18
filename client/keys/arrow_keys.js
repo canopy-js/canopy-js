@@ -52,7 +52,8 @@ function moveInDirection(direction) {
         if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) return lowestHigherRect;
         if (isHorizontallyOverlapping(newRect, currentSelectionHigherRect) && !isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect)) return newRect;
 
-        if (lowestHigherRect.element.closest('p.canopy-paragraph') === Link.selection.parentLink.enclosingParagraph.paragraphElement) { // going up to new paragraph
+        const parentParagraphElement = Link.selection.parentLink?.enclosingParagraph?.paragraphElement;
+        if (parentParagraphElement && lowestHigherRect.element.closest('p.canopy-paragraph') === parentParagraphElement) { // going up to new paragraph
           if (isHorizontallyOverlapping(lowestHigherRect, currentSelectionHigherRect) && isHorizontallyOverlapping(newRect, currentSelectionHigherRect)) {
             return greaterHorizontalOverlap(currentSelectionHigherRect, lowestHigherRect, newRect);
           } else {
