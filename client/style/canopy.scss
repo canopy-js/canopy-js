@@ -592,6 +592,7 @@ table { // center even if overflowing x
     cursor: pointer;
     user-select: text;
     background-color: #ffffff;
+    box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0);
 
     a.canopy-selectable-link {
       text-decoration: none;
@@ -608,16 +609,16 @@ table { // center even if overflowing x
     }
 
     &:has(.canopy-selected-link) {
-      background-color: #edeefc;
+      box-shadow: inset 0 0 0 9999px rgba(0, 14, 213, 0.0705882353);
     }
 
     &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-      background-color: #eae8e8;
+      box-shadow: inset 0 0 0 9999px rgba(22, 0, 0, 0.0901960784);
     }
 
     &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
     &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-      background-color: #f5f6fe;
+      box-shadow: inset 0 0 0 9999px rgba(0, 26, 230, 0.0392156863);
 
       .canopy-selected-link {
           background-color: #f5f6fe;
