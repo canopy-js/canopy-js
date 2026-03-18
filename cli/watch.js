@@ -5,6 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 let chalk = require('chalk');
 let { canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
+let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
 
 let fullBuildChild = null;
 let fullBuildRequestedAt = 0;
@@ -78,6 +79,7 @@ function nextRequestedAt() {
 }
 
 function spawnBackgroundFullBuild(options, requestedAt) {
+  killActiveFullBuildProcesses();
   if (fullBuildChild) fullBuildChild.kill();
 
   const childOptions = {

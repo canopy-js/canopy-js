@@ -1,12 +1,13 @@
 const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const buildProject = require('./build/build_project');
+const path = require('path');
+const { spawnSync, execFileSync } = require('child_process');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
+let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
 let Topic = require('./shared/topic');
-let path = require('path');
 let os = require('os');
-let { execFileSync } = require('child_process');
 
 function build(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, manualHtml, logging, replaceBuildDirectory } = options;
@@ -51,7 +52,7 @@ function build(options = {}) {
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache && !options.deferFullBuild) {
-      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+      runFullBuildInChild(options);
     }
 
     if (options.logging) {
@@ -79,6 +80,29 @@ function build(options = {}) {
   }
 
   if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
+}
+
+function runFullBuildInChild(options) {
+  killActiveFullBuildProcesses();
+
+  const childOptions = {
+    ...options,
+    cache: false,
+    replaceBuildDirectory: false
+  };
+
+  const result = spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'build', 'run_background_full_build.js'), JSON.stringify(childOptions)],
+    {
+      cwd: process.cwd(),
+      stdio: 'inherit'
+    }
+  );
+
+  if (result.error) throw result.error;
+  if (result.signal === 'SIGTERM') return;
+  if (result.status) throw new Error(`Background full build exited with status ${result.status}`);
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
