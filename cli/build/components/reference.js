@@ -30,7 +30,7 @@ class Reference {
   }
 
   get hasCurlyBraces() {
-    return !!this.contents.match(/(^|[^\\])\{/);
+    return !!this.sanitizeLiteralHtmlBraces(this.contents).match(/(^|[^\\])\{/);
   }
 
   get hasPipe() {
@@ -62,14 +62,25 @@ class Reference {
       .replace(/<br>|<BR>|<Br>|<bR>/g, ' '); // Replaces all capitalizations of '<BR>' with a space
   }
 
-  parseCurlyBraceReference() {
-    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^{}])+)/gs;
-    const segments = Array.from(this.contents.matchAll(regex));
+  sanitizeLiteralHtmlBraces(string) {
+    return string.replace(
+      /<([A-Za-z][\w:-]*)\b[^>]*>\s*(\{\{[\s\S]*?}})\s*<\/\1>/g,
+      (match, tagName, braceText) => match.replace(braceText, '\uE000'.repeat(braceText.length))
+    );
+  }
 
-    segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
+  parseCurlyBraceReference() {
+    const sanitizedContents = this.sanitizeLiteralHtmlBraces(this.contents);
+    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^{}])+)/gs;
+    const segments = Array.from(sanitizedContents.matchAll(regex));
+
+    segments.forEach((match) => {
+      const [segment, openingBraces, braceContents, closingBraces, plainText] = match;
+      const originalSegment = this.contents.slice(match.index, match.index + segment.length);
+
       if (plainText) {
-        this.displayText += plainText; //{|The }Literature/Big Bad Wolf
-        this.targetText += plainText;
+        this.displayText += originalSegment; //{|The }Literature/Big Bad Wolf
+        this.targetText += originalSegment;
       } else {
         this.validateBraces(openingBraces, closingBraces);
 
