@@ -325,7 +325,7 @@ test('it does not match local references with periods', () => {
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
     [
-      'Error: Reference [[State capital. and governor]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [State capital. and governor].',
+      'Error: Reference [[State capital. and governor]] in subtopic [Idaho] mentions nonexistent topic or subtopic [State capital. and governor].',
       'Warning: Using punctuation like [.,;:] can terminate a paragraph key.'
     ]
   );
@@ -1316,7 +1316,7 @@ test('it throws error for unrecognized link', () => {
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
     [
-      'Reference [[Wyoming]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Wyoming].',
+      'Reference [[Wyoming]] in subtopic [Idaho] mentions nonexistent topic or subtopic [Wyoming].',
       'topics/Idaho/Idaho.expl:1:42'
     ]
   );
@@ -1390,7 +1390,7 @@ test('it points caret at global reference location in error context', () => {
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Wyoming', {}),
     [
-      'Error: Reference [[Nonexistent]] in subtopic [Wyoming, Wyoming] mentions nonexistent topic or subtopic [Nonexistent].',
+      'Error: Reference [[Nonexistent]] in subtopic [Wyoming] mentions nonexistent topic or subtopic [Nonexistent].',
       'topics/Wyoming/Wyoming.expl:1:14',
       `> 1 | ${line}`,
       caretSnippet
@@ -1598,7 +1598,7 @@ test('it validates that topics of paths exist', () => {
 
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red('Error: Reference [[Idaho#Boise]] in subtopic [Wyoming, Wyoming] mentions nonexistent topic or subtopic [Idaho].'));
+  ).toThrow(chalk.red('Error: Reference [[Idaho#Boise]] in subtopic [Wyoming] mentions nonexistent topic or subtopic [Idaho].'));
 });
 
 test('it validates that subtopics of paths exist', () => {
@@ -1609,7 +1609,7 @@ test('it validates that subtopics of paths exist', () => {
 
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red('Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] does not exist.'));
+  ).toThrow(chalk.red('Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming] does not exist.'));
 });
 
 
@@ -1623,7 +1623,7 @@ test('it validates that subtopics of paths are subsumed by their topics', () => 
 
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
-  ).toThrow(chalk.red('Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming, Wyoming] exists, but is not subsumed by given topic.'));
+  ).toThrow(chalk.red('Error: Subtopic [Idaho, Boise] referenced in reference [[Idaho#Boise]] of paragraph [Wyoming] exists, but is not subsumed by given topic.'));
 });
 
 test('it errors when path segments are not connected', () => {
@@ -1640,7 +1640,7 @@ test('it errors when path segments are not connected', () => {
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(dedent`Error: Global reference "[[USA/Idaho#Boise]]" contains invalid adjacency:
-    [USA, USA] does not reference [Idaho]`));
+    [USA] does not reference [Idaho]`));
 });
 
 test('it works when path segments of paths are connected', () => {
@@ -1714,7 +1714,7 @@ test('it handles line counting within nested block', () => {
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
     [
-      'Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].',
+      'Reference [[Boise]] in subtopic [Idaho] mentions nonexistent topic or subtopic [Boise].',
       'topics/Idaho/Idaho.expl:4:47'
     ]
   );
@@ -1732,7 +1732,7 @@ test('it handles lines counting after block', () => {
   expectThrowContains(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
     [
-      'Reference [[Boise]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].',
+      'Reference [[Boise]] in subtopic [Idaho] mentions nonexistent topic or subtopic [Boise].',
     ]
   );
 });
@@ -1745,7 +1745,7 @@ test('it handles character counting after token', () => {
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
-    dedent`Error: Reference [[Boise|bad link]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Boise].
+    dedent`Error: Reference [[Boise|bad link]] in subtopic [Idaho] mentions nonexistent topic or subtopic [Boise].
     `
     ));
 });
@@ -1760,7 +1760,7 @@ test('it gives correct line and character number for errors in tables', () => {
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
-    dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [non-existent topic].
+    dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho] mentions nonexistent topic or subtopic [non-existent topic].
     `
     ));
 });
@@ -1775,7 +1775,7 @@ test('it gives correct line and character number for errors in lists', () => {
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
-    dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [non-existent topic].
+    dedent`Error: Reference [[non-existent topic]] in subtopic [Idaho] mentions nonexistent topic or subtopic [non-existent topic].
     `
     ));
 });
@@ -1791,7 +1791,7 @@ test('it gives correct line and character number for errors HTML inclusion', () 
   expect(
     () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
   ).toThrow(chalk.red(
-    dedent`Error: Reference [[Nebraska]] in subtopic [Idaho, Idaho] mentions nonexistent topic or subtopic [Nebraska].
+    dedent`Error: Reference [[Nebraska]] in subtopic [Idaho] mentions nonexistent topic or subtopic [Nebraska].
     `
     ));
 });

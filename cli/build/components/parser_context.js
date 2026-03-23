@@ -414,6 +414,7 @@ class ParserContext {
       const errorFilePath = this.topics[enclosingTopic.caps].filePath;
       const errorLine = location?.line || this.lineNumber;
       const errorCol = location?.col || this.characterNumber;
+      const enclosingSegment = displaySegment(enclosingTopic, enclosingSubtopic);
 
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
         [...pathString.matchAll(/(?:\\.|[^/])+/g)].map(match => match[0]).map(segmentString => {
@@ -421,18 +422,18 @@ class ParserContext {
 
           if (!this.topicExists(currentTopic)) {
             let punctuationWarning = currentTopic.mixedCase.match(/[.,:;]/) ? '\nWarning: Using punctuation like [.,;:] can terminate a paragraph key.' : '';
-            let message = `Error: Reference ${referenceString} in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
+            let message = `Error: Reference ${referenceString} in subtopic ${enclosingSegment} mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
             if (this.cache && !currentTopic.matches(this.currentTopic)) return segmentString; // we don't know about fragments yet so may be valid
-            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`;
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph ${enclosingSegment} does not exist.\n${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
-            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists, but is not subsumed by given topic.\n${pathAndLineNumberString}`;
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph ${enclosingSegment} exists, but is not subsumed by given topic.\n${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
@@ -443,7 +444,7 @@ class ParserContext {
 
           if (!this.cache && !this.globalReferences.bySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             let message = `Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
-             `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
+             `${displaySegment(currentTopic, currentSubtopic || currentTopic)} does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
