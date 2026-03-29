@@ -41,7 +41,7 @@ class Reference {
   parseDisplayAndTarget() {
     if (!this.valid) {
       this.parserContext.registerSubsumptionConditionalError(
-        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.filePathAndLineNumber}`)
+        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`)
       );
     }
 
