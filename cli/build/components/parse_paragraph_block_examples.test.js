@@ -17,6 +17,45 @@ test('it parses a text block', () => {
   ]);
 });
 
+test('it does not parse repeated asterisks as style delimiters', () => {
+  let text = 'This stays literal: **bold** and ***.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'This stays literal: **bold** and ***.',
+      type: 'text'
+    }
+  ]);
+});
+
+test('it does not parse repeated underscores as style delimiters', () => {
+  let text = 'This stays literal: __italics__ and ___.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'This stays literal: __italics__ and ___.',
+      type: 'text'
+    }
+  ]);
+});
+
+test('it does not parse style when the closing delimiter is part of a repeated run', () => {
+  let text = 'The first thing that might jump out at us is the pattern of the word: _ו__ין.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'The first thing that might jump out at us is the pattern of the word: _ו__ין.',
+      type: 'text'
+    }
+  ]);
+});
+
 test('it parses a fence-style code block', () => {
   let text = '```\n' +
     'if (x) {\n' +
