@@ -34,8 +34,28 @@ class Reference {
   }
 
   get hasPipe() {
-    return /^(?:\\.|[^\\])+\|/.test(this.contents)   // has a valid pipe with escapes, requires text before
-      && !/{[^{}]*\|[^{}]*}/.test(this.contents);   // but reject if it's inside {a|b} syntax
+    let braceDepth = 0;
+
+    for (let i = 0; i < this.contents.length; i += 1) {
+      const character = this.contents[i];
+      if (this.characterIsEscaped(this.contents, i)) continue;
+
+      if (character === '{') {
+        braceDepth += 1;
+        continue;
+      }
+
+      if (character === '}' && braceDepth > 0) {
+        braceDepth -= 1;
+        continue;
+      }
+
+      if (character === '|' && braceDepth === 0 && i > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   parseDisplayAndTarget() {
@@ -45,7 +65,8 @@ class Reference {
       );
     }
 
-    if (this.hasPipe) { // if pipe, subsequent {{ is certainly HTML insertion
+    if (this.hasPipe) { // if pipe, only HTML-style {{}} insertions are valid brace syntax
+      this.validatePipeCompatibleBraces();
       this.parsePipeReference();
     } else if (this.hasCurlyBraces) { // if not pipe, {{ is certainly link syntax or HTML would be in link target text
       this.parseCurlyBraceReference();
@@ -67,6 +88,47 @@ class Reference {
       /<([A-Za-z][\w:-]*)\b[^>]*>\s*(\{\{[\s\S]*?}})\s*<\/\1>/g,
       (match, tagName, braceText) => match.replace(braceText, '\uE000'.repeat(braceText.length))
     );
+  }
+
+  validatePipeCompatibleBraces() {
+    for (let i = 0; i < this.contents.length; i += 1) {
+      if (this.contents[i] !== '{' && this.contents[i] !== '}') continue;
+      if (this.characterIsEscaped(this.contents, i)) continue;
+
+      if (this.contents.slice(i, i + 2) === '{{') {
+        const closingIndex = this.findClosingDoubleBrace(i + 2);
+        const precedingCharacter = i > 0 ? this.contents[i - 1] : '';
+        const succeedingCharacter = closingIndex !== -1 ? (this.contents[closingIndex + 2] || '') : '';
+        const isHtmlInsertion = precedingCharacter === '>' || succeedingCharacter === '<';
+
+        if (closingIndex !== -1 && isHtmlInsertion) {
+          i = closingIndex + 1;
+          continue;
+        }
+      }
+
+      throw new Error(chalk.red('Reference cannot mix pipe syntax with {} or non-HTML {{}} syntax: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
+    }
+  }
+
+  findClosingDoubleBrace(startIndex) {
+    for (let i = startIndex; i < this.contents.length - 1; i += 1) {
+      if (this.contents[i] === '}' && this.contents[i + 1] === '}' && !this.characterIsEscaped(this.contents, i)) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  characterIsEscaped(string, index) {
+    let backslashCount = 0;
+
+    for (let i = index - 1; i >= 0 && string[i] === '\\'; i -= 1) {
+      backslashCount += 1;
+    }
+
+    return backslashCount % 2 === 1;
   }
 
   parseCurlyBraceReference() {

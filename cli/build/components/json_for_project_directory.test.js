@@ -988,6 +988,39 @@ test('it lets you set an exclusive target text like [[the state of {{Wyoming}}]]
   );
 });
 
+test('it throws error for references that mix pipe syntax with non-html double braces', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is linked as [[Wyoming|the state of {{Wyoming}}]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
+  ).toThrow(chalk.red('Reference cannot mix pipe syntax with {} or non-HTML {{}} syntax: [[Wyoming|the state of {{Wyoming}}]]'));
+});
+
+test('it throws error for references that mix pipe syntax with single brace interpolation', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is linked as [[Wyoming|Wyoming territor{y|ies}]].\n`,
+    'topics/Wyoming/Wyoming_territory.expl': `Wyoming territory: Wyoming is a midwestern state.\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
+  ).toThrow(chalk.red('Reference cannot mix pipe syntax with {} or non-HTML {{}} syntax: [[Wyoming|Wyoming territor{y|ies}]]'));
+});
+
+test('it allows pipe references with html insertions in html tags', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is linked as [[Wyoming|<small>{{Wyoming}}</small>]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
+  ).not.toThrow();
+});
+
 test('it lets you interpolate different values for display and target like [[harmon{y|ies}]]', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming territor{y|ies}]].\n`,
