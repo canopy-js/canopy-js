@@ -239,6 +239,8 @@ This is text that wraps
 > This is a block quote with a true blank line.
 >
 > This is after the blank line.
+> [![disabled words]] [![more disabled words]] [![even more disabled words]] [![still more disabled words]] [![and more disabled words]] [![further disabled words]] [![yet more disabled words]] [![final disabled words]] to force wrapping.
+> This is the second line after disabled links.
 
 Block quotes with multi-line links:
 This is regular text.

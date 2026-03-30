@@ -167,6 +167,25 @@ a.canopy-disabled-link {
     display: inline-block;
   }
 
+  .canopy-link-terminal-gap {
+    margin-inline-end: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
+    }
+  }
+
+  // Full-line and multiline links don't need terminal gap padding.
+  &.canopy-full-line-link .canopy-link-terminal-gap,
+  &.canopy-multiline-link .canopy-link-terminal-gap {
+    margin-inline-end: 0;
+    font-size: 0;
+    &::before {
+      content: "";
+    }
+  }
+
   // link is between newlines or paragraph start/end, i.e. is full line
   &:first-child:has(+ .canopy-linebreak-span),
   .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
@@ -259,25 +278,6 @@ a.canopy-selectable-link {
     user-select: none;
     &::before {
       content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
-  .canopy-link-terminal-gap {
-    margin-inline-end: -12px;
-    font-size: 5px;
-    user-select: none;
-    &::before {
-      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
-  // Full-line and multiline links don't need terminal gap padding.
-  &.canopy-full-line-link .canopy-link-terminal-gap,
-  &.canopy-multiline-link .canopy-link-terminal-gap {
-    margin-inline-end: 0;
-    font-size: 0;
-    &::before {
-      content: "";
     }
   }
 

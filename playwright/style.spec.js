@@ -846,12 +846,17 @@ test.describe('Block entities', () => {
 
     // Test for long blockquote where \n should get padding
     const longQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is text that wraps.' });
-    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(7);
+    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(9);
     const longQuotePaddingSpan = await longQuote.locator('.canopy-blockquote-padded-linebreak');
-    await expect(longQuotePaddingSpan).toHaveCount(6); // padded linebreaks for each blockquote line
+    await expect(longQuotePaddingSpan).toHaveCount(8); // padded linebreaks for each explicit blockquote line
 
     // Inline HTML should not create extra blank-line spacing; only the true blank line should be padded.
     await expect(longQuote.locator('.canopy-blank-linebreak')).toHaveCount(1);
+
+    const disabledLinkLinebreak = longQuote.locator('.canopy-linebreak-span').nth(7);
+    await expect(disabledLinkLinebreak).toHaveClass(/canopy-blockquote-padded-linebreak/);
+    const disabledLinkLinebreakMargin = await disabledLinkLinebreak.evaluate(el => getComputedStyle(el).marginBottom);
+    expect(disabledLinkLinebreakMargin).toBe('8px');
   });
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
@@ -1072,6 +1077,14 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
     await expect(page.locator('.canopy-menu-link-cell a.canopy-disabled-link')).toHaveCount(1);
+
+    // make sure disabled links have terminal link spacing which seems to affect interline gaps
+    const terminalGap = page.locator('a.canopy-disabled-link .canopy-link-terminal-gap').first();
+    const terminalGapContent = await terminalGap.evaluate(el => getComputedStyle(el, '::before').content);
+    const terminalGapFontSize = await terminalGap.evaluate(el => getComputedStyle(el).fontSize);
+    expect(terminalGapContent).not.toBe('none');
+    expect(terminalGapContent).not.toBe('""');
+    expect(terminalGapFontSize).toBe('5px');
   });
 
   test('It creates full-line links', async ({ page }, workerInfo) => {
