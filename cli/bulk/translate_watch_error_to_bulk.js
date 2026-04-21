@@ -20,6 +20,7 @@ function translateWatchErrorToBulk(error, options = {}) {
 
   const refRegex = /(topics\/[^:\n]+?\.expl):(\d+)(?::(\d+))?/g;
   const topicInfoCache = new Map(); // topicPath -> { bulkStartLine, bulkStartCol, topicKey, subtopicHeaders, topicHeaderIndex }
+  const diagnosticMessages = new Set();
 
   // derive the bulk section header from a topic file path
   const toDisplayCategoryPath = (topicPath) =>
@@ -29,7 +30,7 @@ function translateWatchErrorToBulk(error, options = {}) {
   const findCategoryStart = (displayCategoryPath) => {
     const categoryRegex = new RegExp(`^\\[${escapeRegExp(displayCategoryPath)}\\]$`, 'm');
     const match = bulkContents.match(categoryRegex);
-    return match ? match.index : 0;
+    return match ? match.index : null;
   };
 
   // locate the topic header within a category block
@@ -55,17 +56,29 @@ function translateWatchErrorToBulk(error, options = {}) {
     try {
       topicContents = fs.readFileSync(topicPath, 'utf8');
     } catch {
+      diagnosticMessages.add(`Bulk translation skipped: topic file missing for ${topicPath}`);
       return null;
     }
 
     const firstParagraph = topicContents.split(/\n\n/)[0]?.trim() || '';
     const topicKey = Block.for(firstParagraph).key;
-    if (!topicKey) return null;
+    if (!topicKey) {
+      diagnosticMessages.add(`Bulk translation skipped: topic key not found for ${topicPath}`);
+      return null;
+    }
 
     const displayCategoryPath = toDisplayCategoryPath(topicPath);
     const categoryStart = findCategoryStart(displayCategoryPath);
+    if (categoryStart === null) {
+      diagnosticMessages.add(`Bulk translation skipped: category header [${displayCategoryPath}] not found in ${options.bulkFileName}`);
+      return null;
+    }
+
     const topicHeaderIndex = findTopicHeaderInBulk(categoryStart, topicKey);
-    if (topicHeaderIndex === null) return null;
+    if (topicHeaderIndex === null) {
+      diagnosticMessages.add(`Bulk translation skipped: topic header "* ${topicKey}" not found under [${displayCategoryPath}] in ${options.bulkFileName}`);
+      return null;
+    }
 
     const bulkUpToKey = bulkContents.slice(0, topicHeaderIndex);
     const bulkStartLine = bulkUpToKey.split('\n').length; // 1-based
@@ -94,7 +107,10 @@ function translateWatchErrorToBulk(error, options = {}) {
 
   const computeBulkReference = (topicPath, topicLine, topicCol) => {
     // skip if the topic file no longer exists
-    if (!fs.existsSync(topicPath)) return null;
+    if (!fs.existsSync(topicPath)) {
+      diagnosticMessages.add(`Bulk translation skipped: topic file missing for ${topicPath}`);
+      return null;
+    }
 
     // hydrate and cache bulk metadata for this topic
     let info = topicInfoCache.get(topicPath);
@@ -137,7 +153,15 @@ function translateWatchErrorToBulk(error, options = {}) {
 
   const rewritten = insertBulkRefs(sanitized);
 
-  if (rewritten === sanitized) return error;
+  if (rewritten === sanitized) {
+    const hasTopicRefs = refRegex.test(sanitized);
+    if (!hasTopicRefs || diagnosticMessages.size === 0) return error;
+
+    const debugMessage = `${sanitized}\n${[...diagnosticMessages].join('\n')}`;
+    const err = new Error(debugMessage);
+    err.stack = error?.stack;
+    return err;
+  }
 
   const err = new Error(rewritten);
   if (error?.stack) { // surgically inject bulk refs into stack without duplicating message/context

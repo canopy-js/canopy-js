@@ -2,6 +2,7 @@ const buildProject = require('./build_project');
 let chalk = require('chalk');
 let { DefaultTopic } = require('../shared/fs-helpers');
 let { registerFullBuildProcess } = require('../shared/full_build_processes');
+let translateWatchErrorToBulk = require('../bulk/translate_watch_error_to_bulk');
 
 function run() {
   const rawOptions = process.argv[2];
@@ -27,6 +28,9 @@ function run() {
 try {
   run();
 } catch (error) {
-  console.error(error.message);
+  const rawOptions = process.argv[2];
+  const options = rawOptions ? JSON.parse(rawOptions) : {};
+  const translated = translateWatchErrorToBulk(error, options);
+  console.error(chalk.red(translated.message || translated));
   process.exit(1);
 }

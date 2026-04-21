@@ -88,7 +88,9 @@ function spawnBackgroundFullBuild(options, requestedAt) {
     logging: options.logging,
     pretty: options.pretty,
     orphans: options.orphans,
-    reciprocals: options.reciprocals
+    reciprocals: options.reciprocals,
+    sync: options.sync,
+    bulkFileName: options.bulkFileName
   };
 
   const child = spawn(

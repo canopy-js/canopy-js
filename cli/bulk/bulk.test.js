@@ -439,6 +439,50 @@ describe('translateWatchErrorToBulk', () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  test('it appends a diagnostic when a topic header cannot be found in bulk', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-translate-'));
+
+    try {
+      process.chdir(tmpDir);
+
+      writeFileSyncEnsuringDir(
+        'topics/A/B/Topic.expl',
+        [
+          'Topic: Root paragraph',
+          'Line 2'
+        ].join('\n') + '\n'
+      );
+
+      writeFileSyncEnsuringDir(
+        'Foo.bulk',
+        [
+          '[A/B]',
+          '',
+          '* Different Topic: Root paragraph',
+          'Line 2',
+          ''
+        ].join('\n')
+      );
+
+      const error = new Error(
+        [
+          'Error: Something went wrong',
+          'topics/A/B/Topic.expl:1:1'
+        ].join('\n')
+      );
+
+      const translated = translateWatchErrorToBulk(error, { sync: true, bulkFileName: 'Foo.bulk' });
+
+      expect(translated.message).toEqual(
+        expect.stringContaining('Bulk translation skipped: topic header "* Topic" not found under [A/B] in Foo.bulk')
+      );
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('BulkFileParser', function() {
