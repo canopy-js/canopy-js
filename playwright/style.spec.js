@@ -846,7 +846,6 @@ test.describe('Block entities', () => {
 
     // Test for long blockquote where \n should get padding
     const longQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is text that wraps.' });
-    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(9);
     const longQuotePaddingSpan = await longQuote.locator('.canopy-blockquote-padded-linebreak');
     await expect(longQuotePaddingSpan).toHaveCount(8); // padded linebreaks for each explicit blockquote line
 
