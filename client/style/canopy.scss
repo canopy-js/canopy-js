@@ -218,7 +218,7 @@ a.canopy-selectable-link {
   &.canopy-open-link .canopy-link-container {
     background-color: #e1dfdf;
     border: 1px solid #ababab;
-    border-radius: 1px;
+    border-radius: 3px;
     unicode-bidi: inherit;
   }
 
@@ -281,7 +281,7 @@ a.canopy-selectable-link {
 
   // Base gap behavior
   .canopy-link-icon-gap { // gap expands link forward and negative margin pushes icon back onto gap, so that both only break together
-    margin-inline-end: -12px;
+    margin-inline-end: -11px;
     font-size: 5px;
     user-select: none;
     &::before {
