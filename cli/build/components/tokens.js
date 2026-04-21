@@ -102,28 +102,46 @@ function FootnoteMarkerToken(superscript) {
   this.text = superscript;
 }
 
+function replaceHtmlInsertions(html, replaceInsertion) {
+  let result = '';
+  let cursor = 0;
+  let start = null;
+  let depth = 0;
+
+  for (const match of html.matchAll(/(^|[^\\])(\{\{|}})/g)) {
+    const delimiter = match[2];
+    const index = match.index + match[1].length;
+
+    if (delimiter === '{{') {
+      if (depth++ === 0) {
+        result += html.slice(cursor, index);
+        start = index;
+      }
+    } else if (depth && --depth === 0) {
+      result += replaceInsertion(html.slice(start + 2, index), start, start + 2);
+      cursor = index + 2;
+      start = null;
+    }
+  }
+
+  return result + html.slice(depth ? start : cursor);
+}
+
 function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  const regex = /(^|[^\\])(\{\{)([\s\S]*?[^\\])(}})/g;
+  this.html = replaceHtmlInsertions(html, (content, offset, contentOffset) => {
+    this.tokenInsertions.push(
+      parseText({
+        text: content,
+        parserContext: parserContext.clone({ insideToken: true })
+          .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
+          .incrementCharacterNumber(html.slice(0, contentOffset).split('\n').slice(-1)[0].length)
+      })
+    );
 
-  this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
-    const isEscaped = precedingChar === '\\';
-    if (isEscaped || !openingBraces || !closingBraces) {
-      return match;
-    } else {
-      this.tokenInsertions.push(
-        parseText({
-          text: content,
-          parserContext: parserContext.clone({ insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(0, offset - precedingChar.length).match(/\n/g)?.length || 0)
-            .incrementCharacterNumber(html.slice(0, offset + precedingChar.length).split('\n').slice(-1)[0].length + openingBraces.length)
-        })
-      );
-
-      return `${precedingChar}<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
-    }
+    return `<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
   });
 }
 

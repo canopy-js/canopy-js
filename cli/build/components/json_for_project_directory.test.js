@@ -1021,6 +1021,87 @@ test('it allows pipe references with html insertions in html tags', () => {
   ).not.toThrow();
 });
 
+test('it allows nested html insertions in pipe references when each brace pair is adjacent to html tags', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: Idaho is linked as [[Wyoming|<s85>{{Name<br><s90>{{Wyoming}}</s90>}}</s85>]].\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
+  };
+
+  expect(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {})
+  ).not.toThrow();
+});
+
+test('it keeps adjacent html insertions separate', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: <b>{{[[Wyoming]]}}</b><i>{{[[Oregon]]}}</i>.\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`,
+    'topics/Oregon/Oregon.expl': `Oregon: Oregon is a northwestern state.\n`
+  };
+  let { filesToWrite } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
+  let paragraphTokens = JSON.parse(filesToWrite[idahoJsonPath()]).paragraphsBySubtopic.Idaho;
+
+  expect(paragraphTokens[0]).toMatchObject({
+    type: 'html_element',
+    html: '<b><div class="canopy-html-insertion" data-replacement-number="0"></div></b><i><div class="canopy-html-insertion" data-replacement-number="1"></div></i>',
+    tokenInsertions: [
+      [
+        {
+          type: 'global',
+          text: 'Wyoming',
+          pathString: 'Wyoming'
+        }
+      ],
+      [
+        {
+          type: 'global',
+          text: 'Oregon',
+          pathString: 'Oregon'
+        }
+      ]
+    ]
+  });
+});
+
+test('it supports nested html insertions', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': `Idaho: <s85>{{Outer <small>{{[[Wyoming]]}}</small> text}}</s85>.\n`,
+    'topics/Wyoming/Wyoming.expl': `Wyoming: Wyoming is a midwestern state.\n`
+  };
+  let { filesToWrite } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
+  let paragraphTokens = JSON.parse(filesToWrite[idahoJsonPath()]).paragraphsBySubtopic.Idaho;
+
+  expect(paragraphTokens[0]).toMatchObject({
+    type: 'html_element',
+    html: '<s85><div class="canopy-html-insertion" data-replacement-number="0"></div></s85>',
+    tokenInsertions: [
+      [
+        {
+          type: 'text',
+          text: 'Outer '
+        },
+        {
+          type: 'html_element',
+          html: '<small><div class="canopy-html-insertion" data-replacement-number="0"></div></small>',
+          tokenInsertions: [
+            [
+              {
+                type: 'global',
+                text: 'Wyoming',
+                pathString: 'Wyoming'
+              }
+            ]
+          ]
+        },
+        {
+          type: 'text',
+          text: ' text'
+        }
+      ]
+    ]
+  });
+});
+
 test('it lets you interpolate different values for display and target like [[harmon{y|ies}]]', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl': `Idaho: Idaho is a midwestern state, like [[Wyoming territor{y|ies}]].\n`,

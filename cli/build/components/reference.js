@@ -96,29 +96,23 @@ class Reference {
       if (this.characterIsEscaped(this.contents, i)) continue;
 
       if (this.contents.slice(i, i + 2) === '{{') {
-        const closingIndex = this.findClosingDoubleBrace(i + 2);
         const precedingCharacter = i > 0 ? this.contents[i - 1] : '';
-        const succeedingCharacter = closingIndex !== -1 ? (this.contents[closingIndex + 2] || '') : '';
-        const isHtmlInsertion = precedingCharacter === '>' || succeedingCharacter === '<';
+        if (precedingCharacter === '>') {
+          i += 1;
+          continue;
+        }
+      }
 
-        if (closingIndex !== -1 && isHtmlInsertion) {
-          i = closingIndex + 1;
+      if (this.contents.slice(i, i + 2) === '}}') {
+        const succeedingCharacter = this.contents[i + 2] || '';
+        if (succeedingCharacter === '<') {
+          i += 1;
           continue;
         }
       }
 
       throw new Error(chalk.red('Reference cannot mix pipe syntax with {} or non-HTML {{}} syntax: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
     }
-  }
-
-  findClosingDoubleBrace(startIndex) {
-    for (let i = startIndex; i < this.contents.length - 1; i += 1) {
-      if (this.contents[i] === '}' && this.contents[i + 1] === '}' && !this.characterIsEscaped(this.contents, i)) {
-        return i;
-      }
-    }
-
-    return -1;
   }
 
   characterIsEscaped(string, index) {
