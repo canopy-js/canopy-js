@@ -91,6 +91,27 @@ class Path {
     return this.string === otherPath.string;
   }
 
+  matches(otherPath) {
+    if (!(otherPath instanceof Path)) return false;
+    if (this.length !== otherPath.length) return false;
+
+    return this.segments.every(([topic, subtopic], index) =>
+      topic.matches(otherPath.getSegmentTopic(index)) &&
+      subtopic.matches(otherPath.getSegmentSubtopic(index))
+    );
+  }
+
+  matchingPrefixOf(otherPath) {
+    if (!(otherPath instanceof Path)) return false;
+    if (this.empty || otherPath?.empty) return false;
+    if (this.length > otherPath.length) return false;
+
+    return this.segments.every(([topic, subtopic], index) =>
+      topic.matches(otherPath.getSegmentTopic(index)) &&
+      subtopic.matches(otherPath.getSegmentSubtopic(index))
+    );
+  }
+
   ancestorOf(otherPath) { // strict ancestor: lexical prefix or DOM parent within same-length subtopic chains
     if (!(otherPath instanceof Path)) return false;
     if (this.empty || otherPath?.empty) return false;
@@ -448,15 +469,27 @@ class Path {
     return lexicalOverlap;
   }
 
-  linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
-    const matches = this.paragraph.links.filter(link => {
+  linksTo(otherPath) {
+    return this.paragraph.links.filter(link => {
       const inlinePath = link.inlinePath;
-      return inlinePath?.equals(otherPath) || inlinePath?.ancestorOf(otherPath);
+      return inlinePath?.matches(otherPath) ||
+        inlinePath?.matchingPrefixOf(otherPath) ||
+        inlinePath?.equals(otherPath) ||
+        inlinePath?.ancestorOf(otherPath);
     });
+  }
+
+  linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
+    const matches = this.linksTo(otherPath);
     if (!matches.length) return null;
 
-    const exact = matches.find(link => link.inlinePath?.equals(otherPath));
-    return exact || matches[0];
+    return matches.sort((linkA, linkB) => {
+      const linkAExact = linkA.inlinePath?.matches(otherPath) || linkA.inlinePath?.equals(otherPath);
+      const linkBExact = linkB.inlinePath?.matches(otherPath) || linkB.inlinePath?.equals(otherPath);
+      if (linkAExact !== linkBExact) return linkAExact ? -1 : 1;
+
+      return linkA.relativeLinkNumber - linkB.relativeLinkNumber;
+    })[0];
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?

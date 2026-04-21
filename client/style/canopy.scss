@@ -254,12 +254,20 @@ a.canopy-selectable-link {
     transform: scaleX(-1);
   }
 
-  &:not([data-link-dir="rtl"]) .canopy-down-cycle-icon { // facing right-down
+  &:not([data-link-dir="rtl"]) .canopy-down-ahead-cycle-icon { // facing right-down
     transform: rotate(90deg) scaleY(-1) scaleX(0.8);
   }
 
-  &[data-link-dir="rtl"] .canopy-down-cycle-icon { // facing left-down
+  &[data-link-dir="rtl"] .canopy-down-ahead-cycle-icon { // facing left-down
     transform: rotate(270deg) scaleY(-1) scaleX(-0.8);
+  }
+
+  &:not([data-link-dir="rtl"]) .canopy-down-behind-cycle-icon { // reflected across final x-axis
+    transform: rotate(90deg) scaleY(-1) scaleX(-0.8);
+  }
+
+  &[data-link-dir="rtl"] .canopy-down-behind-cycle-icon { // reflected across final x-axis
+    transform: rotate(270deg) scaleY(-1) scaleX(0.8);
   }
 
   &[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon,

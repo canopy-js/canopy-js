@@ -742,11 +742,15 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Style_examples#Down_Cycle_References`);
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References');
 
-    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-down-cycle-icon')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="solo hash links"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="solo hash links after"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="go down"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="go down forward"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-down-cycle-icon')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-down-behind-cycle-icon')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-down-ahead-cycle-icon')).toHaveCount(1);
 
-    await page.locator('a:has-text("go down")').click()
+    await page.locator('a[data-text="go down"]').click()
     await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });

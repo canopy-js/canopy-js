@@ -454,6 +454,7 @@ These are hyperlink special cases:
 
 Down Cycle References:
 This is a link [[solo hash links]], and this is a down cycle reference: [[Style Examples#Down Cycle references/Solo Hash Links|go down]]
+This is a down cycle reference before its parent link: [[Style Examples#Down Cycle references/Solo Hash Links|go down forward]], then [[solo hash links|solo hash links after]].
 
 Manual Cycle Arrow Icons:
 This is a link to [[style examples|style examples ↺]].

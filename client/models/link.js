@@ -478,6 +478,23 @@ class Link {
     return this.cycle && this.enclosingPath.ancestorOf(this.inlinePath.reduce());
   }
 
+  get downCycleDirection() {
+    if (!this.isDownCycle) return null;
+
+    const targetPath = this.inlinePath.reduce();
+    const parentLinks = this.enclosingPath.linksTo(targetPath)
+      .filter(link => !link.equals(this))
+      .sort((linkA, linkB) => {
+        if (linkA.isPathReference !== linkB.isPathReference) return linkA.isPathReference ? 1 : -1;
+        return Math.abs(linkA.relativeLinkNumber - this.relativeLinkNumber) -
+          Math.abs(linkB.relativeLinkNumber - this.relativeLinkNumber);
+      });
+    const parentLink = parentLinks[0];
+
+    if (!parentLink || parentLink.relativeLinkNumber === this.relativeLinkNumber) return null;
+    return parentLink.relativeLinkNumber < this.relativeLinkNumber ? 'behind' : 'ahead';
+  }
+
   static isDownCycle(enclosingPath, literalPath) {
     if (!enclosingPath || !literalPath) return false;
     if (!Path.introducesNewCycle(enclosingPath, literalPath)) return false;

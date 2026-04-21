@@ -167,6 +167,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         cycleIcon.innerText = '↪';
       } else if (link.isDownCycle) {
         cycleIcon.classList.add('canopy-down-cycle-icon');
+        cycleIcon.classList.add(`canopy-down-${link.downCycleDirection || 'ahead'}-cycle-icon`);
         cycleIcon.innerText = '↪';
       } else if (link.isUpCycle || link.isSelfReference) {
         cycleIcon.classList.add('canopy-up-cycle-icon');
