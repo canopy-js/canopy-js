@@ -92,11 +92,11 @@ const bulk = async function(selectedFileList, options = {}) {
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
-    let defaultTopic = {};
-    tryAndWriteHtmlError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
+    let currentDefaultTopic = {};
+    tryAndWriteHtmlError(() => { currentDefaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, currentDefaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || (defaultTopic.topicFileName ? `${defaultTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
+    options.bulkFileName = options.bulkFileName || DefaultTopic.bulkFileName;
     checkGitIgnoreForBulkFile(options);
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
@@ -106,8 +106,7 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
-    const fallbackTopic = defaultTopic();
-    options.bulkFileName = options.bulkFileName || (fallbackTopic.topicFileName ? `${fallbackTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
+    ensureBulkFileName(options);
 
     let originalSelectionFileSet = originalSelectedFilesList
       ? fileSystemManager.getFileSet(originalSelectedFilesList)
@@ -170,6 +169,7 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   if (options.sync) {
+    ensureBulkFileName(options);
     if (fs.existsSync(options.bulkFileName) && options.useExisting) { // if the user has a bulk file from a previous session
       log(chalk.magenta(`Canopy bulk sync: Reconstructing topic files from prior bulk file ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: false }), { ...options, suppressThrow: true });
@@ -327,4 +327,8 @@ function touchDefaultTopicOnInvalidBuild({ defaultTopicPath, newFileSet, log }) 
   if (typeof log === 'function') {
     log(chalk.magenta(`Bulk file no-op with invalid build triggering default topic touch - ${touchPath}`));
   }
+}
+
+function ensureBulkFileName(options) {
+  if (!options.bulkFileName) options.bulkFileName = DefaultTopic.bulkFileName;
 }

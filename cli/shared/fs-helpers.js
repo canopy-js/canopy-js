@@ -23,6 +23,11 @@ class DefaultTopic {
     this.topicFileName = Topic.for(this.name).topicFileName;
     this.jsonFileName = Topic.for(this.name).jsonFileName;
   }
+
+  static get bulkFileName() {
+    const { topicFileName } = new DefaultTopic();
+    return topicFileName ? `${topicFileName}.bulk` : 'canopy_bulk_file.bulk';
+  }
 }
 
 let canopyBinPath;
