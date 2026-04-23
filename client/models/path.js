@@ -359,7 +359,6 @@ class Path {
 
       if (topicFirstIndex.hasOwnProperty(topicKey)) {
         cycle = { start: topicFirstIndex[topicKey], end: i };
-        break;
       } else {
         topicFirstIndex[topicKey] = i;
       }

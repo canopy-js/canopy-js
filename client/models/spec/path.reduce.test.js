@@ -19,10 +19,24 @@ describe('Path.reduce', () => {
   });
 
   test('removes repeated portion and keeps tail', () => {
-    expect(Path.for('/A/B/C/D/E/A/B/C/E').reduce().string).toBe('/A/B/C/E');
+    expect(Path.for('/A/B/C/D/E/A/B/C/E').reduce().string).toBe('/A/B/C/D/E');
   });
 
   test('handles mixed segments', () => {
     expect(Path.for('/A/B#C/A/B#D/E').reduce().string).toBe('/A/B#D/E');
+  });
+
+  test('removes the lowest cycle, not the first one encountered', () => {
+    const path = Path.for('/A/B/C/B/D/E/D');
+
+    const reduced = path.reduce();
+
+    expect(reduced.array.map(segment => segment[0].mixedCase)).toEqual([
+      'A',
+      'B',
+      'C',
+      'B',
+      'D'
+    ]);
   });
 });
