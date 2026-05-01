@@ -172,6 +172,8 @@ function scrollToWithPromise(options) {
 }
 
 const LINK_TARGET_RATIO = .32;
+const FULCRUM_LINK_TARGET_RATIO = .15;
+const PARTIALLY_VISIBLE_LINK_TARGET_RATIO = .075;
 const PARAGRAPH_TARGET_RATIO = .17;
 const BIG_PARAGRAPH_TARGET_RATIO = .05;
 const BIG_LINK_TARGET_RATIO = .2;
@@ -189,12 +191,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   let minDiff = options.noMinDiff ? null : 75;
 
   // If it is a two step change, go to fulcrum element, otherwise go straight to final position
-  let targetElement = (Path.rendered.twoStepChange(newPath) && previousPath.fulcrumLink(newPath)).linkElement ||
+  let fulcrumLink = Path.rendered.twoStepChange(newPath) && previousPath.fulcrumLink(newPath);
+  let targetElement = fulcrumLink?.linkElement ||
+    (newPath.isFragment && newPath.parentLink?.element) ||
     (options.scrollToParagraph && !linkToSelect?.isFragment && newPath.paragraphElement) ||
     (linkToSelect?.element || newPath.paragraphElement);
 
-  let targetRatio = targetElement.tagName === 'A' ?
-    (Link.for(targetElement).isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO) :
+  let targetLink = targetElement.tagName === 'A' && Link.for(targetElement);
+  let targetRatio = targetLink ?
+    (fulcrumLink ? FULCRUM_LINK_TARGET_RATIO : (targetLink.isAboveViewport && targetLink.bottom > ScrollableContainer.top ? PARTIALLY_VISIBLE_LINK_TARGET_RATIO : (targetLink.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO))) :
     (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
 
   let preChangePause = () => new Promise(resolve => setTimeout(resolve, 120))
