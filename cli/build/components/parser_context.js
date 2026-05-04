@@ -242,6 +242,9 @@ class ParserContext {
 
   registerLocalReference(targetSubtopic, index, reference) {
     const topicData = this.ensureTopicData(this.currentTopic.caps, this.filePath);
+    // Prevent redundant parent links to the same paragraph from writing contradictory parent values.
+    if (topicData.localReferences.hasOwnProperty(targetSubtopic.caps)) return;
+
     topicData.localReferences[targetSubtopic.caps] = {
       parentSubtopic: this.currentSubtopic,
       referenceText: reference.fullText,
