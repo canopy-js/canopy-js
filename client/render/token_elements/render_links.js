@@ -96,10 +96,12 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
     }
 
+    // Multiline means the link's own content spans more than one visual line,
+    // whether from wrapping or explicit line breaks inside the link.
     if (inlineLayoutEnabled && lineHeight > 0 && height >= lineHeight * 1.7) {
       linkElement.dataset.height = height;
       linkElement.dataset.lineHeight = lineHeight;
-      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+      linkElement.classList.add('canopy-multiline-link');
     }
 
     const parent = linkElement.parentElement;
@@ -108,6 +110,8 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
     const isLast = linkElement === parent?.lastElementChild;
     const prevIsBreak = linkElement.previousElementSibling?.classList.contains('canopy-linebreak-span');
     const nextIsBreak = linkElement.nextElementSibling?.classList.contains('canopy-linebreak-span');
+    // Full-line means the link is structurally alone between paragraph/block
+    // quote boundaries or explicit linebreak spans.
     const isFullLine = isBlockParent && ((isFirst || prevIsBreak) && (isLast || nextIsBreak));
     linkElement.classList.toggle('canopy-full-line-link', isFullLine);
 

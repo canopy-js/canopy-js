@@ -167,6 +167,12 @@ a.canopy-disabled-link {
     display: inline-block;
   }
 
+  &[data-link-dir="rtl"].canopy-multiline-link:not(.canopy-full-line-link) .canopy-link-container,
+  &:dir(rtl).canopy-multiline-link:not(.canopy-full-line-link) .canopy-link-container {
+    display: inline;
+    line-height: 1.4;
+  }
+
   .canopy-link-terminal-gap {
     margin-inline-end: -12px;
     font-size: 5px;
@@ -176,9 +182,8 @@ a.canopy-disabled-link {
     }
   }
 
-  // Full-line and multiline links don't need terminal gap padding.
-  &.canopy-full-line-link .canopy-link-terminal-gap,
-  &.canopy-multiline-link .canopy-link-terminal-gap {
+  // Full-line links don't need terminal gap padding.
+  &.canopy-full-line-link .canopy-link-terminal-gap {
     margin-inline-end: 0;
     font-size: 0;
     &::before {
@@ -186,15 +191,10 @@ a.canopy-disabled-link {
     }
   }
 
-  // link is between newlines or paragraph start/end, i.e. is full line
-  &:first-child:has(+ .canopy-linebreak-span),
-  .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
-  .canopy-linebreak-span + &:last-child,
-  &:only-child {
-    &.canopy-multiline-link .canopy-link-container {
-      display: inline-block;
-      vertical-align: top;
-    }
+  &.canopy-full-line-link.canopy-multiline-link .canopy-link-container {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 1.4;
   }
 }
 
@@ -455,6 +455,12 @@ blockquote {
 
   a, a.canopy-selectable-link {
     color: #4b535b;
+  }
+
+  // Multiline links need their anchor line box to match their link-container
+  // line-height, or mixed inline boxes create uneven spacing between rows.
+  > a.canopy-multiline-link {
+    line-height: 1.4;
   }
 
   // Let linebreak spans control spacing between full-line blockquote links.

@@ -879,6 +879,31 @@ test.describe('Block entities', () => {
     await expect(page.locator('text=Multi-line link paragraph text. >> visible=true')).toHaveCount(1);
   });
 
+  test('It allows inline RTL block quote links after explicit link line breaks', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 700 });
+    await page.goto('/United_States/New_York/Style_examples#RTL_inline_block_quote_links');
+
+    const firstLink = page.locator('.canopy-selected-section blockquote a', { hasText: 'סוף' }).first();
+    const secondLink = page.locator('.canopy-selected-section blockquote a', { hasText: 'ליד' }).first();
+
+    await expect(firstLink).toHaveClass(/canopy-multiline-link/);
+    await expect(firstLink).not.toHaveClass(/canopy-full-line-link/);
+
+    const firstLinkContainerDisplay = await firstLink.locator('.canopy-link-container').evaluate(el => getComputedStyle(el).display);
+    expect(firstLinkContainerDisplay).toBe('inline');
+    const firstLinkAnchorLineHeight = await firstLink.evaluate(el => getComputedStyle(el).lineHeight);
+    expect(parseFloat(firstLinkAnchorLineHeight)).toBeGreaterThan(26);
+    const firstLinkLineHeight = await firstLink.locator('.canopy-link-container').evaluate(el => getComputedStyle(el).lineHeight);
+    expect(parseFloat(firstLinkLineHeight)).toBeGreaterThan(26);
+
+    const firstLinkLastLineBox = await firstLink.locator('.canopy-text-span', { hasText: 'סוף' }).boundingBox();
+    const secondLinkBox = await secondLink.locator('.canopy-text-span', { hasText: 'ליד' }).boundingBox();
+
+    expect(firstLinkLastLineBox).not.toBeNull();
+    expect(secondLinkBox).not.toBeNull();
+    expect(Math.abs(firstLinkLastLineBox.y - secondLinkBox.y)).toBeLessThan(3);
+  });
+
   test('It creates RTL block quotes', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#RTL_block_quotes');
     await expect(page.locator('.canopy-selected-section blockquote')).toHaveCount(2);
