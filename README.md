@@ -10,7 +10,7 @@
 <div align="center">
 <br>
 
-![Logo](./readme/logo-bump.png)
+![Logo](./readme/new_logo.png)
 
 <br>
 </div>
