@@ -458,6 +458,8 @@ This is a down cycle reference before its parent link: [[Style Examples#Down Cyc
 
 Manual Cycle Arrow Icons:
 This is a link to [[style examples|style examples ↺]].
+This is a link to [[style examples|style examples 2a]].
+This is a link to [[style examples|style examples 🔁]].
 
 Inline HTML: Text. <b> This is a test.</b> Text.
 

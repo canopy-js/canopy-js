@@ -784,6 +784,20 @@ test.describe('Block entities', () => {
     await expect(externalLink.locator('.canopy-external-link-icon')).toBeVisible();
   });
 
+  test('It only suppresses cycle icons for manual arrows and emoji', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons');
+    await expect(page.locator('section.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Manual Cycle Arrow Icons');
+
+    const manualArrowLink = page.locator('a[data-text="style examples ↺"]');
+    await expect(manualArrowLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
+
+    const digitLink = page.locator('a[data-text="style examples 2a"]');
+    await expect(digitLink.locator('.canopy-up-cycle-icon')).toHaveText('↩');
+
+    const emojiLink = page.locator('a[data-text="style examples 🔁"]');
+    await expect(emojiLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
+  });
+
   test('It allows directional menus', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Directional_menus');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Directional_menus");

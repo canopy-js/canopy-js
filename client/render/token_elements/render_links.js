@@ -271,9 +271,9 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
 function containsIconOrEmoji(str) {
   if (!str) return false;
   const plainText = str.replace(/<[^>]*>/g, ''); // avoid treating HTML markup as symbols
-  const emojiPattern = /\p{Emoji}/u;
-  const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
-  return emojiPattern.test(plainText) || symbolPattern.test(plainText);
+  const arrowPattern = /[\u2190-\u21FF\u2794-\u27BF\u27F0-\u27FF\u2900-\u297F\u2B00-\u2B4F]/u;
+  const emojiPattern = /(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}|\p{Emoji}\uFE0F)/u;
+  return arrowPattern.test(plainText) || emojiPattern.test(plainText);
 }
 
 function isSingleCharacterLink(str) {
