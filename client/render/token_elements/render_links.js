@@ -6,9 +6,14 @@ import { projectPathPrefix, hashUrls } from 'helpers/getters';
 import { measureVerticalOverflow } from 'render/helpers';
 
 const rtlPattern = /[\p{Script=Hebrew}\p{Script=Arabic}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Samaritan}\p{Script=Mandaic}\p{Script=Adlam}\p{Script=Hanifi_Rohingya}\p{Script=Phoenician}\p{Script=Imperial_Aramaic}]/u;
+const ltrPattern = /[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Devanagari}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Number}]/u;
 
 function isRtlText(text) {
-  return rtlPattern.test((text || '').trim());
+  for (const character of Array.from((text || '').trim())) {
+    if (rtlPattern.test(character)) return true;
+    if (ltrPattern.test(character)) return false;
+  }
+  return false;
 }
 
 function renderLinkBase(token, renderContext, renderTokenElements) {
@@ -152,8 +157,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;
       const fulcrumParagraph = fulcrumPath?.paragraph;
       if (fulcrumParagraph?.paragraphElement) {
-        const fulcrumText = fulcrumParagraph.paragraphElement.textContent;
-        link.element.dataset.fulcrumDir = isRtlText(fulcrumText) ? 'rtl' : 'ltr';
+        link.element.dataset.fulcrumDir = isRtlText(fulcrumParagraph.paragraphElement.textContent) ? 'rtl' : 'ltr';
       }
 
       if (containsIconOrEmoji(link.text) || isSingleCharacterLink(link.text)) { // user is taking responsibility for arrow
