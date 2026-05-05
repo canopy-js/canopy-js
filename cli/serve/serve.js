@@ -15,21 +15,23 @@ function serve(options = {}) {
   const state = {
     child: null,
     restarting: false,
-    missingBuildWarned: false
+    missingBuildWarned: false,
+    shuttingDown: false
   };
-
-  startServerIfReady(state, port, options, hasValidBuild);
 
   const ensureServerState = () => {
     if (!hasValidBuild()) return handleMissingBuild(state);
-    return ensureRunning(state, port, options);
+    return ensureRunning(state, port, options, hasValidBuild, ensureServerState);
   };
+
+  startServerIfReady(state, port, options, hasValidBuild, ensureServerState);
 
   const pollIntervalMs = 500;
   const poller = setInterval(ensureServerState, pollIntervalMs);
   const watcher = watchBuildRoot(buildRoot, ensureServerState, state);
 
   registerShutdown(() => {
+    state.shuttingDown = true;
     stopChild(state);
     try { watcher.close(); } catch (_) { /* ignore */ }
     clearInterval(poller);
@@ -52,15 +54,15 @@ function getBuildState() {
   return { buildRoot, hasValidBuild };
 }
 
-function startServerIfReady(state, port, options, hasValidBuild) {
+function startServerIfReady(state, port, options, hasValidBuild, ensureServerState) {
   if (!hasValidBuild()) return;
-  startChild(state, port, options);
+  startChild(state, port, options, hasValidBuild, ensureServerState);
 }
 
-function ensureRunning(state, port, options) {
+function ensureRunning(state, port, options, hasValidBuild, ensureServerState) {
   if (state.child || state.restarting) return;
   state.restarting = true;
-  startChild(state, port, options);
+  startChild(state, port, options, hasValidBuild, ensureServerState);
   state.restarting = false;
   state.missingBuildWarned = false;
 }
@@ -73,7 +75,7 @@ function handleMissingBuild(state) {
   }
 }
 
-function startChild(state, port, options) {
+function startChild(state, port, options, hasValidBuild, ensureServerState) {
   if (state.child) return;
   state.child = fork(path.resolve(__dirname, './fork_server.js'), [], {
     stdio: 'inherit',
@@ -83,6 +85,25 @@ function startChild(state, port, options) {
       LOGGING: options.logging ? '1' : '0',
       OPEN: options.open ? '1' : '0'
     }
+  });
+  const child = state.child;
+  if (options.logging) console.log(chalk.gray(`Server parent pid ${process.pid} forked child pid ${child.pid} for port ${port}`));
+
+  child.on('exit', (code, signal) => {
+    if (state.child === child) state.child = null;
+
+    if (options.logging) {
+      const reason = signal ? `signal ${signal}` : `code ${code}`;
+      console.log(chalk.gray(`Server child pid ${child.pid} exited with ${reason}; parent pid ${process.pid}`));
+    }
+
+    if (!state.shuttingDown && hasValidBuild()) ensureServerState();
+  });
+
+  child.on('error', (error) => {
+    if (state.child === child) state.child = null;
+    console.error(chalk.red(`Server child pid ${child.pid || 'unknown'} failed under parent pid ${process.pid}: ${error.message}`));
+    if (!state.shuttingDown && hasValidBuild()) ensureServerState();
   });
 }
 
