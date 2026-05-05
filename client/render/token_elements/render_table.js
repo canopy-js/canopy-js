@@ -6,6 +6,8 @@ const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
 const WIDTH_SIZE_SENSITIVITY = 3000;        // more tolerance for small table max widths
 
 const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
+const MAX_COLUMN_WIDTH_PX = 450;
+const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 150;
 
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -51,14 +53,15 @@ function layoutTable(tableElement) {
     totalWidth > containerWidth
   ) {
     ({ measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement, {
-      forcedHorizontalPadding: OVERFLOW_HORIZONTAL_CELL_PADDING_PX
+      forcedHorizontalPadding: OVERFLOW_HORIZONTAL_CELL_PADDING_PX,
+      fitContainerWidth: containerWidth
     }));
   }
 
   return { measurements, snapPlan, totalWidth, containerWidth };
 }
 
-function runTableWidthPass(tableElement, { forcedHorizontalPadding } = {}) {
+function runTableWidthPass(tableElement, { forcedHorizontalPadding, fitContainerWidth } = {}) {
   clearCellWidths(tableElement);
   removeColgroup(tableElement);
   setTableLayoutForMeasure(tableElement);
@@ -67,7 +70,7 @@ function runTableWidthPass(tableElement, { forcedHorizontalPadding } = {}) {
   }
   const measurements = measureTable(tableElement);
   const snapPlan = computeSnapPlan(measurements);
-  const totalWidth = applyColumnGroupWidths(tableElement, measurements, snapPlan);
+  const totalWidth = applyColumnGroupWidths(tableElement, measurements, snapPlan, { fitContainerWidth });
   return { measurements, snapPlan, totalWidth };
 }
 
@@ -613,6 +616,111 @@ function getObservedColumnScrollWidths(tableElement, columnCount) {
   return observedWidths;
 }
 
+function cellHasBreakOpportunities(cell) {
+  return /[ \t\r\n\f,;:\/-]/.test(cell.textContent || '');
+}
+
+function getShrinkableColumns(tableElement, columnCount) {
+  const shrinkableColumns = new Array(columnCount).fill(false);
+
+  [...tableElement.rows].forEach(row => {
+    let colIndex = 0;
+    [...row.cells].forEach(cell => {
+      const { columnSpan, excludeFromBaseline } = getCellMeta(cell, tableElement);
+      if (!excludeFromBaseline && cellHasBreakOpportunities(cell)) {
+        for (let i = 0; i < columnSpan; i++) {
+          if (colIndex + i < shrinkableColumns.length) {
+            shrinkableColumns[colIndex + i] = true;
+          }
+        }
+      }
+      colIndex += columnSpan;
+    });
+  });
+
+  return shrinkableColumns;
+}
+
+function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
+  if (!isFinite(containerWidth) || containerWidth <= 0) {
+    return { widths, shrinkAmounts: new Array(widths.length).fill(0) };
+  }
+
+  const fittedWidths = [...widths];
+  const shrinkAmounts = new Array(widths.length).fill(0);
+  let overflow = fittedWidths.reduce((sum, width) => sum + width, 0) - containerWidth;
+
+  while (overflow > 0.5) {
+    const candidates = fittedWidths
+      .map((width, index) => ({ width, index }))
+      .filter(({ width, index }) =>
+        shrinkableColumns[index] &&
+        isFinite(width) &&
+        width > SHRINKABLE_COLUMN_MIN_WIDTH_PX
+      );
+
+    if (!candidates.length) break;
+
+    const shrinkPerColumn = overflow / candidates.length;
+    let appliedShrink = 0;
+
+    candidates.forEach(({ width, index }) => {
+      const shrinkBy = Math.min(shrinkPerColumn, width - SHRINKABLE_COLUMN_MIN_WIDTH_PX);
+      if (shrinkBy <= 0) return;
+      fittedWidths[index] -= shrinkBy;
+      shrinkAmounts[index] += shrinkBy;
+      appliedShrink += shrinkBy;
+    });
+
+    if (appliedShrink <= 0) break;
+    overflow -= appliedShrink;
+  }
+
+  return { widths: fittedWidths, shrinkAmounts };
+}
+
+function getWidthSum(widths) {
+  return widths.reduce((sum, width) => sum + width, 0);
+}
+
+function undoOverflowSnapping(widths, unsnappedWidths, columnSnapResults, containerWidth) {
+  if (!isFinite(containerWidth) || containerWidth <= 0) {
+    return { widths, unsnapAmounts: new Array(widths.length).fill(0) };
+  }
+
+  const fittedWidths = [...widths];
+  const unsnapAmounts = new Array(widths.length).fill(0);
+  let overflow = getWidthSum(fittedWidths) - containerWidth;
+
+  const candidates = fittedWidths
+    .map((width, index) => {
+      const unsnappedWidth = unsnappedWidths[index];
+      return {
+        index,
+        width,
+        unsnappedWidth,
+        savings: width - unsnappedWidth,
+        snapSource: columnSnapResults[index]?.snapTarget?.anchorSource
+      };
+    })
+    .filter(({ savings, snapSource, unsnappedWidth }) =>
+      snapSource === 'snapped_to_anchor' &&
+      isFinite(unsnappedWidth) &&
+      unsnappedWidth > 0 &&
+      savings > 0
+    )
+    .sort((a, b) => b.savings - a.savings);
+
+  for (const candidate of candidates) {
+    if (overflow <= 0.5) break;
+    fittedWidths[candidate.index] = candidate.unsnappedWidth;
+    unsnapAmounts[candidate.index] = candidate.savings;
+    overflow -= candidate.savings;
+  }
+
+  return { widths: fittedWidths, unsnapAmounts };
+}
+
 function resolveAppliedColumnWidth({ column, snapResult, observedWidth, observedScrollWidth }) {
   const snappedWidth = snapResult?.snapResult?.willSnap
     ? snapResult?.snapTarget?.target?.unitBoxWidth
@@ -627,7 +735,7 @@ function resolveAppliedColumnWidth({ column, snapResult, observedWidth, observed
   return Math.max(...candidates);
 }
 
-function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
+function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitContainerWidth } = {}) {
   const { columnSnapResults } = snapPlan;
   const logicalColumnCount = getLogicalColumnCount([...tableElement.rows]);
   const columnCount = Math.max(columnSizes.length, logicalColumnCount);
@@ -657,13 +765,75 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan) {
 
   widths = widths.map(width => (isFinite(width) && width > 0 ? width : averageWidth));
 
-  const finalWidths = widths;
+  const unsnappedWidths = Array.from({ length: columnCount }, (_, index) => {
+    const column = columnSizes[index];
+    const observedWidth = observedWidths[index];
+    const observedScrollWidth = observedScrollWidths[index];
+    return resolveAppliedColumnWidth({
+      column,
+      snapResult: null,
+      observedWidth,
+      observedScrollWidth
+    });
+  }).map((width, index) => (isFinite(width) && width > 0 ? width : widths[index]));
+
+  const cappedWidths = widths.map(width =>
+    width > MAX_COLUMN_WIDTH_PX ? MAX_COLUMN_WIDTH_PX : width
+  );
+  const shrinkableColumns = getShrinkableColumns(tableElement, columnCount);
+  const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
+    cappedWidths,
+    shrinkableColumns,
+    fitContainerWidth
+  );
+  const { widths: finalWidths, unsnapAmounts } = undoOverflowSnapping(
+    shrunkWidths,
+    unsnappedWidths,
+    columnSnapResults,
+    fitContainerWidth
+  );
 
   finalWidths.forEach((width, index) => {
+    if (cappedWidths[index] !== widths[index]) {
+      colgroup.children[index].dataset.columnWidthCapped = 'true';
+      colgroup.children[index].dataset.uncappedColumnWidth = String(widths[index]);
+      colgroup.children[index].dataset.maxColumnWidth = String(MAX_COLUMN_WIDTH_PX);
+    } else {
+      delete colgroup.children[index].dataset.columnWidthCapped;
+      delete colgroup.children[index].dataset.uncappedColumnWidth;
+      delete colgroup.children[index].dataset.maxColumnWidth;
+    }
+    if (shrinkableColumns[index]) {
+      colgroup.children[index].dataset.columnShrinkable = 'true';
+    } else {
+      delete colgroup.children[index].dataset.columnShrinkable;
+    }
+    if (shrinkAmounts[index] > 0) {
+      colgroup.children[index].dataset.columnWidthShrunk = 'true';
+      colgroup.children[index].dataset.preShrinkColumnWidth = String(cappedWidths[index]);
+      colgroup.children[index].dataset.columnShrinkAmount = String(shrinkAmounts[index]);
+      colgroup.children[index].dataset.minShrinkableColumnWidth = String(SHRINKABLE_COLUMN_MIN_WIDTH_PX);
+    } else {
+      delete colgroup.children[index].dataset.columnWidthShrunk;
+      delete colgroup.children[index].dataset.preShrinkColumnWidth;
+      delete colgroup.children[index].dataset.columnShrinkAmount;
+      delete colgroup.children[index].dataset.minShrinkableColumnWidth;
+    }
+    if (unsnapAmounts[index] > 0) {
+      colgroup.children[index].dataset.columnWidthUnsnapped = 'true';
+      colgroup.children[index].dataset.snappedColumnWidth = String(shrunkWidths[index]);
+      colgroup.children[index].dataset.unsnappedColumnWidth = String(unsnappedWidths[index]);
+      colgroup.children[index].dataset.columnUnsnapSavings = String(unsnapAmounts[index]);
+    } else {
+      delete colgroup.children[index].dataset.columnWidthUnsnapped;
+      delete colgroup.children[index].dataset.snappedColumnWidth;
+      delete colgroup.children[index].dataset.unsnappedColumnWidth;
+      delete colgroup.children[index].dataset.columnUnsnapSavings;
+    }
     colgroup.children[index].style.width = width + 'px';
   });
 
-  const totalWidth = finalWidths.reduce((sum, width) => sum + width, 0);
+  const totalWidth = getWidthSum(finalWidths);
   tableElement.style.width = totalWidth + 'px';
   return totalWidth;
 }
