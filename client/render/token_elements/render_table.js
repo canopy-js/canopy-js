@@ -8,6 +8,7 @@ const WIDTH_SIZE_SENSITIVITY = 3000;        // more tolerance for small table ma
 const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
 const MAX_COLUMN_WIDTH_PX = 450;
 const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 150;
+const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
 
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -641,6 +642,47 @@ function getShrinkableColumns(tableElement, columnCount) {
   return shrinkableColumns;
 }
 
+function isReadableAtomicText(text) {
+  const compactText = (text || '').replace(/[ \t\r\n\f,;:\/-]+/g, '');
+  return (
+    compactText.length >= 4 &&
+    !/^\d+$/.test(compactText) &&
+    /[A-Za-z0-9\u0590-\u05FF]/.test(compactText)
+  );
+}
+
+function getAtomicReadableColumns(tableElement, columnCount, shrinkableColumns) {
+  const atomicReadableColumns = new Array(columnCount).fill(false);
+
+  [...tableElement.rows].forEach(row => {
+    let colIndex = 0;
+    [...row.cells].forEach(cell => {
+      const { columnSpan, excludeFromBaseline } = getCellMeta(cell, tableElement);
+      if (!excludeFromBaseline && !cellHasBreakOpportunities(cell) && isReadableAtomicText(cell.textContent)) {
+        for (let i = 0; i < columnSpan; i++) {
+          const index = colIndex + i;
+          if (index < atomicReadableColumns.length && !shrinkableColumns[index]) {
+            atomicReadableColumns[index] = true;
+          }
+        }
+      }
+      colIndex += columnSpan;
+    });
+  });
+
+  return atomicReadableColumns;
+}
+
+function applyReadableMinimumWidths(widths, atomicReadableColumns) {
+  const minAmounts = new Array(widths.length).fill(0);
+  const resolvedWidths = widths.map((width, index) => {
+    if (!atomicReadableColumns[index] || width >= ATOMIC_COLUMN_MIN_WIDTH_PX) return width;
+    minAmounts[index] = ATOMIC_COLUMN_MIN_WIDTH_PX - width;
+    return ATOMIC_COLUMN_MIN_WIDTH_PX;
+  });
+  return { widths: resolvedWidths, minAmounts };
+}
+
 function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
   if (!isFinite(containerWidth) || containerWidth <= 0) {
     return { widths, shrinkAmounts: new Array(widths.length).fill(0) };
@@ -781,14 +823,23 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     width > MAX_COLUMN_WIDTH_PX ? MAX_COLUMN_WIDTH_PX : width
   );
   const shrinkableColumns = getShrinkableColumns(tableElement, columnCount);
-  const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
+  const atomicReadableColumns = getAtomicReadableColumns(tableElement, columnCount, shrinkableColumns);
+  const { widths: readableWidths, minAmounts } = applyReadableMinimumWidths(
     cappedWidths,
+    atomicReadableColumns
+  );
+  const { widths: readableUnsnappedWidths } = applyReadableMinimumWidths(
+    unsnappedWidths,
+    atomicReadableColumns
+  );
+  const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
+    readableWidths,
     shrinkableColumns,
     fitContainerWidth
   );
   const { widths: finalWidths, unsnapAmounts } = undoOverflowSnapping(
     shrunkWidths,
-    unsnappedWidths,
+    readableUnsnappedWidths,
     columnSnapResults,
     fitContainerWidth
   );
@@ -803,6 +854,20 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
       delete colgroup.children[index].dataset.uncappedColumnWidth;
       delete colgroup.children[index].dataset.maxColumnWidth;
     }
+    if (atomicReadableColumns[index]) {
+      colgroup.children[index].dataset.columnAtomicReadable = 'true';
+    } else {
+      delete colgroup.children[index].dataset.columnAtomicReadable;
+    }
+    if (minAmounts[index] > 0) {
+      colgroup.children[index].dataset.columnReadableMinApplied = 'true';
+      colgroup.children[index].dataset.preReadableMinColumnWidth = String(cappedWidths[index]);
+      colgroup.children[index].dataset.readableMinColumnWidth = String(ATOMIC_COLUMN_MIN_WIDTH_PX);
+    } else {
+      delete colgroup.children[index].dataset.columnReadableMinApplied;
+      delete colgroup.children[index].dataset.preReadableMinColumnWidth;
+      delete colgroup.children[index].dataset.readableMinColumnWidth;
+    }
     if (shrinkableColumns[index]) {
       colgroup.children[index].dataset.columnShrinkable = 'true';
     } else {
@@ -810,7 +875,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     }
     if (shrinkAmounts[index] > 0) {
       colgroup.children[index].dataset.columnWidthShrunk = 'true';
-      colgroup.children[index].dataset.preShrinkColumnWidth = String(cappedWidths[index]);
+      colgroup.children[index].dataset.preShrinkColumnWidth = String(readableWidths[index]);
       colgroup.children[index].dataset.columnShrinkAmount = String(shrinkAmounts[index]);
       colgroup.children[index].dataset.minShrinkableColumnWidth = String(SHRINKABLE_COLUMN_MIN_WIDTH_PX);
     } else {
@@ -822,7 +887,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     if (unsnapAmounts[index] > 0) {
       colgroup.children[index].dataset.columnWidthUnsnapped = 'true';
       colgroup.children[index].dataset.snappedColumnWidth = String(shrunkWidths[index]);
-      colgroup.children[index].dataset.unsnappedColumnWidth = String(unsnappedWidths[index]);
+      colgroup.children[index].dataset.unsnappedColumnWidth = String(readableUnsnappedWidths[index]);
       colgroup.children[index].dataset.columnUnsnapSavings = String(unsnapAmounts[index]);
     } else {
       delete colgroup.children[index].dataset.columnWidthUnsnapped;
