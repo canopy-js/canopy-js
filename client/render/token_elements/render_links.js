@@ -251,18 +251,22 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
 
   // Add external link-specific classes and attributes
   linkElement.classList.add('canopy-external-link');
+  linkElement.classList.toggle('canopy-external-icon-only-link', !!token.iconOnly);
   linkElement.dataset.type = 'external';
   linkElement.setAttribute('href', token.url); // URL validation assumed to be done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
   linkElement.dataset.targetUrl = token.url;
+  if (token.iconOnly) linkElement.setAttribute('aria-label', token.url);
 
   // Add external link icon
   let cycleIcon = document.createElement('span');
   cycleIcon.classList.add('canopy-external-link-icon');
   const linkContainer = linkElement.querySelector('.canopy-link-container');
-  const iconGap = document.createElement('span');
-  iconGap.classList.add('canopy-link-icon-gap');
-  linkContainer.appendChild(iconGap);
+  if (!token.iconOnly) {
+    const iconGap = document.createElement('span');
+    iconGap.classList.add('canopy-link-icon-gap');
+    linkContainer.appendChild(iconGap);
+  }
   linkContainer.appendChild(cycleIcon);
 
   // Add a class if the link contains an image

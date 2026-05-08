@@ -249,6 +249,30 @@ a.canopy-selectable-link {
     display: inline-block;
   }
 
+  &.canopy-external-icon-only-link {
+    .canopy-link-container {
+      display: inline-block;
+      padding: 4px 4px 2px 2px;
+      font-size: 0;
+      line-height: 0;
+      vertical-align: -3px;
+    }
+
+    .canopy-link-content-container,
+    .canopy-link-terminal-gap {
+      display: none;
+    }
+
+    .canopy-link-container .canopy-external-link-icon {
+      display: block;
+      top: 0;
+      inset-inline-start: 0;
+      vertical-align: baseline;
+      width: 10px;
+      height: 10px;
+    }
+  }
+
   // Icon direction mapping (based on link dir or fulcrum dir)
   &[data-link-dir="rtl"] .canopy-external-link-icon {
     transform: scaleX(-1);

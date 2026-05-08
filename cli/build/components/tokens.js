@@ -70,11 +70,14 @@ function convertSpacesToHtml(str) { // eg [[ abc ]] -> [[&nbsp;abc&nbsp;]]
   return str.replace(/^ +| +$/g, match => '&nbsp;'.repeat(match.length));
 }
 
-function ExternalLinkToken(url, text, parserContext) {
+function ExternalLinkToken(url, text, parserContext, options = {}) {
   this.type = 'external';
   this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
-  this.text = text || url;
-  if (!text) {
+  this.text = options.iconOnly ? '' : (text || url);
+  if (options.iconOnly) this.iconOnly = true;
+  if (options.iconOnly) {
+    this.tokens = [];
+  } else if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
     this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ insideToken: true }) });

@@ -343,13 +343,13 @@ test.describe('Inline entities', () => {
 
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
 
-    const link = page.locator('.canopy-selected-section a');
+    const link = page.locator('.canopy-selected-section a').first();
     await expect(await link.evaluate(element => element.href)).toEqual('http://google.com/');
 
-    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-container');
+    const iconContainer = link.locator('.canopy-link-container');
     await expect(iconContainer).toBeVisible();
 
-    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-container .canopy-external-link-icon').evaluate(element => {
+    const iconStyles = await link.locator('.canopy-link-container .canopy-external-link-icon').evaluate(element => {
       const computedStyles = window.getComputedStyle(element);
       return {
         backgroundImage: computedStyles.getPropertyValue('background-image'),
@@ -362,6 +362,22 @@ test.describe('Inline entities', () => {
 
     expect(iconStyles.backgroundImage).toContain(expectedBackgroundImage);
     expect(iconStyles.display).toEqual('inline-block'); // Ensure the icon span is rendered correctly
+  });
+
+  test('It creates icon-only external links from empty hyperlink markup', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
+
+    const link = page.locator('.canopy-selected-section a.canopy-external-icon-only-link');
+    await expect(link).toHaveAttribute('href', 'https://google.com');
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('aria-label', 'https://google.com');
+    await expect(link).toHaveText('');
+    await expect(link.locator('.canopy-external-link-icon')).toBeVisible();
+    await expect(link.locator('.canopy-link-icon-gap')).toHaveCount(0);
+
+    const box = await link.locator('.canopy-link-container').boundingBox();
+    expect(box.width).toBeGreaterThan(14);
+    expect(box.width).toBeLessThan(24);
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {

@@ -440,6 +440,16 @@ Any inline-token such as Canopy references can be used in the image caption.
 
 By default images link to their sources.
 
+#### External Links ####
+
+```
+[Link text](https://example.com)
+
+[](https://example.com)
+```
+
+External links can be written with standard Markdown link syntax. Use empty link text to render an icon-only external link.
+
 #### Linked Images ####
 
 ```

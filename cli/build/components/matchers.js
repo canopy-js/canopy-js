@@ -427,11 +427,11 @@ function repeatedStyleCharacterMatcher({ string, parserContext }) {
 }
 
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[((?:\\.|!\[(?:\\.|[^\\])+?\)|[^\\])+?)\](?:\(((?:\\[^ ]|[^\\ ])+))\)/); // non-greedy unless text looks like nested image
+  let match = string.match(/^\[((?:\\.|!\[(?:\\.|[^\\])+?\)|[^\\])*?)\](?:\(((?:\\[^ ]|[^\\ ])+))\)/); // non-greedy unless text looks like nested image
   if (match) {
     let [_, text, url] = match;
     return [
-      new ExternalLinkToken(url, text, parserContext),
+      new ExternalLinkToken(url, text, parserContext, { iconOnly: text === '' }),
       match[0].length
     ];
   }

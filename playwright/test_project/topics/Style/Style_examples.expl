@@ -444,6 +444,7 @@ Dummy Next:
 
 Hyperlinks:
 This is a [link](http://google.com).
+This is an icon-only external link [](https://google.com).
 
 Hyperlink special cases:
 These are hyperlink special cases:
