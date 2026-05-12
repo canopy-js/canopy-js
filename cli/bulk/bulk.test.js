@@ -1484,3 +1484,75 @@ describe('FileSystemChangeCalculator', function() {
     ]);
   });
 });
+
+describe('FileSystemManager', function() {
+  test('it does not rewrite canopy_default_topic when the default path is unchanged', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/A/A.expl', 'A: Existing topic.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/A/A.expl\n');
+
+      const originalMtime = fs.statSync('canopy_default_topic').mtimeMs;
+      const fileSystemManager = new FileSystemManager();
+
+      fileSystemManager.persistDefaultTopicPath('topics/A/A.expl', 'A');
+
+      expect(fs.readFileSync('canopy_default_topic', 'utf8')).toBe('topics/A/A.expl\n');
+      expect(fs.statSync('canopy_default_topic').mtimeMs).toBe(originalMtime);
+      expect(logSpy).not.toHaveBeenCalled();
+    } finally {
+      logSpy.mockRestore();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('it switches default topic after writes and before deletions', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/Old/Old.expl', 'Old: Existing topic.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/Old/Old.expl\n');
+
+      const fileSystemManager = new FileSystemManager();
+      const persistDefaultTopicPath = fileSystemManager.persistDefaultTopicPath.bind(fileSystemManager);
+      fileSystemManager.persistDefaultTopicPath = (defaultTopicPath, defaultTopicKey) => {
+        expect(fs.existsSync('topics/New/New.expl')).toBe(true);
+        expect(fs.existsSync('topics/Old/Old.expl')).toBe(true);
+        persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
+      };
+
+      let originalSelectionFileSet = new FileSet({
+        'topics/Old/Old.expl': 'Old: Existing topic.\n'
+      });
+      let newFileSet = new FileSet({
+        'topics/New/New.expl': 'New: Replacement topic.\n'
+      });
+      let allDiskFileSet = new FileSet({
+        'topics/Old/Old.expl': 'Old: Existing topic.\n'
+      });
+      let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+      let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+      fileSystemManager.execute(fileSystemChange, false, {
+        defaultTopicPath: 'topics/New/New.expl',
+        defaultTopicKey: 'New'
+      });
+
+      expect(fs.existsSync('topics/New/New.expl')).toBe(true);
+      expect(fs.existsSync('topics/Old/Old.expl')).toBe(false);
+      expect(fs.readFileSync('canopy_default_topic', 'utf8')).toBe('topics/New/New.expl\n');
+    } finally {
+      logSpy.mockRestore();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});

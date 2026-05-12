@@ -116,7 +116,6 @@ const bulk = async function(selectedFileList, options = {}) {
 
     let bulkFileParser = new BulkFileParser(newBulkFileString, options.bulkFileName);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
-    if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 
     let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
@@ -132,7 +131,7 @@ const bulk = async function(selectedFileList, options = {}) {
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
 
-    fileSystemManager.execute(fileSystemChange, options.logging);
+    fileSystemManager.execute(fileSystemChange, options.logging, { defaultTopicPath, defaultTopicKey });
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     new DefaultTopic(); // Error in case the person changed the default topic file name
 

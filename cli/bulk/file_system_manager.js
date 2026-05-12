@@ -4,18 +4,7 @@ let chalk = require('chalk');
 let { DefaultTopic } = require('../shared/fs-helpers');
 
 class FileSystemManager {
-  execute(fileSystemChange, logging) {
-    fileSystemChange.fileDeletions.forEach(filePath => {
-      if (filePath === 'canopy_default_topic') return; // rewrite don't delete in case sigint
-      fs.unlinkSync(filePath);
-    });
-
-    fileSystemChange.directoryDeletions.forEach(directoryPath => {
-      if (fs.existsSync(directoryPath)) { // parent directory might have already been recursively deleted
-        fs.rmSync(directoryPath, { recursive: true });
-      }
-    });
-
+  execute(fileSystemChange, logging, options = {}) {
     fileSystemChange.directoryCreations.forEach(directoryPath => {
       fs.ensureDirSync(directoryPath);
     });
@@ -26,6 +15,21 @@ class FileSystemManager {
 
     fileSystemChange.fileAppendings.forEach(([filePath, fileContents]) => {
       fs.writeFileSync(filePath, fileContents);
+    });
+
+    if (options.defaultTopicPath) {
+      this.persistDefaultTopicPath(options.defaultTopicPath, options.defaultTopicKey);
+    }
+
+    fileSystemChange.fileDeletions.forEach(filePath => {
+      if (filePath === 'canopy_default_topic') return; // rewrite don't delete in case sigint
+      fs.unlinkSync(filePath);
+    });
+
+    fileSystemChange.directoryDeletions.forEach(directoryPath => {
+      if (fs.existsSync(directoryPath)) { // parent directory might have already been recursively deleted
+        fs.rmSync(directoryPath, { recursive: true });
+      }
     });
 
     if (logging) {
@@ -114,6 +118,7 @@ class FileSystemManager {
   persistDefaultTopicPath(newDefaultTopicPath, newDefaultTopicName) {
     try {
       let defaultTopic = new DefaultTopic();
+      if (defaultTopic.filePath === newDefaultTopicPath) return;
       if (defaultTopic.name !== newDefaultTopicName) console.log(chalk.yellow(`Changing default topic from [${defaultTopic.name}] to [${newDefaultTopicName}]`));
     } catch(_){  // if the file system has gotten in a bad state and the old default topic isn't available, just persist the new one.
       console.error(chalk.red(`Couldn't find old default topic file, persisting new`));
