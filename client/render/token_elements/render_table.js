@@ -245,6 +245,31 @@ function isColumnHeaderCell(td, tableElement) {
   return firstRow === parentRow && isBoldOnlyCell(td);
 }
 
+// If a cell spans to the table bottom, there are no later rows below it.
+function isTerminalRowspanCell(cell, tableElement) {
+  const { rowspan } = getCellSpan(cell);
+  const rowspanCount = Number.parseInt(rowspan || '1', 10);
+  if (!Number.isFinite(rowspanCount) || rowspanCount <= 1) return false;
+
+  const row = cell.parentElement;
+  if (!row) return false;
+
+  const rows = [...tableElement.rows];
+  const rowIndex = rows.indexOf(row);
+  if (rowIndex < 0) return false;
+
+  return rowIndex + rowspanCount >= rows.length;
+}
+
+// If a cell is bolded but has no cells below it, allow it to snap as content.
+function excludeCellFromBaseline(cell, tableElement, meta) {
+  if (meta.isRowHeader && isTerminalRowspanCell(cell, tableElement)) {
+    return false;
+  }
+
+  return meta.isRowHeader || meta.isColumnHeader;
+}
+
 function getChildElements(element) {
   return Array.from(element.children || []);
 }
@@ -253,14 +278,17 @@ function getCellMeta(cell, tableElement) {
   const { columnSpan, rowspan } = getCellSpan(cell);
   const isRowHeader = isRowHeaderCell(cell);
   const isColumnHeader = isColumnHeaderCell(cell, tableElement);
-
-  return {
+  const meta = {
     columnSpan,
     rowspan,
     hasChildElements: getChildElements(cell).length > 0,
     isRowHeader,
-    isColumnHeader,
-    excludeFromBaseline: isRowHeader || isColumnHeader
+    isColumnHeader
+  };
+
+  return {
+    ...meta,
+    excludeFromBaseline: excludeCellFromBaseline(cell, tableElement, meta)
   };
 }
 
@@ -618,7 +646,7 @@ function getObservedColumnScrollWidths(tableElement, columnCount) {
 }
 
 function cellHasBreakOpportunities(cell) {
-  return /[ \t\r\n\f,;:\/-]/.test(cell.textContent || '');
+  return /[ \t\r\n\f,;:/-]/.test(cell.textContent || '');
 }
 
 function getShrinkableColumns(tableElement, columnCount) {
@@ -643,7 +671,7 @@ function getShrinkableColumns(tableElement, columnCount) {
 }
 
 function isReadableAtomicText(text) {
-  const compactText = (text || '').replace(/[ \t\r\n\f,;:\/-]+/g, '');
+  const compactText = (text || '').replace(/[ \t\r\n\f,;:/-]+/g, '');
   return (
     compactText.length >= 4 &&
     !/^\d+$/.test(compactText) &&
