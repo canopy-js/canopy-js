@@ -6,7 +6,8 @@ const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
 const WIDTH_SIZE_SENSITIVITY = 3000;        // more tolerance for small table max widths
 
 const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
-const MAX_COLUMN_WIDTH_PX = 450;
+const ABSOLUTE_COLUMN_WIDTH_CAP_PX = 350;
+const RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 200;
 const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 150;
 const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
 
@@ -805,6 +806,22 @@ function resolveAppliedColumnWidth({ column, snapResult, observedWidth, observed
   return Math.max(...candidates);
 }
 
+function getColumnWidthCaps(widths) {
+  return widths.map((width, index) => {
+    const otherWidths = widths.filter((_, otherIndex) => otherIndex !== index);
+    const nextLargestWidth = otherWidths.length ? Math.max(...otherWidths) : NaN;
+    const relativeCap = isFinite(nextLargestWidth) && nextLargestWidth > 0
+      ? nextLargestWidth + RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX
+      : ABSOLUTE_COLUMN_WIDTH_CAP_PX;
+
+    return {
+      absoluteCap: ABSOLUTE_COLUMN_WIDTH_CAP_PX,
+      relativeCap,
+      appliedCap: Math.min(ABSOLUTE_COLUMN_WIDTH_CAP_PX, relativeCap)
+    };
+  });
+}
+
 function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitContainerWidth } = {}) {
   const { columnSnapResults } = snapPlan;
   const logicalColumnCount = getLogicalColumnCount([...tableElement.rows]);
@@ -847,8 +864,9 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     });
   }).map((width, index) => (isFinite(width) && width > 0 ? width : widths[index]));
 
-  const cappedWidths = widths.map(width =>
-    width > MAX_COLUMN_WIDTH_PX ? MAX_COLUMN_WIDTH_PX : width
+  const columnWidthCaps = getColumnWidthCaps(widths);
+  const cappedWidths = widths.map((width, index) =>
+    width > columnWidthCaps[index].appliedCap ? columnWidthCaps[index].appliedCap : width
   );
   const shrinkableColumns = getShrinkableColumns(tableElement, columnCount);
   const atomicReadableColumns = getAtomicReadableColumns(tableElement, columnCount, shrinkableColumns);
@@ -874,13 +892,18 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
 
   finalWidths.forEach((width, index) => {
     if (cappedWidths[index] !== widths[index]) {
+      const { absoluteCap, relativeCap, appliedCap } = columnWidthCaps[index];
       colgroup.children[index].dataset.columnWidthCapped = 'true';
       colgroup.children[index].dataset.uncappedColumnWidth = String(widths[index]);
-      colgroup.children[index].dataset.maxColumnWidth = String(MAX_COLUMN_WIDTH_PX);
+      colgroup.children[index].dataset.maxColumnWidth = String(appliedCap);
+      colgroup.children[index].dataset.absoluteColumnWidthCap = String(absoluteCap);
+      colgroup.children[index].dataset.relativeColumnWidthCap = String(relativeCap);
     } else {
       delete colgroup.children[index].dataset.columnWidthCapped;
       delete colgroup.children[index].dataset.uncappedColumnWidth;
       delete colgroup.children[index].dataset.maxColumnWidth;
+      delete colgroup.children[index].dataset.absoluteColumnWidthCap;
+      delete colgroup.children[index].dataset.relativeColumnWidthCap;
     }
     if (atomicReadableColumns[index]) {
       colgroup.children[index].dataset.columnAtomicReadable = 'true';
