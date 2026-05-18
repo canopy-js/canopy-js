@@ -87,7 +87,7 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
     }
   });
   const child = state.child;
-  if (options.logging) console.log(chalk.gray(`Server parent pid ${process.pid} forked child pid ${child.pid} for port ${port}`));
+  if (options.logging) console.log(chalk.gray(`Server parent (pid ${process.pid}) forked child (pid ${child.pid}) for port ${port}`));
 
   child.on('exit', (code, signal) => {
     if (state.child === child) state.child = null;
