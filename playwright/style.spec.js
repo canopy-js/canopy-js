@@ -1219,18 +1219,18 @@ test.describe('Block entities', () => {
     await expect(secondLink).toHaveClass(/canopy-open-link/);
     await expect(childParagraph).toBeVisible();
 
-    // Click first link again: parent section selected, child hidden
+    // Click first link again: selected link keeps its child target displayed
     await firstLink.click();
     await expect(
       page.locator(
         'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
-        { hasText: 'These are two' }
+        { hasText: 'I am a doubly-referenced child paragraph.' }
       )
     ).toBeVisible();
-    await expect(firstLink).not.toHaveClass(/canopy-open-link/);
-    await expect(firstLink).not.toHaveClass(/canopy-selected-link/);
-    await expect(secondLink).not.toHaveClass(/canopy-open-link/);
-    await expect(childParagraph).toBeHidden();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(firstLink).toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeVisible();
 
     // Click second link: child section selected again
     await secondLink.click();

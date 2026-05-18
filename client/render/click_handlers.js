@@ -5,13 +5,21 @@ function onLinkClick(link) {
 
     let newTab = e.metaKey || e.ctrlKey; // mac vs linux and windows
 
-    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) { // unselect parent or path/cycle link
-      return link.enclosingPath.display({
-        scrollToParagraph: true,
-        noBeforeChangeScroll: true,
-        noAfterChangeScroll: link.isCycle
-      });
-    }
+    const noBeforeChangeScroll = (!link.isCycle || link.isDownCycle) && // clicked link is the fulcrum except for non-down cycle links
+      !link.isAboveViewport; // scroll to make link visible before descending
+    const noAfterChangePause = !link.isCycle; // allow pause on cycle reductions
+    const executionOptions = {
+      newTab,
+      redirect: e.altKey,
+      inlineCycles: e.shiftKey,
+      selectALink: false,
+      pushLinkSelection: true,
+      scrollToParagraph: true, // clicking a link should focus on child paragraph, not the link
+      noBeforeChangeScroll,
+      noAfterChangePause
+    };
+
+    if (!newTab && !e.altKey && link.isSelected && !link.isClosedCycle) return link.execute(executionOptions);
 
     if (!newTab && !e.altKey && link.isOpen) { // select open link
       return link.select({
@@ -23,20 +31,7 @@ function onLinkClick(link) {
       return link.select();
     }
 
-    const noBeforeChangeScroll = (!link.isCycle || link.isDownCycle) && // clicked link is the fulcrum except for non-down cycle links
-      !link.isAboveViewport; // scroll to make link visible before descending
-    const noAfterChangePause = !link.isCycle; // allow pause on cycle reductions
-
-    return link.execute({
-      newTab,
-      redirect: e.altKey,
-      inlineCycles: e.shiftKey,
-      selectALink: false,
-      pushLinkSelection: true,
-      scrollToParagraph: true, // clicking a link should focus on child paragraph, not the link
-      noBeforeChangeScroll,
-      noAfterChangePause
-    });
+    return link.execute(executionOptions);
   }
 }
 
