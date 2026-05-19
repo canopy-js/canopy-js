@@ -133,34 +133,55 @@ function getScrollInProgress() {
   return scrollInProgress;
 }
 
-let currentScrollOptions = null; // multiple calls to scrollToWithPromise replace the desired destination
+let scrollRequestToken = 0;
+
+const MAX_NATIVE_SMOOTH_SCROLL_DISTANCE = 2000;
+const LONG_SCROLL_MIN_DURATION = 350;
+const LONG_SCROLL_MAX_DURATION = 2445;
+const LONG_SCROLL_DURATION_PER_SQRT_PIXEL = 22.2;
+const LONG_SCROLL_END_PAUSE = 90;
 
 function scrollToWithPromise(options) {
-  currentScrollOptions = options;
-  return (scrollInProgress = new Promise(function(resolve) {
-    ScrollableContainer.scrollTo(currentScrollOptions);
+  const requestToken = ++scrollRequestToken;
+
+  if (options.behavior === 'smooth' && Math.abs(ScrollableContainer.currentScroll - options.top) > MAX_NATIVE_SMOOTH_SCROLL_DISTANCE) {
+    return scrollToWithControlledAnimation(options, requestToken);
+  }
+
+  return nativeScrollToWithPromise(options, requestToken);
+}
+
+function nativeScrollToWithPromise(options, requestToken) {
+  return (scrollInProgress = waitForNativeScroll(options, requestToken));
+}
+
+function waitForNativeScroll(options, requestToken) {
+  return new Promise(function(resolve) {
+    ScrollableContainer.scrollTo(options);
     let lastY = ScrollableContainer.currentScroll;
     let inactivityStart = null;
     let checks = 0;
 
     const checkScroll = () => {
+      if (requestToken !== scrollRequestToken) return resolve(false);
+
       const currentY = ScrollableContainer.currentScroll;
       if (lastY === currentY && !inactivityStart) inactivityStart = Date.now();
       if (lastY !== currentY) inactivityStart = null;
       if (lastY === currentY && checks < 1) {
-        ScrollableContainer.scrollTo(currentScrollOptions);
+        ScrollableContainer.scrollTo(options);
       }
 
       lastY = currentY;
       checks++;
 
       if (inactivityStart && (Date.now() - inactivityStart > 1000)) {
-        scrollInProgress = null;
+        if (requestToken === scrollRequestToken) scrollInProgress = null;
         return resolve(false); // the user prevented the scroll from completing
       }
 
       if (Math.abs(currentY - options.top) < 10) {
-        scrollInProgress = null;
+        if (requestToken === scrollRequestToken) scrollInProgress = null;
         resolve(true); // Resolve the promise when close to the target
       } else {
         setTimeout(checkScroll, 50); // Recheck after 50 milliseconds
@@ -168,7 +189,83 @@ function scrollToWithPromise(options) {
     };
 
     setTimeout(checkScroll, 50); // Start checking after 50 milliseconds
+  });
+}
+
+function scrollToWithControlledAnimation(options, requestToken) {
+  const maxScroll = ScrollableContainer.scrollHeight - ScrollableContainer.visibleHeight;
+  const startY = ScrollableContainer.currentScroll;
+  const targetY = Math.max(0, Math.min(options.top, maxScroll));
+  const distance = targetY - startY;
+  const duration = getLongScrollDuration(distance);
+  const startTime = performance.now();
+
+  if (!duration) return Promise.resolve(true);
+
+  return (scrollInProgress = new Promise(resolve => {
+    function step(currentTime) {
+      if (requestToken !== scrollRequestToken) return resolve(false);
+
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeLongScrollProgress(progress);
+
+      ScrollableContainer.setScrollTop(startY + distance * easedProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        ScrollableContainer.setScrollTop(targetY);
+        setTimeout(() => {
+          if (requestToken !== scrollRequestToken) return resolve(false);
+          scrollInProgress = null;
+          resolve(true);
+        }, LONG_SCROLL_END_PAUSE);
+      }
+    }
+
+    requestAnimationFrame(step);
   }));
+}
+
+function getLongScrollDuration(distance) {
+  return Math.max(
+    LONG_SCROLL_MIN_DURATION,
+    Math.min(
+      Math.sqrt(Math.abs(distance)) * LONG_SCROLL_DURATION_PER_SQRT_PIXEL,
+      LONG_SCROLL_MAX_DURATION
+    )
+  );
+}
+
+function easeLongScrollProgress(progress) {
+  return cubicBezier(progress, 0.42, 0, 0.58, 1);
+}
+
+function cubicBezier(progress, x1, y1, x2, y2) {
+  if (progress <= 0) return 0;
+  if (progress >= 1) return 1;
+
+  let lower = 0;
+  let upper = 1;
+  let t = progress;
+
+  for (let i = 0; i < 12; i++) {
+    const x = cubicBezierCoordinate(t, x1, x2);
+    if (Math.abs(x - progress) < 0.0001) break;
+    if (x < progress) lower = t;
+    else upper = t;
+    t = (lower + upper) / 2;
+  }
+
+  return cubicBezierCoordinate(t, y1, y2);
+}
+
+function cubicBezierCoordinate(t, p1, p2) {
+  const inverseT = 1 - t;
+  return 3 * inverseT * inverseT * t * p1 +
+    3 * inverseT * t * t * p2 +
+    t * t * t;
 }
 
 const LINK_TARGET_RATIO = .32;
@@ -214,7 +311,7 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let behavior = options.scrollStyle || (options.initialLoad && 'instant') || 'smooth';
   let { direction } = options;
   canopyContainer.dataset.imageLoadScrollBehavior = behavior; // if images later load, follow the most recent scroll behavior
-  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 200))) : Promise.resolve();
+  let postChangePause = () => options.afterChangePause ? (new Promise(resolve => setTimeout(resolve, 210))) : Promise.resolve();
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(

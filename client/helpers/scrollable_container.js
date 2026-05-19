@@ -44,6 +44,11 @@ class ScrollableContainer {
     if (!this.windowMode) return this.element.scrollTo(options);
   }
 
+  static setScrollTop(top) {
+    if (this.windowMode) return window.scrollTo(0, top);
+    if (!this.windowMode) this.element.scrollTop = top;
+  }
+
   static get focusGap() {
     return ScrollableContainer.visibleHeight * 0.3;
   }
