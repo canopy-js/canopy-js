@@ -661,6 +661,15 @@ test.describe('Block entities', () => {
     expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
   });
 
+  test('It orients table cycle icons by visual cell position', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Table_cycle_icons_10');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Table_cycle_icons_10');
+
+    const summaryCycleLink = page.locator('.canopy-selected-section a[data-text="summary"]');
+    await expect(summaryCycleLink.locator('.canopy-forward-cycle-icon')).toHaveCount(1);
+    await expect(summaryCycleLink.locator('.canopy-back-cycle-icon')).toHaveCount(0);
+  });
+
   test('It centers big tables', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Big_Tables');
 

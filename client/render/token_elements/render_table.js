@@ -17,6 +17,7 @@ const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
 
 function renderTable(token, renderContext, renderTokenElements) {
   const tableElement = buildTableDOM(token, renderContext, renderTokenElements);
+  assignVisualCellPositions(tableElement);
   applyHiddenRowColClasses(tableElement);
 
   renderContext.preDisplayCallbacks.push(() => {
@@ -122,6 +123,41 @@ function buildTableDOM(token, renderContext, renderTokenElements) {
   });
 
   return tableElement;
+}
+
+function assignVisualCellPositions(tableElement) {
+  const occupied = [];
+
+  [...tableElement.rows].forEach((row, rowIndex) => {
+    if (!occupied[rowIndex]) occupied[rowIndex] = [];
+
+    let columnIndex = 0;
+    [...row.cells].forEach(cell => {
+      while (occupied[rowIndex][columnIndex]) columnIndex++;
+
+      const columnSpan = validSpan(cell.getAttribute('colspan'));
+      const rowSpan = validSpan(cell.getAttribute('rowspan'));
+
+      cell.dataset.visualRow = String(rowIndex);
+      cell.dataset.visualRowEnd = String(rowIndex + rowSpan - 1);
+      cell.dataset.visualCol = String(columnIndex);
+      cell.dataset.visualColEnd = String(columnIndex + columnSpan - 1);
+
+      for (let y = rowIndex; y < rowIndex + rowSpan; y++) {
+        if (!occupied[y]) occupied[y] = [];
+        for (let x = columnIndex; x < columnIndex + columnSpan; x++) {
+          occupied[y][x] = true;
+        }
+      }
+
+      columnIndex += columnSpan;
+    });
+  });
+}
+
+function validSpan(value) {
+  const span = Number.parseInt(value || '1', 10);
+  return Number.isFinite(span) && span > 0 ? span : 1;
 }
 
 function applyHiddenRowColClasses(tableElement) {

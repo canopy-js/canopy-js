@@ -5,6 +5,37 @@ import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 import { getCanonicalTopic } from 'requests/request_json';
 
+function visualCellPosition(cell) {
+  const row = Number.parseInt(cell?.dataset?.visualRow, 10);
+  const rowEnd = Number.parseInt(cell?.dataset?.visualRowEnd, 10);
+  const col = Number.parseInt(cell?.dataset?.visualCol, 10);
+  const colEnd = Number.parseInt(cell?.dataset?.visualColEnd, 10);
+
+  if (![row, rowEnd, col, colEnd].every(Number.isFinite)) return null;
+  return { row, rowEnd, col, colEnd };
+}
+
+function isTableLinkVisuallyBefore(linkA, linkB) {
+  const cellA = linkA.element?.closest?.('td, th');
+  const cellB = linkB.element?.closest?.('td, th');
+  if (!cellA || !cellB) return null;
+  if (cellA.closest('table') !== cellB.closest('table')) return null;
+
+  const a = visualCellPosition(cellA);
+  const b = visualCellPosition(cellB);
+  if (!a || !b) return null;
+
+  const rowsOverlap = a.row <= b.rowEnd && b.row <= a.rowEnd;
+
+  if (rowsOverlap) {
+    if (a.col !== b.col) return a.col < b.col;
+    if (a.colEnd !== b.colEnd) return a.colEnd < b.colEnd;
+  }
+
+  if (a.row !== b.row) return a.row < b.row;
+  return null;
+}
+
 class Path {
   constructor(argument) {
     if (!argument) {
@@ -497,6 +528,9 @@ class Path {
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
     if (!thisParentLink || !otherParentLink) return null;
+
+    const tableResult = isTableLinkVisuallyBefore(thisParentLink, otherParentLink);
+    if (tableResult != null) return tableResult;
 
     const paragraphLinks = overlapPath.paragraph?.links || []; // use cached links to get answer even when detached from DOM
     const thisIndex = paragraphLinks.indexOf(thisParentLink);
