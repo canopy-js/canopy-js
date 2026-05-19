@@ -6,6 +6,8 @@ const WIDTH_BASE_SIMILARITY_PERCENT = 15;   // baseline strictness
 const WIDTH_SIZE_SENSITIVITY = 3000;        // more tolerance for small table max widths
 
 const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
+// Allow space to detect natural cell width before applying constraints.
+const MEASURE_TABLE_WIDTH_PX = 1000;
 const ABSOLUTE_COLUMN_WIDTH_CAP_PX = 350;
 const RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 200;
 const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 150;
@@ -349,8 +351,10 @@ function measureCellContent(cell, { useChildNodes = false } = {}) {
   const rangeHeight = rangeRect?.height;
   const scrollWidth = cell.scrollWidth;
   const scrollHeight = cell.scrollHeight;
+  const clientWidth = cell.clientWidth;
+  const overflowScrollWidth = scrollWidth > clientWidth + 0.5 ? scrollWidth : NaN;
 
-  const widthCandidates = [contentWidth, rangeWidth, scrollWidth]
+  const widthCandidates = [contentWidth, rangeWidth, overflowScrollWidth]
     .filter(width => isFinite(width) && width > 0);
   const heightCandidates = [contentHeight, rangeHeight, scrollHeight]
     .filter(height => isFinite(height) && height > 0);
@@ -367,13 +371,31 @@ function measureCellContent(cell, { useChildNodes = false } = {}) {
   };
 }
 
-function measureCellBox(cell) {
-  const boxRect = cell.getBoundingClientRect();
-  return {
-    boxRect,
-    boxWidth: boxRect.width,
-    boxHeight: boxRect.height
-  };
+function getCellHorizontalBoxSpacing(cell) {
+  const style = window.getComputedStyle(cell);
+  const values = [
+    style.paddingLeft,
+    style.paddingRight,
+    style.borderLeftWidth,
+    style.borderRightWidth
+  ].map(value => Number.parseFloat(value));
+
+  return values.reduce((sum, value) => sum + (isFinite(value) ? value : 0), 0);
+}
+
+function getMeasuredUnitBoxWidth(cell, measuredContentWidth, columnSpan) {
+  if (!isFinite(measuredContentWidth) || measuredContentWidth <= 0) return NaN;
+  return (measuredContentWidth + getCellHorizontalBoxSpacing(cell)) / columnSpan;
+}
+
+function withTemporaryTableMeasureWidth(tableElement, widthPx, callback) {
+  const previousWidth = tableElement.style.width;
+  tableElement.style.width = widthPx + 'px';
+  try {
+    return callback();
+  } finally {
+    tableElement.style.width = previousWidth;
+  }
 }
 
 function getCellSpan(cell) {
@@ -495,75 +517,75 @@ function measureTable(tableElement) {
     maxRowHeight: -1
   };
 
-  // Phase 1: Measure global min/max sizes so we can normalize later.
-  [...tableElement.querySelectorAll('td')].forEach(cell => {
-    if (cell.childNodes.length === 0) return;
+  withTemporaryTableMeasureWidth(tableElement, MEASURE_TABLE_WIDTH_PX, () => {
+    // Phase 1: Measure global min/max sizes so we can normalize later.
+    [...tableElement.querySelectorAll('td')].forEach(cell => {
+      if (cell.childNodes.length === 0) return;
 
-    const {
-      columnSpan,
-      rowspan,
-      excludeFromBaseline
-    } = getCellMeta(cell, tableElement);
-    const { measuredContentWidth, measuredContentHeight } = measureCellContent(cell, { useChildNodes: true });
-    const { boxWidth } = measureCellBox(cell);
-
-    const measuredUnitContentWidth = measuredContentWidth / columnSpan;
-    if (!excludeFromBaseline && isFinite(measuredUnitContentWidth) && measuredUnitContentWidth > 0) {
-      if (measuredUnitContentWidth < sizes.minContentWidth) sizes.minContentWidth = measuredUnitContentWidth;
-      if (measuredUnitContentWidth > sizes.maxContentWidth) sizes.maxContentWidth = measuredUnitContentWidth;
-    }
-
-    if (!rowspan && !excludeFromBaseline && isFinite(measuredContentHeight) && measuredContentHeight > 0) {
-      if (measuredContentHeight < sizes.minContentHeight) sizes.minContentHeight = measuredContentHeight;
-      if (measuredContentHeight > sizes.maxContentHeight) sizes.maxContentHeight = measuredContentHeight;
-    }
-
-    const unitBoxWidth = boxWidth / columnSpan;
-    if (isFinite(unitBoxWidth) && unitBoxWidth > sizes.maxTdBoxWidth) {
-      sizes.maxTdBoxWidth = unitBoxWidth;
-    }
-  });
-
-  // Phase 2: Measure per-column max sizes so snapping has targets.
-  rows.forEach(row => {
-    let colIndex = 0;
-    [...row.cells].forEach(cell => {
       const {
         columnSpan,
-        hasChildElements,
-        isRowHeader,
+        rowspan,
         excludeFromBaseline
       } = getCellMeta(cell, tableElement);
+      const { measuredContentWidth, measuredContentHeight } = measureCellContent(cell, { useChildNodes: true });
 
-      if (excludeFromBaseline) {
-        cell.dataset.columnSizeSkipReason = isRowHeader ? 'row_header' : 'column_header';
-      } else if (!hasChildElements) {
-        cell.dataset.columnSizeSkipReason = 'no_children';
+      const measuredUnitContentWidth = measuredContentWidth / columnSpan;
+      if (!excludeFromBaseline && isFinite(measuredUnitContentWidth) && measuredUnitContentWidth > 0) {
+        if (measuredUnitContentWidth < sizes.minContentWidth) sizes.minContentWidth = measuredUnitContentWidth;
+        if (measuredUnitContentWidth > sizes.maxContentWidth) sizes.maxContentWidth = measuredUnitContentWidth;
       }
 
-      if (!excludeFromBaseline && hasChildElements) {
-        const { measuredContentWidth } = measureCellContent(cell);
-        const { boxWidth } = measureCellBox(cell);
-        const unitContentWidth = isFinite(measuredContentWidth) && measuredContentWidth > 0
-          ? (measuredContentWidth / columnSpan)
-          : NaN;
-        const unitBoxWidth = boxWidth / columnSpan;
-        const fallbackUnitContentWidth = isFinite(unitContentWidth) && unitContentWidth > 0 ? unitContentWidth : unitBoxWidth;
+      if (!rowspan && !excludeFromBaseline && isFinite(measuredContentHeight) && measuredContentHeight > 0) {
+        if (measuredContentHeight < sizes.minContentHeight) sizes.minContentHeight = measuredContentHeight;
+        if (measuredContentHeight > sizes.maxContentHeight) sizes.maxContentHeight = measuredContentHeight;
+      }
 
-        if (isFinite(fallbackUnitContentWidth) && fallbackUnitContentWidth > 0 && isFinite(unitBoxWidth) && unitBoxWidth > 0) {
-          for (let i = 0; i < columnSpan; i++) {
-            const column = columnSizes[colIndex + i];
-            if (!column) continue;
-            if (fallbackUnitContentWidth > column.maxUnitContentWidth) column.maxUnitContentWidth = fallbackUnitContentWidth;
-            if (unitBoxWidth > column.maxUnitBoxWidth) column.maxUnitBoxWidth = unitBoxWidth;
-          }
-        } else {
-          cell.dataset.columnSizeSkipReason = 'invalid_sizes';
-          cell.dataset.columnSizeUnitContentWidth = String(unitContentWidth);
-          cell.dataset.columnSizeUnitBoxWidth = String(unitBoxWidth);
+      const unitBoxWidth = getMeasuredUnitBoxWidth(cell, measuredContentWidth, columnSpan);
+      if (isFinite(unitBoxWidth) && unitBoxWidth > sizes.maxTdBoxWidth) {
+        sizes.maxTdBoxWidth = unitBoxWidth;
+      }
+    });
+
+    // Phase 2: Measure per-column max sizes so snapping has targets.
+    rows.forEach(row => {
+      let colIndex = 0;
+      [...row.cells].forEach(cell => {
+        const {
+          columnSpan,
+          hasChildElements,
+          isRowHeader,
+          excludeFromBaseline
+        } = getCellMeta(cell, tableElement);
+
+        if (excludeFromBaseline) {
+          cell.dataset.columnSizeSkipReason = isRowHeader ? 'row_header' : 'column_header';
+        } else if (!hasChildElements) {
+          cell.dataset.columnSizeSkipReason = 'no_children';
         }
-      }
-      colIndex += columnSpan;
+
+        if (!excludeFromBaseline && hasChildElements) {
+          const { measuredContentWidth } = measureCellContent(cell);
+          const unitContentWidth = isFinite(measuredContentWidth) && measuredContentWidth > 0
+            ? (measuredContentWidth / columnSpan)
+            : NaN;
+          const unitBoxWidth = getMeasuredUnitBoxWidth(cell, measuredContentWidth, columnSpan);
+          const fallbackUnitContentWidth = isFinite(unitContentWidth) && unitContentWidth > 0 ? unitContentWidth : unitBoxWidth;
+
+          if (isFinite(fallbackUnitContentWidth) && fallbackUnitContentWidth > 0 && isFinite(unitBoxWidth) && unitBoxWidth > 0) {
+            for (let i = 0; i < columnSpan; i++) {
+              const column = columnSizes[colIndex + i];
+              if (!column) continue;
+              if (fallbackUnitContentWidth > column.maxUnitContentWidth) column.maxUnitContentWidth = fallbackUnitContentWidth;
+              if (unitBoxWidth > column.maxUnitBoxWidth) column.maxUnitBoxWidth = unitBoxWidth;
+            }
+          } else {
+            cell.dataset.columnSizeSkipReason = 'invalid_sizes';
+            cell.dataset.columnSizeUnitContentWidth = String(unitContentWidth);
+            cell.dataset.columnSizeUnitBoxWidth = String(unitBoxWidth);
+          }
+        }
+        colIndex += columnSpan;
+      });
     });
   });
 
