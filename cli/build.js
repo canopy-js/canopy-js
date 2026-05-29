@@ -121,7 +121,8 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
     <html>
     <head>
     <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>
-    <meta charset="utf-8">` +
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">` +
     dedent`${customCss ? `<style>\n${fs.readFileSync(`assets/custom.css`)}\n</style>` : ''}` +
     dedent`${customJs ? `<script>\n${fs.readFileSync(`assets/custom.js`)}\n</script>` : ''}` +
     dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix : ''}/_canopy.js" defer></script>\n` +
@@ -190,6 +191,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     <html>
     <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${inlineAssetsInString(defaultTopicJson).replace(/<\/script/gi, '<\\/script')}\n</script>
     ${jsonScripts}
     ${customCss ? `<style>\n${inlineAssetsInString(customCss)}\n</style>` : ''}
