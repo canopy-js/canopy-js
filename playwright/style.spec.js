@@ -766,7 +766,7 @@ test.describe('Block entities', () => {
 
     const menu9 = menus.nth(9);
     await expect(menu9).toContainText('Thisisalongword????');
-    await expect(menu9).toHaveClass(/canopy-third-pill/); // Updated expected class.
+    await expect(menu9).toHaveClass(/canopy-third-pill/);
     await expect(menu9.locator('.canopy-menu-row').nth(0).locator('.canopy-menu-cell')).toHaveCount(3);
 
     const menu10 = menus.nth(10);
