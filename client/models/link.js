@@ -853,8 +853,16 @@ class Link {
       .filter(link => link.isVisible)
   }
 
-  static eagerLoadVisibleLinks() {
-    setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+  static eagerLoadVisibleLinks(options = {}) {
+    const eagerLoad = () => {
+      setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+    };
+
+    if (options.initialLoad) {
+      requestAnimationFrame(() => requestAnimationFrame(eagerLoad));
+    } else {
+      eagerLoad();
+    }
   }
 
   static get onPage() {
