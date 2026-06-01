@@ -1082,6 +1082,11 @@ ol, ul {
   li:not(:last-child) {
     margin-bottom: 10px;
   }
+
+  li > ol > li:first-child,
+  li > ul > li:first-child {
+    padding-top: 10px;
+  }
 }
 
 div.canopy-raw-html {
