@@ -1511,10 +1511,11 @@ describe('FileSystemManager', function() {
     }
   });
 
-  test('it switches default topic after writes and before deletions', () => {
+  test('it switches default topic after writes and deletions', () => {
     const originalCwd = process.cwd();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     try {
       process.chdir(tmpDir);
@@ -1525,7 +1526,7 @@ describe('FileSystemManager', function() {
       const persistDefaultTopicPath = fileSystemManager.persistDefaultTopicPath.bind(fileSystemManager);
       fileSystemManager.persistDefaultTopicPath = (defaultTopicPath, defaultTopicKey) => {
         expect(fs.existsSync('topics/New/New.expl')).toBe(true);
-        expect(fs.existsSync('topics/Old/Old.expl')).toBe(true);
+        expect(fs.existsSync('topics/Old/Old.expl')).toBe(false);
         persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
       };
 
@@ -1549,6 +1550,41 @@ describe('FileSystemManager', function() {
       expect(fs.existsSync('topics/New/New.expl')).toBe(true);
       expect(fs.existsSync('topics/Old/Old.expl')).toBe(false);
       expect(fs.readFileSync('canopy_default_topic', 'utf8')).toBe('topics/New/New.expl\n');
+    } finally {
+      logSpy.mockRestore();
+      errorSpy.mockRestore();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('it refuses to write canopy_default_topic before the default topic exists', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/Old/Old.expl', 'Old: Existing topic.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/Old/Old.expl\n');
+
+      const fileSystemManager = new FileSystemManager();
+      let originalSelectionFileSet = new FileSet({
+        'topics/Old/Old.expl': 'Old: Existing topic.\n'
+      });
+      let newFileSet = new FileSet({});
+      let allDiskFileSet = new FileSet({
+        'topics/Old/Old.expl': 'Old: Existing topic.\n'
+      });
+      let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
+      let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
+
+      expect(() => fileSystemManager.execute(fileSystemChange, false, {
+        defaultTopicPath: 'topics/New/New.expl',
+        defaultTopicKey: 'New'
+      })).toThrow('Error: Cannot write canopy_default_topic because default topic file does not exist yet: topics/New/New.expl');
+
+      expect(fs.readFileSync('canopy_default_topic', 'utf8')).toBe('topics/Old/Old.expl\n');
     } finally {
       logSpy.mockRestore();
       process.chdir(originalCwd);

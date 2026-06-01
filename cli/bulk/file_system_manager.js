@@ -17,10 +17,6 @@ class FileSystemManager {
       fs.writeFileSync(filePath, fileContents);
     });
 
-    if (options.defaultTopicPath) {
-      this.persistDefaultTopicPath(options.defaultTopicPath, options.defaultTopicKey);
-    }
-
     fileSystemChange.fileDeletions.forEach(filePath => {
       if (filePath === 'canopy_default_topic') return; // rewrite don't delete in case sigint
       fs.unlinkSync(filePath);
@@ -31,6 +27,13 @@ class FileSystemManager {
         fs.rmSync(directoryPath, { recursive: true });
       }
     });
+
+    if (options.defaultTopicPath) {
+      if (!fs.existsSync(options.defaultTopicPath)) {
+        throw new Error(chalk.red(`Error: Cannot write canopy_default_topic because default topic file does not exist yet: ${options.defaultTopicPath}`));
+      }
+      this.persistDefaultTopicPath(options.defaultTopicPath, options.defaultTopicKey);
+    }
 
     if (logging) {
       fileSystemChange.messages.forEach(message => {
