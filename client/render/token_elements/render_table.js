@@ -705,6 +705,7 @@ function getObservedColumnScrollWidths(tableElement, columnCount) {
 }
 
 function cellHasBreakOpportunities(cell) {
+  if (cell.querySelector('br')) return true;
   return /[ \t\r\n\f,;:/-]/.test(cell.textContent || '');
 }
 

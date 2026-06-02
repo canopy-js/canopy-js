@@ -692,6 +692,22 @@ test.describe('Block entities', () => {
     expect(Math.abs(tableCenter - viewportCenter)).toBeLessThanOrEqual(tolerance);
   });
 
+  test('It fits tables with explicit line breaks to the content width', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_break-fitting');
+
+    const table = page.locator('.canopy-selected-section table').first();
+    await expect(table).toBeVisible();
+
+    const { tableWidth, containerWidth, shrinkableColumnCount } = await table.evaluate(element => ({
+      tableWidth: Number(element.dataset.appliedTableWidth),
+      containerWidth: Number(element.dataset.containerWidth),
+      shrinkableColumnCount: element.querySelectorAll('col[data-column-shrinkable="true"]').length
+    }));
+
+    expect(shrinkableColumnCount).toBeGreaterThan(0);
+    expect(tableWidth).toBeLessThanOrEqual(containerWidth + 1);
+  });
+
   test('It navigates table link grids with arrow keys', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Table_link_grid');
     await expect(page).toHaveURL('/United_States/New_York/Style_examples#Table_link_grid');
