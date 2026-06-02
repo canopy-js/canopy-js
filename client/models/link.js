@@ -853,9 +853,25 @@ class Link {
       .filter(link => link.isVisible)
   }
 
-  static eagerLoadVisibleLinks(options = {}) {
+  static eagerLoadLinks(options = {}) {
+    const scheduleIdle = callback => {
+      if (typeof requestIdleCallback === 'function') {
+        return requestIdleCallback(callback, { timeout: 2000 });
+      }
+      return setTimeout(callback);
+    };
+
+    const eagerLoadLinks = links => Promise.all(links.filter(link => link.isGlobal).map(link => link.execute({ renderOnly: true })));
+    const eagerLoadParagraphChain = paragraph => {
+      if (!paragraph) return;
+      scheduleIdle(() => eagerLoadLinks(paragraph.links).then(() => eagerLoadParagraphChain(paragraph.parentParagraph)));
+    };
+
     const eagerLoad = () => {
-      setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+      scheduleIdle(() => {
+        eagerLoadLinks(Link.visible);
+        eagerLoadParagraphChain(Path.current.paragraph);
+      });
     };
 
     if (options.initialLoad) {
