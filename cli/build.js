@@ -21,14 +21,7 @@ function build(options = {}) {
 
   fs.ensureDirSync('build');
 
-  const projectHasAssets = fs.existsSync('assets');
-  const buildAssetsMissing = !fs.existsSync('build/_assets');
-  const shouldCopyAssets = projectHasAssets && (replaceBuildDirectory || buildAssetsMissing);
-
-  if (shouldCopyAssets) {
-    fs.rmSync('build/_assets', { recursive: true, force: true });
-    fs.copySync('assets', 'build/_assets', { overwrite: true });
-  }
+  refreshAssetsDirectory();
 
   if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
     throw new Error(chalk.red('No Canopy.js asset found'));
@@ -103,6 +96,10 @@ function runFullBuildInChild(options) {
   if (result.error) throw result.error;
   if (result.signal === 'SIGTERM') return;
   if (result.status) throw new Error(`Background full build exited with status ${result.status}`);
+}
+
+function refreshAssetsDirectory() {
+  if (fs.existsSync('assets')) fs.copySync('assets', 'build/_assets', { overwrite: true });
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
