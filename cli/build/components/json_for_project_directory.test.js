@@ -1472,6 +1472,32 @@ test('it throws error for regular redundant local references', () => {
   );
 });
 
+test('it throws error for fragment reference matching an explicit subtopic', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: See [#[Boise|Boise]].
+
+      Boise: Boise is the capital.` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    ['Error: Fragment reference [#[Boise|Boise]] conflicts with subtopic [Boise] in topic [Idaho].']
+  );
+});
+
+test('it throws error for fragment reference matching an existing local reference', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: See [[Boise]]. Also [#[Boise|Boise]].
+
+      Boise: Boise is the capital.` + '\n',
+  };
+
+  expectThrowContains(
+    () => jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {}),
+    ['Error: Fragment reference [#[Boise|Boise]] conflicts with local reference [[Boise]] in topic [Idaho].']
+  );
+});
+
 test('it appends context frames for multiple expl locations cited in one error message', () => {
   let explFileData = {
     'topics/Idaho/Idaho.expl':

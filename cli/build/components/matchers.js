@@ -374,6 +374,7 @@ function fragmentReferenceMatcher({ string, parserContext }) {
 
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
+    reference.fragmentText = match[0];
     if (!reference.simpleTarget) throw new Error(chalk.red(`Fragment reference ${reference.fullText} does not have simple target.\n${parserContext.currentFilePathAndLineNumber}`));
 
     parserContext.registerFragmentReference(reference, currentSubtopic);

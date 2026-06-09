@@ -242,6 +242,8 @@ class ParserContext {
 
   registerLocalReference(targetSubtopic, index, reference) {
     const topicData = this.ensureTopicData(this.currentTopic.caps, this.filePath);
+    const fragment = topicData.fragmentReferenceSubtopics.find(({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === targetSubtopic.caps);
+    if (fragment) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Local reference ${reference.fullText} conflicts with fragment reference ${fragment.referenceText} in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
     // Prevent redundant parent links to the same paragraph from writing contradictory parent values.
     if (topicData.localReferences.hasOwnProperty(targetSubtopic.caps)) return;
 
@@ -263,9 +265,12 @@ class ParserContext {
         `${this.filePath}:${this.lineNumber}:${this.characterNumber}`;
       throw new Error(chalk.red(this.formatErrorWithContext(message, this.filePath, this.lineNumber, this.characterNumber)));
     }
+    if (topicData.localReferences.hasOwnProperty(reference.targetAsTopic.caps)) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Fragment reference ${reference.fragmentText || reference.fullText} conflicts with local reference ${topicData.localReferences[reference.targetAsTopic.caps].referenceText} in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
+    if (topicData.subtopics.hasOwnProperty(reference.targetAsTopic.caps)) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Fragment reference ${reference.fragmentText || reference.fullText} conflicts with subtopic [${reference.targetAsTopic.mixedCase}] in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
     topicData.fragmentReferenceSubtopics.push({
       fragmentTargetSubtopic: reference.targetAsTopic,
       enclosingSubtopic: currentSubtopic,
+      referenceText: reference.fragmentText || reference.fullText,
       location: { line: this.lineNumber, col: this.characterNumber }
     });
   }
