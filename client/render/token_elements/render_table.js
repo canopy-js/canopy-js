@@ -12,6 +12,8 @@ const ABSOLUTE_COLUMN_WIDTH_CAP_PX = 350;
 const RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 200;
 const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 100;
 const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
+const FLEXIBLE_COLUMN_MAX_EXTRA_WIDTH_PERCENT = 20;
+const FLEXIBLE_COLUMN_PRESSURE_EPSILON_PX = 1;
 
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -809,6 +811,59 @@ function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
   return { widths: fittedWidths, shrinkAmounts };
 }
 
+function getAdjustedFlexibleColumnWidths(widths, shrinkableColumns, containerWidth) {
+  if (!isFinite(containerWidth) || containerWidth <= 0) return null;
+  if (!widths.length) return null;
+  if (widths.some(width => !isFinite(width) || width <= 0)) return null;
+  if (!shrinkableColumns.some(Boolean)) return null;
+
+  const fixedWidth = widths.reduce((sum, width, index) =>
+    sum + (shrinkableColumns[index] ? 0 : width), 0);
+  const flexibleColumnCount = shrinkableColumns.filter(Boolean).length;
+  const flexibleWidth = (containerWidth - fixedWidth) / flexibleColumnCount;
+
+  if (flexibleWidth < SHRINKABLE_COLUMN_MIN_WIDTH_PX) return null;
+
+  const equalFlexibleWidths = widths.map((width, index) =>
+    shrinkableColumns[index] ? flexibleWidth : width
+  );
+  const flexibleIndexes = shrinkableColumns
+    .map((isShrinkable, index) => isShrinkable ? index : null)
+    .filter(index => index != null);
+  const maxExtraWidth = flexibleWidth * FLEXIBLE_COLUMN_MAX_EXTRA_WIDTH_PERCENT / 100;
+  const desiredExtraWidths = flexibleIndexes.map(index => {
+    const pressure = widths[index] - flexibleWidth;
+    if (pressure <= FLEXIBLE_COLUMN_PRESSURE_EPSILON_PX) return 0;
+    return Math.min(pressure, maxExtraWidth);
+  });
+  const totalExtraWidth = desiredExtraWidths.reduce((sum, width) => sum + width, 0);
+  if (totalExtraWidth <= 0) return equalFlexibleWidths;
+
+  const pressureAdjustedWidths = [...widths];
+  const donorIndexes = flexibleIndexes.filter((_, flexibleIndex) =>
+    desiredExtraWidths[flexibleIndex] <= 0
+  );
+
+  if (!donorIndexes.length) return equalFlexibleWidths;
+
+  const borrowedWidth = totalExtraWidth / donorIndexes.length;
+
+  flexibleIndexes.forEach((index, flexibleIndex) => {
+    pressureAdjustedWidths[index] = flexibleWidth + desiredExtraWidths[flexibleIndex];
+  });
+  donorIndexes.forEach(index => {
+    pressureAdjustedWidths[index] = flexibleWidth - borrowedWidth;
+  });
+
+  if (pressureAdjustedWidths.some((width, index) =>
+    shrinkableColumns[index] && width < SHRINKABLE_COLUMN_MIN_WIDTH_PX
+  )) {
+    return equalFlexibleWidths;
+  }
+
+  return pressureAdjustedWidths;
+}
+
 function getWidthSum(widths) {
   return widths.reduce((sum, width) => sum + width, 0);
 }
@@ -937,8 +992,14 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     unsnappedWidths,
     atomicReadableColumns
   );
-  const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
+  const adjustedFlexibleWidths = getAdjustedFlexibleColumnWidths(
     readableWidths,
+    shrinkableColumns,
+    fitContainerWidth
+  );
+  const fittingWidths = adjustedFlexibleWidths || readableWidths;
+  const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
+    fittingWidths,
     shrinkableColumns,
     fitContainerWidth
   );
@@ -985,7 +1046,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     }
     if (shrinkAmounts[index] > 0) {
       colgroup.children[index].dataset.columnWidthShrunk = 'true';
-      colgroup.children[index].dataset.preShrinkColumnWidth = String(readableWidths[index]);
+      colgroup.children[index].dataset.preShrinkColumnWidth = String(fittingWidths[index]);
       colgroup.children[index].dataset.columnShrinkAmount = String(shrinkAmounts[index]);
       colgroup.children[index].dataset.minShrinkableColumnWidth = String(SHRINKABLE_COLUMN_MIN_WIDTH_PX);
     } else {
@@ -1004,6 +1065,13 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
       delete colgroup.children[index].dataset.snappedColumnWidth;
       delete colgroup.children[index].dataset.unsnappedColumnWidth;
       delete colgroup.children[index].dataset.columnUnsnapSavings;
+    }
+    if (adjustedFlexibleWidths && shrinkableColumns[index]) {
+      colgroup.children[index].dataset.columnWidthFlexAdjusted = 'true';
+      colgroup.children[index].dataset.preFlexAdjustedColumnWidth = String(readableWidths[index]);
+    } else {
+      delete colgroup.children[index].dataset.columnWidthFlexAdjusted;
+      delete colgroup.children[index].dataset.preFlexAdjustedColumnWidth;
     }
     colgroup.children[index].style.width = width + 'px';
   });

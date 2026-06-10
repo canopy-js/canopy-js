@@ -565,7 +565,7 @@ test.describe('Block entities', () => {
 
   test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Snapping_Tables');
-    await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(5);
 
     const sizeTolerance = 1;
     const minSignificantDifference = 10;
@@ -632,6 +632,36 @@ test.describe('Block entities', () => {
     //   expect(Math.abs(h2 - h3)).toBeLessThanOrEqual(sizeTolerance);
     //   expect(h3 - h1).toBeGreaterThan(minSignificantDifference);
     // }
+
+    // Table 4: all columns can wrap, so fitting should prefer similar flexible widths.
+    {
+      const table = tables.filter({ hasText: 'Shevuos' }).first();
+      const firstRowCells = table.locator('tr').first().locator('td');
+      const widths = (await getBoxes(firstRowCells)).map(b => b.width);
+      const minWidth = Math.min(...widths);
+      const maxWidth = Math.max(...widths);
+      const shevuosLineCount = await table.locator('td', { hasText: 'Shevuos' }).locator('i').evaluate(element =>
+        element.getClientRects().length
+      );
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(widths[1]).toBeGreaterThanOrEqual(175);
+      expect(widths[1]).toBeLessThanOrEqual(185);
+      expect(maxWidth - minWidth).toBeLessThanOrEqual(45);
+      expect(shevuosLineCount).toEqual(1);
+      expect(flexAdjustedColumnCount).toEqual(5);
+    }
+
+    // Table 5: fixed-width columns keep their width; wrappable columns share the rest.
+    {
+      const table = tables.filter({ hasText: 'UnbreakableAnchorColumnThatShouldStayWide' }).first();
+      const cells = table.locator('td');
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(Math.abs(widths[1] - widths[2])).toBeLessThanOrEqual(sizeTolerance);
+      expect(flexAdjustedColumnCount).toEqual(2);
+    }
   });
 
   test('It supports table links with icons', async ({ page }) => {

@@ -76,6 +76,11 @@ Snapping Tables:
 | R1  | one line |
 | R2  | line1<br>line2<br>line3 |
 | R3  | line1<br>line2<br>line3<br>line4<br>line5 |
+<br>
+| 1. _Bava Kamma_<br>(damages and liability) | 2. *_Bava Metziya_*<br>(found objects and commerce, found objects and commerce, found objects and commerce) | 3. _Bava Basra_<br>(property and inheritance) | 4. _Sanhedrin_<br>(courts and punishments) | 5. _Makkos_<br>(lashes and exile) |
+| 6. _Shevuos_<br>(oaths and claims) | 7. _Eduyos_<br>(testimony and rulings) | 8. _Avodah Zarah_<br>(idolatry and boundaries) | 9. _Avos_<br>(ethics and tradition) | 10. _Horayos_<br>(mistaken rulings) |
+<br>
+| UnbreakableAnchorColumnThatShouldStayWide | Alpha beta gamma delta epsilon zeta eta theta iota kappa lambda | One two three four five six seven eight nine ten eleven |
 
 Tables with break-fitting:
 | Hebrew | Simple | Intensive | Causative | Reflexive |
