@@ -1,8 +1,14 @@
 const { fork } = require('child_process');
 const fs = require('fs');
+const http = require('http');
 const chalk = require('chalk');
 const path = require('path');
 const chokidar = require('chokidar');
+
+const pollIntervalMs = 500;
+const healthCheckIntervalMs = 5000;
+const healthCheckTimeoutMs = 2000;
+const healthCheckPath = '/_canopy_health';
 
 function serve(options = {}) {
   const port = options.port || 4001;
@@ -16,6 +22,7 @@ function serve(options = {}) {
     child: null,
     restarting: false,
     missingBuildWarned: false,
+    healthCheckInFlight: false,
     shuttingDown: false
   };
 
@@ -26,15 +33,18 @@ function serve(options = {}) {
 
   startServerIfReady(state, port, options, hasValidBuild, ensureServerState);
 
-  const pollIntervalMs = 500;
   const poller = setInterval(ensureServerState, pollIntervalMs);
+  const healthChecker = setInterval(() => {
+    healthCheck(state, port, options, hasValidBuild, ensureServerState);
+  }, healthCheckIntervalMs);
   const watcher = watchBuildRoot(buildRoot, ensureServerState, state);
 
-  registerShutdown(() => {
+  registerShutdown(options, () => {
     state.shuttingDown = true;
     stopChild(state);
     try { watcher.close(); } catch (_) { /* ignore */ }
     clearInterval(poller);
+    clearInterval(healthChecker);
   });
 
   return state.child;
@@ -61,6 +71,7 @@ function startServerIfReady(state, port, options, hasValidBuild, ensureServerSta
 
 function ensureRunning(state, port, options, hasValidBuild, ensureServerState) {
   if (state.child || state.restarting) return;
+  if (options.logging) console.log(chalk.gray(`Server child is not present; starting replacement on port ${port}`));
   state.restarting = true;
   startChild(state, port, options, hasValidBuild, ensureServerState);
   state.restarting = false;
@@ -103,7 +114,18 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
   child.on('error', (error) => {
     if (state.child === child) state.child = null;
     console.error(chalk.red(`Server child pid ${child.pid || 'unknown'} failed under parent pid ${process.pid}: ${error.message}`));
-    if (!state.shuttingDown && hasValidBuild()) ensureServerState();
+      if (!state.shuttingDown && hasValidBuild()) ensureServerState();
+  });
+
+  child.on('close', (code, signal) => {
+    if (options.logging) {
+      const reason = signal ? `signal ${signal}` : `code ${code}`;
+      console.log(chalk.gray(`Server child pid ${child.pid} closed with ${reason}; parent pid ${process.pid}`));
+    }
+  });
+
+  child.on('disconnect', () => {
+    if (options.logging) console.log(chalk.gray(`Server child pid ${child.pid} disconnected from parent pid ${process.pid}`));
   });
 }
 
@@ -124,8 +146,71 @@ function watchBuildRoot(buildRoot, ensureServerState, state) {
   return watcher;
 }
 
-function registerShutdown(fn) {
-  ['exit', 'SIGINT', 'SIGTERM', 'SIGUSR2', 'uncaughtException'].forEach(event => {
-    process.once(event, fn);
+function registerShutdown(options, fn) {
+  process.once('exit', (code) => {
+    if (options?.logging) console.log(chalk.gray(`Server parent pid ${process.pid} exited with code ${code}`));
+    fn();
   });
+  ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => {
+    process.once(signal, () => {
+      if (options?.logging) console.log(chalk.gray(`Server parent pid ${process.pid} received ${signal}`));
+      fn();
+    });
+  });
+  process.once('uncaughtException', (error) => {
+    console.error(chalk.red(`Server parent pid ${process.pid} uncaught exception: ${error.message}`));
+    fn();
+  });
+  process.once('unhandledRejection', (error) => {
+    const message = error && error.stack ? error.stack : error;
+    console.error(chalk.red(`Server parent pid ${process.pid} unhandled rejection: ${message}`));
+    fn();
+  });
+}
+
+function healthCheck(state, port, options, hasValidBuild, ensureServerState) {
+  if (state.shuttingDown || state.healthCheckInFlight) return;
+  if (!hasValidBuild()) return;
+  if (!state.child) {
+    if (options.logging) console.log(chalk.gray(`Health check found no server child on port ${port}; restarting`));
+    ensureServerState();
+    return;
+  }
+
+  state.healthCheckInFlight = true;
+  const request = http.get(
+    { host: '127.0.0.1', port, path: healthCheckPath, timeout: healthCheckTimeoutMs },
+    (response) => {
+      response.resume();
+      state.healthCheckInFlight = false;
+      if (response.statusCode >= 500) {
+        console.error(chalk.red(`Health check failed with status ${response.statusCode}; restarting child pid ${state.child && state.child.pid}`));
+        if (!state.shuttingDown && hasValidBuild()) {
+          restartChild(state, options);
+        }
+      }
+    }
+  );
+
+  request.on('timeout', () => {
+    request.destroy(new Error(`health check timeout after ${healthCheckTimeoutMs}ms`));
+  });
+  request.on('error', (error) => {
+    state.healthCheckInFlight = false;
+    console.error(chalk.red(`Health check request failed: ${error.message}; restarting child pid ${state.child && state.child.pid}`));
+    if (!state.shuttingDown && hasValidBuild()) {
+      restartChild(state, options);
+    }
+  });
+}
+
+function restartChild(state, options) {
+  if (!state.child || state.shuttingDown) return;
+  if (options.logging) console.log(chalk.gray(`Requesting restart for child pid ${state.child.pid}`));
+  try {
+    state.child.kill('SIGTERM');
+  } catch (error) {
+    console.error(chalk.red(`Could not stop server child pid ${state.child.pid}: ${error.message}`));
+    state.child = null;
+  }
 }

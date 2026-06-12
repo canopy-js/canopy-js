@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 let chalk = require('chalk');
+const healthCheckPath = '/_canopy_health';
 
 let buildPath =  process.cwd();
 if (!process.cwd().match(/build\/?$/)){
@@ -11,9 +12,13 @@ let loggingFlag;
 
 app.use(function(req, res, next) {
   res.on('finish', function() {
-    if (loggingFlag) console.log(chalk.dim(`${req.url} - ${res.statusCode}`));
+    if (loggingFlag && req.url !== healthCheckPath) console.log(chalk.dim(`${req.url} - ${res.statusCode}`));
   });
   next();
+});
+
+app.get(healthCheckPath, (_req, res) => {
+  res.sendStatus(200);
 });
 
 // static file serve
@@ -27,9 +32,21 @@ app.use((req, res) => res.sendFile(buildPath + 'index.html'));
 
 function runServer(port, logging) {
   loggingFlag = logging;
-  const server = app.listen(port);
+  const server = app.listen(port, () => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) listening on port ${port}`));
+  });
+
+  server.on('close', () => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) HTTP server closed`));
+  });
+
+  server.on('error', (error) => {
+    console.error(chalk.red(`Server child (pid ${process.pid}) HTTP server error: ${error.message}`));
+    process.exit(1);
+  });
 
   const shutdown = () => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) shutting down`));
     try {
       server.close(() => process.exit(0));
     } catch (_) {
@@ -37,8 +54,26 @@ function runServer(port, logging) {
     }
   };
 
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', () => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) received SIGTERM`));
+    shutdown();
+  });
+  process.on('SIGINT', () => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) received SIGINT`));
+    shutdown();
+  });
+  process.on('exit', (code) => {
+    if (loggingFlag) console.log(chalk.gray(`Server child (pid ${process.pid}) exited with code ${code}`));
+  });
+  process.on('uncaughtException', (error) => {
+    console.error(chalk.red(`Server child (pid ${process.pid}) uncaught exception: ${error.message}`));
+    process.exit(1);
+  });
+  process.on('unhandledRejection', (reason) => {
+    const message = reason && reason.stack ? reason.stack : reason;
+    console.error(chalk.red(`Server child (pid ${process.pid}) unhandled rejection: ${message}`));
+    process.exit(1);
+  });
 }
 
 module.exports = runServer;
