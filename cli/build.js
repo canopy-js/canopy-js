@@ -99,7 +99,24 @@ function runFullBuildInChild(options) {
 }
 
 function refreshAssetsDirectory() {
-  if (fs.existsSync('assets')) fs.copySync('assets', 'build/_assets', { overwrite: true });
+  if (fs.existsSync('assets')) {
+    fs.copySync('assets', 'build/_assets', {
+      overwrite: true,
+      filter: (source) => !isSkippableAssetMetadataFile(source)
+    });
+  }
+}
+
+function isSkippableAssetMetadataFile(filePath) {
+  const filename = path.basename(filePath);
+  const lower = filename.toLowerCase();
+
+  return (
+    filename === '.DS_Store' ||
+    filename.startsWith('._') ||
+    lower === 'thumbs.db' ||
+    lower === 'desktop.ini'
+  );
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
