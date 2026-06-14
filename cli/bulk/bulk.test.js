@@ -1,4 +1,5 @@
 let FileSystemManager = require('./file_system_manager');
+let bulk = require('./bulk');
 let BulkFileGenerator = require('./bulk_file_generator');
 let BulkFileParser = require('./bulk_file_parser');
 let FileSystemChangeCalculator = require('./file_system_change_calculator');
@@ -1485,7 +1486,65 @@ describe('FileSystemChangeCalculator', function() {
   });
 });
 
+describe('bulk', function() {
+  test('finish without selection file overwrites bulk-file disk matches without deleting omitted disk files', async () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-'));
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/A/A.expl', 'A: Old data.\n');
+      writeFileSyncEnsuringDir('topics/B/B.expl', 'B: Omitted disk file.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/A/A.expl\n');
+      fs.writeFileSync('canopy_bulk_file.bulk', '[A]\n\n* A: New data.\n');
+
+      await bulk([], {
+        finish: true,
+        bulkFileName: 'canopy_bulk_file.bulk',
+        logging: false,
+        noBackup: true
+      });
+
+      expect(fs.readFileSync('topics/A/A.expl', 'utf8')).toBe('A: New data.\n');
+      expect(fs.readFileSync('topics/B/B.expl', 'utf8')).toBe('B: Omitted disk file.\n');
+      expect(fs.existsSync('canopy_bulk_file.bulk')).toBe(false);
+      expect(fs.existsSync('.canopy_bulk_original_selection')).toBe(false);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('FileSystemManager', function() {
+  test('it treats fallback files as the original selection when no selection file exists', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/A/A.expl', 'A: Existing topic.\n');
+      writeFileSyncEnsuringDir('topics/B/B.expl', 'B: Existing topic.\n');
+
+      const fileSystemManager = new FileSystemManager();
+      const fileSet = fileSystemManager.loadOriginalSelectionFileSet(
+        {},
+        ['topics/A/A.expl', 'topics/B/B.expl']
+      );
+
+      expect(fileSet.fileContentsByPath).toEqual({
+        'topics/A/A.expl': 'A: Existing topic.\n',
+        'topics/B/B.expl': 'B: Existing topic.\n'
+      });
+      expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   test('it does not rewrite canopy_default_topic when the default path is unchanged', () => {
     const originalCwd = process.cwd();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));

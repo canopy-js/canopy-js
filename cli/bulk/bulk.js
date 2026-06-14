@@ -108,16 +108,18 @@ const bulk = async function(selectedFileList, options = {}) {
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
     ensureBulkFileName(options);
 
-    let originalSelectionFileSet = originalSelectedFilesList
-      ? fileSystemManager.getFileSet(originalSelectedFilesList)
-      : fileSystemManager.loadOriginalSelectionFileSet(options);
-
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString, options.bulkFileName);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
 
-    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
+    let allDiskFileList = getRecursiveSubdirectoryFiles('topics');
+    let originallySelectedFallback = newFileSet.files.map(file => file.path);
+    let originalSelectionFileSet = originalSelectedFilesList
+      ? fileSystemManager.getFileSet(originalSelectedFilesList)
+      : fileSystemManager.loadOriginalSelectionFileSet(options, originallySelectedFallback);
+
+    let allDiskFileSet = fileSystemManager.getFileSet(allDiskFileList);
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
 
