@@ -1545,6 +1545,70 @@ describe('FileSystemManager', function() {
     }
   });
 
+  test('it discards bulk backups older than sixty days when writing a backup', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+
+    try {
+      process.chdir(tmpDir);
+      fs.mkdirSync('.canopy_bulk_backups');
+      fs.writeFileSync('.canopy_bulk_backups/canopy_bulk_file.bulk-old', 'old');
+      fs.writeFileSync('.canopy_bulk_backups/canopy_bulk_file.bulk-recent', 'recent');
+      const now = Date.now();
+      const oldDate = new Date(now - (61 * 24 * 60 * 60 * 1000));
+      const recentDate = new Date(now - (59 * 24 * 60 * 60 * 1000));
+      fs.utimesSync('.canopy_bulk_backups/canopy_bulk_file.bulk-old', oldDate, oldDate);
+      fs.utimesSync('.canopy_bulk_backups/canopy_bulk_file.bulk-recent', recentDate, recentDate);
+
+      const fileSystemManager = new FileSystemManager();
+      fileSystemManager.backupBulkFile('canopy_bulk_file.bulk', 'new');
+
+      const backups = fs.readdirSync('.canopy_bulk_backups');
+      expect(backups).not.toContain('canopy_bulk_file.bulk-old');
+      expect(backups).toContain('canopy_bulk_file.bulk-recent');
+      expect(backups.length).toBe(2);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('it keeps multiple bulk backups written in the same second', () => {
+    const originalCwd = process.cwd();
+    const RealDate = Date;
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));
+
+    try {
+      process.chdir(tmpDir);
+      const fixedDate = new RealDate('2026-06-14T12:00:00Z');
+      global.Date = class extends RealDate {
+        constructor(...args) {
+          if (args.length) return super(...args);
+          return fixedDate;
+        }
+
+        static now() {
+          return fixedDate.getTime();
+        }
+      };
+
+      const fileSystemManager = new FileSystemManager();
+      fileSystemManager.backupBulkFile('canopy_bulk_file.bulk', 'first');
+      fileSystemManager.backupBulkFile('canopy_bulk_file.bulk', 'second');
+
+      const backups = fs.readdirSync('.canopy_bulk_backups').sort();
+      expect(backups).toHaveLength(2);
+      expect(backups[0]).toMatch(/^canopy_bulk_file\.bulk-\d{14}$/);
+      expect(backups[1]).toBe(`${backups[0]}-2`);
+      expect(fs.readFileSync(path.join('.canopy_bulk_backups', backups[0]), 'utf8')).toBe('first');
+      expect(fs.readFileSync(path.join('.canopy_bulk_backups', backups[1]), 'utf8')).toBe('second');
+    } finally {
+      global.Date = RealDate;
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   test('it does not rewrite canopy_default_topic when the default path is unchanged', () => {
     const originalCwd = process.cwd();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-fs-'));

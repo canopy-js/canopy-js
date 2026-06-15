@@ -1,7 +1,11 @@
 let fs = require('fs-extra');
+let path = require('path');
 let FileSet = require('./file_set');
 let chalk = require('chalk');
 let { DefaultTopic } = require('../shared/fs-helpers');
+
+const BULK_BACKUP_DIRECTORY = '.canopy_bulk_backups';
+const BULK_BACKUP_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;
 
 class FileSystemManager {
   execute(fileSystemChange, logging, options = {}) {
@@ -58,7 +62,8 @@ class FileSystemManager {
   }
 
   backupBulkFile(fileName, fileContents) {
-    if (!fs.existsSync('.canopy_bulk_backups')) { fs.ensureDirSync('.canopy_bulk_backups'); }
+    if (!fs.existsSync(BULK_BACKUP_DIRECTORY)) { fs.ensureDirSync(BULK_BACKUP_DIRECTORY); }
+    this.deleteExpiredBulkBackups();
     let date = new Date();
     let year = date.getFullYear();
     let month = ('0' + (date.getMonth()+1)).slice(-2);
@@ -67,7 +72,26 @@ class FileSystemManager {
     let minutes = ('0' + date.getMinutes()).slice(-2);
     let seconds = ('0' + date.getSeconds()).slice(-2);
     let timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`;
-    fs.writeFileSync(`.canopy_bulk_backups/${fileName}-${timestamp}`, fileContents);
+    fs.writeFileSync(this.availableBulkBackupPath(`${fileName}-${timestamp}`), fileContents);
+  }
+
+  deleteExpiredBulkBackups() {
+    let expirationTime = Date.now() - BULK_BACKUP_RETENTION_MS;
+    fs.readdirSync(BULK_BACKUP_DIRECTORY, { withFileTypes: true }).forEach(entry => {
+      if (!entry.isFile()) return;
+      let backupPath = path.join(BULK_BACKUP_DIRECTORY, entry.name);
+      if (fs.statSync(backupPath).mtimeMs < expirationTime) fs.unlinkSync(backupPath);
+    });
+  }
+
+  availableBulkBackupPath(fileName) {
+    let candidatePath = path.join(BULK_BACKUP_DIRECTORY, fileName);
+    let suffix = 2;
+    while (fs.existsSync(candidatePath)) {
+      candidatePath = path.join(BULK_BACKUP_DIRECTORY, `${fileName}-${suffix}`);
+      suffix++;
+    }
+    return candidatePath;
   }
 
   storeOriginalSelectionFileSet(fileSet) {
