@@ -565,7 +565,7 @@ test.describe('Block entities', () => {
 
   test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Snapping_Tables');
-    await expect(page.locator('.canopy-selected-section table')).toHaveCount(5);
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(6);
 
     const sizeTolerance = 1;
     const minSignificantDifference = 10;
@@ -633,7 +633,7 @@ test.describe('Block entities', () => {
     //   expect(h3 - h1).toBeGreaterThan(minSignificantDifference);
     // }
 
-    // Table 4: all columns can wrap, so fitting should prefer similar flexible widths.
+    // Table 4: all columns can wrap, so fitting distributes space by measured text demand.
     {
       const table = tables.filter({ hasText: 'Shevuos' }).first();
       const firstRowCells = table.locator('tr').first().locator('td');
@@ -645,22 +645,36 @@ test.describe('Block entities', () => {
       );
       const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
 
-      expect(widths[1]).toBeGreaterThanOrEqual(175);
-      expect(widths[1]).toBeLessThanOrEqual(185);
-      expect(maxWidth - minWidth).toBeLessThanOrEqual(45);
+      expect(widths[1]).toBeGreaterThan(widths[0]);
+      expect(widths[1]).toBeGreaterThan(widths[2]);
+      expect(maxWidth - minWidth).toBeGreaterThan(minSignificantDifference);
+      expect(minWidth).toBeGreaterThanOrEqual(100);
       expect(shevuosLineCount).toEqual(1);
       expect(flexAdjustedColumnCount).toEqual(5);
     }
 
-    // Table 5: fixed-width columns keep their width; wrappable columns share the rest.
+    // Table 5: fixed-width columns keep their width; wrappable columns split the rest proportionally.
     {
       const table = tables.filter({ hasText: 'UnbreakableAnchorColumnThatShouldStayWide' }).first();
       const cells = table.locator('td');
       const widths = (await getBoxes(cells)).map(b => b.width);
       const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
 
-      expect(Math.abs(widths[1] - widths[2])).toBeLessThanOrEqual(sizeTolerance);
+      expect(widths[1]).toBeGreaterThan(widths[2]);
+      expect(widths[1] - widths[2]).toBeGreaterThan(minSignificantDifference);
       expect(flexAdjustedColumnCount).toEqual(2);
+    }
+
+    // Table 6: long translation-like text keeps a larger share even when the table fills the container.
+    {
+      const table = tables.filter({ hasText: 'After that his brother came out' }).first();
+      const cells = table.locator('tr').first().locator('td');
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(widths[3]).toBeGreaterThan(widths[2]);
+      expect(widths[3] - widths[2]).toBeGreaterThan(minSignificantDifference);
+      expect(flexAdjustedColumnCount).toEqual(3);
     }
   });
 

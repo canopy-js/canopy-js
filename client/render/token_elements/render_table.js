@@ -9,11 +9,13 @@ const OVERFLOW_HORIZONTAL_CELL_PADDING_PX = 15;
 // Allow space to detect natural cell width before applying constraints.
 const MEASURE_TABLE_WIDTH_PX = 1000;
 const ABSOLUTE_COLUMN_WIDTH_CAP_PX = 350;
+const RELAXED_ABSOLUTE_COLUMN_WIDTH_CAP_PX = 450;
 const RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 200;
+const RELAXED_RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 300;
+const SPARE_WIDTH_RELAXATION_SHARE = 0.5;
 const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 100;
 const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
-const FLEXIBLE_COLUMN_MAX_EXTRA_WIDTH_PERCENT = 20;
-const FLEXIBLE_COLUMN_PRESSURE_EPSILON_PX = 1;
+const FLEXIBLE_COLUMN_TEXT_WEIGHT_FACTOR = 0.75;
 
 // How strict snapping is for row height -- currently disabled
 // const HEIGHT_BASE_SIMILARITY_PERCENT = 15;  // baseline strictness
@@ -50,8 +52,14 @@ function renderTable(token, renderContext, renderTokenElements) {
 }
 
 function layoutTable(tableElement) {
-  let { measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement);
   const containerWidth = tableElement.parentElement?.getBoundingClientRect?.().width;
+  const capContainerWidth = isFinite(containerWidth) && containerWidth > 0
+    ? containerWidth
+    : undefined;
+
+  let { measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement, {
+    capContainerWidth
+  });
 
   if (
     isFinite(containerWidth) &&
@@ -61,6 +69,7 @@ function layoutTable(tableElement) {
   ) {
     ({ measurements, snapPlan, totalWidth } = runTableWidthPass(tableElement, {
       forcedHorizontalPadding: OVERFLOW_HORIZONTAL_CELL_PADDING_PX,
+      capContainerWidth: containerWidth,
       fitContainerWidth: containerWidth
     }));
   }
@@ -68,7 +77,7 @@ function layoutTable(tableElement) {
   return { measurements, snapPlan, totalWidth, containerWidth };
 }
 
-function runTableWidthPass(tableElement, { forcedHorizontalPadding, fitContainerWidth } = {}) {
+function runTableWidthPass(tableElement, { forcedHorizontalPadding, capContainerWidth, fitContainerWidth } = {}) {
   clearCellWidths(tableElement);
   removeColgroup(tableElement);
   setTableLayoutForMeasure(tableElement);
@@ -77,7 +86,10 @@ function runTableWidthPass(tableElement, { forcedHorizontalPadding, fitContainer
   }
   const measurements = measureTable(tableElement);
   const snapPlan = computeSnapPlan(measurements);
-  const totalWidth = applyColumnGroupWidths(tableElement, measurements, snapPlan, { fitContainerWidth });
+  const totalWidth = applyColumnGroupWidths(tableElement, measurements, snapPlan, {
+    capContainerWidth,
+    fitContainerWidth
+  });
   return { measurements, snapPlan, totalWidth };
 }
 
@@ -507,7 +519,8 @@ function measureTable(tableElement) {
   const columnCount = getLogicalColumnCount(rows);
   const columnSizes = Array.from({ length: columnCount }, () => ({
     maxUnitContentWidth: 0,
-    maxUnitBoxWidth: 0
+    maxUnitBoxWidth: 0,
+    aggregateContentHeight: 0
   }));
   const sizes = {
     minContentWidth: Infinity,       // per-column "unit" width
@@ -566,9 +579,12 @@ function measureTable(tableElement) {
         }
 
         if (!excludeFromBaseline && hasChildElements) {
-          const { measuredContentWidth } = measureCellContent(cell);
+          const { measuredContentWidth, measuredContentHeight } = measureCellContent(cell);
           const unitContentWidth = isFinite(measuredContentWidth) && measuredContentWidth > 0
             ? (measuredContentWidth / columnSpan)
+            : NaN;
+          const unitContentHeight = isFinite(measuredContentHeight) && measuredContentHeight > 0
+            ? (measuredContentHeight / columnSpan)
             : NaN;
           const unitBoxWidth = getMeasuredUnitBoxWidth(cell, measuredContentWidth, columnSpan);
           const fallbackUnitContentWidth = isFinite(unitContentWidth) && unitContentWidth > 0 ? unitContentWidth : unitBoxWidth;
@@ -579,6 +595,9 @@ function measureTable(tableElement) {
               if (!column) continue;
               if (fallbackUnitContentWidth > column.maxUnitContentWidth) column.maxUnitContentWidth = fallbackUnitContentWidth;
               if (unitBoxWidth > column.maxUnitBoxWidth) column.maxUnitBoxWidth = unitBoxWidth;
+              if (isFinite(unitContentHeight) && unitContentHeight > 0) {
+                column.aggregateContentHeight += unitContentHeight;
+              }
             }
           } else {
             cell.dataset.columnSizeSkipReason = 'invalid_sizes';
@@ -811,7 +830,7 @@ function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
   return { widths: fittedWidths, shrinkAmounts };
 }
 
-function getAdjustedFlexibleColumnWidths(widths, shrinkableColumns, containerWidth) {
+function getProportionalFlexibleColumnWidths(widths, shrinkableColumns, containerWidth, proportionalWidths = widths) {
   if (!isFinite(containerWidth) || containerWidth <= 0) return null;
   if (!widths.length) return null;
   if (widths.some(width => !isFinite(width) || width <= 0)) return null;
@@ -819,49 +838,65 @@ function getAdjustedFlexibleColumnWidths(widths, shrinkableColumns, containerWid
 
   const fixedWidth = widths.reduce((sum, width, index) =>
     sum + (shrinkableColumns[index] ? 0 : width), 0);
-  const flexibleColumnCount = shrinkableColumns.filter(Boolean).length;
-  const flexibleWidth = (containerWidth - fixedWidth) / flexibleColumnCount;
+  const availableFlexibleWidth = containerWidth - fixedWidth;
+  if (availableFlexibleWidth <= 0) return null;
 
-  if (flexibleWidth < SHRINKABLE_COLUMN_MIN_WIDTH_PX) return null;
-
-  const equalFlexibleWidths = widths.map((width, index) =>
-    shrinkableColumns[index] ? flexibleWidth : width
-  );
   const flexibleIndexes = shrinkableColumns
     .map((isShrinkable, index) => isShrinkable ? index : null)
     .filter(index => index != null);
-  const maxExtraWidth = flexibleWidth * FLEXIBLE_COLUMN_MAX_EXTRA_WIDTH_PERCENT / 100;
-  const desiredExtraWidths = flexibleIndexes.map(index => {
-    const pressure = widths[index] - flexibleWidth;
-    if (pressure <= FLEXIBLE_COLUMN_PRESSURE_EPSILON_PX) return 0;
-    return Math.min(pressure, maxExtraWidth);
+  const minFlexibleWidth = SHRINKABLE_COLUMN_MIN_WIDTH_PX * flexibleIndexes.length;
+  if (availableFlexibleWidth < minFlexibleWidth) return null;
+
+  const proportionalWidthsByIndex = new Map(flexibleIndexes.map(index => {
+    const proportionalWidth = proportionalWidths[index];
+    return [index, isFinite(proportionalWidth) && proportionalWidth > 0
+      ? proportionalWidth
+      : widths[index]];
+  }));
+  const averageProportionalWidth = [...proportionalWidthsByIndex.values()]
+    .reduce((sum, width) => sum + width, 0) / flexibleIndexes.length;
+  proportionalWidthsByIndex.forEach((width, index) => {
+    proportionalWidthsByIndex.set(
+      index,
+      averageProportionalWidth + ((width - averageProportionalWidth) * FLEXIBLE_COLUMN_TEXT_WEIGHT_FACTOR)
+    );
   });
-  const totalExtraWidth = desiredExtraWidths.reduce((sum, width) => sum + width, 0);
-  if (totalExtraWidth <= 0) return equalFlexibleWidths;
+  const totalProportionalWidth = [...proportionalWidthsByIndex.values()]
+    .reduce((sum, width) => sum + width, 0);
+  if (totalProportionalWidth <= 0) return null;
 
-  const pressureAdjustedWidths = [...widths];
-  const donorIndexes = flexibleIndexes.filter((_, flexibleIndex) =>
-    desiredExtraWidths[flexibleIndex] <= 0
-  );
+  const adjustedWidths = [...widths];
+  const constrainedIndexes = new Set();
+  let remainingWidth = availableFlexibleWidth;
+  let remainingWeight = totalProportionalWidth;
 
-  if (!donorIndexes.length) return equalFlexibleWidths;
+  while (constrainedIndexes.size < flexibleIndexes.length && remainingWeight > 0) {
+    let constrainedThisPass = false;
 
-  const borrowedWidth = totalExtraWidth / donorIndexes.length;
+    flexibleIndexes.forEach(index => {
+      if (constrainedIndexes.has(index)) return;
+      const weight = proportionalWidthsByIndex.get(index);
+      const nextWidth = remainingWidth * weight / remainingWeight;
 
-  flexibleIndexes.forEach((index, flexibleIndex) => {
-    pressureAdjustedWidths[index] = flexibleWidth + desiredExtraWidths[flexibleIndex];
-  });
-  donorIndexes.forEach(index => {
-    pressureAdjustedWidths[index] = flexibleWidth - borrowedWidth;
-  });
+      if (nextWidth < SHRINKABLE_COLUMN_MIN_WIDTH_PX) {
+        adjustedWidths[index] = SHRINKABLE_COLUMN_MIN_WIDTH_PX;
+        constrainedIndexes.add(index);
+        remainingWidth -= SHRINKABLE_COLUMN_MIN_WIDTH_PX;
+        remainingWeight -= weight;
+        constrainedThisPass = true;
+      }
+    });
 
-  if (pressureAdjustedWidths.some((width, index) =>
-    shrinkableColumns[index] && width < SHRINKABLE_COLUMN_MIN_WIDTH_PX
-  )) {
-    return equalFlexibleWidths;
+    if (!constrainedThisPass) break;
   }
 
-  return pressureAdjustedWidths;
+  flexibleIndexes.forEach(index => {
+    if (constrainedIndexes.has(index)) return;
+    const weight = proportionalWidthsByIndex.get(index);
+    adjustedWidths[index] = remainingWidth * weight / remainingWeight;
+  });
+
+  return adjustedWidths;
 }
 
 function getWidthSum(widths) {
@@ -920,8 +955,48 @@ function resolveAppliedColumnWidth({ column, snapResult, observedWidth, observed
   return Math.max(...candidates);
 }
 
-function getColumnWidthCaps(widths) {
-  return widths.map((width, index) => {
+function clamp(number, min, max) {
+  return Math.min(max, Math.max(min, number));
+}
+
+function getTextHeavyRelaxationFactor(columnSizes, index) {
+  const columnContentWidth = columnSizes[index]?.maxUnitContentWidth;
+  if (!isFinite(columnContentWidth) || columnContentWidth <= 0) return 0;
+
+  const otherColumns = columnSizes.filter((_, otherIndex) => otherIndex !== index);
+  const otherContentWidths = otherColumns
+    .map(column => column?.maxUnitContentWidth)
+    .filter(width => isFinite(width) && width > 0);
+
+  if (!otherContentWidths.length) return 0;
+
+  const nextLargestContentWidth = Math.max(...otherContentWidths);
+  const contentRatio = columnContentWidth > nextLargestContentWidth
+    ? columnContentWidth / nextLargestContentWidth
+    : 1;
+  const ratioFactor = clamp((contentRatio - 1) / 4, 0, 1);
+  const excessContentWidth = Math.max(0, columnContentWidth - nextLargestContentWidth);
+  const excessFactor = clamp(excessContentWidth / RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX, 0, 1);
+  const widthFactor = Math.min(ratioFactor, excessFactor);
+
+  const columnContentHeight = columnSizes[index]?.aggregateContentHeight;
+  const otherContentHeights = otherColumns
+    .map(column => column?.aggregateContentHeight)
+    .filter(height => isFinite(height) && height > 0);
+  const nextLargestContentHeight = otherContentHeights.length ? Math.max(...otherContentHeights) : NaN;
+  const heightRatio = isFinite(columnContentHeight) &&
+    columnContentHeight > 0 &&
+    isFinite(nextLargestContentHeight) &&
+    nextLargestContentHeight > 0
+    ? columnContentHeight / nextLargestContentHeight
+    : 1;
+  const heightFactor = clamp((heightRatio - 1) / 4, 0, 1);
+
+  return Math.max(widthFactor, heightFactor);
+}
+
+function getColumnWidthCaps(widths, columnSizes = [], containerWidth) {
+  const baseCaps = widths.map((width, index) => {
     const otherWidths = widths.filter((_, otherIndex) => otherIndex !== index);
     const nextLargestWidth = otherWidths.length ? Math.max(...otherWidths) : NaN;
     const relativeCap = isFinite(nextLargestWidth) && nextLargestWidth > 0
@@ -931,12 +1006,64 @@ function getColumnWidthCaps(widths) {
     return {
       absoluteCap: ABSOLUTE_COLUMN_WIDTH_CAP_PX,
       relativeCap,
-      appliedCap: Math.min(ABSOLUTE_COLUMN_WIDTH_CAP_PX, relativeCap)
+      appliedCap: Math.min(ABSOLUTE_COLUMN_WIDTH_CAP_PX, relativeCap),
+      relaxationFactor: 0
+    };
+  });
+
+  const baseCappedWidth = widths.reduce((sum, width, index) =>
+    sum + Math.min(width, baseCaps[index].appliedCap), 0);
+  const availableSpareWidth = isFinite(containerWidth) && containerWidth > 0
+    ? Math.max(0, containerWidth - baseCappedWidth)
+    : 0;
+
+  return widths.map((width, index) => {
+    const otherWidths = widths.filter((_, otherIndex) => otherIndex !== index);
+    const nextLargestWidth = otherWidths.length ? Math.max(...otherWidths) : NaN;
+    const baseCap = baseCaps[index];
+    const relaxationFactor = width > baseCap.appliedCap && availableSpareWidth > 0
+      ? getTextHeavyRelaxationFactor(columnSizes, index)
+      : 0;
+    const relaxedAbsoluteCap = ABSOLUTE_COLUMN_WIDTH_CAP_PX + Math.min(
+      RELAXED_ABSOLUTE_COLUMN_WIDTH_CAP_PX - ABSOLUTE_COLUMN_WIDTH_CAP_PX,
+      availableSpareWidth * SPARE_WIDTH_RELAXATION_SHARE * relaxationFactor
+    );
+    const relativeDelta = RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX + (
+      (RELAXED_RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX - RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX) *
+      relaxationFactor
+    );
+    const relativeCap = isFinite(nextLargestWidth) && nextLargestWidth > 0
+      ? nextLargestWidth + relativeDelta
+      : relaxedAbsoluteCap;
+
+    return {
+      absoluteCap: relaxedAbsoluteCap,
+      relativeCap,
+      appliedCap: Math.min(relaxedAbsoluteCap, relativeCap),
+      relaxationFactor
     };
   });
 }
 
-function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitContainerWidth } = {}) {
+function setDatasetFlag(element, key, enabled) {
+  if (enabled) {
+    element.dataset[key] = 'true';
+  } else {
+    delete element.dataset[key];
+  }
+}
+
+function setDatasetValues(element, values, enabled) {
+  Object.entries(values).forEach(([key, value]) => {
+    if (enabled) {
+      element.dataset[key] = String(value);
+    } else {
+      delete element.dataset[key];
+    }
+  });
+}
+
+function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { capContainerWidth, fitContainerWidth } = {}) {
   const { columnSnapResults } = snapPlan;
   const logicalColumnCount = getLogicalColumnCount([...tableElement.rows]);
   const columnCount = Math.max(columnSizes.length, logicalColumnCount);
@@ -946,58 +1073,89 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
   const observedWidths = getObservedColumnBoxWidths(tableElement, columnCount);
   const observedScrollWidths = getObservedColumnScrollWidths(tableElement, columnCount);
 
-  let widths = Array.from({ length: columnCount }, (_, index) => {
+  const columns = Array.from({ length: columnCount }, (_, index) => {
     const column = columnSizes[index];
     const snapResult = columnSnapResults[index];
     const observedWidth = observedWidths[index];
     const observedScrollWidth = observedScrollWidths[index];
-    return resolveAppliedColumnWidth({
+    return {
+      index,
       column,
       snapResult,
       observedWidth,
-      observedScrollWidth
-    });
+      observedScrollWidth,
+      naturalWidth: resolveAppliedColumnWidth({
+        column,
+        snapResult,
+        observedWidth,
+        observedScrollWidth
+      })
+    };
   });
 
-  const validWidths = widths.filter(width => isFinite(width) && width > 0);
+  const validWidths = columns
+    .map(column => column.naturalWidth)
+    .filter(width => isFinite(width) && width > 0);
   const averageWidth = validWidths.length
     ? validWidths.reduce((sum, width) => sum + width, 0) / validWidths.length
     : 120;
 
-  widths = widths.map(width => (isFinite(width) && width > 0 ? width : averageWidth));
+  columns.forEach(column => {
+    column.naturalWidth = isFinite(column.naturalWidth) && column.naturalWidth > 0
+      ? column.naturalWidth
+      : averageWidth;
 
-  const unsnappedWidths = Array.from({ length: columnCount }, (_, index) => {
-    const column = columnSizes[index];
-    const observedWidth = observedWidths[index];
-    const observedScrollWidth = observedScrollWidths[index];
-    return resolveAppliedColumnWidth({
-      column,
+    const unsnappedWidth = resolveAppliedColumnWidth({
+      column: column.column,
       snapResult: null,
-      observedWidth,
-      observedScrollWidth
+      observedWidth: column.observedWidth,
+      observedScrollWidth: column.observedScrollWidth
     });
-  }).map((width, index) => (isFinite(width) && width > 0 ? width : widths[index]));
+    column.unsnappedWidth = isFinite(unsnappedWidth) && unsnappedWidth > 0
+      ? unsnappedWidth
+      : column.naturalWidth;
+  });
 
-  const columnWidthCaps = getColumnWidthCaps(widths);
-  const cappedWidths = widths.map((width, index) =>
-    width > columnWidthCaps[index].appliedCap ? columnWidthCaps[index].appliedCap : width
-  );
+  const naturalWidths = columns.map(column => column.naturalWidth);
+  const columnWidthCaps = getColumnWidthCaps(naturalWidths, columnSizes, capContainerWidth);
+  columns.forEach(column => {
+    const cap = columnWidthCaps[column.index];
+    column.widthCap = cap;
+    column.cappedWidth = column.naturalWidth > cap.appliedCap
+      ? cap.appliedCap
+      : column.naturalWidth;
+  });
+
   const shrinkableColumns = getShrinkableColumns(tableElement, columnCount);
   const atomicReadableColumns = getAtomicReadableColumns(tableElement, columnCount, shrinkableColumns);
   const { widths: readableWidths, minAmounts } = applyReadableMinimumWidths(
-    cappedWidths,
+    columns.map(column => column.cappedWidth),
     atomicReadableColumns
   );
   const { widths: readableUnsnappedWidths } = applyReadableMinimumWidths(
-    unsnappedWidths,
+    columns.map(column => column.unsnappedWidth),
     atomicReadableColumns
   );
-  const adjustedFlexibleWidths = getAdjustedFlexibleColumnWidths(
+  columns.forEach(column => {
+    column.isShrinkable = shrinkableColumns[column.index];
+    column.isAtomicReadable = atomicReadableColumns[column.index];
+    column.readableWidth = readableWidths[column.index];
+    column.readableUnsnappedWidth = readableUnsnappedWidths[column.index];
+    column.readableMinAmount = minAmounts[column.index];
+  });
+
+  const adjustedFlexibleWidths = getProportionalFlexibleColumnWidths(
     readableWidths,
     shrinkableColumns,
-    fitContainerWidth
+    fitContainerWidth,
+    naturalWidths
   );
   const fittingWidths = adjustedFlexibleWidths || readableWidths;
+  columns.forEach(column => {
+    column.wasFlexAdjusted = Boolean(adjustedFlexibleWidths && column.isShrinkable);
+    column.fittingWidth = fittingWidths[column.index];
+  });
+
   const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
     fittingWidths,
     shrinkableColumns,
@@ -1009,71 +1167,59 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { fitCo
     columnSnapResults,
     fitContainerWidth
   );
+  columns.forEach(column => {
+    column.shrunkWidth = shrunkWidths[column.index];
+    column.shrinkAmount = shrinkAmounts[column.index];
+    column.finalWidth = finalWidths[column.index];
+    column.unsnapAmount = unsnapAmounts[column.index];
+  });
 
-  finalWidths.forEach((width, index) => {
-    if (cappedWidths[index] !== widths[index]) {
-      const { absoluteCap, relativeCap, appliedCap } = columnWidthCaps[index];
-      colgroup.children[index].dataset.columnWidthCapped = 'true';
-      colgroup.children[index].dataset.uncappedColumnWidth = String(widths[index]);
-      colgroup.children[index].dataset.maxColumnWidth = String(appliedCap);
-      colgroup.children[index].dataset.absoluteColumnWidthCap = String(absoluteCap);
-      colgroup.children[index].dataset.relativeColumnWidthCap = String(relativeCap);
-    } else {
-      delete colgroup.children[index].dataset.columnWidthCapped;
-      delete colgroup.children[index].dataset.uncappedColumnWidth;
-      delete colgroup.children[index].dataset.maxColumnWidth;
-      delete colgroup.children[index].dataset.absoluteColumnWidthCap;
-      delete colgroup.children[index].dataset.relativeColumnWidthCap;
-    }
-    if (atomicReadableColumns[index]) {
-      colgroup.children[index].dataset.columnAtomicReadable = 'true';
-    } else {
-      delete colgroup.children[index].dataset.columnAtomicReadable;
-    }
-    if (minAmounts[index] > 0) {
-      colgroup.children[index].dataset.columnReadableMinApplied = 'true';
-      colgroup.children[index].dataset.preReadableMinColumnWidth = String(cappedWidths[index]);
-      colgroup.children[index].dataset.readableMinColumnWidth = String(ATOMIC_COLUMN_MIN_WIDTH_PX);
-    } else {
-      delete colgroup.children[index].dataset.columnReadableMinApplied;
-      delete colgroup.children[index].dataset.preReadableMinColumnWidth;
-      delete colgroup.children[index].dataset.readableMinColumnWidth;
-    }
-    if (shrinkableColumns[index]) {
-      colgroup.children[index].dataset.columnShrinkable = 'true';
-    } else {
-      delete colgroup.children[index].dataset.columnShrinkable;
-    }
-    if (shrinkAmounts[index] > 0) {
-      colgroup.children[index].dataset.columnWidthShrunk = 'true';
-      colgroup.children[index].dataset.preShrinkColumnWidth = String(fittingWidths[index]);
-      colgroup.children[index].dataset.columnShrinkAmount = String(shrinkAmounts[index]);
-      colgroup.children[index].dataset.minShrinkableColumnWidth = String(SHRINKABLE_COLUMN_MIN_WIDTH_PX);
-    } else {
-      delete colgroup.children[index].dataset.columnWidthShrunk;
-      delete colgroup.children[index].dataset.preShrinkColumnWidth;
-      delete colgroup.children[index].dataset.columnShrinkAmount;
-      delete colgroup.children[index].dataset.minShrinkableColumnWidth;
-    }
-    if (unsnapAmounts[index] > 0) {
-      colgroup.children[index].dataset.columnWidthUnsnapped = 'true';
-      colgroup.children[index].dataset.snappedColumnWidth = String(shrunkWidths[index]);
-      colgroup.children[index].dataset.unsnappedColumnWidth = String(readableUnsnappedWidths[index]);
-      colgroup.children[index].dataset.columnUnsnapSavings = String(unsnapAmounts[index]);
-    } else {
-      delete colgroup.children[index].dataset.columnWidthUnsnapped;
-      delete colgroup.children[index].dataset.snappedColumnWidth;
-      delete colgroup.children[index].dataset.unsnappedColumnWidth;
-      delete colgroup.children[index].dataset.columnUnsnapSavings;
-    }
-    if (adjustedFlexibleWidths && shrinkableColumns[index]) {
-      colgroup.children[index].dataset.columnWidthFlexAdjusted = 'true';
-      colgroup.children[index].dataset.preFlexAdjustedColumnWidth = String(readableWidths[index]);
-    } else {
-      delete colgroup.children[index].dataset.columnWidthFlexAdjusted;
-      delete colgroup.children[index].dataset.preFlexAdjustedColumnWidth;
-    }
-    colgroup.children[index].style.width = width + 'px';
+  columns.forEach(column => {
+    const colElement = colgroup.children[column.index];
+
+    const isCapped = column.cappedWidth !== column.naturalWidth;
+    setDatasetFlag(colElement, 'columnWidthCapped', isCapped);
+    setDatasetValues(colElement, {
+      uncappedColumnWidth: column.naturalWidth,
+      maxColumnWidth: column.widthCap.appliedCap,
+      absoluteColumnWidthCap: column.widthCap.absoluteCap,
+      relativeColumnWidthCap: column.widthCap.relativeCap,
+      columnWidthRelaxationFactor: column.widthCap.relaxationFactor
+    }, isCapped);
+
+    setDatasetFlag(colElement, 'columnAtomicReadable', column.isAtomicReadable);
+
+    const hasReadableMin = column.readableMinAmount > 0;
+    setDatasetFlag(colElement, 'columnReadableMinApplied', hasReadableMin);
+    setDatasetValues(colElement, {
+      preReadableMinColumnWidth: column.cappedWidth,
+      readableMinColumnWidth: ATOMIC_COLUMN_MIN_WIDTH_PX
+    }, hasReadableMin);
+
+    setDatasetFlag(colElement, 'columnShrinkable', column.isShrinkable);
+
+    const wasShrunk = column.shrinkAmount > 0;
+    setDatasetFlag(colElement, 'columnWidthShrunk', wasShrunk);
+    setDatasetValues(colElement, {
+      preShrinkColumnWidth: column.fittingWidth,
+      columnShrinkAmount: column.shrinkAmount,
+      minShrinkableColumnWidth: SHRINKABLE_COLUMN_MIN_WIDTH_PX
+    }, wasShrunk);
+
+    const wasUnsnapped = column.unsnapAmount > 0;
+    setDatasetFlag(colElement, 'columnWidthUnsnapped', wasUnsnapped);
+    setDatasetValues(colElement, {
+      snappedColumnWidth: column.shrunkWidth,
+      unsnappedColumnWidth: column.readableUnsnappedWidth,
+      columnUnsnapSavings: column.unsnapAmount
+    }, wasUnsnapped);
+
+    setDatasetFlag(colElement, 'columnWidthFlexAdjusted', column.wasFlexAdjusted);
+    setDatasetValues(colElement, {
+      preFlexAdjustedColumnWidth: column.readableWidth
+    }, column.wasFlexAdjusted);
+
+    colElement.style.width = column.finalWidth + 'px';
   });
 
   const totalWidth = getWidthSum(finalWidths);
