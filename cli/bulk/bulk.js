@@ -1,5 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
+const path = require('path');
 const { fzfSelect } = require('../shared/pickers');
 const chokidar = require('chokidar');
 const {
@@ -22,6 +23,7 @@ const { getExplFileObjects } = require('../build/components/fs-helpers');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
+  if (options.all && !options.finish) options.sync = true;
   if (options.sync) options.translateError = (err, opts) => translateWatchErrorToBulk(err, opts);
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
@@ -77,6 +79,19 @@ const bulk = async function(selectedFileList, options = {}) {
         .filter(Boolean)
     );
   }
+
+  if (options.all) {
+    selectedFileList = selectedFileList.concat(getRecursiveSubdirectoryFiles('topics').filter(filePath => filePath.endsWith('.expl')));
+  }
+
+  selectedFileList = resolveSelectedFiles(selectedFileList, options);
+  let finishSelectionProvided = options.finish && (
+    options.all ||
+    options.pick ||
+    options.git ||
+    options.search ||
+    selectedFileList.length > 0
+  );
 
   if (selectedFileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
@@ -140,8 +155,6 @@ const bulk = async function(selectedFileList, options = {}) {
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName); // put this last to preserve in case of error
   }
 
-  selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
-
   let normalMode = !options.resume && !options.start && !options.finish && !options.sync;
   if (normalMode) {
     setUpBulkFile({ storeOriginalSelection: false, selectedFileList });
@@ -166,7 +179,10 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   if (options.finish) { // non-editor mode
-    handleFinish({ deleteBulkFile: true });
+    handleFinish({
+      originalSelectedFilesList: finishSelectionProvided ? selectedFileList : undefined,
+      deleteBulkFile: true
+    });
   }
 
   if (options.sync) {
@@ -332,4 +348,26 @@ function touchDefaultTopicOnInvalidBuild({ defaultTopicPath, newFileSet, log }) 
 
 function ensureBulkFileName(options) {
   if (!options.bulkFileName) options.bulkFileName = DefaultTopic.bulkFileName;
+}
+
+function resolveSelectedFiles(selectedFileList, options = {}) {
+  return [...new Set(selectedFileList.flatMap(selectedPath => {
+    let topicPathMatch = String(selectedPath).match(/(topics\/.*)/);
+    if (!topicPathMatch) return [];
+
+    let topicPath = topicPathMatch[1].replace(/\/+$/, '');
+    if (!fs.existsSync(topicPath)) return [topicPath];
+
+    if (fs.statSync(topicPath).isDirectory()) {
+      let directoryFiles = options.recursive
+        ? getRecursiveSubdirectoryFiles(topicPath)
+        : fs.readdirSync(topicPath)
+          .map(fileName => path.join(topicPath, fileName))
+          .filter(filePath => fs.existsSync(filePath) && fs.statSync(filePath).isFile());
+
+      return directoryFiles.filter(filePath => filePath.endsWith('.expl'));
+    }
+
+    return topicPath.endsWith('.expl') ? [topicPath] : [];
+  }))];
 }

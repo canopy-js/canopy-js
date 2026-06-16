@@ -508,6 +508,8 @@ You can run `canopy bulk` to start a bulk session in your default editor. If you
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
+If you run `canopy bulk --finish` without supplying a file selection, Canopy will only overwrite files represented in the bulk file and will not delete omitted topic files. To intentionally let the bulk file replace all topic files or a selected segment, pass selection options to `--finish`, for example `canopy bulk --finish --all` or `canopy bulk --finish topics/Category_A --recursive`.
+
 If you want to open an editor and make changes in an ongoing fashion, periodically saving changes and watching the result load in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this so that you can see the session logs in the terminal.
 
 For example:

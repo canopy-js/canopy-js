@@ -1514,6 +1514,66 @@ describe('bulk', function() {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  test('finish with --all treats every topic file as selected and deletes omitted disk files', async () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-'));
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/A/A.expl', 'A: Old data.\n');
+      writeFileSyncEnsuringDir('topics/B/B.expl', 'B: Omitted disk file.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/A/A.expl\n');
+      fs.writeFileSync('canopy_bulk_file.bulk', '[A]\n\n* A: New data.\n');
+
+      await bulk([], {
+        finish: true,
+        all: true,
+        bulkFileName: 'canopy_bulk_file.bulk',
+        logging: false,
+        noBackup: true
+      });
+
+      expect(fs.readFileSync('topics/A/A.expl', 'utf8')).toBe('A: New data.\n');
+      expect(fs.existsSync('topics/B/B.expl')).toBe(false);
+      expect(fs.existsSync('canopy_bulk_file.bulk')).toBe(false);
+      expect(fs.existsSync('.canopy_bulk_original_selection')).toBe(false);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('finish with a recursive directory selector deletes omitted files only within the selected directory', async () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-'));
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/A/Keep.expl', 'Keep: Old data.\n');
+      writeFileSyncEnsuringDir('topics/A/Delete.expl', 'Delete: Omitted selected file.\n');
+      writeFileSyncEnsuringDir('topics/A/Nested/Delete_nested.expl', 'Delete nested: Omitted selected file.\n');
+      writeFileSyncEnsuringDir('topics/B/Outside.expl', 'Outside: Omitted unselected file.\n');
+      fs.writeFileSync('canopy_default_topic', 'topics/A/Keep.expl\n');
+      fs.writeFileSync('canopy_bulk_file.bulk', '[A]\n\n* Keep: New data.\n');
+
+      await bulk(['topics/A'], {
+        finish: true,
+        recursive: true,
+        bulkFileName: 'canopy_bulk_file.bulk',
+        logging: false,
+        noBackup: true
+      });
+
+      expect(fs.readFileSync('topics/A/Keep.expl', 'utf8')).toBe('Keep: New data.\n');
+      expect(fs.existsSync('topics/A/Delete.expl')).toBe(false);
+      expect(fs.existsSync('topics/A/Nested/Delete_nested.expl')).toBe(false);
+      expect(fs.readFileSync('topics/B/Outside.expl', 'utf8')).toBe('Outside: Omitted unselected file.\n');
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('FileSystemManager', function() {
