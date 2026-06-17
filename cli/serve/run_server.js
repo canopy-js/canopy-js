@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 let chalk = require('chalk');
 const healthCheckPath = '/_canopy_health';
+const fatalListenErrorExitCode = 2;
 
 let buildPath =  process.cwd();
 if (!process.cwd().match(/build\/?$/)){
@@ -42,7 +43,8 @@ function runServer(port, logging) {
 
   server.on('error', (error) => {
     console.error(chalk.red(`Server child (pid ${process.pid}) HTTP server error: ${error.message}`));
-    process.exit(1);
+    const exitCode = isFatalListenError(error) ? fatalListenErrorExitCode : 1;
+    process.exit(exitCode);
   });
 
   const shutdown = () => {
@@ -77,3 +79,7 @@ function runServer(port, logging) {
 }
 
 module.exports = runServer;
+
+function isFatalListenError(error) {
+  return error && ['EADDRINUSE', 'EACCES'].includes(error.code);
+}

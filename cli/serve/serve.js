@@ -9,6 +9,7 @@ const pollIntervalMs = 500;
 const healthCheckIntervalMs = 5000;
 const healthCheckTimeoutMs = 2000;
 const healthCheckPath = '/_canopy_health';
+const fatalListenErrorExitCode = 2;
 
 function serve(options = {}) {
   const port = options.port || 4001;
@@ -22,11 +23,13 @@ function serve(options = {}) {
     child: null,
     restarting: false,
     missingBuildWarned: false,
+    fatalListenError: false,
     healthCheckInFlight: false,
     shuttingDown: false
   };
 
   const ensureServerState = () => {
+    if (state.fatalListenError) return;
     if (!hasValidBuild()) return handleMissingBuild(state);
     return ensureRunning(state, port, options, hasValidBuild, ensureServerState);
   };
@@ -65,11 +68,13 @@ function getBuildState() {
 }
 
 function startServerIfReady(state, port, options, hasValidBuild, ensureServerState) {
+  if (state.fatalListenError) return;
   if (!hasValidBuild()) return;
   startChild(state, port, options, hasValidBuild, ensureServerState);
 }
 
 function ensureRunning(state, port, options, hasValidBuild, ensureServerState) {
+  if (state.fatalListenError) return;
   if (state.child || state.restarting) return;
   if (options.logging) console.log(chalk.gray(`Server child is not present; starting replacement on port ${port}`));
   state.restarting = true;
@@ -102,6 +107,11 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
 
   child.on('exit', (code, signal) => {
     if (state.child === child) state.child = null;
+    if (code === fatalListenErrorExitCode) {
+      state.fatalListenError = true;
+      console.error(chalk.red(`Server cannot listen on port ${port}; not restarting. Choose another port or stop the process currently using it.`));
+      return;
+    }
 
     if (options.logging) {
       const reason = signal ? `signal ${signal}` : `code ${code}`;
@@ -114,7 +124,7 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
   child.on('error', (error) => {
     if (state.child === child) state.child = null;
     console.error(chalk.red(`Server child pid ${child.pid || 'unknown'} failed under parent pid ${process.pid}: ${error.message}`));
-      if (!state.shuttingDown && hasValidBuild()) ensureServerState();
+    if (!state.shuttingDown && hasValidBuild()) ensureServerState();
   });
 
   child.on('close', (code, signal) => {
@@ -131,7 +141,10 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
 
 function stopChild(state) {
   if (!state.child) return;
-  try { state.child.kill('SIGTERM'); } catch (_) { /* ignore */ }
+  try {
+    const signaled = state.child.kill('SIGTERM');
+    if (!signaled) state.child = null;
+  } catch (_) { /* ignore */ }
   state.child = null;
 }
 
@@ -170,6 +183,7 @@ function registerShutdown(options, fn) {
 
 function healthCheck(state, port, options, hasValidBuild, ensureServerState) {
   if (state.shuttingDown || state.healthCheckInFlight) return;
+  if (state.fatalListenError) return;
   if (!hasValidBuild()) return;
   if (!state.child) {
     if (options.logging) console.log(chalk.gray(`Health check found no server child on port ${port}; restarting`));
@@ -208,7 +222,11 @@ function restartChild(state, options) {
   if (!state.child || state.shuttingDown) return;
   if (options.logging) console.log(chalk.gray(`Requesting restart for child pid ${state.child.pid}`));
   try {
-    state.child.kill('SIGTERM');
+    const signaled = state.child.kill('SIGTERM');
+    if (!signaled) {
+      if (options.logging) console.log(chalk.gray(`Server child pid ${state.child.pid} was already gone`));
+      state.child = null;
+    }
   } catch (error) {
     console.error(chalk.red(`Could not stop server child pid ${state.child.pid}: ${error.message}`));
     state.child = null;

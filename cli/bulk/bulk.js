@@ -196,7 +196,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     if (!process.env['CANOPY_EDITOR']) console.log(chalk.bgYellow(chalk.black('Try setting your CANOPY_EDITOR environment variable so that Canopy knows which editor to use for bulk sync')));
 
-    if (['emacs', 'vim', 'nano', undefined].includes(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
+    if (isTerminalEditor(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
     }
 
@@ -317,6 +317,13 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
       }
     });
   });
+}
+
+function isTerminalEditor(editorCmd) {
+  if (!editorCmd) return false;
+  let command = editorCmd.trim().split(/\s+/)[0];
+  command = path.basename(command);
+  return ['emacs', 'vim', 'vi', 'nano'].includes(command);
 }
 
 module.exports = bulk;
