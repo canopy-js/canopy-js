@@ -3,6 +3,7 @@ let dedent = require('dedent-js');
 let chalk = require('chalk');
 let stripAnsi = require('strip-ansi');
 const Topic = require('../../shared/topic');
+const { staticBuildPath } = require('../../shared/build_paths');
 
 function asFileObjects(fileContentsByPath) {
   return Object.fromEntries(
@@ -10,9 +11,9 @@ function asFileObjects(fileContentsByPath) {
   );
 }
 
-const idahoJsonPath = () => `build/_data/${Topic.for('Idaho').jsonFileName}.json`;
-const servicesJsonPath = () => `build/_data/${Topic.for('Services').jsonFileName}.json`;
-const wyomingJsonPath = () => `build/_data/${Topic.for('Wyoming').jsonFileName}.json`;
+const idahoJsonPath = () => staticBuildPath('_data', `${Topic.for('Idaho').jsonFileName}.json`);
+const servicesJsonPath = () => staticBuildPath('_data', `${Topic.for('Services').jsonFileName}.json`);
+const wyomingJsonPath = () => staticBuildPath('_data', `${Topic.for('Wyoming').jsonFileName}.json`);
 
 function expectThrowContains(fn, substrings) {
   try {
@@ -60,7 +61,7 @@ test('it creates a data directory', () => {
   };
   let { filesToWrite, directoriesToEnsure } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho', {});
 
-  expect(directoriesToEnsure).toEqual(['build/_data']);
+  expect(directoriesToEnsure).toEqual([staticBuildPath('_data')]);
 });
 
 test('it creates text tokens', () => {

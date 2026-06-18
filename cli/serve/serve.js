@@ -4,6 +4,7 @@ const http = require('http');
 const chalk = require('chalk');
 const path = require('path');
 const chokidar = require('chokidar');
+const { staticBuildDirectory } = require('../shared/build_paths');
 
 const pollIntervalMs = 500;
 const healthCheckIntervalMs = 5000;
@@ -56,7 +57,7 @@ function serve(options = {}) {
 module.exports = serve;
 
 function getBuildState() {
-  const buildRoot = path.resolve(process.cwd(), 'build');
+  const buildRoot = path.resolve(process.cwd(), staticBuildDirectory);
   const buildChecks = [
     buildRoot,
     path.join(buildRoot, 'index.html'),
@@ -99,7 +100,8 @@ function startChild(state, port, options, hasValidBuild, ensureServerState) {
       ...process.env,
       PORT: String(port),
       LOGGING: options.logging ? '1' : '0',
-      OPEN: options.open ? '1' : '0'
+      OPEN: options.open ? '1' : '0',
+      BUILD_ROOT: path.resolve(process.cwd(), staticBuildDirectory)
     }
   });
   const child = state.child;

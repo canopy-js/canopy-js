@@ -1,13 +1,13 @@
 var express = require('express');
 var app = express();
 let chalk = require('chalk');
+let path = require('path');
+let { staticBuildDirectory } = require('../shared/build_paths');
 const healthCheckPath = '/_canopy_health';
 const fatalListenErrorExitCode = 2;
 
-let buildPath =  process.cwd();
-if (!process.cwd().match(/build\/?$/)){
-  buildPath += '/build/';
-}
+let buildPath = process.env.BUILD_ROOT || path.resolve(process.cwd(), staticBuildDirectory);
+buildPath = path.join(buildPath, path.sep);
 
 let loggingFlag;
 

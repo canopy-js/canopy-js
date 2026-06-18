@@ -6,6 +6,7 @@ const { spawnSync, execFileSync } = require('child_process');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
+let { buildRoot, staticBuildDirectory, singleFileBuildDirectory, staticBuildPath, singleFileBuildPath } = require('./shared/build_paths');
 let Topic = require('./shared/topic');
 let os = require('os');
 
@@ -16,10 +17,11 @@ function build(options = {}) {
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
   if (replaceBuildDirectory) {
-    fs.rmSync('build', { recursive: true, force: true });
+    fs.rmSync(buildRoot, { recursive: true, force: true });
   }
 
-  fs.ensureDirSync('build');
+  fs.ensureDirSync(staticBuildDirectory);
+  removeLegacyStaticBuildFiles();
 
   refreshAssetsDirectory();
 
@@ -27,10 +29,10 @@ function build(options = {}) {
     throw new Error(chalk.red('No Canopy.js asset found'));
   }
 
-  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
+  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, staticBuildPath('_canopy.js'));
 
   if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
-    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, staticBuildPath('_canopy.js.map'));
   }
 
   if (!options.skipInitialBuild) {
@@ -41,7 +43,7 @@ function build(options = {}) {
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
     tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
-    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
+    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic, logging: options.logging });
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache && !options.deferFullBuild) {
@@ -57,17 +59,17 @@ function build(options = {}) {
   }
 
   if (symlinks) {
-    let topicDirectories = getDirectories('build');
+    let topicDirectories = getDirectories(staticBuildDirectory);
     topicDirectories.forEach((currentTopicDirectory) => {
       topicDirectories.forEach((targetTopicDirectory) => {
         if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
-        fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
-        if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
-          fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+        fs.copyFileSync(staticBuildPath('index.html'), staticBuildPath(currentTopicDirectory, 'index.html'));
+        if (!fs.existsSync(staticBuildPath(currentTopicDirectory, targetTopicDirectory))) {
+          fs.symlinkSync(staticBuildPath(targetTopicDirectory), staticBuildPath(currentTopicDirectory, targetTopicDirectory));
         }
       });
-      if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
-        fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
+      if (!fs.existsSync(staticBuildPath(currentTopicDirectory, '_assets'))) {
+        fs.symlinkSync(staticBuildPath('_assets'), staticBuildPath(currentTopicDirectory, '_assets'));
       }
     });
   }
@@ -100,11 +102,22 @@ function runFullBuildInChild(options) {
 
 function refreshAssetsDirectory() {
   if (fs.existsSync('assets')) {
-    fs.copySync('assets', 'build/_assets', {
+    fs.copySync('assets', staticBuildPath('_assets'), {
       overwrite: true,
       filter: (source) => !isSkippableAssetMetadataFile(source)
     });
   }
+}
+
+function removeLegacyStaticBuildFiles() {
+  [
+    'index.html',
+    '_canopy.js',
+    '_canopy.js.map',
+    '_data',
+    '_assets',
+    '_file'
+  ].forEach(filePath => fs.rmSync(path.join(buildRoot, filePath), { recursive: true, force: true }));
 }
 
 function isSkippableAssetMetadataFile(filePath) {
@@ -119,7 +132,7 @@ function isSkippableAssetMetadataFile(filePath) {
   );
 }
 
-function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
+function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic, logging }) {
   if (manualHtml) return;
 
   const favicon = fs.existsSync(`assets/favicon.ico`);
@@ -128,7 +141,7 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
   const customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
   const customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
   const customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
-  const defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`);
+  const defaultTopicJson = fs.readFileSync(staticBuildPath('_data', `${defaultTopic.jsonFileName}.json`));
 
   const html = dedent`
     <!DOCTYPE html>
@@ -156,8 +169,8 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
     dedent`</body>
     </html>\n`;
 
-  fs.writeFileSync('build/index.html', html);
-  console.log(chalk.yellow(`Wrote to index.html at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+  fs.writeFileSync(staticBuildPath('index.html'), html);
+  if (logging) console.log(chalk.yellow(`Wrote to ${staticBuildPath('index.html')} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options }) {
@@ -168,8 +181,8 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   const customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`, 'utf8');
   const customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`, 'utf8');
   const customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`, 'utf8');
-  const defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`, 'utf8');
-  const canopyJs = fs.readFileSync('build/_canopy.js', 'utf8').replace(/<\/script/gi, '<\\/script');
+  const defaultTopicJson = fs.readFileSync(staticBuildPath('_data', `${defaultTopic.jsonFileName}.json`), 'utf8');
+  const canopyJs = fs.readFileSync(staticBuildPath('_canopy.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
 
   const assetMap = buildAssetDataUriMap();
   const remoteAssetCache = {};
@@ -184,7 +197,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging);
   };
 
-  const dataDir = 'build/_data';
+  const dataDir = staticBuildPath('_data');
   const jsonScripts = fs.readdirSync(dataDir)
     .filter(filePath => filePath.endsWith('.json'))
     .map(filePath => {
@@ -193,12 +206,12 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
       return `<script type="application/json" data-topic-json="${filePath}">\n${inlined}\n</script>`;
     }).join('\n');
 
-  const singleFileDir = path.join('build', '_file');
+  const singleFileDir = singleFileBuildDirectory;
   fs.ensureDirSync(singleFileDir);
 
   const outputPath = typeof options.file === 'string'
-    ? (path.isAbsolute(options.file) ? options.file : path.join('build', options.file))
-    : path.join(singleFileDir, `${defaultTopic.topicFileName}.html`);
+    ? (path.isAbsolute(options.file) ? options.file : singleFileBuildPath(options.file))
+    : singleFileBuildPath(`${defaultTopic.topicFileName}.html`);
 
   const html = dedent`
     <!DOCTYPE html>
@@ -230,11 +243,11 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     </html>\n`;
 
   fs.writeFileSync(outputPath, html);
-  console.log(chalk.hex('#FFA500')(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+  if (options.logging) console.log(chalk.hex('#FFA500')(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function buildAssetDataUriMap() {
-  const assetsRoot = 'build/_assets';
+  const assetsRoot = staticBuildPath('_assets');
   if (!fs.existsSync(assetsRoot)) return {};
 
   const map = {};

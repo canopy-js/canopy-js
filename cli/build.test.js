@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 
 const build = require('./build');
+const { staticBuildPath } = require('./shared/build_paths');
 
 function writeProjectFile(filePath, contents) {
   fs.ensureDirSync(path.dirname(filePath));
@@ -27,7 +28,7 @@ describe('build assets', () => {
 
       build({ logging: false });
 
-      expect(fs.readFileSync('build/_assets/custom.js', 'utf8')).toBe('window.assetVersion = "new";\n');
+      expect(fs.readFileSync(staticBuildPath('_assets', 'custom.js'), 'utf8')).toBe('window.assetVersion = "new";\n');
     } finally {
       process.chdir(originalCwd);
       fs.rmSync(tmpDir, { recursive: true, force: true });

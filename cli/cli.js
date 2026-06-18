@@ -17,7 +17,7 @@ function addBuildOptions(cmd) {
     .option('-x, --replace-build-directory', 'Replace the build directory before building', false)
     .addOption(new Option('--cache', 'whether to build touched topics first')) // cache requires old files for time comparison
     .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-    .addOption(new Option('--file [output]', 'Also write a single-file HTML (default: build/<DefaultTopic>.html)').implies({ hashUrls: true }))
+    .addOption(new Option('--file [output]', 'Also write a single-file HTML (default: build/file/<DefaultTopic>.html)').implies({ hashUrls: true }))
     .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change'))
     .addOption(new Option('--pretty', 'Pretty print JSON'));
 }

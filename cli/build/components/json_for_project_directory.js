@@ -2,10 +2,10 @@ let jsonForExplFile = require('./json_for_expl_file.js');
 let { topicKeyOfString } = require('./simple-helpers');
 let ParserContext = require('./parser_context');
 let Topic = require('../../shared/topic');
+let { staticBuildPath } = require('../../shared/build_paths');
 
 function jsonForProjectDirectory(explFileObjectsByPath, defaultTopicString, options={}) {
-  let destinationBuildDirectory = 'build';
-  let destinationDataDirectory = destinationBuildDirectory + '/_data';
+  let destinationDataDirectory = staticBuildPath('_data');
   let parserContext = new ParserContext({ explFileObjectsByPath, defaultTopicString, options });
   let directoriesToEnsure = [];
   let filesToWrite = {};
@@ -25,7 +25,7 @@ function jsonForProjectDirectory(explFileObjectsByPath, defaultTopicString, opti
 
     if (options.symlinks) {
       let folderTopic = new Topic(topicKey);
-      directoriesToEnsure.push(destinationBuildDirectory + '/' + folderTopic.topicFileName);
+      directoriesToEnsure.push(staticBuildPath(folderTopic.topicFileName));
     }
   });
 

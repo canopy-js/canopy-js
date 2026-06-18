@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 const { pathToFileURL } = require('url');
+const { singleFileBuildPath } = require('../cli/shared/build_paths');
 
 let projectDir;
 const sourceProjectDir = path.join(__dirname, 'test_project');
@@ -13,7 +14,7 @@ let htmlPath;
 test.describe('single-file build', () => {
   test.beforeAll(() => {
     projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-single-file-'));
-    htmlPath = path.join(projectDir, 'build', '_file', `${defaultTopic}.html`);
+    htmlPath = path.join(projectDir, singleFileBuildPath(`${defaultTopic}.html`));
     fs.cpSync(sourceProjectDir, projectDir, { recursive: true, filter: src => !src.includes('.canopy_bulk_backups') });
     execSync('canopy build --hash-urls --file', { cwd: projectDir, stdio: 'ignore' });
   });

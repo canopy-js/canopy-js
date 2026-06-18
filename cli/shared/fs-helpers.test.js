@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 
 const { writeHtmlError } = require('./fs-helpers');
+const { staticBuildPath } = require('./build_paths');
 
 describe('fs-helpers writeHtmlError', () => {
   test('keeps subtopic header and ellipsis in the context block', () => {
@@ -27,7 +28,7 @@ describe('fs-helpers writeHtmlError', () => {
 
       writeHtmlError(new Error(errorMessage));
 
-      const html = fs.readFileSync(path.join('build', 'index.html'), 'utf8');
+      const html = fs.readFileSync(staticBuildPath('index.html'), 'utf8');
       const messageBlock = html.match(/<p[^>]*>([\s\S]*?)<\/p>/)?.[1] || '';
       const contextBlock = html.match(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || '';
 
@@ -58,7 +59,7 @@ describe('fs-helpers writeHtmlError', () => {
 
       writeHtmlError(new Error(errorMessage));
 
-      const html = fs.readFileSync(path.join('build', 'index.html'), 'utf8');
+      const html = fs.readFileSync(staticBuildPath('index.html'), 'utf8');
       const messageBlock = html.match(/<p[^>]*>([\s\S]*?)<\/p>/)?.[1] || '';
 
       expect(messageBlock).toContain('<code>[Foo, Bar]</code>');

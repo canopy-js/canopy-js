@@ -339,7 +339,9 @@ function handleWatchError(error, options = {}) {
 }
 
 function buildInErrorState() {
-  const html = fs.existsSync('build/index.html') ? fs.readFileSync('build/index.html', 'utf8') : '';
+  const { staticBuildPath } = require('../shared/build_paths');
+  const indexPath = staticBuildPath('index.html');
+  const html = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
   return !html || html.includes('Error building project');
 }
 
