@@ -107,6 +107,8 @@ function buildTableDOM(token, renderContext, renderTokenElements) {
       if (cellObject.hidden) tableCellElement.classList.add('hidden');
       if (cellObject.colspan) tableCellElement.setAttribute('colspan', cellObject.colspan);
       if (cellObject.rowspan) tableCellElement.setAttribute('rowspan', cellObject.rowspan);
+      if (cellObject.style) tableCellElement.setAttribute('style', cellObject.style);
+      if (cellObject.classNames) tableCellElement.classList.add(...cellObject.classNames);
 
       cellObject.tokens.forEach(token => {
         const tokenElements = renderTokenElements(token, renderContext);

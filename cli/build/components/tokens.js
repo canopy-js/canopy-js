@@ -241,6 +241,25 @@ function ListToken(text, parserContext) {
   }
 }
 
+function extractTableCellAttributes(cellString) {
+  let styles = [];
+  let classNames = [];
+  let text = cellString.replace(/(^|[^\\])\\style\s*=\s*"((?:\\.|[^"\\])*)"/g, (match, prefix, style) => {
+    styles.push(style.replace(/\\(["\\])/g, '$1'));
+    return prefix;
+  });
+  text = text.replace(/(^|[^\\])\\\.([A-Za-z0-9_-]+)/g, (match, prefix, className) => {
+    classNames.push(className);
+    return prefix;
+  });
+
+  return {
+    text,
+    style: styles.length ? styles.join('; ') : undefined,
+    classNames: classNames.length ? classNames : undefined
+  };
+}
+
 function TableToken(text, parserContext) {
   this.type = 'table';
   this.rows = [];
@@ -260,15 +279,17 @@ function TableToken(text, parserContext) {
 
           if (cellString.match(/^\s*\\x\s*$/)) return { tokens: [], hidden: true };
 
+          let { text: cellText, style, classNames } = extractTableCellAttributes(cellString);
+
           let earlierCharactersOnLine = ['|'] // first | on line
             .concat(
               cellsOfRow.slice(0, cellIndex).join('|'), // all the intermediary cell contents plus pipes
               cellIndex > 0 ? '|' : '' // the pipe before the current cell
             ).join('');
 
-          return {
+          let cellObject = {
             tokens: parseText({
-              text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+              text: cellText.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
               parserContext: parserContext.clone({
                 insideToken: true,
               })
@@ -276,6 +297,10 @@ function TableToken(text, parserContext) {
                 .incrementCharacterNumber(earlierCharactersOnLine.length + cellString.match(/^\s+/)?.[0].length) // count earlier chars and leading space
             })
           };
+
+          if (style) cellObject.style = style;
+          if (classNames) cellObject.classNames = classNames;
+          return cellObject;
         }
       );
       this.rows.push(cellObjects);

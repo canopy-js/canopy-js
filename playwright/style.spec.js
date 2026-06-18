@@ -490,6 +490,25 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
   });
 
+  test('It applies table cell style directives', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_cell_styles');
+
+    const section = page.locator('.canopy-selected-section');
+    const cells = section.locator('table tr td');
+
+    await expect(section).not.toContainText('\\style=');
+    await expect(section).not.toContainText('\\.');
+    await expect(cells.nth(0)).toHaveText('Plain');
+    await expect(cells.nth(1)).toHaveText('Red');
+    await expect(cells.nth(1)).toHaveCSS('color', 'rgb(255, 0, 0)');
+    await expect(cells.nth(2)).toHaveText('Mid cell');
+    await expect(cells.nth(2)).toHaveClass(/highlighted-cell/);
+    await expect(cells.nth(2)).toHaveCSS('background-color', 'rgb(0, 255, 0)');
+    await expect(cells.nth(3)).toHaveText('End');
+    await expect(cells.nth(3)).toHaveClass(/emphasized-cell/);
+    await expect(cells.nth(3)).toHaveCSS('font-weight', '700');
+  });
+
   test('It accepts table merge syntax', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_merge_syntax');
     await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);

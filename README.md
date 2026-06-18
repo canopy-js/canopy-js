@@ -375,6 +375,13 @@ if (x) y(); //This is a code block
 |  A   | B  | C |   D   |
 ````
 
+Cells can be styled with `\style="..."` and `\.className` directives. Directives can appear anywhere in the cell, are removed from the displayed text, and are applied to that cell.
+
+````
+| Normal | \style="color: red" Red text |
+| Label \style="background-color: yellow" \.highlight | *Styled* content |
+````
+
 #### Menus ####
 ````
 ===
