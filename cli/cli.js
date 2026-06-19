@@ -7,6 +7,7 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const note = require('./note');
 const bulk = require('./bulk/bulk');
+const electron = require('./electron');
 const program = new Command();
 
 function addBuildOptions(cmd) {
@@ -98,6 +99,23 @@ program.command('serve')
       serve(options);
     } catch (e) {
       if (options.error) throw e;
+      console.error(e.message);
+      process.exit(1);
+    }
+  });
+
+program.command('electron')
+  .description('build and run an Electron app for a Canopy project')
+  .option('--start', 'run the generated Electron app with electron-forge start')
+  .option('--package', 'package the generated Electron app with electron-forge package')
+  .option('--make', 'make distributable Electron artifacts with electron-forge make')
+  .option('--scaffold-only', 'only write build/electron without installing or running Electron')
+  .option('--no-install', 'skip npm install before running an Electron script')
+  .option('-l, --logging', 'print logs', true)
+  .action((options) => {
+    try {
+      electron(options);
+    } catch (e) {
       console.error(e.message);
       process.exit(1);
     }

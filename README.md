@@ -547,6 +547,12 @@ You can watch your `topics` directory for changes and rebuild the JSON files aut
 
 You can run a Node.js Express server for your project using `canopy serve` followed by an optional port parameter. Alternatively, you can build with the `--hash-urls` argument option and host the `build/static` directory with any static assets server.
 
+### Building an Electron app
+
+Run `canopy electron` to build the static site, write an Electron app scaffold to `build/electron`, install Electron dependencies if needed, and start the app locally. The generated app copies the static build into `build/electron/app`.
+
+Use `canopy electron --scaffold-only` to only write the scaffold, `canopy electron --package` to create a packaged app, or `canopy electron --make` to create distributable artifacts.
+
 ### Keyboard shortcuts
 
 You can use a Canopy website using only the keyboard.
