@@ -153,6 +153,7 @@ class Path {
 
     // Case 1: purely lexical checks
     if (otherPath.startsWith(this)) return true; // child extends this /A/B -> A/B/C or /A/B -> A/B#C
+    if (this.startsWith(otherPath)) return false; // this is more specific than otherPath, e.g. /A#B cannot be an ancestor of /A
 
     // if this or other path have segment at same index with different topics, return false
     for (let i = 0; i < Math.min(this.length, otherPath.length); i++) { // e.g. /A#B/C and /A#C/E cannot be ancestor/descendant
@@ -174,7 +175,7 @@ class Path {
       const thisTruncated = this.slice(0, divergenceIndex + 1);
       const otherTruncated = otherPath.slice(0, divergenceIndex + 1);
       if (thisTruncated.equals(this) && otherTruncated.equals(otherPath)) {
-        throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
+        throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${this.string} -> ${otherPath.string}; missing ${!this.paragraph ? this.string : otherPath.string}`);
       }
       return thisTruncated.ancestorOf(otherTruncated);
     }
