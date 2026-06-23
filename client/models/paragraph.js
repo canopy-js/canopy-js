@@ -407,18 +407,63 @@ class Paragraph {
       });
   }
 
-  static executePreDisplayCallbacksTree(rootSectionElement) {
+  static executePreDisplayCallbacksTree(rootSectionElement, options = {}) {
     if (!Paragraph.contentLoaded) return; // pre-running callbacks is optimization except on initial load
 
+    const sectionElements = [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')];
     canopyContainer.appendChild(rootSectionElement);
 
-    [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')].forEach(sectionElement => {
+    if (options.eager) {
+      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements);
+    }
+
+    sectionElements.forEach(sectionElement => {
       sectionElement.style.display = 'block';
       Paragraph.for(sectionElement).executePreDisplayCallbacks();
       sectionElement.style.removeProperty('display');
     });
 
-    canopyContainer.removeChild(rootSectionElement);
+    if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+  }
+
+  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements) {
+    const runSection = index => {
+      const sectionElement = sectionElements[index];
+      if (!sectionElement) {
+        if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+        return Promise.resolve();
+      }
+
+      return Paragraph.scheduleEagerPreDisplayCallback(() => {
+        sectionElement.style.display = 'block';
+        Paragraph.for(sectionElement).executePreDisplayCallbacks();
+        sectionElement.style.removeProperty('display');
+      }).then(() => runSection(index + 1));
+    };
+
+    return runSection(0).catch(error => {
+      if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+      throw error;
+    });
+  }
+
+  static scheduleEagerPreDisplayCallback(callback) {
+    return new Promise((resolve, reject) => {
+      const run = () => {
+        try {
+          callback();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run);
+      } else {
+        setTimeout(run);
+      }
+    });
   }
 
   static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM

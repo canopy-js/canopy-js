@@ -13,7 +13,7 @@ function invalidateFetchAndRenderCache() {
   headerCache = {};
 }
 
-const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
+const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise, options = {}) => {
   if (remainingPath.length === 0) return Promise.resolve();
 
   let pathToParagraph = fullPath.slice(0, fullPath.length - remainingPath.length + 1);
@@ -52,8 +52,11 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
     if (!existingParagraph || !existingParagraph.parentNode) { // if parentNode then we have already added subtree to cache
       Paragraph.registerChild(sectionElement, parentElement);
       Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
-      Paragraph.executePreDisplayCallbacksTree(sectionElement);
-      Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
+      const preDisplayPromise = Paragraph.executePreDisplayCallbacksTree(sectionElement, { eager: !!options.renderOnly });
+      return Promise.resolve(preDisplayPromise).then(() => {
+        Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
+        return true;
+      });
     }
     return Promise.resolve(true);
   });
@@ -71,7 +74,7 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise) => {
   let subtopicAfterSubsumptionPromise = Promise.all([appendingPromise, subtopicElementPromise, parentElementPromise]) // n+1's parent waits for path from root
     .then(([appendingSuccess, subtopicElement]) => appendingSuccess && subtopicElement); //
 
-  let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicAfterSubsumptionPromise);
+  let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicAfterSubsumptionPromise, options);
 
   return Promise.all([sectionElementPromise, childSectionElementPromise, appendingPromise]) // work for this stackframe is finished
     .then(([sectionElement]) => sectionElement);
