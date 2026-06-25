@@ -87,7 +87,6 @@ function renderMenu(token, renderContext, renderTokenElements) {
         const contentBoundingRect = getCombinedBoundingRect([contentContainer]);
         const containerStyles = window.getComputedStyle(menuCellElement);
         const containerRect = menuCellElement.getBoundingClientRect();
-
         const containerPaddingLeft = parseFloat(containerStyles.paddingLeft);
         const containerPaddingRight = parseFloat(containerStyles.paddingRight);
         const containerPaddingTop = parseFloat(containerStyles.paddingTop);

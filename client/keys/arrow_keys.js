@@ -72,6 +72,7 @@ function moveInDirection(direction) {
 
   } else if (direction === 'down') {
     if (!currentLinkElement) return Path.rendered.selectALink({ direction: 'down' });
+    if (Link.selection.opensPlaceholder) return;
 
     let candidateLinks = Array.from(document.querySelectorAll('.canopy-selectable-link')).filter(link => link.offsetParent !== null && isVisible(link));
     let currentSelectionHigherRect = getBoundingRectInDirection(currentLinkElement, 'up');

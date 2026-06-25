@@ -2,18 +2,26 @@ import Paragraph from 'models/paragraph';
 import Topic from '../../cli/shared/topic';
 import renderTokenElements from 'render/render_token_element';
 
-function renderDomTree(topic, subtopic, renderContext) {
+function renderDomTree(topic, subtopic, renderContext, sectionElement = null) {
+  sectionElement = sectionElement || createSectionElement(topic, subtopic, renderContext);
+  populateSectionElement(sectionElement, topic, subtopic, renderContext);
+  return sectionElement;
+}
+
+function populateSectionElement(sectionElement, topic, subtopic, renderContext) {
   let { paragraphsBySubtopic } = renderContext;
-
-  let sectionElement = createSectionElement(topic, subtopic, renderContext);
-  let paragraph = new Paragraph(sectionElement);
-
-  renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(topic, sectionElement, renderContext);
-  renderContext.claimedSubtopics = {};
 
   let mixedCaseSubtopic = Object.keys(paragraphsBySubtopic).find(key => Topic.fromMixedCase(key).matches(subtopic)) // in case our subtopic is incorrectly capitalized
   let tokensOfParagraph = paragraphsBySubtopic[mixedCaseSubtopic];
   if (!tokensOfParagraph) throw new Error(`Paragraph with subtopic not found: ${subtopic.mixedCase}`);
+
+  ensureParagraphElement(sectionElement);
+  updateSectionMetadata(sectionElement, topic, subtopic, renderContext, tokensOfParagraph);
+  let paragraph = new Paragraph(sectionElement);
+  paragraph.paragraphElement.replaceChildren();
+
+  renderContext.localLinkSubtreeCallback = localLinkSubtreeCallback(topic, sectionElement, renderContext);
+  renderContext.claimedSubtopics = {};
 
   renderContext.currentTopic = topic;
   renderContext.currentSubtopic = subtopic;
@@ -32,35 +40,52 @@ function renderDomTree(topic, subtopic, renderContext) {
 
 function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
   return (token) => {
-    let { fullPath, remainingPath, claimedSubtopics } = renderContext;
+    let { fullPath, remainingPath, claimedSubtopics, childRegistrations } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
     let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
     let pathToParagraph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
     if (claimedSubtopics.hasOwnProperty(token.targetSubtopic)) return; // redundant parent links
 
+    let existingChildSectionElement = Paragraph.byPath(pathToParagraph)?.sectionElement;
+
     let childSectionElement = renderDomTree(
       topic,
       Topic.fromMixedCase(token.targetSubtopic),
-      Object.assign({}, renderContext, { pathToParagraph, preDisplayCallbacks: [] })
+      Object.assign({}, renderContext, { pathToParagraph, preDisplayCallbacks: [] }),
+      existingChildSectionElement
     );
 
     claimedSubtopics[token.targetSubtopic] = true;
-    parentSectionElement.appendChild(childSectionElement);
+    childRegistrations.push([childSectionElement, parentSectionElement]);
   }
 }
 
 function createSectionElement(topic, subtopic, renderContext) {
+  let sectionElement = document.createElement('section');
+  sectionElement.classList.add('canopy-section');
+  ensureParagraphElement(sectionElement);
+  sectionElement.style.display = 'none';
+  sectionElement.style.opacity = '0';
+  updateSectionMetadata(sectionElement, topic, subtopic, renderContext);
+
+  return sectionElement;
+}
+
+function ensureParagraphElement(sectionElement) {
+  let paragraphElement = sectionElement.querySelector(':scope > p.canopy-paragraph');
+  if (paragraphElement) return paragraphElement;
+
+  paragraphElement = document.createElement('p');
+  paragraphElement.classList.add('canopy-paragraph');
+  sectionElement.appendChild(paragraphElement);
+  return paragraphElement;
+}
+
+function updateSectionMetadata(sectionElement, topic, subtopic, renderContext, tokens = null) {
   let {
     displayTopicName, pathDepth, paragraphsBySubtopic, pathToParagraph
   } = renderContext;
 
-  let sectionElement = document.createElement('section');
-  sectionElement.classList.add('canopy-section');
-  let paragraphElement = document.createElement('p');
-  paragraphElement.classList.add('canopy-paragraph');
-  sectionElement.appendChild(paragraphElement);
-  sectionElement.style.display = 'none';
-  sectionElement.style.opacity = '0';
   sectionElement.dataset.displayTopicName = displayTopicName;
   sectionElement.dataset.topicName = Topic.for(displayTopicName).mixedCase;
   sectionElement.topicName = Topic.for(displayTopicName).mixedCase; // helpful to have in debugger
@@ -69,16 +94,19 @@ function createSectionElement(topic, subtopic, renderContext) {
   sectionElement.dataset.pathDepth = pathDepth;
   sectionElement.dataset.pathString = pathToParagraph.replaceTerminalSubtopic(subtopic).string;
 
-  let tokens = paragraphsBySubtopic[topic.mixedCase];
+  tokens = tokens || paragraphsBySubtopic[topic.mixedCase];
 
   if (topic.equals(subtopic)) {
-    let hr = document.createElement('hr')
-    hr.classList.add('canopy-hr');
-    if (pathDepth > 0 && tokens.length > 0) sectionElement.prepend(hr);
     sectionElement.classList.add('canopy-topic-section');
+    let hr = sectionElement.querySelector(':scope > hr.canopy-hr');
+    if (pathDepth > 0 && tokens.length > 0 && !hr) {
+      hr = document.createElement('hr')
+      hr.classList.add('canopy-hr');
+      sectionElement.insertBefore(hr, sectionElement.querySelector(':scope > p.canopy-paragraph'));
+    } else if (hr && (pathDepth === 0 || tokens.length === 0)) {
+      hr.remove();
+    }
   }
-
-  return sectionElement;
 }
 
 function applyLinebreakSpacing(paragraphElement) {
@@ -120,3 +148,4 @@ function isBlockBoundaryElement(element) {
 }
 
 export default renderDomTree;
+export { createSectionElement };

@@ -75,6 +75,31 @@ test.describe('Redirects', () => {
     await expect(consoleLogs).toContainEqual('[log] Trying: /United_States/New_York#Southern_border');
   });
 
+  test('For an invalid path through an orphaned subtopic it tries subpaths', async ({ page }) => {
+    const consoleErrors = [];
+    page.on('console', message => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.goto('/United_States/New_York/New_Jersey#Northern_border/United_States');
+
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States/New_York');
+    await expect(page.locator('.canopy-boot-loading-graphic')).toHaveCount(0);
+    expect(consoleErrors).not.toContainEqual(expect.stringContaining('sectionElement missing parentNode'));
+  });
+
+  test('For a rendered descendant beneath an unattached topic root it tries subpaths', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+
+    await page.goto('/United_States/Mars/New_Jersey#Northern_border');
+
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page).toHaveURL('United_States');
+    expect(pageErrors).not.toContainEqual(expect.stringContaining('sectionElement missing parentNode'));
+  });
+
   test('For an invalid single-element path it redirects to default topic', async ({ page }) => {
     page.off("console", logBrowserErrors);
     let consoleLogs = [];

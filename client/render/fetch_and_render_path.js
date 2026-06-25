@@ -19,60 +19,67 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise, optio
   let pathToParagraph = fullPath.slice(0, fullPath.length - remainingPath.length + 1);
   let pathToParagraphTopic = pathToParagraph.removeTerminalSubtopic;
 
-  let preexistingSectionElement = Path.elementAtRelativePath(pathToParagraphTopic, canopyContainer) || Paragraph.byPath(pathToParagraphTopic)?.sectionElement;
-  let preexistingSectionElementPromise = preexistingSectionElement ? Promise.resolve(preexistingSectionElement) : null;
+  let renderedTopicSectionElement = pathToParagraphTopic.renderedParagraph?.sectionElement;
+  let preexistingSectionElementPromise = renderedTopicSectionElement ? Promise.resolve(renderedTopicSectionElement) : null;
+  let cachedSectionElementPromise = promiseCache[pathToParagraphTopic.string];
+  let renderContext = { childRegistrations: [] };
 
-  let sectionElementPromise = preexistingSectionElementPromise || promiseCache[pathToParagraphTopic.string] || requestJson(remainingPath.firstTopic)
-    .then(({ paragraphsBySubtopic, displayTopicName, topicTokens }) => {
+  let sectionElementPromise = preexistingSectionElementPromise || cachedSectionElementPromise || requestJson(remainingPath.firstTopic)
+    .then(json => {
+      if (!json) return null;
+      let { paragraphsBySubtopic, displayTopicName, topicTokens } = json;
+      let sectionElementToDecorate = Path.placeholderAt(pathToParagraphTopic)?.sectionElement;
       if (displayTopicName) headerCache[Topic.for(displayTopicName).mixedCase] = [topicTokens, displayTopicName]; // only cache on original request
+
+      Object.assign(renderContext, {
+        remainingPath,
+        displayTopicName,
+        paragraphsBySubtopic,
+        fullPath,
+        pathToParagraph,
+        pathDepth: fullPath.length - remainingPath.length,
+        preDisplayCallbacks: []
+      });
 
       return renderDomTree(
         remainingPath.firstTopic,
         remainingPath.firstTopic,
-        {
-          remainingPath,
-          displayTopicName,
-          paragraphsBySubtopic,
-          fullPath,
-          pathToParagraph,
-          pathDepth: fullPath.length - remainingPath.length,
-          preDisplayCallbacks: []
-        },
+        renderContext,
+        sectionElementToDecorate
       );
     }).catch(e => { console.error(e); return null; }); // 404
-
-  promiseCache[pathToParagraphTopic.string] = sectionElementPromise;
 
   let appendingPromise = Promise.all([parentElementPromise, sectionElementPromise]).then(([parentElement, sectionElement]) => {
     if (!parentElement || !sectionElement) return Promise.resolve(); // null parent eg if appending failed
     if (fullPath.equals(remainingPath)) canopyContainer.prepend(generateHeader(...headerCache[sectionElement.dataset.topicName])); // regen if necessary
-    if (parentElement !== canopyContainer && !Path.connectingLinkValid(parentElement, remainingPath)) return Promise.resolve(false); // fail silently, error on tryPrefix
-    const existingParagraph = Paragraph.byPath(pathToParagraphTopic);
+    if (parentElement !== canopyContainer && !Path.connectingLinkValid(parentElement, remainingPath)) {
+      Paragraph.unregisterTree(sectionElement);
+      delete promiseCache[pathToParagraphTopic.string];
+      return Promise.resolve(false);
+    } // fail silently, error on tryPrefix
 
-    if (!existingParagraph || !existingParagraph.parentNode) { // if parentNode then we have already added subtree to cache
-      Paragraph.registerChild(sectionElement, parentElement);
-      Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
-      const preDisplayPromise = Paragraph.executePreDisplayCallbacksTree(sectionElement, { eager: !!options.renderOnly });
-      return Promise.resolve(preDisplayPromise).then(() => {
-        Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
-        return true;
-      });
-    }
-    return Promise.resolve(true);
+    if (renderedTopicSectionElement) return Promise.resolve(true);
+
+    renderContext.childRegistrations.forEach(([childElement, childParentElement]) => {
+      Paragraph.registerChild(childElement, childParentElement);
+    });
+    Paragraph.registerChild(sectionElement, parentElement);
+    const preDisplayPromise = options.renderOnly ? Promise.resolve() : Paragraph.executePreDisplayCallbacksTree(sectionElement);
+    return preDisplayPromise.then(() => true);
   });
 
-  let subtopicElementPromise = sectionElementPromise.then(sectionElement => { // the subtopic of current topic that is parent of next path segment
-    if (!sectionElement) return null;
-    if (remainingPath.firstSubtopic.mixedCase === sectionElement.dataset.topicName) {
-      return sectionElement;
-    } else {
-      return sectionElement.querySelector(`section[data-subtopic-name="${remainingPath.firstSubtopic.cssMixedCase}"]`) || // on first render still attached
-        Paragraph.byPath(pathToParagraph)?.sectionElement; // subsequent renders detached and cached
-    }
-  });
+  if (!preexistingSectionElementPromise && !cachedSectionElementPromise) {
+    // Render and attachment complete.
+    promiseCache[pathToParagraphTopic.string] = Promise.all([sectionElementPromise, appendingPromise])
+      .then(([sectionElement]) => sectionElement);
+  }
 
-  let subtopicAfterSubsumptionPromise = Promise.all([appendingPromise, subtopicElementPromise, parentElementPromise]) // n+1's parent waits for path from root
-    .then(([appendingSuccess, subtopicElement]) => appendingSuccess && subtopicElement); //
+  let subtopicAfterSubsumptionPromise = Promise.all([appendingPromise, sectionElementPromise])
+    .then(([appendingSuccess, sectionElement]) => { // the subtopic of current topic that is parent of next path segment
+      if (!appendingSuccess || !sectionElement) return null;
+      return remainingPath.firstSubtopic.mixedCase === sectionElement.dataset.topicName ?
+        sectionElement : Paragraph.byPath(pathToParagraph)?.sectionElement;
+    });
 
   let childSectionElementPromise = fetchAndRenderPath(fullPath, remainingPath.withoutFirstSegment, subtopicAfterSubsumptionPromise, options);
 

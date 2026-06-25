@@ -5,9 +5,11 @@ import Link from 'models/link';
 import Path from 'models/path';
 import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
+import { createSectionElement } from 'render/render_dom_tree';
 
 function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.cssMixedCase}"]`);
+  if (!headerDomElement) return null;
   headerDomElement.style.display = 'block';
   headerDomElement.style.opacity = '0%';
   if (displayOptions.scrollStyle !== 'instant') {
@@ -64,6 +66,68 @@ function tryPathPrefix(path) {
   } else {
     throw new Error('Redirect to default topic failed terminally.')
   }
+}
+
+function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
+  if (options?.renderOnly) return Promise.resolve();
+  if (pathToDisplay?.removeTerminalSubtopic.renderedParagraph) {
+    return Promise.resolve();
+  }
+
+  let existingPlaceholder = Path.placeholderOnPath(pathToDisplay);
+  let renderedPrefix = Path.renderedPrefixOf(pathToDisplay);
+  let nextPlaceholderPath = pathToDisplay.slice(0, (renderedPrefix?.length || 0) + 1).removeTerminalSubtopic;
+  let placeholderPath = existingPlaceholder?.path || nextPlaceholderPath;
+
+  if (!placeholderPath) return Promise.resolve();
+  let placeholderParagraph = Paragraph.byPath(placeholderPath);
+
+  if (!placeholderParagraph) {
+    let sectionElement = createSectionElement(placeholderPath.lastTopic, placeholderPath.lastSubtopic, {
+      displayTopicName: placeholderPath.lastTopic.mixedCase,
+      pathDepth: placeholderPath.length - 1,
+      paragraphsBySubtopic: { [placeholderPath.lastTopic.mixedCase]: [] },
+      pathToParagraph: placeholderPath
+    });
+    sectionElement.classList.add('canopy-loading-section');
+    sectionElement.querySelector(':scope > p.canopy-paragraph')?.remove();
+
+    let parentElement = placeholderPath.isPageRoot ? canopyContainer : Paragraph.byPath(placeholderPath.parentPath)?.sectionElement;
+
+    if (!parentElement) return Promise.resolve();
+    placeholderParagraph = Paragraph.registerChild(sectionElement, parentElement);
+  }
+
+  if (placeholderParagraph?.placeholder) {
+    ensureLoadingGraphic(placeholderParagraph.sectionElement);
+    return displayPath(placeholderPath, linkToSelect, {
+      ...options,
+      provisionalForPath: pathToDisplay,
+      urlPath: pathToDisplay
+    }).catch(e => console.error(e));
+  }
+
+  return Promise.resolve();
+}
+
+function ensureLoadingGraphic(sectionElement) {
+  if (sectionElement.querySelector(':scope > .canopy-loading-graphic')) return;
+
+  let loadingGraphicElement = createLoadingGraphicElement();
+  sectionElement.prepend(loadingGraphicElement);
+}
+
+function createLoadingGraphicElement() {
+  let loadingGraphicElement = document.createElement('div');
+  loadingGraphicElement.classList.add('canopy-loading-graphic');
+
+  for (let i = 0; i < 4; i++) {
+    let lineElement = document.createElement('span');
+    lineElement.classList.add('canopy-loading-line');
+    loadingGraphicElement.appendChild(lineElement);
+  }
+
+  return loadingGraphicElement;
 }
 
 const resetDom = (pathToDisplay) => {
@@ -282,7 +346,7 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
   if (options.noScroll || options.noBeforeChangeScroll || options.initialLoad || options.scrollStyle === 'instant') return Promise.resolve();
   if ((Path.current.ancestorOf(newPath) || Path.current.equals(newPath)) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // moving down
   if (linkToSelect?.isBelowFocusArea) return Promise.resolve(); // avoid double downward scrolls
-  if (Link.selection.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
+  if (Link.selection?.hasCloseSibling(linkToSelect) && !linkToSelect?.isAboveViewport) return Promise.resolve(); // don't swoop from one link to its horizontal sibling unless it's above viewport
   let previousPath = Link.selection?.isEffectivePathReference ? Link.selection.enclosingPath : Path.rendered;
 
   let minDiff = options.noMinDiff ? null : 75;
@@ -315,13 +379,13 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
 
   if (pathToDisplay.equals(Path.current.firstTopicPath) && !linkToSelect) {
     return scrollElementToPosition(
-      Paragraph.root.paragraphElement, {targetRatio: 0.5, maxScrollRatio: Infinity, minDiff, behavior, side: 'top' }
+      Paragraph.root.contentElement, {targetRatio: 0.5, maxScrollRatio: Infinity, minDiff, behavior, side: 'top' }
     );
   }
 
   if ((linkToSelect||pathToDisplay.parentLink)?.isFragment) {
     return postChangePause().then(() => scrollElementToPosition(
-      (linkToSelect||pathToDisplay.parentLink).element || Paragraph.root.paragraphElement,
+      (linkToSelect||pathToDisplay.parentLink).element || Paragraph.root.contentElement,
       {targetRatio: LINK_TARGET_RATIO, maxScrollRatio: Infinity, minDiff, behavior, side: 'top', direction}
     ));
   }
@@ -329,8 +393,9 @@ function afterChangeScroll(pathToDisplay, linkToSelect, options={}) {
   let maxScrollRatio = Infinity; // no limit on initial load and click
 
   if (!linkToSelect || (options.scrollToParagraph && !pathToDisplay?.parentLink?.isFragment)) {
+    const targetElement = pathToDisplay.paragraph.contentElement;
     const paragraphTargetRatio = options.targetRatio ?? (pathToDisplay.paragraph.isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
-    return postChangePause().then(() => scrollElementToPosition(pathToDisplay.paragraphElement, {
+    return postChangePause().then(() => scrollElementToPosition(targetElement, {
       targetRatio: paragraphTargetRatio,
       maxScrollRatio,
       minDiff,
@@ -369,5 +434,6 @@ export {
   beforeChangeScroll,
   scrollToWithPromise,
   getScrollInProgress,
-  waitForDisplaysInProgress
+  waitForDisplaysInProgress,
+  displayPlaceholderSection
 };

@@ -539,6 +539,8 @@ If you create an `assets` directory in your project folder, the build script wil
 
 If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
 
+If your manual `index.html` includes an initial loading indicator, Canopy treats a direct child of `#_canopy` with the class `canopy-boot-loading-graphic` as the bootloader. See the [manual HTML bootloader reference](readme/manual-html-bootloader.md) for the expected HTML, CSS, and removal lifecycle.
+
 ### Watching your topic files
 
 You can watch your `topics` directory for changes and rebuild the JSON files automatically on change using the `canopy watch` command. Canopy watch should take the same options as build, so that you can specify how you want it to build your project. You can run the command in the background using `canopy watch &`.

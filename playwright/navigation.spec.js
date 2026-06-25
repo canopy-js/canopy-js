@@ -362,7 +362,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
@@ -492,7 +492,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
   });
 
   test('Down on path reference selects links of current paragraph', async ({ page }) => {
@@ -500,10 +500,44 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
 
     await page.locator('body').press('ArrowDown');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('url'); // stays within paragraph
+  });
+
+  test('Down and enter on path reference are ignored while inline path placeholder is loading', async ({ page }) => {
+    let releaseNewJerseyRequest;
+    const newJerseyRequestGate = new Promise(resolve => {
+      releaseNewJerseyRequest = resolve;
+    });
+
+    await page.route(/\/_data\/New_Jersey.*\.json$/i, async route => {
+      await newJerseyRequestGate;
+      await route.continue();
+    });
+
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+
+    await page.locator('body').press('Enter');
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page.locator('.canopy-selected-section')).toHaveClass(/canopy-loading-section/);
+
+    await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page.locator('.canopy-selected-section')).toHaveClass(/canopy-loading-section/);
+
+    await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page.locator('.canopy-selected-section')).toHaveClass(/canopy-loading-section/);
+
+    releaseNewJerseyRequest();
+
+    await expect(page.locator('.canopy-selected-section')).not.toHaveClass(/canopy-loading-section/);
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
   });
 
   test('Enter on path reference inlines target', async ({ page }) => {
@@ -511,6 +545,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
 
     // Link below should be open
     await expect(page.locator('.canopy-paragraph:has-text("The state of New Jersey has")',
@@ -530,6 +565,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
+    await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
 
     await page.locator('a.canopy-selected-link:has-text("northern border"):visible').click();
 
@@ -704,6 +740,7 @@ test.describe('Navigation', () => {
 
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");
+    await expect(page.locator('text=There is a lot of parking, and it is near the >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Shift+ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -783,7 +820,9 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await page.locator('a:has-text("cafeteria↩"):visible').click();
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
+    await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
     await page.goBack();
+    await expect(page.locator('text=There is a lot of parking, and it is near the >> visible=true')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");    
   });
 

@@ -1,30 +1,35 @@
 import { fetchAndRenderPath } from 'render/fetch_and_render_path';
 import displayPath from 'display/display_path';
+import { displayPlaceholderSection } from 'display/helpers';
 import Path from 'models/path';
-import Paragraph from 'models/paragraph';
 import { canopyContainer } from 'helpers/getters';
 let lastPath = null; // ensure only the last call gets displayed
 
 const updateView = (pathToDisplay, linkToSelect, options = {}) => {
   if (pathToDisplay?.empty) pathToDisplay = Path.default;
+  if (!options?.renderOnly && pathToDisplay) {
+    lastPath = pathToDisplay;
+  }
 
-  let renderComplete = (lastPath = (!options?.renderOnly && pathToDisplay) || lastPath) &&
-    fetchAndRenderPath(pathToDisplay, pathToDisplay, Promise.resolve(canopyContainer), options).catch(e => console.error(e));
+  displayPlaceholderSection(pathToDisplay, linkToSelect, options)
+    .catch(e => console.error(e));
 
-  Promise.race([
-    renderComplete,
-    (new Promise(resolve => setTimeout(resolve, 400)))
-  ]).then((success) => {
-    if (!success && linkToSelect && Paragraph.contentLoaded && !options.renderOnly) {
-      linkToSelect?.tryElement && linkToSelect.addSelectionClass() || updateView(linkToSelect.enclosingPath, linkToSelect);
-    }
-  });
+  let renderComplete = pathToDisplay && Promise.resolve()
+    .then(() => new Promise(resolve => setTimeout(resolve))) // make gap for placeholder paint
+    .then(() => fetchAndRenderPath(pathToDisplay, pathToDisplay, Promise.resolve(canopyContainer), options))
+    .catch(e => console.error(e));
 
-  return renderComplete.then(() => {
-    if (!options?.renderOnly && pathToDisplay.equals(lastPath)) return displayPath(
+  return Promise.resolve(renderComplete).then(renderedSectionElement => {
+    if (!renderedSectionElement) Path.placeholderOnPath(pathToDisplay)?.unregister();
+
+    let displayOptions = Path.url.equals(pathToDisplay) && Path.lastRenderedPath?.paragraph?.loadingElementVisible ?
+      { ...options, replaceHistoryState: true } :
+      options;
+    const shouldDisplay = !options?.renderOnly && pathToDisplay.equals(lastPath);
+    if (shouldDisplay) return displayPath(
       pathToDisplay,
       linkToSelect,
-      options
+      displayOptions
     );
   }).catch(e => console.error(e));
 }

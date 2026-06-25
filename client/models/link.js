@@ -179,7 +179,9 @@ class Link {
   }
 
   get type() {
-    return this.element.dataset.type;
+    if (this.linkElement) return this.linkElement.dataset.type;
+    if (this.metadataObject?.type) return this.metadataObject.type;
+    return this.element?.dataset?.type;
   }
 
   get enclosingSectionElement() {
@@ -282,6 +284,7 @@ class Link {
     return {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
+      type: linkElement.dataset.type,
       relativeLinkNumber: link.relativeLinkNumber,
       selectionPathString: link.selectionPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
       targetUrl: linkElement.dataset.targetUrl,
@@ -312,6 +315,21 @@ class Link {
     );
 
     return link?.element || null;
+  }
+
+  get currentDomLink() {
+    let metadata;
+    try {
+      metadata = this.metadata;
+    } catch {
+      return null;
+    }
+
+    if (!metadata?.enclosingPathString) return null;
+    if (!new Path(metadata.enclosingPathString).paragraph) return null;
+
+    let linkElement = Link.fromMetadata(metadata);
+    return linkElement ? new Link(linkElement) : null;
   }
 
   get nextSibling() {
@@ -523,6 +541,10 @@ class Link {
     return this.childParagraph?.hasLinks;
   }
 
+  get opensPlaceholder() {
+    return !!(this.childParagraph?.placeholder || Path.placeholderOnPath(this.inlinePath));
+  }
+
   get firstChild() {
     return this.childParagraph?.links.filter(link => !link.element?.closest('.canopy-image-caption'))[0];
   }
@@ -532,7 +554,7 @@ class Link {
   }
 
   get isFragment() {
-    return this.childParagraph?.paragraphElement?.innerText === '';
+    return this.childParagraphElement?.innerText === '';
   }
 
   get childParagraphElement() {
@@ -610,7 +632,7 @@ class Link {
   }
 
   get selectionPath() {
-    if (this.metadataObject && !Paragraph.contentLoaded) { // for initial page load before links exist
+    if (this.metadataObject?.selectionPathString && !this.linkElement) { // for initial page load and popstate before links exist
       return new Path(this.metadataObject.selectionPathString);
     }
 
@@ -629,6 +651,10 @@ class Link {
     if (this.isLocal) { // select link and advance the path
       return this.inlinePath;
     }
+  }
+
+  get displayPath() { // pending rename
+    return this.selectionPath;
   }
 
   get urlPath() {
@@ -743,6 +769,9 @@ class Link {
 
   static updateSelectionClass(linkToSelect) {
     Array.from(document.querySelectorAll('a.canopy-selected-link')).forEach(link => link.classList.remove('canopy-selected-link'));
+    Object.values(Paragraph.paragraphsByPath).forEach(paragraph => {
+      paragraph.linkElements.forEach(link => link.classList.remove('canopy-selected-link'));
+    });
     if (linkToSelect) linkToSelect.element?.classList.add('canopy-selected-link');
   }
 
@@ -858,9 +887,14 @@ class Link {
   }
 
   static eagerLoadLinks(options = {}) {
+    Link.initializeEagerLoadCancellation();
     Link.eagerLoadRequestId = (Link.eagerLoadRequestId || 0) + 1;
     const eagerLoadRequestId = Link.eagerLoadRequestId;
     const eagerLoadStillCurrent = () => eagerLoadRequestId === Link.eagerLoadRequestId;
+    const abortController = typeof AbortController === 'function' ? new AbortController() : null;
+    if (abortController) Link.eagerLoadAbortControllers.add(abortController);
+
+    const forgetAbortController = () => abortController && Link.eagerLoadAbortControllers.delete(abortController);
 
     const scheduleIdle = callback => new Promise((resolve, reject) => {
       const run = () => {
@@ -904,7 +938,7 @@ class Link {
     const eagerLoadLink = (link) => {
       const topics = uniqueTopicsForEagerLoad(link);
 
-      return Promise.all(topics.map(topic => requestJson(topic))).then(jsons => {
+      return Promise.all(topics.map(topic => requestJson(topic, { signal: abortController?.signal }))).then(jsons => {
         const jsonSizes = topics.map(topic => jsonSizeBytesForTopic(topic));
         const paragraphCounts = topics.map(topic => paragraphCountForTopic(topic));
         const domEagerLoadEligible = jsons.every(json => json) &&
@@ -930,15 +964,30 @@ class Link {
     };
 
     const eagerLoad = () => {
-      eagerLoadLinks(Link.visible)
+      return eagerLoadLinks(Link.visible)
         .then(() => eagerLoadParagraphChain(Path.current.paragraph));
     };
 
     if (options.initialLoad) {
-      requestAnimationFrame(() => requestAnimationFrame(eagerLoad));
+      requestAnimationFrame(() => requestAnimationFrame(() => eagerLoad()?.finally(forgetAbortController)));
     } else {
-      eagerLoad();
+      eagerLoad()?.finally(forgetAbortController);
     }
+  }
+
+  static initializeEagerLoadCancellation() {
+    if (Link.eagerLoadCancellationInitialized) return;
+    Link.eagerLoadCancellationInitialized = true;
+    Link.eagerLoadAbortControllers = new Set();
+
+    const abortEagerLoads = () => {
+      Link.eagerLoadAbortControllers.forEach(controller => controller.abort());
+      Link.eagerLoadAbortControllers.clear();
+      Link.eagerLoadRequestId = (Link.eagerLoadRequestId || 0) + 1;
+    };
+
+    window.addEventListener('beforeunload', abortEagerLoads);
+    window.addEventListener('pagehide', abortEagerLoads);
   }
 
   static get onPage() {

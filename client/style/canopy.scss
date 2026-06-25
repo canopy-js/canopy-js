@@ -49,6 +49,129 @@ section.canopy-section {
   unicode-bidi: unset;
 }
 
+.canopy-loading-section > .canopy-paragraph,
+.canopy-loading-section > .canopy-section,
+.canopy-loading-section > .canopy-hr {
+  display: none;
+}
+
+.canopy-loading-section {
+  min-height: 180px;
+}
+
+.canopy-loading-graphic {
+  display: none;
+}
+
+.canopy-loading-section > .canopy-loading-graphic {
+  align-items: stretch;
+  animation: canopy-loading-graphic-reveal 1ms linear 150ms forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  margin: 10px auto 0;
+  max-width: 594px;
+  min-height: 122px;
+  opacity: 0;
+  padding: 22px 30px;
+  position: relative;
+  width: min(64.8vw, 594px);
+}
+
+.canopy-loading-line {
+  --canopy-loading-line-base-opacity: 0.14;
+  --canopy-loading-line-delay: 0ms;
+  --canopy-loading-line-duration: 3200ms;
+  --canopy-loading-line-middle-opacity: 0.74;
+  --canopy-loading-line-shoulder-opacity: 0.16;
+  --canopy-loading-line-start: -46%;
+  --canopy-loading-line-stop: 44%;
+  --canopy-loading-line-sweep: 65%;
+  background: rgba(0, 0, 0, var(--canopy-loading-line-base-opacity));
+  border-radius: 999px;
+  display: block;
+  filter: blur(2.9px);
+  height: 24px;
+  opacity: 0.74;
+  overflow: hidden;
+  position: relative;
+}
+
+.canopy-loading-line::after {
+  animation: canopy-loading-line-shimmer var(--canopy-loading-line-duration) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: var(--canopy-loading-line-delay);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.06) 34%, rgba(0, 0, 0, 0.18) 50%, rgba(0, 0, 0, 0.06) 66%, rgba(0, 0, 0, 0) 100%);
+  content: '';
+  inset: -40% calc(-1 * var(--canopy-loading-line-sweep));
+  position: absolute;
+  transform: translateX(var(--canopy-loading-line-start));
+}
+
+@keyframes canopy-loading-graphic-reveal {
+  to { opacity: 1; }
+}
+
+.canopy-loading-line:nth-child(1) {
+  --canopy-loading-line-base-opacity: 0.135;
+  --canopy-loading-line-delay: -520ms;
+  --canopy-loading-line-duration: 3400ms;
+  --canopy-loading-line-middle-opacity: 0.68;
+  --canopy-loading-line-shoulder-opacity: 0.14;
+  --canopy-loading-line-start: -44%;
+  --canopy-loading-line-stop: 40%;
+  --canopy-loading-line-sweep: 58%;
+  margin-left: -9%;
+  width: 110%;
+}
+
+.canopy-loading-line:nth-child(2) {
+  --canopy-loading-line-base-opacity: 0.15;
+  --canopy-loading-line-delay: -1180ms;
+  --canopy-loading-line-duration: 2950ms;
+  --canopy-loading-line-middle-opacity: 0.82;
+  --canopy-loading-line-shoulder-opacity: 0.2;
+  --canopy-loading-line-start: -56%;
+  --canopy-loading-line-stop: 48%;
+  --canopy-loading-line-sweep: 76%;
+  margin-left: -9%;
+  width: 105%;
+}
+
+.canopy-loading-line:nth-child(3) {
+  --canopy-loading-line-base-opacity: 0.125;
+  --canopy-loading-line-delay: -260ms;
+  --canopy-loading-line-duration: 3950ms;
+  --canopy-loading-line-middle-opacity: 0.58;
+  --canopy-loading-line-shoulder-opacity: 0.12;
+  --canopy-loading-line-start: -36%;
+  --canopy-loading-line-stop: 34%;
+  --canopy-loading-line-sweep: 50%;
+  margin-left: -9%;
+  width: 71%;
+}
+
+.canopy-loading-line:nth-child(4) {
+  --canopy-loading-line-base-opacity: 0.145;
+  --canopy-loading-line-delay: -1640ms;
+  --canopy-loading-line-duration: 3250ms;
+  --canopy-loading-line-middle-opacity: 0.72;
+  --canopy-loading-line-shoulder-opacity: 0.16;
+  --canopy-loading-line-start: -49%;
+  --canopy-loading-line-stop: 43%;
+  --canopy-loading-line-sweep: 64%;
+  margin-left: -9%;
+  width: 83%;
+}
+
+@keyframes canopy-loading-line-shimmer {
+  0% { opacity: 0; transform: translateX(var(--canopy-loading-line-start)); }
+  18% { opacity: var(--canopy-loading-line-shoulder-opacity); }
+  50% { opacity: var(--canopy-loading-line-middle-opacity); transform: translateX(0); }
+  82% { opacity: var(--canopy-loading-line-shoulder-opacity); }
+  100% { opacity: 0; transform: translateX(var(--canopy-loading-line-stop)); }
+}
+
 p.canopy-paragraph {
   overflow: visible; // In case external link icon is at end of line
   font-size: 20px;

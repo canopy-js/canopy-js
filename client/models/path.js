@@ -143,6 +143,44 @@ class Path {
     );
   }
 
+  static renderedPrefixOf(path) {
+    let renderedPrefix = null;
+
+    if (!path || path.empty) return renderedPrefix;
+
+    for (let i = 1; i <= path.length; i++) {
+      let pathPrefix = path.slice(0, i);
+
+      if (pathPrefix.renderedParagraph) {
+        renderedPrefix = pathPrefix;
+      } else {
+        break;
+      }
+    }
+
+    return renderedPrefix;
+  }
+
+  static placeholderAt(path) {
+    if (!path || path.empty) return null;
+
+    let paragraph = Paragraph.byPath(path);
+    return paragraph?.placeholder ? paragraph : null;
+  }
+
+  static placeholderOnPath(path) {
+    if (!path || path.empty) return null;
+
+    for (let i = 1; i <= path.length; i++) {
+      let candidatePath = path.slice(0, i).removeTerminalSubtopic;
+      let paragraph = Paragraph.byPath(candidatePath);
+
+      if (paragraph?.placeholder) return paragraph;
+    }
+
+    return null;
+  }
+
   ancestorOf(otherPath) { // strict ancestor: lexical prefix or DOM parent within same-length subtopic chains
     if (!(otherPath instanceof Path)) return false;
     if (this.empty || otherPath?.empty) return false;
@@ -316,8 +354,19 @@ class Path {
     return this.array.length === 1 && this.array[0][0].equals(this.array[0][1]);
   }
 
+  get isPageRoot() {
+    return this.isSingleTopic;
+  }
+
   get parentPath() {
-    return this.paragraph?.parentParagraph?.path;
+    if (this.empty || this.isPageRoot) return null;
+    let parentPath = this.paragraph?.parentParagraph?.path;
+    if (parentPath) return parentPath;
+
+    if (this.lastSegment.isSingleTopic) return this.withoutLastSegment;
+    if (!this.removeTerminalSubtopic.equals(this)) return this.removeTerminalSubtopic;
+
+    return null;
   }
 
   get parentParagraph() {
@@ -710,6 +759,13 @@ class Path {
     }
   }
 
+  get renderedParagraph() {
+    let paragraph = Paragraph.byPath(this);
+    if (!paragraph) return null;
+    if (paragraph.placeholder) return null;
+    return paragraph;
+  }
+
   get paragraphElement() {
     return this.paragraph.paragraphElement;
   }
@@ -837,14 +893,16 @@ class Path {
     let oldPath = Path.url;
     let documentTitle = newPath.lastTopic.mixedCase;
 
-    let sameLinkSelection = 
+    let sameLinkSelection =
       (!history.state?.linkSelection && !linkToSelect) ||
       (linkToSelect && history.state?.linkSelection && Link.for(history.state?.linkSelection).equals(linkToSelect));
 
-    let replaceHistoryState = Path.url.empty || (newPath.equals(oldPath) && sameLinkSelection); // either the old one is bad or the new one is the same
+    let replaceHistoryState =
+      options.replaceHistoryState ||
+      Path.url.empty ||
+      (newPath.equals(oldPath) && sameLinkSelection); // either the old one is bad or the new one is the same
     let historyApiFunction = replaceHistoryState ? replaceState : pushState;
     let fullPathString = newPath.productionPathString;
-
     historyApiFunction(
       history.state, // this will be changed via Link#persistInHistory
       documentTitle,
