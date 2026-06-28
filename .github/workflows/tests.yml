@@ -24,6 +24,7 @@ jobs:
           restore-keys: |
             playwright-${{ runner.os }}-
       - run: npm ci
+      - run: npm run build-prod
       - run: npm install -g .
       - run: npx playwright install --with-deps
       - run: npm run jest
