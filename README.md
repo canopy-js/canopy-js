@@ -10,7 +10,7 @@
 <div align="center">
 <br>
 
-![Logo](./readme/logo-bump.png)
+![Logo](./readme/new_logo.png)
 
 <br>
 </div>
@@ -375,6 +375,13 @@ if (x) y(); //This is a code block
 |  A   | B  | C |   D   |
 ````
 
+Cells can be styled with `\style="..."` and `\.className` directives. Directives can appear anywhere in the cell, are removed from the displayed text, and are applied to that cell.
+
+````
+| Normal | \style="color: red" Red text |
+| Label \style="background-color: yellow" \.highlight | *Styled* content |
+````
+
 #### Menus ####
 ````
 ===
@@ -440,6 +447,16 @@ Any inline-token such as Canopy references can be used in the image caption.
 
 By default images link to their sources.
 
+#### External Links ####
+
+```
+[Link text](https://example.com)
+
+[](https://example.com)
+```
+
+External links can be written with standard Markdown link syntax. Use empty link text to render an icon-only external link.
+
 #### Linked Images ####
 
 ```
@@ -498,6 +515,8 @@ You can run `canopy bulk` to start a bulk session in your default editor. If you
 
 If you want to create a bulk file and edit it at your leisure, processing it at a later point, you can run `canopy bulk --start` to begin, and then `canopy bulk --finish` to process.
 
+If you run `canopy bulk --finish` without supplying a file selection, Canopy will only overwrite files represented in the bulk file and will not delete omitted topic files. To intentionally let the bulk file replace all topic files or a selected segment, pass selection options to `--finish`, for example `canopy bulk --finish --all` or `canopy bulk --finish topics/Category_A --recursive`.
+
 If you want to open an editor and make changes in an ongoing fashion, periodically saving changes and watching the result load in the browser, you can run `canopy bulk --sync`. It is recommended to use a visual editor for this so that you can see the session logs in the terminal.
 
 For example:
@@ -508,17 +527,19 @@ To load only certain files or directories, use `canopy bulk -pd` for a directory
 
 ### Building your project
 
-In order to produce our website, we need to convert our `expl` files in the `topics` directory into `html` and `JSON` for the browser. Run `canopy build` to build JSON files from your `expl` files in the project-level `build` directory.
+In order to produce our website, we need to convert our `expl` files in the `topics` directory into `html` and `JSON` for the browser. Run `canopy build` to build static site files from your `expl` files in the project-level `build/static` directory.
 
 Build has a few options:
 
 - Subpath hosting: `canopy build --project-path-prefix subdirectory` (eg `example.com/subpath/Project`).
 - Hash URLs: `canopy build --hash-urls` (eg `example.com/#/Topic`) for static hosting.
-- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`.
+- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/file/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`.
 
-If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
+If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your static build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
 
 If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
+
+If your manual `index.html` includes an initial loading indicator, Canopy treats a direct child of `#_canopy` with the class `canopy-boot-loading-graphic` as the bootloader. See the [manual HTML bootloader reference](readme/manual-html-bootloader.md) for the expected HTML, CSS, and removal lifecycle.
 
 ### Watching your topic files
 
@@ -526,7 +547,13 @@ You can watch your `topics` directory for changes and rebuild the JSON files aut
 
 ### Serving the web interface
 
-You can run a Node.js Express server for your project using `canopy serve` followed by an optional port parameter. Alternatively, you can build with the `--hash-urls` argument option, which allows the site to be hosted with any static assets server.
+You can run a Node.js Express server for your project using `canopy serve` followed by an optional port parameter. Alternatively, you can build with the `--hash-urls` argument option and host the `build/static` directory with any static assets server.
+
+### Building an Electron app
+
+Run `canopy electron` to build the static site, write an Electron app scaffold to `build/electron`, install Electron dependencies if needed, and start the app locally. The generated app copies the static build into `build/electron/app`.
+
+Use `canopy electron --scaffold-only` to only write the scaffold, `canopy electron --package` to create a packaged app, or `canopy electron --make` to create distributable artifacts.
 
 ### Keyboard shortcuts
 

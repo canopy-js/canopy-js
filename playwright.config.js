@@ -105,7 +105,7 @@ const config = {
       port: 3003
     },
     {
-      command: 'cd playwright/hash_urls_test/build && ruby -run -ehttpd . -p3004 > /dev/null 2>&1',
+      command: 'cd playwright/hash_urls_test/build/static && ruby -run -ehttpd . -p3004 > /dev/null 2>&1',
       port: 3004
     },
     {
@@ -114,7 +114,7 @@ const config = {
                '&& cd playwright/hash_urls_and_prefix_static_test ' +
                '&& canopy build --hash-urls --project-path-prefix test ' +
                '&& mkdir -p root/test ' +
-               '&& cp -r build/** root/test ' +
+               '&& cp -r build/static/. root/test ' +
                '&& ruby -run -ehttpd root -p3005 > /dev/null 2>&1',
       port: 3005
     },

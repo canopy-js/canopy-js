@@ -1,5 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs-extra');
+const path = require('path');
 const { fzfSelect } = require('../shared/pickers');
 const chokidar = require('chokidar');
 const {
@@ -22,6 +23,7 @@ const { getExplFileObjects } = require('../build/components/fs-helpers');
 
 const bulk = async function(selectedFileList, options = {}) {
   function log(message) { if (options.logging) console.log(message); }
+  if (options.all && !options.finish) options.sync = true;
   if (options.sync) options.translateError = (err, opts) => translateWatchErrorToBulk(err, opts);
 
   if (!fs.existsSync('./topics')) throw new Error(chalk.red('Must be in a projects directory with a topics folder'));
@@ -78,6 +80,19 @@ const bulk = async function(selectedFileList, options = {}) {
     );
   }
 
+  if (options.all) {
+    selectedFileList = selectedFileList.concat(getRecursiveSubdirectoryFiles('topics').filter(filePath => filePath.endsWith('.expl')));
+  }
+
+  selectedFileList = resolveSelectedFiles(selectedFileList, options);
+  let finishSelectionProvided = options.finish && (
+    options.all ||
+    options.pick ||
+    options.git ||
+    options.search ||
+    selectedFileList.length > 0
+  );
+
   if (selectedFileList.length === 0) {
     if (options.blank || options.search || options.git || options.pick) { // the user asked for blank, or searched and didn't find
       selectedFileList = [];
@@ -92,11 +107,11 @@ const bulk = async function(selectedFileList, options = {}) {
 
   function setUpBulkFile({ selectedFileList, storeOriginalSelection }) {
     var originalSelectionFileSet = fileSystemManager.getFileSet(selectedFileList);
-    let defaultTopic = {};
-    tryAndWriteHtmlError(() => { defaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
-    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, defaultTopic.filePath);
+    let currentDefaultTopic = {};
+    tryAndWriteHtmlError(() => { currentDefaultTopic = new DefaultTopic(); }, options); // validate existence of default topic
+    var bulkFileGenerator = new BulkFileGenerator(originalSelectionFileSet, currentDefaultTopic.filePath);
     var bulkFileString = bulkFileGenerator.generateBulkFile();
-    options.bulkFileName = options.bulkFileName || (defaultTopic.topicFileName ? `${defaultTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
+    options.bulkFileName = options.bulkFileName || DefaultTopic.bulkFileName;
     checkGitIgnoreForBulkFile(options);
 
     fileSystemManager.createBulkFile(options.bulkFileName, bulkFileString);
@@ -106,20 +121,20 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   function handleFinish({ deleteBulkFile, originalSelectedFilesList }) {
-    const fallbackTopic = defaultTopic();
-    options.bulkFileName = options.bulkFileName || (fallbackTopic.topicFileName ? `${fallbackTopic.topicFileName}.bulk` : 'canopy_bulk_file.bulk');
-
-    let originalSelectionFileSet = originalSelectedFilesList
-      ? fileSystemManager.getFileSet(originalSelectedFilesList)
-      : fileSystemManager.loadOriginalSelectionFileSet(options);
+    ensureBulkFileName(options);
 
     let newBulkFileString = fileSystemManager.getBulkFile(options.bulkFileName);
 
     let bulkFileParser = new BulkFileParser(newBulkFileString, options.bulkFileName);
     let { newFileSet, defaultTopicPath, defaultTopicKey } = bulkFileParser.generateFileSet();
-    if (defaultTopicPath) fileSystemManager.persistDefaultTopicPath(defaultTopicPath, defaultTopicKey);
 
-    let allDiskFileSet = fileSystemManager.getFileSet(getRecursiveSubdirectoryFiles('topics'));
+    let allDiskFileList = getRecursiveSubdirectoryFiles('topics');
+    let originallySelectedFallback = newFileSet.files.map(file => file.path);
+    let originalSelectionFileSet = originalSelectedFilesList
+      ? fileSystemManager.getFileSet(originalSelectedFilesList)
+      : fileSystemManager.loadOriginalSelectionFileSet(options, originallySelectedFallback);
+
+    let allDiskFileSet = fileSystemManager.getFileSet(allDiskFileList);
     let fileSystemChangeCalculator = new FileSystemChangeCalculator(newFileSet, originalSelectionFileSet, allDiskFileSet);
     let fileSystemChange = fileSystemChangeCalculator.calculateFileSystemChange();
 
@@ -133,14 +148,12 @@ const bulk = async function(selectedFileList, options = {}) {
     if (storeNewSelection) fileSystemManager.storeOriginalSelectionFileSet(newFileSet);
     if (!options.noBackup) fileSystemManager.backupBulkFile(options.bulkFileName, newBulkFileString);
 
-    fileSystemManager.execute(fileSystemChange, options.logging);
+    fileSystemManager.execute(fileSystemChange, options.logging, { defaultTopicPath, defaultTopicKey });
     if (!fileSystemChange.noop) cyclePreventer.ignoreNextTopicsChange();
     new DefaultTopic(); // Error in case the person changed the default topic file name
 
     if (deleteBulkFile) fileSystemManager.deleteBulkFile(options.bulkFileName); // put this last to preserve in case of error
   }
-
-  selectedFileList = selectedFileList.map(p => p.match(/(topics\/.*)/)[1]); // if the user passed absolute paths, convert to relative
 
   let normalMode = !options.resume && !options.start && !options.finish && !options.sync;
   if (normalMode) {
@@ -166,10 +179,14 @@ const bulk = async function(selectedFileList, options = {}) {
   }
 
   if (options.finish) { // non-editor mode
-    handleFinish({ deleteBulkFile: true });
+    handleFinish({
+      originalSelectedFilesList: finishSelectionProvided ? selectedFileList : undefined,
+      deleteBulkFile: true
+    });
   }
 
   if (options.sync) {
+    ensureBulkFileName(options);
     if (fs.existsSync(options.bulkFileName) && options.useExisting) { // if the user has a bulk file from a previous session
       log(chalk.magenta(`Canopy bulk sync: Reconstructing topic files from prior bulk file ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: false }), { ...options, suppressThrow: true });
@@ -179,7 +196,7 @@ const bulk = async function(selectedFileList, options = {}) {
 
     if (!process.env['CANOPY_EDITOR']) console.log(chalk.bgYellow(chalk.black('Try setting your CANOPY_EDITOR environment variable so that Canopy knows which editor to use for bulk sync')));
 
-    if (['emacs', 'vim', 'nano', undefined].includes(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
+    if (isTerminalEditor(process.env.CANOPY_EDITOR || process.env.VISUAL || process.env.EDITOR)) { // CLI editor is incompatible with sync mode logging
       options.logging = false;
     }
 
@@ -302,6 +319,13 @@ function openEditorAndWait(filePath, editorCmd = 'vi') {
   });
 }
 
+function isTerminalEditor(editorCmd) {
+  if (!editorCmd) return false;
+  let command = editorCmd.trim().split(/\s+/)[0];
+  command = path.basename(command);
+  return ['emacs', 'vim', 'vi', 'nano'].includes(command);
+}
+
 module.exports = bulk;
 
 function handleWatchError(error, options = {}) {
@@ -315,7 +339,9 @@ function handleWatchError(error, options = {}) {
 }
 
 function buildInErrorState() {
-  const html = fs.existsSync('build/index.html') ? fs.readFileSync('build/index.html', 'utf8') : '';
+  const { staticBuildPath } = require('../shared/build_paths');
+  const indexPath = staticBuildPath('index.html');
+  const html = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
   return !html || html.includes('Error building project');
 }
 
@@ -327,4 +353,30 @@ function touchDefaultTopicOnInvalidBuild({ defaultTopicPath, newFileSet, log }) 
   if (typeof log === 'function') {
     log(chalk.magenta(`Bulk file no-op with invalid build triggering default topic touch - ${touchPath}`));
   }
+}
+
+function ensureBulkFileName(options) {
+  if (!options.bulkFileName) options.bulkFileName = DefaultTopic.bulkFileName;
+}
+
+function resolveSelectedFiles(selectedFileList, options = {}) {
+  return [...new Set(selectedFileList.flatMap(selectedPath => {
+    let topicPathMatch = String(selectedPath).match(/(topics\/.*)/);
+    if (!topicPathMatch) return [];
+
+    let topicPath = topicPathMatch[1].replace(/\/+$/, '');
+    if (!fs.existsSync(topicPath)) return [topicPath];
+
+    if (fs.statSync(topicPath).isDirectory()) {
+      let directoryFiles = options.recursive
+        ? getRecursiveSubdirectoryFiles(topicPath)
+        : fs.readdirSync(topicPath)
+          .map(fileName => path.join(topicPath, fileName))
+          .filter(filePath => fs.existsSync(filePath) && fs.statSync(filePath).isFile());
+
+      return directoryFiles.filter(filePath => filePath.endsWith('.expl'));
+    }
+
+    return topicPath.endsWith('.expl') ? [topicPath] : [];
+  }))];
 }

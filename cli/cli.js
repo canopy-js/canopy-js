@@ -7,6 +7,7 @@ const serve = require('./serve/serve');
 const dev = require('./dev');
 const note = require('./note');
 const bulk = require('./bulk/bulk');
+const electron = require('./electron');
 const program = new Command();
 
 function addBuildOptions(cmd) {
@@ -14,11 +15,11 @@ function addBuildOptions(cmd) {
     .option('-s, --symlinks', 'builds symlinked topic folders for static assets server', false)
     .option('-h, --hash-urls', 'build site for use with hangbang URLs', false)
     .option('-p, --project-path-prefix <prefix>', 'for hosting on a domain with a subpath eg example.com/sub/', '')
-    .option('-k, --keep-build-directory', 'Do not create a new build directory, by default it is removed recursively', false)
-    .addOption(new Option('--cache', 'whether to build touched topics first').implies({'keepBuildDirectory': true}))
+    .option('-x, --replace-build-directory', 'Replace the build directory before building', false)
+    .addOption(new Option('--cache', 'whether to build touched topics first')) // cache requires old files for time comparison
     .option('-m, --manual-html', 'Do not create an index.html but rather allow user to create one', false)
-    .addOption(new Option('--file [output]', 'Also write a single-file HTML (default: build/<DefaultTopic>.html)').implies({ hashUrls: true }))
-    .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change').implies({'keepBuildDirectory': true}))
+    .addOption(new Option('--file [output]', 'Also write a single-file HTML (default: build/file/<DefaultTopic>.html)').implies({ hashUrls: true }))
+    .addOption(new Option('--skip-initial-build', 'Don\'t build JSON until bulk file change'))
     .addOption(new Option('--pretty', 'Pretty print JSON'));
 }
 
@@ -103,6 +104,23 @@ program.command('serve')
     }
   });
 
+program.command('electron')
+  .description('build and run an Electron app for a Canopy project')
+  .option('--start', 'run the generated Electron app with electron-forge start')
+  .option('--package', 'package the generated Electron app with electron-forge package')
+  .option('--make', 'make distributable Electron artifacts with electron-forge make')
+  .option('--scaffold-only', 'only write build/electron without installing or running Electron')
+  .option('--no-install', 'skip npm install before running an Electron script')
+  .option('-l, --logging', 'print logs', true)
+  .action((options) => {
+    try {
+      electron(options);
+    } catch (e) {
+      console.error(e.message);
+      process.exit(1);
+    }
+  });
+
 addBuildOptions(
   program.command('bulk')
     .description('watch a Canopy project and rebuild JSON assets on text change')
@@ -111,14 +129,14 @@ addBuildOptions(
     .addOption(new Option('--resume', 'resume editing existing dotfile').conflicts('start').conflicts('finish'))
     .addOption(new Option('-u, --use-existing', 'use existing bulk file if present'))
     .addOption(new Option('-b, --blank', 'start with a blank file').conflicts(['finish', 'pick', 'search', 'continue', 'git']))
-    .addOption(new Option('-p, --pick', 'choose file paths with fuzzy selector').conflicts('finish'))
-    .addOption(new Option('-f, --files', 'used in conjunction with --pick, allows user to select individual files').conflicts(['finish']).implies({ pick: true }))
-    .addOption(new Option('-d, --directories', 'used in conjunction with --pick, allows the user to select directories of files').conflicts(['finish']).implies({ pick: true }))
-    .addOption(new Option('-r, --recursive', 'used in conjunction with --pick, allows selection of recursive directory contents').conflicts(['finish']).implies({ pick: true }))
-    .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files').conflicts('finish'))
-    .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive').conflicts('finish'))
+    .addOption(new Option('-p, --pick', 'choose file paths with fuzzy selector'))
+    .addOption(new Option('-f, --files', 'used in conjunction with --pick, allows user to select individual files').implies({ pick: true }))
+    .addOption(new Option('-d, --directories', 'used in conjunction with --pick, allows the user to select directories of files').implies({ pick: true }))
+    .addOption(new Option('-r, --recursive', 'used in conjunction with --pick, allows selection of recursive directory contents').implies({ pick: true }))
+    .addOption(new Option('-g, --git', 'edit files edited on the git stage, and untracked files'))
+    .addOption(new Option('-s, --search <string>', 'edit files matching a certain string case insensitive'))
     .addOption(new Option('--sync', 'create a bulk file and sync contents').conflicts('blank').conflicts('start').conflicts('finish'))
-    .addOption(new Option('--all', 'In sync mode, include all topics and keep watching for newly added ones').implies({ sync: true }))
+    .addOption(new Option('--all', 'Include all topics; in sync mode, keep watching for newly added ones').conflicts(['blank', 'start', 'resume']))
     .addOption(new Option('-n, --bulk-file-name <string>', 'give canopy bulk file custom name'))
     .addOption(new Option('--no-editor', 'use --sync without opening the default editor'))
     .addOption(new Option('--logging <boolean>', 'whether you want logging').default(true))

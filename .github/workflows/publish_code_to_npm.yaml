@@ -18,11 +18,11 @@ jobs:
     if: needs.tests.outputs.done == 'true' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
-    - uses: actions/setup-node@v4    # was @v3
+    - uses: actions/setup-node@v5
       with:
-        node-version: 20            # was 18
+        node-version: 20
         registry-url: https://registry.npmjs.org/
 
     - name: Update npm

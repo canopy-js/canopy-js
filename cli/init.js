@@ -30,6 +30,7 @@ function init() {
       build/
       canopy_bulk_file
       **/.DS_Store
+      .canopy-processes/**
       .canopy_bulk_original_selection
       .canopy_bulk_backups/**
       /${defaultTopicFileName}` + '\n';

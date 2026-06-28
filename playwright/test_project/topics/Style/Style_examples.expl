@@ -1,6 +1,6 @@
 Style examples: These are some style examples. There are [[inline text styles]], [[multi-line tokens]], and [[special topic names]].
 
-Multi-line tokens: There are [[tables]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[table link grid]], [[big tables]], [[snapping tables]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
+Multi-line tokens: There are [[tables]], [[tables with cell styles]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[table link grid]], [[table cycle icons]], [[big tables]], [[snapping tables]], [[tables with break-fitting]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL inline block quote links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
 
 Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], and [[redundant parent links]].
 
@@ -16,6 +16,10 @@ Second table:
 |a|b|
 |-|-|
 |1|2|
+
+Tables with cell styles:
+| Plain | \style="color: rgb(255, 0, 0)" Red |
+| Mid \style="background-color: rgb(0, 255, 0)" \.highlighted-cell cell | End \.emphasized-cell \style="font-weight: 700" |
 
 Tables with merge syntax:
 | This | is | a | table |
@@ -51,6 +55,20 @@ Table links:
 | Normal Text |
 | [![Disabled Link]] |
 
+Table cycle icons:
+| [[Table cycle icons 1|1]] | [[Table cycle icons summary|Summary]] |
+| [[Table cycle icons 10|10]] | \^ |
+Parent reference: [[style examples]].
+
+Table cycle icons 1:
+One.
+
+Table cycle icons summary:
+Summary.
+
+Table cycle icons 10:
+This is a cycle to [[Style Examples#Table cycle icons/Style Examples#Table cycle icons summary|summary]].
+
 Big Tables:
 | This | is | a | big | table | This | is | a | big | table | This | is | a | big | table |
 
@@ -62,6 +80,19 @@ Snapping Tables:
 | R1  | one line |
 | R2  | line1<br>line2<br>line3 |
 | R3  | line1<br>line2<br>line3<br>line4<br>line5 |
+<br>
+| 1. _Bava Kamma_<br>(damages and liability) | 2. *_Bava Metziya_*<br>(found objects and commerce, found objects and commerce, found objects and commerce) | 3. _Bava Basra_<br>(property and inheritance) | 4. _Sanhedrin_<br>(courts and punishments) | 5. _Makkos_<br>(lashes and exile) |
+| 6. _Shevuos_<br>(oaths and claims) | 7. _Eduyos_<br>(testimony and rulings) | 8. _Avodah Zarah_<br>(idolatry and boundaries) | 9. _Avos_<br>(ethics and tradition) | 10. _Horayos_<br>(mistaken rulings) |
+<br>
+| UnbreakableAnchorColumnThatShouldStayWide | Alpha beta gamma delta epsilon zeta eta theta iota kappa lambda | One two three four five six seven eight nine ten eleven |
+<br>
+| Citation | Form | Passage | Translation |
+| Bereishis 25:26 | achaz | Short passage text with enough words to wrap naturally | After that his brother came out, his hand grasping the heel of Eisov, and he named him Yaakov. Yitzchok was sixty years old when she gave birth to them. |
+
+Tables with break-fitting:
+| Hebrew | Simple | Intensive | Causative | Reflexive |
+|---|---|---|---|---|
+| Active | TransitiveAlpha<br>אבגדהוזחט | TransitiveBeta<br>אבגדהוזחט | TransitiveGamma<br>אבגדהוזחט | TransitiveDelta<br>אבגדהוזחט |
 
 Menus:
 For small elements we use a width of 4:
@@ -74,33 +105,33 @@ For small elements we use a width of 4:
 ===
 For more text we use a width of 3
 ===
-- This is 1/3 pill??????
+- This is 1/3 pill?????? ??????
 - 2
 - 3
 - 4
 ===
 Bigger yet is a half pill if N < 2:
 ===
-- This is 1/2 pill ????????????
+- This is 1/2 pill ???????????? ??????
 - 2
 ===
 Bigger yet is a quarter card if N > 2:
 ===
-- This is 1/4 card ????????????
+- This is 1/4 card ???????????? ???
 - 2
 - 3
 - 4
 ===
 This gets a third card:
 ===
-- This is 1/3 card ??? ??? ?????????????
+- This is 1/3 card ??? ??? ????????????? ?????????????
 - 2
 - 3
 - 4
 ===
 For this gets a half card:
 ===
-- This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ????? ?????????????????? ???????????????????? ????????????????????
+- This is 1/2 card ??? ??? ??? ??? ??? ??? ??? ??? ????? ?????????????????? ???????????????????? ???????????????????? ????????????????????
 - 2
 - 3
 - 4
@@ -130,7 +161,7 @@ This is a long word that gets a quarter width:
 ===
 This is a long word that gets a third width:
 ===
-- Thisisalongword????
+- Thisisalongword???????
 - A
 - B
 - C
@@ -239,6 +270,8 @@ This is text that wraps
 > This is a block quote with a true blank line.
 >
 > This is after the blank line.
+> [![disabled words]] [![more disabled words]] [![even more disabled words]] [![still more disabled words]] [![and more disabled words]] [![further disabled words]] [![yet more disabled words]] [![final disabled words]] to force wrapping.
+> This is the second line after disabled links.
 
 Block quotes with multi-line links:
 This is regular text.
@@ -247,6 +280,9 @@ This is regular text.
 More text.
 
 Multi-line link: Multi-line link paragraph text.
+
+RTL inline block quote links:
+< [[New York|שורה ראשונה ארוכה מאוד כדי שרוחב הקישור ייקבע לפי השורה הזאת ולא לפי השורה האחרונה<br>סוף]] [[New Jersey|ליד]]
 
 RTL block quotes:
 This is regular text.
@@ -439,6 +475,7 @@ Dummy Next:
 
 Hyperlinks:
 This is a [link](http://google.com).
+This is an icon-only external link [](https://google.com).
 
 Hyperlink special cases:
 These are hyperlink special cases:
@@ -452,9 +489,12 @@ These are hyperlink special cases:
 
 Down Cycle References:
 This is a link [[solo hash links]], and this is a down cycle reference: [[Style Examples#Down Cycle references/Solo Hash Links|go down]]
+This is a down cycle reference before its parent link: [[Style Examples#Down Cycle references/Solo Hash Links|go down forward]], then [[solo hash links|solo hash links after]].
 
 Manual Cycle Arrow Icons:
 This is a link to [[style examples|style examples ↺]].
+This is a link to [[style examples|style examples 2a]].
+This is a link to [[style examples|style examples 🔁]].
 
 Inline HTML: Text. <b> This is a test.</b> Text.
 

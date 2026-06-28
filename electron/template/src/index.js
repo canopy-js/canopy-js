@@ -1,0 +1,79 @@
+const { app, BrowserWindow, protocol, shell } = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
+
+const appRoot = path.resolve(__dirname, '..', 'app');
+
+function createWindow() {
+  const iconPath = path.join(appRoot, '_assets', 'electron-icon.png');
+  const mainWindow = new BrowserWindow({
+    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    width: 900,
+    height: 1000,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  protocol.interceptFileProtocol('file', (request, callback) => {
+    const url = decodeURIComponent(request.url);
+
+    if (url.includes('/_canopy.js')) return callback({ path: path.join(appRoot, '_canopy.js') });
+    if (url.includes('/_canopy.js.map')) return callback({ path: path.join(appRoot, '_canopy.js.map') });
+    if (url.includes('/index.html')) return callback({ path: path.join(appRoot, 'index.html') });
+
+    if (url.includes('/_data') || url.includes('/_assets')) {
+      const segments = url.split('/').slice(3);
+      return callback({ path: path.join(appRoot, ...segments) });
+    }
+
+    return callback({ path: path.join(appRoot, 'index.html') });
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(openHandler);
+  mainWindow.webContents.once('did-finish-load', () => {
+    mainWindow.maximize();
+    mainWindow.show();
+  });
+  mainWindow.webContents.on('did-create-window', addWindowListeners);
+
+  return mainWindow.loadFile(path.join(appRoot, 'index.html'));
+}
+
+function openHandler({ url }) {
+  if (url.startsWith('file://')) {
+    return {
+      action: 'allow',
+      outlivesOpener: true,
+      overrideBrowserWindowOptions: { width: 900, height: 1000 }
+    };
+  }
+
+  shell.openExternal(url);
+  return { action: 'deny' };
+}
+
+function addWindowListeners(newWindow) {
+  newWindow.once('ready-to-show', () => {
+    newWindow.maximize();
+    newWindow.webContents.setWindowOpenHandler(openHandler);
+    newWindow.webContents.on('did-create-window', addWindowListeners);
+  });
+}
+
+app.on('ready', createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});

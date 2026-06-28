@@ -4,6 +4,7 @@ let Topic = require('../../shared/topic');
 let chalk = require('chalk');
 let { topicKeyOfString } = require('./simple-helpers');
 const path = require('path');
+let { staticBuildPath } = require('../../shared/build_paths');
 
 function listExplFilesRecursive(rootDirectory) {
   let filePaths = recursiveReadSync(rootDirectory);
@@ -37,16 +38,17 @@ function updateFileSystem(directoriesToEnsure, filesToWrite, options = {}) {
   });
 
   const n = Object.keys(filesToWrite).length;
-  if (options.logging) console.log(chalk.yellow(`Created ${n} JSON ${n === 1 ? 'file' : 'files'} in build/_data${n === 1 ? ` - ${Object.keys(filesToWrite)[0]}` : ''}`));
+  if (options.logging) console.log(chalk.yellow(`Created ${n} JSON ${n === 1 ? 'file' : 'files'} in ${staticBuildPath('_data')}${n === 1 ? ` - ${Object.keys(filesToWrite)[0]}` : ''}`));
 }
 
 function getExplFileObjects(topicsPath, options = {}) {
-  const buildDirectoryExists = fs.existsSync('./build/_data/');
+  const dataDirectory = staticBuildPath('_data');
+  const buildDirectoryExists = fs.existsSync(dataDirectory);
   let jsonModDatesMap = {};
 
   if (options.cache && buildDirectoryExists) {
     jsonModDatesMap = Object.fromEntries(
-      listFilesWithModificationDatesSync('./build/_data/').map(({ fileName, lastModified }) => [
+      listFilesWithModificationDatesSync(dataDirectory).map(({ fileName, lastModified }) => [
         fileName, lastModified
       ])
     );

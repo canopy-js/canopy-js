@@ -49,6 +49,161 @@ section.canopy-section {
   unicode-bidi: unset;
 }
 
+.canopy-loading-section > .canopy-paragraph,
+.canopy-loading-section > .canopy-section,
+.canopy-loading-section > .canopy-hr {
+  display: none;
+}
+
+.canopy-loading-section {
+  min-height: 180px;
+}
+
+.canopy-loading-graphic {
+  display: none;
+}
+
+.canopy-loading-section > .canopy-loading-graphic {
+  align-items: center;
+  animation: canopy-loading-graphic-reveal 1ms linear 150ms forwards;
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  min-height: 84px;
+  opacity: 0;
+}
+
+.canopy-loading-dot {
+  animation-duration: 3240ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  background: rgba(0, 0, 0, 0.34);
+  border-radius: 50%;
+  display: block;
+  filter: blur(1px);
+  height: 30px;
+  width: 30px;
+}
+
+@keyframes canopy-loading-graphic-reveal {
+  to { opacity: 1; }
+}
+
+.canopy-loading-dot:nth-child(1) {
+  animation-name: canopy-loading-dot-left;
+}
+
+.canopy-loading-dot:nth-child(2) {
+  animation-name: canopy-loading-dot-center;
+}
+
+.canopy-loading-dot:nth-child(3) {
+  animation-name: canopy-loading-dot-right;
+}
+
+@keyframes canopy-loading-dot-left {
+  0%,
+  100% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  12.5% {
+    opacity: 0.58;
+    transform: scale(1.36);
+  }
+
+  37.5%,
+  50%,
+  62.5%,
+  75% {
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  87.5% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  25% {
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes canopy-loading-dot-center {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  12.5%,
+  62.5% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  25%,
+  75% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  50% {
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  37.5%,
+  87.5% {
+    opacity: 0.58;
+    transform: scale(1.36);
+  }
+
+  100% {
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes canopy-loading-dot-right {
+  0%,
+  25%,
+  87.5%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  37.5% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  50% {
+    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  75% {
+    opacity: 0.52;
+    transform: scale(1.12);
+  }
+
+  62.5% {
+    opacity: 0.58;
+    transform: scale(1.36);
+  }
+}
+
 p.canopy-paragraph {
   overflow: visible; // In case external link icon is at end of line
   font-size: 20px;
@@ -167,15 +322,34 @@ a.canopy-disabled-link {
     display: inline-block;
   }
 
-  // link is between newlines or paragraph start/end, i.e. is full line
-  &:first-child:has(+ .canopy-linebreak-span),
-  .canopy-linebreak-span + &:has(+ .canopy-linebreak-span),
-  .canopy-linebreak-span + &:last-child,
-  &:only-child {
-    &.canopy-multiline-link .canopy-link-container {
-      display: inline-block;
-      vertical-align: top;
+  &[data-link-dir="rtl"].canopy-multiline-link:not(.canopy-full-line-link) .canopy-link-container,
+  &:dir(rtl).canopy-multiline-link:not(.canopy-full-line-link) .canopy-link-container {
+    display: inline;
+    line-height: 1.4;
+  }
+
+  .canopy-link-terminal-gap {
+    margin-inline-end: -12px;
+    font-size: 5px;
+    user-select: none;
+    &::before {
+      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
     }
+  }
+
+  // Full-line links don't need terminal gap padding.
+  &.canopy-full-line-link .canopy-link-terminal-gap {
+    margin-inline-end: 0;
+    font-size: 0;
+    &::before {
+      content: "";
+    }
+  }
+
+  &.canopy-full-line-link.canopy-multiline-link .canopy-link-container {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 1.4;
   }
 }
 
@@ -199,7 +373,7 @@ a.canopy-selectable-link {
   &.canopy-open-link .canopy-link-container {
     background-color: #e1dfdf;
     border: 1px solid #ababab;
-    border-radius: 1px;
+    border-radius: 3px;
     unicode-bidi: inherit;
   }
 
@@ -230,17 +404,49 @@ a.canopy-selectable-link {
     display: inline-block;
   }
 
+  &.canopy-external-icon-only-link {
+    .canopy-link-container {
+      display: inline-block;
+      padding: 4px 4px 2px 2px;
+      font-size: 0;
+      line-height: 0;
+      vertical-align: -3px;
+    }
+
+    .canopy-link-content-container,
+    .canopy-link-terminal-gap {
+      display: none;
+    }
+
+    .canopy-link-container .canopy-external-link-icon {
+      display: block;
+      top: 0;
+      inset-inline-start: 0;
+      vertical-align: baseline;
+      width: 10px;
+      height: 10px;
+    }
+  }
+
   // Icon direction mapping (based on link dir or fulcrum dir)
   &[data-link-dir="rtl"] .canopy-external-link-icon {
     transform: scaleX(-1);
   }
 
-  &:not([data-link-dir="rtl"]) .canopy-down-cycle-icon { // facing right-down
+  &:not([data-link-dir="rtl"]) .canopy-down-ahead-cycle-icon { // facing right-down
     transform: rotate(90deg) scaleY(-1) scaleX(0.8);
   }
 
-  &[data-link-dir="rtl"] .canopy-down-cycle-icon { // facing left-down
+  &[data-link-dir="rtl"] .canopy-down-ahead-cycle-icon { // facing left-down
     transform: rotate(270deg) scaleY(-1) scaleX(-0.8);
+  }
+
+  &:not([data-link-dir="rtl"]) .canopy-down-behind-cycle-icon { // reflected across final x-axis
+    transform: rotate(90deg) scaleY(-1) scaleX(-0.8);
+  }
+
+  &[data-link-dir="rtl"] .canopy-down-behind-cycle-icon { // reflected across final x-axis
+    transform: rotate(270deg) scaleY(-1) scaleX(0.8);
   }
 
   &[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon,
@@ -254,30 +460,11 @@ a.canopy-selectable-link {
 
   // Base gap behavior
   .canopy-link-icon-gap { // gap expands link forward and negative margin pushes icon back onto gap, so that both only break together
-    margin-inline-end: -12px;
+    margin-inline-end: -11px;
     font-size: 5px;
     user-select: none;
     &::before {
       content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
-  .canopy-link-terminal-gap {
-    margin-inline-end: -12px;
-    font-size: 5px;
-    user-select: none;
-    &::before {
-      content: "\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F\202F";
-    }
-  }
-
-  // Full-line and multiline links don't need terminal gap padding.
-  &.canopy-full-line-link .canopy-link-terminal-gap,
-  &.canopy-multiline-link .canopy-link-terminal-gap {
-    margin-inline-end: 0;
-    font-size: 0;
-    &::before {
-      content: "";
     }
   }
 
@@ -449,6 +636,12 @@ blockquote {
     color: #4b535b;
   }
 
+  // Multiline links need their anchor line box to match their link-container
+  // line-height, or mixed inline boxes create uneven spacing between rows.
+  > a.canopy-multiline-link {
+    line-height: 1.4;
+  }
+
   // Let linebreak spans control spacing between full-line blockquote links.
   > a.canopy-selectable-link.canopy-full-line-link:not(.canopy-multiline-link),
   > a.canopy-disabled-link.canopy-full-line-link:not(.canopy-multiline-link) {
@@ -592,6 +785,7 @@ table { // center even if overflowing x
     cursor: pointer;
     user-select: text;
     background-color: #ffffff;
+    box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0);
 
     a.canopy-selectable-link {
       text-decoration: none;
@@ -608,16 +802,16 @@ table { // center even if overflowing x
     }
 
     &:has(.canopy-selected-link) {
-      background-color: #edeefc;
+      box-shadow: inset 0 0 0 9999px rgba(0, 14, 213, 0.0705882353);
     }
 
     &:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-      background-color: #eae8e8;
+      box-shadow: inset 0 0 0 9999px rgba(22, 0, 0, 0.0901960784);
     }
 
     &:hover:not(:has(.canopy-selected-link)), // selected link style overrides hover
     &:hover:has(.canopy-open-link):not(:has(.canopy-selected-link)) {
-      background-color: #f5f6fe;
+      box-shadow: inset 0 0 0 9999px rgba(0, 26, 230, 0.0392156863);
 
       .canopy-selected-link {
           background-color: #f5f6fe;
@@ -637,8 +831,8 @@ table { // center even if overflowing x
       }
 
       .canopy-down-cycle-icon {
-        top: -0.5px;
-        left: 8px;
+        top: 0px;
+        left: 4px;
       }
     }
 
@@ -682,6 +876,7 @@ table { // center even if overflowing x
   align-items: center; /* This centers the rows within the container */
   margin: 0 auto;
   gap: 10px;
+  font-size: .95em;
   line-height: 1.3;
 
   .canopy-menu-row {
@@ -799,11 +994,11 @@ table { // center even if overflowing x
     .canopy-link-container {
       .canopy-external-link-icon, .canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon, .canopy-down-cycle-icon {
         font-size: 11px;
-        margin-inline-start: -11px; // Negative margin to pull the icon closer to the last word
+        margin-inline-start: -6px;
         padding-inline-start: 5px;
         position: relative; // Allows for position adjustment
         top: 5px;
-        left: 6px;
+        left: -3px;
         white-space: nowrap; // Prevents the icon from wrapping
         user-select: none;
       }
@@ -811,7 +1006,7 @@ table { // center even if overflowing x
       .canopy-down-cycle-icon {
         transform: rotate(90deg) scaleY(-1) scaleX(.8);
         top: -1px;
-        left: 12px;
+        left: 9px;
       }
 
       &.canopy-open-link {
@@ -828,8 +1023,16 @@ table { // center even if overflowing x
       }
     }
 
+    a[data-fulcrum-dir="rtl"] .canopy-forward-cycle-icon {
+      left: 0px;
+    }
+
     .canopy-link-icon-gap {
-      margin-inline-end: -25px;
+      margin-inline-end: -20px;
+    }
+
+    a.canopy-selectable-link:has(.canopy-forward-cycle-icon, .canopy-back-cycle-icon, .canopy-up-cycle-icon) .canopy-link-icon-gap {
+      margin-inline-end: -11px;
     }
 
     .canopy-link-terminal-gap {
@@ -1033,6 +1236,11 @@ ol, ul {
 
   li:not(:last-child) {
     margin-bottom: 10px;
+  }
+
+  li > ol > li:first-child,
+  li > ul > li:first-child {
+    padding-top: 10px;
   }
 }
 

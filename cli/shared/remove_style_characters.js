@@ -9,8 +9,8 @@ let Cache = {};
 
 function removeStyleCharacters(string) {
   if (Cache.hasOwnProperty(string)) return Cache[string];
-  let newString = string.replace(/(.*?(?:^|[^\\]))([_`*~])(\S*?[^\\])\2(.*)/, '$1$3$4'); // style characters within words if no spaces
-  newString = newString.replace(/(.*?(?:^|[^\\]))([_`*~])(.*?[^\\])\2(?![A-Za-z0-9])(.*)/, '$1$3$4'); // style characters at edges regardless of content
+  let newString = string.replace(/(.*?(?:^|[^\\]))(?<![_`*~])([_`*~])(?!\2)(\S*?[^\\])(?<!\2)\2(?!\2)(.*)/, '$1$3$4'); // style characters within words if no spaces
+  newString = newString.replace(/(.*?(?:^|[^\\]))(?<![_`*~])([_`*~])(?!\2)(.*?[^\\])(?<!\2)\2(?!\2)(?![A-Za-z0-9])(.*)/, '$1$3$4'); // style characters at edges regardless of content
   if (newString !== string) {
     let processedString = removeStyleCharacters(newString);
     Cache[string] = processedString;

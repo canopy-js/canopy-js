@@ -46,9 +46,12 @@ class Paragraph {
     this.sectionElement.style.opacity = '100%'; // prevents early webkit playwright spec bug before fix
 
     // Fixes firefox unicode bug
-    this.paragraphElement.style.unicodeBidi = 'unset';
+    let paragraphElement = this.paragraphElement;
+    if (!paragraphElement) return;
+
+    paragraphElement.style.unicodeBidi = 'unset';
     requestAnimationFrame(() => {
-      this.paragraphElement.style.unicodeBidi = 'plaintext';
+      paragraphElement.style.unicodeBidi = 'plaintext';
     });
   }
 
@@ -67,8 +70,26 @@ class Paragraph {
     return window.getComputedStyle(this.sectionElement).display !== 'none';
   }
 
+  // Visual loading state: content may already exist, but remains hidden until displayPath clears this class.
+  get loadingElementVisible() {
+    return this.sectionElement.classList.contains('canopy-loading-section');
+  }
+
+  // Placeholder state: registered shell whose paragraph content has not been rendered yet.
+  get placeholder() {
+    return this.loadingElementVisible && !this.paragraphElement;
+  }
+
+  get loadingElement() {
+    return this.sectionElement.querySelector(':scope > .canopy-loading-graphic');
+  }
+
+  get contentElement() {
+    return this.paragraphElement || this.loadingElement;
+  }
+
   get isFocused() {
-    const rect = this.paragraphElement.getBoundingClientRect();
+    const rect = this.contentElement.getBoundingClientRect();
     const viewportHeight = ScrollableContainer.visibleHeight;
 
     const topLimit = viewportHeight * 0.1;
@@ -97,8 +118,7 @@ class Paragraph {
     let paragraphElement = Array.from(this.sectionElement.childNodes).
       find((element) => element.tagName === 'P');
 
-    if (!paragraphElement) throw new Error("Paragraph has no paragraph element");
-    return paragraphElement;
+    return paragraphElement || null;
   }
 
   get path() {
@@ -118,7 +138,10 @@ class Paragraph {
   }
 
   get links() {
-    let linkElements = this.paragraphElement.querySelectorAll('a.canopy-selectable-link');
+    let paragraphElement = this.paragraphElement;
+    if (!paragraphElement) return [];
+
+    let linkElements = paragraphElement.querySelectorAll('a.canopy-selectable-link');
     return Array.from(linkElements).map((element) => new Link(element));
   }
 
@@ -137,7 +160,10 @@ class Paragraph {
   }
 
   get linkElements() {
-    return Array.from(this.paragraphElement.querySelectorAll('.canopy-selectable-link'));
+    let paragraphElement = this.paragraphElement;
+    if (!paragraphElement) return [];
+
+    return Array.from(paragraphElement.querySelectorAll('.canopy-selectable-link'));
   }
 
   get firstLink() {
@@ -263,25 +289,25 @@ class Paragraph {
   }
 
   get isBig() {
-    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    let paragraphPercent = this.contentElement.offsetHeight / ScrollableContainer.visibleHeight;
     return paragraphPercent > .75;
   }
 
   get fits() {
-    let paragraphPercent = this.paragraphElement.offsetHeight / ScrollableContainer.visibleHeight;
+    let paragraphPercent = this.contentElement.offsetHeight / ScrollableContainer.visibleHeight;
     return paragraphPercent < .8;
   }
 
   get top() {
-    return this.paragraphElement.getBoundingClientRect().top;
+    return this.contentElement.getBoundingClientRect().top;
   }
 
   get bottom() {
-    return this.paragraphElement.getBoundingClientRect().bottom;
+    return this.contentElement.getBoundingClientRect().bottom;
   }
 
   get positionOnViewport() {
-    const rect = this.paragraphElement.getBoundingClientRect();
+    const rect = this.contentElement.getBoundingClientRect();
     const viewportHeight = ScrollableContainer.visibleHeight;
     const top = rect.top;
 
@@ -348,11 +374,17 @@ class Paragraph {
 
   // Shadow DOM
   static paragraphsByPath = {};
-  static byPath(pathString) {
-    if (!pathString) return null;
-    if (pathString instanceof Path) pathString = pathString.pathString;
-    if (!this.paragraphsByPath[pathString]?.parentNode) return null; // cache functions haven't run
-    return this.paragraphsByPath[pathString];
+  static byPath(path) {
+    if (!path) return null;
+
+    const pathObject = path instanceof Path ? path : null;
+    const pathString = pathObject ? pathObject.pathString : path;
+
+    let paragraph = this.paragraphsByPath[pathString];
+    if (!paragraph && pathObject) paragraph = this.paragraphsByPath[pathObject.recapitalize.pathString];
+
+    if (!paragraph?.parentNode) return null; // cache functions haven't run
+    return paragraph;
   }
 
   removeFromDom() {
@@ -374,6 +406,9 @@ class Paragraph {
   }
 
   executePreDisplayCallbacks() {
+    if (this.placeholder) return; // wait for content to render
+    if (!this.contentElement?.getClientRects().length) return; // wait until layout is measurable
+
     const callbacks = this.sectionElement.preDisplayCallbacks || [];
     callbacks.forEach(callback => callback());
     this.sectionElement.preDisplayCallbacks = [];
@@ -386,16 +421,20 @@ class Paragraph {
   static registerChild(childElement, parentElement) {
     const childParagraph = Paragraph.registerNode(childElement);
     childParagraph.parentNode = parentElement; // including canopyContainer
+    return childParagraph;
   }
 
   static registerNode(sectionElement) {
     const path = new Path(sectionElement.dataset.pathString).recapitalize; // use canonical capitalizations in case URL version is wrong
     const existing = Paragraph.byPath(path);
-    if (existing && existing.sectionElement !== sectionElement) throw new Error("Multiple DOM objects instantiated for single sectionElement");
+    if (existing && existing.sectionElement !== sectionElement) {
+      throw new Error(`Multiple DOM objects instantiated for path ${path.string}`);
+    }
 
     const paragraph = new Paragraph(sectionElement);
     sectionElement.dataset.pathString = path.string; // persist recapitalized path string
     this.paragraphsByPath[path.string] = paragraph;
+    paragraph.transferDataset();
     return paragraph;
   }
 
@@ -407,18 +446,64 @@ class Paragraph {
       });
   }
 
-  static executePreDisplayCallbacksTree(rootSectionElement) {
-    if (!Paragraph.contentLoaded) return; // pre-running callbacks is optimization except on initial load
+  static executePreDisplayCallbacksTree(rootSectionElement, options = {}) {
+    if (!Paragraph.contentLoaded) return Promise.resolve(); // pre-running callbacks is optimization except on initial load
 
+    const sectionElements = [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')];
     canopyContainer.appendChild(rootSectionElement);
 
-    [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')].forEach(sectionElement => {
+    if (options.eager) {
+      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements);
+    }
+
+    sectionElements.forEach(sectionElement => {
       sectionElement.style.display = 'block';
       Paragraph.for(sectionElement).executePreDisplayCallbacks();
       sectionElement.style.removeProperty('display');
     });
 
-    canopyContainer.removeChild(rootSectionElement);
+    if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+    return Promise.resolve();
+  }
+
+  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements) {
+    const runSection = index => {
+      const sectionElement = sectionElements[index];
+      if (!sectionElement) {
+        if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+        return Promise.resolve();
+      }
+
+      return Paragraph.scheduleEagerPreDisplayCallback(() => {
+        sectionElement.style.display = 'block';
+        Paragraph.for(sectionElement).executePreDisplayCallbacks();
+        sectionElement.style.removeProperty('display');
+      }).then(() => runSection(index + 1));
+    };
+
+    return runSection(0).catch(error => {
+      if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+      throw error;
+    });
+  }
+
+  static scheduleEagerPreDisplayCallback(callback) {
+    return new Promise((resolve, reject) => {
+      const run = () => {
+        try {
+          callback();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run);
+      } else {
+        setTimeout(run);
+      }
+    });
   }
 
   static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM

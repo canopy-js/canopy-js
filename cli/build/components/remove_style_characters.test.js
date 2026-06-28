@@ -44,3 +44,13 @@ test('it ignores escaped style characters', () => {
   let text = "_\\*a\\*_ \\*b\\*";
   expect(removeStyleCharacters(text)).toEqual('\\*a\\* \\*b\\*');
 });
+
+test('it does not remove consecutive asterisk runs as style characters', () => {
+  let text = '**a** ***';
+  expect(removeStyleCharacters(text)).toEqual('**a** ***');
+});
+
+test('it does not remove consecutive underscore runs as style characters', () => {
+  let text = '__a__ ___';
+  expect(removeStyleCharacters(text)).toEqual('__a__ ___');
+});

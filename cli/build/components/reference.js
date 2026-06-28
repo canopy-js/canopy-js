@@ -30,22 +30,43 @@ class Reference {
   }
 
   get hasCurlyBraces() {
-    return !!this.contents.match(/(^|[^\\])\{/);
+    return !!this.sanitizeLiteralHtmlBraces(this.contents).match(/(^|[^\\])\{/);
   }
 
   get hasPipe() {
-    return /^(?:\\.|[^\\])+\|/.test(this.contents)   // has a valid pipe with escapes, requires text before
-      && !/{[^{}]*\|[^{}]*}/.test(this.contents);   // but reject if it's inside {a|b} syntax
+    let braceDepth = 0;
+
+    for (let i = 0; i < this.contents.length; i += 1) {
+      const character = this.contents[i];
+      if (this.characterIsEscaped(this.contents, i)) continue;
+
+      if (character === '{') {
+        braceDepth += 1;
+        continue;
+      }
+
+      if (character === '}' && braceDepth > 0) {
+        braceDepth -= 1;
+        continue;
+      }
+
+      if (character === '|' && braceDepth === 0 && i > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   parseDisplayAndTarget() {
     if (!this.valid) {
       this.parserContext.registerSubsumptionConditionalError(
-        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.filePathAndLineNumber}`)
+        chalk.red('Invalid reference string: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`)
       );
     }
 
-    if (this.hasPipe) { // if pipe, subsequent {{ is certainly HTML insertion
+    if (this.hasPipe) { // if pipe, only HTML-style {{}} insertions are valid brace syntax
+      this.validatePipeCompatibleBraces();
       this.parsePipeReference();
     } else if (this.hasCurlyBraces) { // if not pipe, {{ is certainly link syntax or HTML would be in link target text
       this.parseCurlyBraceReference();
@@ -62,14 +83,60 @@ class Reference {
       .replace(/<br>|<BR>|<Br>|<bR>/g, ' '); // Replaces all capitalizations of '<BR>' with a space
   }
 
-  parseCurlyBraceReference() {
-    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^{}])+)/gs;
-    const segments = Array.from(this.contents.matchAll(regex));
+  sanitizeLiteralHtmlBraces(string) {
+    return string.replace(
+      /<([A-Za-z][\w:-]*)\b[^>]*>\s*(\{\{[\s\S]*?}})\s*<\/\1>/g,
+      (match, tagName, braceText) => match.replace(braceText, '\uE000'.repeat(braceText.length))
+    );
+  }
 
-    segments.forEach(([_, openingBraces, braceContents, closingBraces, plainText]) => {
+  validatePipeCompatibleBraces() {
+    for (let i = 0; i < this.contents.length; i += 1) {
+      if (this.contents[i] !== '{' && this.contents[i] !== '}') continue;
+      if (this.characterIsEscaped(this.contents, i)) continue;
+
+      if (this.contents.slice(i, i + 2) === '{{') {
+        const precedingCharacter = i > 0 ? this.contents[i - 1] : '';
+        if (precedingCharacter === '>') {
+          i += 1;
+          continue;
+        }
+      }
+
+      if (this.contents.slice(i, i + 2) === '}}') {
+        const succeedingCharacter = this.contents[i + 2] || '';
+        if (succeedingCharacter === '<') {
+          i += 1;
+          continue;
+        }
+      }
+
+      throw new Error(chalk.red('Reference cannot mix pipe syntax with {} or non-HTML {{}} syntax: ' + this.fullText + `\n${this.parserContext.currentFilePathAndLineNumber}`));
+    }
+  }
+
+  characterIsEscaped(string, index) {
+    let backslashCount = 0;
+
+    for (let i = index - 1; i >= 0 && string[i] === '\\'; i -= 1) {
+      backslashCount += 1;
+    }
+
+    return backslashCount % 2 === 1;
+  }
+
+  parseCurlyBraceReference() {
+    const sanitizedContents = this.sanitizeLiteralHtmlBraces(this.contents);
+    const regex = /(\{\{?)((?:(?!\}).)+)(\}\}?)|((?:\\.|[^{}])+)/gs;
+    const segments = Array.from(sanitizedContents.matchAll(regex));
+
+    segments.forEach((match) => {
+      const [segment, openingBraces, braceContents, closingBraces, plainText] = match;
+      const originalSegment = this.contents.slice(match.index, match.index + segment.length);
+
       if (plainText) {
-        this.displayText += plainText; //{|The }Literature/Big Bad Wolf
-        this.targetText += plainText;
+        this.displayText += originalSegment; //{|The }Literature/Big Bad Wolf
+        this.targetText += originalSegment;
       } else {
         this.validateBraces(openingBraces, closingBraces);
 

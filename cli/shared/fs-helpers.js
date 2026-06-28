@@ -5,6 +5,7 @@ let chalk = require('chalk');
 let path = require('path');
 let { execSync } = require('child_process');
 var stripAnsi = require('strip-ansi');
+let { staticBuildDirectory, staticBuildPath } = require('./build_paths');
 
 class DefaultTopic {
   constructor() {
@@ -22,6 +23,11 @@ class DefaultTopic {
     this.categoryPath = categoryPath && Topic.convertUnderscoresToSpaces(categoryPath);
     this.topicFileName = Topic.for(this.name).topicFileName;
     this.jsonFileName = Topic.for(this.name).jsonFileName;
+  }
+
+  static get bulkFileName() {
+    const { topicFileName } = new DefaultTopic();
+    return topicFileName ? `${topicFileName}.bulk` : 'canopy_bulk_file.bulk';
   }
 }
 
@@ -121,13 +127,13 @@ function writeHtmlError(error) {
   const safeContext = context ? escapeHtml(context) : '';
 
   try {
-    fs.mkdirSync('build', { recursive: true });
+    fs.mkdirSync(staticBuildDirectory, { recursive: true });
   } catch (_) {
     // ignore; writeFileSync will throw if we truly can't write
   }
 
   fs.writeFileSync(
-    'build/index.html',
+    staticBuildPath('index.html'),
     `<style>
         p code {
           font-size: 65%;

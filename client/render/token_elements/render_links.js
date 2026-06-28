@@ -6,9 +6,14 @@ import { projectPathPrefix, hashUrls } from 'helpers/getters';
 import { measureVerticalOverflow } from 'render/helpers';
 
 const rtlPattern = /[\p{Script=Hebrew}\p{Script=Arabic}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Samaritan}\p{Script=Mandaic}\p{Script=Adlam}\p{Script=Hanifi_Rohingya}\p{Script=Phoenician}\p{Script=Imperial_Aramaic}]/u;
+const ltrPattern = /[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Devanagari}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Number}]/u;
 
 function isRtlText(text) {
-  return rtlPattern.test((text || '').trim());
+  for (const character of Array.from((text || '').trim())) {
+    if (rtlPattern.test(character)) return true;
+    if (ltrPattern.test(character)) return false;
+  }
+  return false;
 }
 
 function renderLinkBase(token, renderContext, renderTokenElements) {
@@ -91,10 +96,12 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
       if (spaceBelow) contentContainer.style.paddingBottom = `${spaceBelow}px`;
     }
 
+    // Multiline means the link's own content spans more than one visual line,
+    // whether from wrapping or explicit line breaks inside the link.
     if (inlineLayoutEnabled && lineHeight > 0 && height >= lineHeight * 1.7) {
       linkElement.dataset.height = height;
       linkElement.dataset.lineHeight = lineHeight;
-      linkElement.classList.add('canopy-multiline-link'); // Add class if wrapped
+      linkElement.classList.add('canopy-multiline-link');
     }
 
     const parent = linkElement.parentElement;
@@ -103,6 +110,8 @@ function renderLinkBase(token, renderContext, renderTokenElements) {
     const isLast = linkElement === parent?.lastElementChild;
     const prevIsBreak = linkElement.previousElementSibling?.classList.contains('canopy-linebreak-span');
     const nextIsBreak = linkElement.nextElementSibling?.classList.contains('canopy-linebreak-span');
+    // Full-line means the link is structurally alone between paragraph/block
+    // quote boundaries or explicit linebreak spans.
     const isFullLine = isBlockParent && ((isFirst || prevIsBreak) && (isLast || nextIsBreak));
     linkElement.classList.toggle('canopy-full-line-link', isFullLine);
 
@@ -152,8 +161,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
       const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;
       const fulcrumParagraph = fulcrumPath?.paragraph;
       if (fulcrumParagraph?.paragraphElement) {
-        const fulcrumText = fulcrumParagraph.paragraphElement.textContent;
-        link.element.dataset.fulcrumDir = isRtlText(fulcrumText) ? 'rtl' : 'ltr';
+        link.element.dataset.fulcrumDir = isRtlText(fulcrumParagraph.paragraphElement.textContent) ? 'rtl' : 'ltr';
       }
 
       if (containsIconOrEmoji(link.text) || isSingleCharacterLink(link.text)) { // user is taking responsibility for arrow
@@ -167,6 +175,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
         cycleIcon.innerText = '↪';
       } else if (link.isDownCycle) {
         cycleIcon.classList.add('canopy-down-cycle-icon');
+        cycleIcon.classList.add(`canopy-down-${link.downCycleDirection || 'ahead'}-cycle-icon`);
         cycleIcon.innerText = '↪';
       } else if (link.isUpCycle || link.isSelfReference) {
         cycleIcon.classList.add('canopy-up-cycle-icon');
@@ -242,18 +251,22 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
 
   // Add external link-specific classes and attributes
   linkElement.classList.add('canopy-external-link');
+  linkElement.classList.toggle('canopy-external-icon-only-link', !!token.iconOnly);
   linkElement.dataset.type = 'external';
   linkElement.setAttribute('href', token.url); // URL validation assumed to be done at the matcher/token stage
   linkElement.setAttribute('target', '_blank');
   linkElement.dataset.targetUrl = token.url;
+  if (token.iconOnly) linkElement.setAttribute('aria-label', token.url);
 
   // Add external link icon
   let cycleIcon = document.createElement('span');
   cycleIcon.classList.add('canopy-external-link-icon');
   const linkContainer = linkElement.querySelector('.canopy-link-container');
-  const iconGap = document.createElement('span');
-  iconGap.classList.add('canopy-link-icon-gap');
-  linkContainer.appendChild(iconGap);
+  if (!token.iconOnly) {
+    const iconGap = document.createElement('span');
+    iconGap.classList.add('canopy-link-icon-gap');
+    linkContainer.appendChild(iconGap);
+  }
   linkContainer.appendChild(cycleIcon);
 
   // Add a class if the link contains an image
@@ -270,9 +283,9 @@ function renderExternalLink(token, renderContext, renderTokenElements) {
 function containsIconOrEmoji(str) {
   if (!str) return false;
   const plainText = str.replace(/<[^>]*>/g, ''); // avoid treating HTML markup as symbols
-  const emojiPattern = /\p{Emoji}/u;
-  const symbolPattern = /[\p{Symbol}\p{Extended_Pictographic}]/u;
-  return emojiPattern.test(plainText) || symbolPattern.test(plainText);
+  const arrowPattern = /[\u2190-\u21FF\u2794-\u27BF\u27F0-\u27FF\u2900-\u297F\u2B00-\u2B4F]/u;
+  const emojiPattern = /(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}|\p{Emoji}\uFE0F)/u;
+  return arrowPattern.test(plainText) || emojiPattern.test(plainText);
 }
 
 function isSingleCharacterLink(str) {

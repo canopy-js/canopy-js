@@ -4,6 +4,10 @@ import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { hashUrls } from 'helpers/getters';
+import { requestJson, jsonSizeBytesForTopic, paragraphCountForTopic } from 'requests/request_json';
+
+const EAGER_LOAD_DOM_MAX_TOPIC_JSON_BYTES = 100000;
+const EAGER_LOAD_DOM_MAX_TOPIC_PARAGRAPHS = 60;
 
 class Link {
   constructor(argument) {
@@ -310,6 +314,21 @@ class Link {
     return link?.element || null;
   }
 
+  get currentDomLink() {
+    let metadata;
+    try {
+      metadata = this.metadata;
+    } catch {
+      return null;
+    }
+
+    if (!metadata?.enclosingPathString) return null;
+    if (!new Path(metadata.enclosingPathString).paragraph) return null;
+
+    let linkElement = Link.fromMetadata(metadata);
+    return linkElement ? new Link(linkElement) : null;
+  }
+
   get nextSibling() {
     let links = this.enclosingParagraph.links;
     if (!this.equals(links[links.length - 1])) {
@@ -478,6 +497,23 @@ class Link {
     return this.cycle && this.enclosingPath.ancestorOf(this.inlinePath.reduce());
   }
 
+  get downCycleDirection() {
+    if (!this.isDownCycle) return null;
+
+    const targetPath = this.inlinePath.reduce();
+    const parentLinks = this.enclosingPath.linksTo(targetPath)
+      .filter(link => !link.equals(this))
+      .sort((linkA, linkB) => {
+        if (linkA.isPathReference !== linkB.isPathReference) return linkA.isPathReference ? 1 : -1;
+        return Math.abs(linkA.relativeLinkNumber - this.relativeLinkNumber) -
+          Math.abs(linkB.relativeLinkNumber - this.relativeLinkNumber);
+      });
+    const parentLink = parentLinks[0];
+
+    if (!parentLink || parentLink.relativeLinkNumber === this.relativeLinkNumber) return null;
+    return parentLink.relativeLinkNumber < this.relativeLinkNumber ? 'behind' : 'ahead';
+  }
+
   static isDownCycle(enclosingPath, literalPath) {
     if (!enclosingPath || !literalPath) return false;
     if (!Path.introducesNewCycle(enclosingPath, literalPath)) return false;
@@ -511,7 +547,7 @@ class Link {
   }
 
   get isFragment() {
-    return this.childParagraph?.paragraphElement?.innerText === '';
+    return this.childParagraphElement?.innerText === '';
   }
 
   get childParagraphElement() {
@@ -608,6 +644,10 @@ class Link {
     if (this.isLocal) { // select link and advance the path
       return this.inlinePath;
     }
+  }
+
+  get displayPath() { // pending rename
+    return this.selectionPath;
   }
 
   get urlPath() {
@@ -836,8 +876,88 @@ class Link {
       .filter(link => link.isVisible)
   }
 
-  static eagerLoadVisibleLinks() {
-    setTimeout(() => Link.visible.filter(link => link.isGlobal).forEach(link => setTimeout(() => link.execute({ renderOnly: true })))); // eager render
+  static eagerLoadLinks(options = {}) {
+    Link.eagerLoadRequestId = (Link.eagerLoadRequestId || 0) + 1;
+    const eagerLoadRequestId = Link.eagerLoadRequestId;
+    const eagerLoadStillCurrent = () => eagerLoadRequestId === Link.eagerLoadRequestId;
+
+    const scheduleIdle = callback => new Promise((resolve, reject) => {
+      const run = () => {
+        if (!eagerLoadStillCurrent()) return resolve(false);
+
+        try {
+          resolve(callback());
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run);
+        return;
+      }
+
+      setTimeout(run);
+    });
+
+    const eagerLoadLinks = links => {
+      const globalLinks = links.filter(link => link.isGlobal);
+
+      const results = [];
+      const eagerLoadNextLink = index => {
+        if (!eagerLoadStillCurrent()) return Promise.resolve(results);
+
+        const link = globalLinks[index];
+        if (!link) return Promise.resolve(results);
+
+        return scheduleIdle(() => eagerLoadLink(link))
+          .then(result => {
+            results.push(result);
+            return eagerLoadNextLink(index + 1);
+          });
+      };
+
+      return eagerLoadNextLink(0);
+    };
+
+    const eagerLoadLink = (link) => {
+      const topics = uniqueTopicsForEagerLoad(link);
+
+      return Promise.all(topics.map(topic => requestJson(topic))).then(jsons => {
+        const jsonSizes = topics.map(topic => jsonSizeBytesForTopic(topic));
+        const paragraphCounts = topics.map(topic => paragraphCountForTopic(topic));
+        const domEagerLoadEligible = jsons.every(json => json) &&
+          jsonSizes.every(size => size !== null && size !== undefined && size <= EAGER_LOAD_DOM_MAX_TOPIC_JSON_BYTES) &&
+          paragraphCounts.every(count => count !== null && count !== undefined && count <= EAGER_LOAD_DOM_MAX_TOPIC_PARAGRAPHS);
+
+        if (!domEagerLoadEligible) return jsons;
+        if (!eagerLoadStillCurrent()) return jsons;
+
+        return scheduleIdle(() => {
+          if (!eagerLoadStillCurrent()) return false;
+          return link.execute({ renderOnly: true });
+        }).catch(() => {
+          return null;
+        });
+      });
+    };
+
+    const eagerLoadParagraphChain = paragraph => {
+      if (!paragraph) return;
+      return eagerLoadLinks(paragraph.links)
+        .then(() => eagerLoadParagraphChain(paragraph.parentParagraph));
+    };
+
+    const eagerLoad = () => {
+      eagerLoadLinks(Link.visible)
+        .then(() => eagerLoadParagraphChain(Path.current.paragraph));
+    };
+
+    if (options.initialLoad) {
+      requestAnimationFrame(() => requestAnimationFrame(eagerLoad));
+    } else {
+      eagerLoad();
+    }
   }
 
   static get onPage() {
@@ -853,6 +973,14 @@ class Link {
   static from(arg) {
     return new this(arg);
   }
+}
+
+function uniqueTopicsForEagerLoad(link) {
+  const topicsByName = {};
+  link.literalPath.topicArray.forEach(topic => {
+    topicsByName[topic.mixedCase] = topic;
+  });
+  return Object.values(topicsByName);
 }
 
 export default Link;

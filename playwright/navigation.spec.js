@@ -249,15 +249,15 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York');
   });
 
-  test('Clicking on a selected global deselects', async ({ page }) => {
+  test('Clicking on a selected global keeps its target displayed', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     await page.locator('a:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link >> visible=true')).toHaveCount(0);
-    await expect(page).toHaveURL('United_States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page).toHaveURL('United_States/New_York');
   });
 
   test('Clicking on an open global selects it', async ({ page }) => {
@@ -271,26 +271,26 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York');
   });
 
-  test('Clicking on a selected global selects parent', async ({ page }) => {
+  test('Clicking on a selected global child keeps its target displayed', async ({ page }) => {
     await page.goto('United_States/New_York/Martha\'s_Vineyard');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Martha\'s Vineyard');
 
     await page.locator('section[data-subtopic-name="New York"][data-path-depth="1"] > p > a[data-type="global"]:has-text("Martha\'s Vineyard")').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page).toHaveURL('United_States/New_York');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('Martha\'s Vineyard');
+    await expect(page).toHaveURL('United_States/New_York/Martha\'s_Vineyard');
   });
 
-  test('Clicking on a selected global in root paragraph deselects all', async ({ page }) => {
+  test('Clicking on a selected global in root paragraph keeps its target displayed', async ({ page }) => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
 
     await page.locator('a[data-type="global"]:has-text("New York"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
-    await expect(page).toHaveURL('United_States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page).toHaveURL('United_States/New_York');
   });
   test('Alt-clicking on global redirects the page', async ({ page }) => {
     await page.goto('/');
@@ -362,7 +362,7 @@ test.describe('Navigation', () => {
     await page.locator('body').press('Enter');
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
-    await expect(page).toHaveURL('/United_States/New_York#Southern_border');
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
@@ -392,15 +392,15 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
 
-  test('Clicking on a selected local deselects', async ({ page }) => {
+  test('Clicking on a selected local keeps its target displayed', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
 
     await page.locator('a:has-text("southern border"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('United States');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page).toHaveURL('United_States/New_York');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
 
   test('Clicking on an open local selects it', async ({ page }) => {
@@ -416,26 +416,26 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States/New_York#Southern_border');
   });
 
-  test('Clicking on a selected local selects parent', async ({ page }) => {
+  test('Clicking on a selected local child keeps its target displayed', async ({ page }) => {
     await page.goto('New_Jersey#Attractions');
     await expect(page.locator('.canopy-selected-link')).toHaveText('attractions');
 
     await page.locator('a[data-type="local"]:has-text("attractions"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('New Jersey');
-    await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
-    await expect(page).toHaveURL('New_Jersey#Northern_part');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('attractions');
+    await expect(page).toHaveURL('New_Jersey#Attractions');
   });
 
-  test('Clicking on a selected local in root paragraph deselects all', async ({ page }) => {
+  test('Clicking on a selected local in root paragraph keeps its target displayed', async ({ page }) => {
     await page.goto('New_Jersey#Northern_part');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
 
     await page.locator('a[data-type="local"]:has-text("northern part"):visible').click();
 
     await expect(page.locator('h1:visible')).toHaveText('New Jersey');
-    await expect(page.locator('.canopy-selected-link')).toHaveCount(0);
-    await expect(page).toHaveURL('New_Jersey');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern part');
+    await expect(page).toHaveURL('New_Jersey#Northern_part');
   });
 
   test('Alt-clicking on local zooms to the lowest path segment', async ({ page }) => {
@@ -523,6 +523,19 @@ test.describe('Navigation', () => {
     await expect(page.locator('h1:visible')).toHaveText('United States');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
+  });
+
+  test('Clicking on a selected path reference inlines target', async ({ page }) => {
+    await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
+
+    await page.locator('a.canopy-selected-link:has-text("northern border"):visible').click();
+
+    await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
+    await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
   });
 
   test('Clicking on a path reference inlines the reference path', async ({ page, context }) => {
@@ -691,6 +704,7 @@ test.describe('Navigation', () => {
 
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");
+    await expect(page.locator('text=There is a lot of parking, and it is near the >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('Shift+ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
@@ -710,6 +724,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('ArrowRight');
+    await page.pause();
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 
@@ -742,11 +757,15 @@ test.describe('Navigation', () => {
     await page.goto(`United_States/New_York/Style_examples#Down_Cycle_References`);
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References');
 
-    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'solo hash links' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-link-container').filter({ hasText: 'go down' })).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section .canopy-down-cycle-icon')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="solo hash links"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="solo hash links after"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="go down"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section a[data-text="go down forward"]')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-down-cycle-icon')).toHaveCount(2);
+    await expect(page.locator('.canopy-selected-section .canopy-down-behind-cycle-icon')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section .canopy-down-ahead-cycle-icon')).toHaveCount(1);
 
-    await page.locator('a:has-text("go down")').click()
+    await page.locator('a[data-text="go down"]').click()
     await expect(page.locator('.canopy-selected-link')).toHaveText("solo hash links");
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Down_Cycle_References/Solo_hash_links');
   });
@@ -766,7 +785,9 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(`/United_States/New_York/Martha's_Vineyard#Parking_lot`);
     await page.locator('a:has-text("cafeteria↩"):visible').click();
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria");
+    await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
     await page.goBack();
+    await expect(page.locator('text=There is a lot of parking, and it is near the >> visible=true')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText("cafeteria↩");    
   });
 

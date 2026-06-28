@@ -37,6 +37,7 @@ const Matchers = [
   disabledReferenceMatcher,
   fragmentReferenceMatcher,
   footnoteMarkerMatcher,
+  repeatedStyleCharacterMatcher,
   italicsMatcher,
   boldMatcher,
   codeSnippetMatcher,
@@ -373,7 +374,8 @@ function fragmentReferenceMatcher({ string, parserContext }) {
 
   if (match) {
     let reference = Reference.for('[[' + match[0].slice('[#['.length), parserContext);
-    if (!reference.simpleTarget) throw new Error(chalk.red(`Fragment reference ${reference.fullText} does not have simple target.\n${parserContext.filePathAndLineNumber}`));
+    reference.fragmentText = match[0];
+    if (!reference.simpleTarget) throw new Error(chalk.red(`Fragment reference ${reference.fullText} does not have simple target.\n${parserContext.currentFilePathAndLineNumber}`));
 
     parserContext.registerFragmentReference(reference, currentSubtopic);
 
@@ -416,12 +418,21 @@ function footnoteMarkerMatcher({ string, startOfLine }) {
   }
 }
 
+function repeatedStyleCharacterMatcher({ string, parserContext }) {
+  let match = string.match(/^([_`*~])\1+/);
+
+  if (match) {
+    parserContext.buffer += match[0];
+    return [null, match[0].length];
+  }
+}
+
 function hyperlinkMatcher({ string, parserContext }) {
-  let match = string.match(/^\[((?:\\.|!\[(?:\\.|[^\\])+?\)|[^\\])+?)\](?:\(((?:\\[^ ]|[^\\ ])+))\)/); // non-greedy unless text looks like nested image
+  let match = string.match(/^\[((?:\\.|!\[(?:\\.|[^\\])+?\)|[^\\])*?)\](?:\(((?:\\[^ ]|[^\\ ])+))\)/); // non-greedy unless text looks like nested image
   if (match) {
     let [_, text, url] = match;
     return [
-      new ExternalLinkToken(url, text, parserContext),
+      new ExternalLinkToken(url, text, parserContext, { iconOnly: text === '' }),
       match[0].length
     ];
   }
@@ -458,7 +469,7 @@ function imageMatcher({ string, parserContext }) {
 
 function italicsMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
-  let match = string.match(/^_(.*?[^\\])_(.|$)/s);
+  let match = string.match(/^_(.*?[^\\])(?<!_)_(?!_)(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[1].match(/\s/s);
 
@@ -479,7 +490,7 @@ function italicsMatcher({ string, parserContext, previousCharacter }) {
 
 function boldMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
-  let match = string.match(/^\*(.*?[^\\])\*(.|$)/s);
+  let match = string.match(/^\*(.*?[^\\])(?<!\*)\*(?!\*)(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[1].match(/\s/s);
 
@@ -500,7 +511,7 @@ function boldMatcher({ string, parserContext, previousCharacter }) {
 
 function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
   let validPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
-  let match = string.match(/^`(.*?[^\\])`(?=.|$)/s);
+  let match = string.match(/^`(.*?[^\\])(?<!`)`(?!`)(?=.|$)/s);
 
   if (match && validPreviousCharacter) {
     return [
@@ -515,7 +526,7 @@ function codeSnippetMatcher({ string, parserContext, _, previousCharacter }) {
 
 function underlineMatcher({ string, parserContext, previousCharacter }) {
   let strictPreviousCharacter = previousCharacter === undefined || !previousCharacter.match(/[A-Za-z0-9]/);
-  let match = string.match(/^~(.*?[^\\])~(.|$)/s);
+  let match = string.match(/^~(.*?[^\\])(?<!~)~(?!~)(.|$)/s);
   let strictNextCharacter = (match?.[2] !== undefined) && !match?.[2].match(/[A-Za-z0-9]/); // nextChar is null, or non-alpha-numeric
   let containsSpaces = match?.[1].match(/\s/s);
 

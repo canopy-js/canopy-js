@@ -12,16 +12,19 @@ const requestJson = (topic) => {
   const cacheEntry = {
     status: 'pending',
     json: null,
+    jsonSizeBytes: null,
+    paragraphCount: null,
     promise: null
   };
 
-  const dataPromise =
-    (embeddedTopicScript && Promise.resolve(JSON.parse(embeddedTopicScript.textContent))) || // embedded topic JSON (default topic / single-file build)
+  const dataPromise = embeddedTopicScript ?
+    Promise.resolve(parseJsonText(embeddedTopicScript.textContent, cacheEntry)) : // embedded topic JSON (default topic / single-file build)
     Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
       .then(res => {
         if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
-        return res.json();
-      });
+        return res.text();
+      })
+      .then(text => parseJsonText(text, cacheEntry));
 
   const requestPromise = dataPromise
     .then(json => {
@@ -41,6 +44,27 @@ const requestJson = (topic) => {
   return requestPromise;
 };
 
+function parseJsonText(jsonText, cacheEntry) {
+  cacheEntry.jsonSizeBytes = byteLength(jsonText);
+  const json = JSON.parse(jsonText);
+  cacheEntry.paragraphCount = Object.keys(json?.paragraphsBySubtopic || {}).length;
+  return json;
+}
+
+function byteLength(text) {
+  if (!text) return 0;
+  if (typeof TextEncoder === 'function') return new TextEncoder().encode(text).length;
+  return text.length;
+}
+
+function jsonSizeBytesForTopic(topic) {
+  return REQUEST_CACHE[topic.mixedCase]?.jsonSizeBytes;
+}
+
+function paragraphCountForTopic(topic) {
+  return REQUEST_CACHE[topic.mixedCase]?.paragraphCount;
+}
+
 function getCanonicalTopic(topic, subtopic = topic) {
   const matchingEntry = Object.values(REQUEST_CACHE).find(entry =>
     entry.status === 'fulfilled' &&
@@ -56,4 +80,4 @@ function getCanonicalTopic(topic, subtopic = topic) {
   return Topic.fromMixedCase(correctSubtopicKey);
 }
 
-export { requestJson, getCanonicalTopic };
+export { requestJson, getCanonicalTopic, jsonSizeBytesForTopic, paragraphCountForTopic };

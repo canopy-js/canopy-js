@@ -194,7 +194,9 @@ class ParserContext {
 
   getOriginalSubtopic(currentTopic, givenSubtopic) {
     if (!givenSubtopic) throw new Error('two arguments required');
-    return this.topics[currentTopic.caps]?.subtopics?.[givenSubtopic.caps];
+    const topicData = this.topics[currentTopic.caps];
+    return topicData?.subtopics?.[givenSubtopic.caps] ||
+      topicData?.fragmentReferenceSubtopics?.find(({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === givenSubtopic.caps)?.fragmentTargetSubtopic;
   }
 
   currentTopicHasSubtopic(targetSubtopic) {
@@ -242,6 +244,11 @@ class ParserContext {
 
   registerLocalReference(targetSubtopic, index, reference) {
     const topicData = this.ensureTopicData(this.currentTopic.caps, this.filePath);
+    const fragment = topicData.fragmentReferenceSubtopics.find(({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === targetSubtopic.caps);
+    if (fragment) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Local reference ${reference.fullText} conflicts with fragment reference ${fragment.referenceText} in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
+    // Prevent redundant parent links to the same paragraph from writing contradictory parent values.
+    if (topicData.localReferences.hasOwnProperty(targetSubtopic.caps)) return;
+
     topicData.localReferences[targetSubtopic.caps] = {
       parentSubtopic: this.currentSubtopic,
       referenceText: reference.fullText,
@@ -260,9 +267,12 @@ class ParserContext {
         `${this.filePath}:${this.lineNumber}:${this.characterNumber}`;
       throw new Error(chalk.red(this.formatErrorWithContext(message, this.filePath, this.lineNumber, this.characterNumber)));
     }
+    if (topicData.localReferences.hasOwnProperty(reference.targetAsTopic.caps)) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Fragment reference ${reference.fragmentText || reference.fullText} conflicts with local reference ${topicData.localReferences[reference.targetAsTopic.caps].referenceText} in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
+    if (topicData.subtopics.hasOwnProperty(reference.targetAsTopic.caps)) throw new Error(chalk.red(this.formatErrorWithContext(`Error: Fragment reference ${reference.fragmentText || reference.fullText} conflicts with subtopic [${reference.targetAsTopic.mixedCase}] in topic [${this.currentTopic.mixedCase}].`, this.filePath, this.lineNumber, this.characterNumber)));
     topicData.fragmentReferenceSubtopics.push({
       fragmentTargetSubtopic: reference.targetAsTopic,
       enclosingSubtopic: currentSubtopic,
+      referenceText: reference.fragmentText || reference.fullText,
       location: { line: this.lineNumber, col: this.characterNumber }
     });
   }
@@ -414,6 +424,7 @@ class ParserContext {
       const errorFilePath = this.topics[enclosingTopic.caps].filePath;
       const errorLine = location?.line || this.lineNumber;
       const errorCol = location?.col || this.characterNumber;
+      const enclosingSegment = displaySegment(enclosingTopic, enclosingSubtopic);
 
       if (this.hasConnection(enclosingSubtopic, enclosingTopic)) {
         [...pathString.matchAll(/(?:\\.|[^/])+/g)].map(match => match[0]).map(segmentString => {
@@ -421,18 +432,18 @@ class ParserContext {
 
           if (!this.topicExists(currentTopic)) {
             let punctuationWarning = currentTopic.mixedCase.match(/[.,:;]/) ? '\nWarning: Using punctuation like [.,;:] can terminate a paragraph key.' : '';
-            let message = `Error: Reference ${referenceString} in subtopic [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
+            let message = `Error: Reference ${referenceString} in subtopic ${enclosingSegment} mentions nonexistent topic or subtopic [${currentTopic.mixedCase}].\n${pathAndLineNumberString}` + punctuationWarning;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (currentSubtopic && !this.topicHasSubtopic(currentTopic, currentSubtopic)) {
             if (this.cache && !currentTopic.matches(this.currentTopic)) return segmentString; // we don't know about fragments yet so may be valid
-            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] does not exist.\n${pathAndLineNumberString}`;
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${currentSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph ${enclosingSegment} does not exist.\n${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
           if (!this.cache && !this.hasConnection(currentSubtopic || currentTopic, currentTopic)) {
-            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph [${enclosingTopic.mixedCase}, ${enclosingSubtopic.mixedCase}] exists, but is not subsumed by given topic.\n${pathAndLineNumberString}`;
+            let message = `Error: Subtopic [${currentTopic.mixedCase}, ${reference.firstSubtopic.mixedCase}] referenced in reference ${referenceString} of paragraph ${enclosingSegment} exists, but is not subsumed by given topic.\n${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }
 
@@ -443,7 +454,7 @@ class ParserContext {
 
           if (!this.cache && !this.globalReferences.bySubtopic[currentTopic.caps]?.[(currentSubtopic||currentTopic).caps]?.[nextTopic.caps]) {
             let message = `Error: Global reference "${referenceString}" contains invalid adjacency:\n` +
-             `[${currentTopic.mixedCase}, ${(currentSubtopic||currentTopic).mixedCase}] does not reference [${nextTopic.mixedCase}]\n`+
+             `${displaySegment(currentTopic, currentSubtopic || currentTopic)} does not reference [${nextTopic.mixedCase}]\n`+
              `${pathAndLineNumberString}`;
             throw new Error(chalk.red(this.formatErrorWithContext(message, errorFilePath, errorLine, errorCol)));
           }

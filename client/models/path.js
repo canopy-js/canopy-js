@@ -5,6 +5,37 @@ import Topic from '../../cli/shared/topic';
 import updateView from 'display/update_view';
 import { getCanonicalTopic } from 'requests/request_json';
 
+function visualCellPosition(cell) {
+  const row = Number.parseInt(cell?.dataset?.visualRow, 10);
+  const rowEnd = Number.parseInt(cell?.dataset?.visualRowEnd, 10);
+  const col = Number.parseInt(cell?.dataset?.visualCol, 10);
+  const colEnd = Number.parseInt(cell?.dataset?.visualColEnd, 10);
+
+  if (![row, rowEnd, col, colEnd].every(Number.isFinite)) return null;
+  return { row, rowEnd, col, colEnd };
+}
+
+function isTableLinkVisuallyBefore(linkA, linkB) {
+  const cellA = linkA.element?.closest?.('td, th');
+  const cellB = linkB.element?.closest?.('td, th');
+  if (!cellA || !cellB) return null;
+  if (cellA.closest('table') !== cellB.closest('table')) return null;
+
+  const a = visualCellPosition(cellA);
+  const b = visualCellPosition(cellB);
+  if (!a || !b) return null;
+
+  const rowsOverlap = a.row <= b.rowEnd && b.row <= a.rowEnd;
+
+  if (rowsOverlap) {
+    if (a.col !== b.col) return a.col < b.col;
+    if (a.colEnd !== b.colEnd) return a.colEnd < b.colEnd;
+  }
+
+  if (a.row !== b.row) return a.row < b.row;
+  return null;
+}
+
 class Path {
   constructor(argument) {
     if (!argument) {
@@ -91,6 +122,65 @@ class Path {
     return this.string === otherPath.string;
   }
 
+  matches(otherPath) {
+    if (!(otherPath instanceof Path)) return false;
+    if (this.length !== otherPath.length) return false;
+
+    return this.segments.every(([topic, subtopic], index) =>
+      topic.matches(otherPath.getSegmentTopic(index)) &&
+      subtopic.matches(otherPath.getSegmentSubtopic(index))
+    );
+  }
+
+  matchingPrefixOf(otherPath) {
+    if (!(otherPath instanceof Path)) return false;
+    if (this.empty || otherPath?.empty) return false;
+    if (this.length > otherPath.length) return false;
+
+    return this.segments.every(([topic, subtopic], index) =>
+      topic.matches(otherPath.getSegmentTopic(index)) &&
+      subtopic.matches(otherPath.getSegmentSubtopic(index))
+    );
+  }
+
+  static renderedPrefixOf(path) {
+    let renderedPrefix = null;
+
+    if (!path || path.empty) return renderedPrefix;
+
+    for (let i = 1; i <= path.length; i++) {
+      let pathPrefix = path.slice(0, i);
+
+      if (pathPrefix.renderedParagraph) {
+        renderedPrefix = pathPrefix;
+      } else {
+        break;
+      }
+    }
+
+    return renderedPrefix;
+  }
+
+  static placeholderAt(path) {
+    if (!path || path.empty) return null;
+
+    let paragraph = Paragraph.byPath(path);
+    return paragraph?.placeholder ? paragraph : null;
+  }
+
+  static placeholderOnPath(path) {
+    if (!path || path.empty) return null;
+
+    for (let i = 1; i <= path.length; i++) {
+      let candidatePath = path.slice(0, i).removeTerminalSubtopic;
+      let paragraph = Paragraph.byPath(candidatePath);
+
+      if (paragraph?.placeholder) return paragraph;
+    }
+
+    return null;
+  }
+
   ancestorOf(otherPath) { // strict ancestor: lexical prefix or DOM parent within same-length subtopic chains
     if (!(otherPath instanceof Path)) return false;
     if (this.empty || otherPath?.empty) return false;
@@ -101,6 +191,7 @@ class Path {
 
     // Case 1: purely lexical checks
     if (otherPath.startsWith(this)) return true; // child extends this /A/B -> A/B/C or /A/B -> A/B#C
+    if (this.startsWith(otherPath)) return false; // this is more specific than otherPath, e.g. /A#B cannot be an ancestor of /A
 
     // if this or other path have segment at same index with different topics, return false
     for (let i = 0; i < Math.min(this.length, otherPath.length); i++) { // e.g. /A#B/C and /A#C/E cannot be ancestor/descendant
@@ -122,7 +213,7 @@ class Path {
       const thisTruncated = this.slice(0, divergenceIndex + 1);
       const otherTruncated = otherPath.slice(0, divergenceIndex + 1);
       if (thisTruncated.equals(this) && otherTruncated.equals(otherPath)) {
-        throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${!this.paragraph ? this.string : otherPath.string}`);
+        throw new Error(`ancestorOf requires DOM paragraphs for non-lexical checks: ${this.string} -> ${otherPath.string}; missing ${!this.paragraph ? this.string : otherPath.string}`);
       }
       return thisTruncated.ancestorOf(otherTruncated);
     }
@@ -263,8 +354,19 @@ class Path {
     return this.array.length === 1 && this.array[0][0].equals(this.array[0][1]);
   }
 
+  get isPageRoot() {
+    return this.isSingleTopic;
+  }
+
   get parentPath() {
-    return this.paragraph?.parentParagraph?.path;
+    if (this.empty || this.isPageRoot) return null;
+    let parentPath = this.paragraph?.parentParagraph?.path;
+    if (parentPath) return parentPath;
+
+    if (this.lastSegment.isSingleTopic) return this.withoutLastSegment;
+    if (!this.removeTerminalSubtopic.equals(this)) return this.removeTerminalSubtopic;
+
+    return null;
   }
 
   get parentParagraph() {
@@ -338,7 +440,6 @@ class Path {
 
       if (topicFirstIndex.hasOwnProperty(topicKey)) {
         cycle = { start: topicFirstIndex[topicKey], end: i };
-        break;
       } else {
         topicFirstIndex[topicKey] = i;
       }
@@ -448,15 +549,27 @@ class Path {
     return lexicalOverlap;
   }
 
-  linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
-    const matches = this.paragraph.links.filter(link => {
+  linksTo(otherPath) {
+    return this.paragraph.links.filter(link => {
       const inlinePath = link.inlinePath;
-      return inlinePath?.equals(otherPath) || inlinePath?.ancestorOf(otherPath);
+      return inlinePath?.matches(otherPath) ||
+        inlinePath?.matchingPrefixOf(otherPath) ||
+        inlinePath?.equals(otherPath) ||
+        inlinePath?.ancestorOf(otherPath);
     });
+  }
+
+  linkTo(otherPath) {  // in this (enclosing) paragraph, which link is open for child otherPath
+    const matches = this.linksTo(otherPath);
     if (!matches.length) return null;
 
-    const exact = matches.find(link => link.inlinePath?.equals(otherPath));
-    return exact || matches[0];
+    return matches.sort((linkA, linkB) => {
+      const linkAExact = linkA.inlinePath?.matches(otherPath) || linkA.inlinePath?.equals(otherPath);
+      const linkBExact = linkB.inlinePath?.matches(otherPath) || linkB.inlinePath?.equals(otherPath);
+      if (linkAExact !== linkBExact) return linkAExact ? -1 : 1;
+
+      return linkA.relativeLinkNumber - linkB.relativeLinkNumber;
+    })[0];
   }
 
   isBefore(otherPath) { // two initially overlapping paths, in the paragraph of divergence, which parent link is earlier?
@@ -465,6 +578,9 @@ class Path {
     let thisParentLink = overlapPath.linkTo(this);
     let otherParentLink = overlapPath.linkTo(otherPath);
     if (!thisParentLink || !otherParentLink) return null;
+
+    const tableResult = isTableLinkVisuallyBefore(thisParentLink, otherParentLink);
+    if (tableResult != null) return tableResult;
 
     const paragraphLinks = overlapPath.paragraph?.links || []; // use cached links to get answer even when detached from DOM
     const thisIndex = paragraphLinks.indexOf(thisParentLink);
@@ -643,6 +759,13 @@ class Path {
     }
   }
 
+  get renderedParagraph() {
+    let paragraph = Paragraph.byPath(this);
+    if (!paragraph) return null;
+    if (paragraph.placeholder) return null;
+    return paragraph;
+  }
+
   get paragraphElement() {
     return this.paragraph.paragraphElement;
   }
@@ -770,14 +893,16 @@ class Path {
     let oldPath = Path.url;
     let documentTitle = newPath.lastTopic.mixedCase;
 
-    let sameLinkSelection = 
+    let sameLinkSelection =
       (!history.state?.linkSelection && !linkToSelect) ||
       (linkToSelect && history.state?.linkSelection && Link.for(history.state?.linkSelection).equals(linkToSelect));
 
-    let replaceHistoryState = Path.url.empty || (newPath.equals(oldPath) && sameLinkSelection); // either the old one is bad or the new one is the same
+    let replaceHistoryState =
+      options.replaceHistoryState ||
+      Path.url.empty ||
+      (newPath.equals(oldPath) && sameLinkSelection); // either the old one is bad or the new one is the same
     let historyApiFunction = replaceHistoryState ? replaceState : pushState;
     let fullPathString = newPath.productionPathString;
-
     historyApiFunction(
       history.state, // this will be changed via Link#persistInHistory
       documentTitle,

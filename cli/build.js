@@ -1,51 +1,38 @@
 const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const buildProject = require('./build/build_project');
+const path = require('path');
+const { spawnSync, execFileSync } = require('child_process');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
+let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
+let { buildRoot, staticBuildDirectory, singleFileBuildDirectory, staticBuildPath, singleFileBuildPath } = require('./shared/build_paths');
 let Topic = require('./shared/topic');
-let path = require('path');
 let os = require('os');
-let { execFileSync } = require('child_process');
-
-const BUILD_LOCK_PATH = '.canopy-build.lock';
 
 function build(options = {}) {
-  const shouldLockBuild = !options.keepBuildDirectory;
-  if (shouldLockBuild && !acquireBuildLock()) return;
-
-  try {
-    runBuild(options);
-  } finally {
-    if (shouldLockBuild) fs.rmSync(BUILD_LOCK_PATH, { force: true });
-  }
-}
-
-function runBuild(options = {}) {
-  let { symlinks, projectPathPrefix, hashUrls, keepBuildDirectory, manualHtml, logging } = options;
+  let { symlinks, projectPathPrefix, hashUrls, manualHtml, logging, replaceBuildDirectory } = options;
   const buildStart = Date.now();
   let defaultTopic = new DefaultTopic();
   if (!fs.existsSync('./topics')) throw new Error('There must be a topics directory present, try running "canopy init"');
 
-  if (!keepBuildDirectory) {
-    fs.rmSync('build', { recursive: true, force: true });
+  if (replaceBuildDirectory) {
+    fs.rmSync(buildRoot, { recursive: true, force: true });
   }
 
-  fs.ensureDirSync('build');
+  fs.ensureDirSync(staticBuildDirectory);
+  removeLegacyStaticBuildFiles();
 
-  if (fs.existsSync(`assets`) && !options.keepBuildDirectory) {
-    fs.rmSync('build/_assets', { recursive: true, force: true });
-    fs.copySync('assets', 'build/_assets', { overwrite: true });
-  }
+  refreshAssetsDirectory();
 
   if (!fs.existsSync(`${canopyLocation}/dist/_canopy.js`)) {
     throw new Error(chalk.red('No Canopy.js asset found'));
   }
 
-  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, 'build/_canopy.js');
+  fs.copyFileSync(`${canopyLocation}/dist/_canopy.js`, staticBuildPath('_canopy.js'));
 
   if (fs.existsSync(`${canopyLocation}/dist/_canopy.js.map`)) {
-    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, 'build/_canopy.js.map');
+    fs.copyFileSync(`${canopyLocation}/dist/_canopy.js.map`, staticBuildPath('_canopy.js.map'));
   }
 
   if (!options.skipInitialBuild) {
@@ -60,7 +47,7 @@ function runBuild(options = {}) {
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache && !options.deferFullBuild) {
-      tryAndWriteHtmlError(() => buildProject(defaultTopic.name, { ...options, cache: false }), options);
+      runFullBuildInChild(options);
     }
 
     if (options.logging) {
@@ -72,22 +59,198 @@ function runBuild(options = {}) {
   }
 
   if (symlinks) {
-    let topicDirectories = getDirectories('build');
+    let topicDirectories = getDirectories(staticBuildDirectory);
     topicDirectories.forEach((currentTopicDirectory) => {
       topicDirectories.forEach((targetTopicDirectory) => {
         if (logging) console.log(`Creating symlink from ${targetTopicDirectory} to ${currentTopicDirectory}`);
-        fs.copyFileSync('build/index.html', `build/${currentTopicDirectory}/index.html`);
-        if (!fs.existsSync(`build/${currentTopicDirectory}/${targetTopicDirectory}`)) {
-          fs.symlinkSync(`build/${targetTopicDirectory}`, `build/${currentTopicDirectory}/${targetTopicDirectory}`);
+        fs.copyFileSync(staticBuildPath('index.html'), staticBuildPath(currentTopicDirectory, 'index.html'));
+        if (!fs.existsSync(staticBuildPath(currentTopicDirectory, targetTopicDirectory))) {
+          fs.symlinkSync(staticBuildPath(targetTopicDirectory), staticBuildPath(currentTopicDirectory, targetTopicDirectory));
         }
       });
-      if (!fs.existsSync(`build/${currentTopicDirectory}/_assets`)) {
-        fs.symlinkSync(`build/_assets`, `build/${currentTopicDirectory}/_assets`);
+      if (!fs.existsSync(staticBuildPath(currentTopicDirectory, '_assets'))) {
+        fs.symlinkSync(staticBuildPath('_assets'), staticBuildPath(currentTopicDirectory, '_assets'));
       }
     });
   }
 
   if (options.skipInitialBuild) console.log(chalk.gray('Skipping JSON generation ' + (options.filesEdited ? `(file edited: ${options.filesEdited})` : '(initial build)')));
+}
+
+function runFullBuildInChild(options) {
+  killActiveFullBuildProcesses();
+
+  const childOptions = {
+    ...options,
+    cache: false,
+    replaceBuildDirectory: false
+  };
+
+  const result = spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'build', 'run_background_full_build.js'), JSON.stringify(childOptions)],
+    {
+      cwd: process.cwd(),
+      stdio: 'inherit'
+    }
+  );
+
+  if (result.error) throw result.error;
+  if (result.signal === 'SIGTERM') return;
+  if (result.status) throw new Error(`Background full build exited with status ${result.status}`);
+}
+
+function refreshAssetsDirectory() {
+  if (fs.existsSync('assets')) {
+    fs.copySync('assets', staticBuildPath('_assets'), {
+      overwrite: true,
+      filter: (source) => !isSkippableAssetMetadataFile(source)
+    });
+  }
+}
+
+function removeLegacyStaticBuildFiles() {
+  [
+    'index.html',
+    '_canopy.js',
+    '_canopy.js.map',
+    '_data',
+    '_assets',
+    '_file'
+  ].forEach(filePath => fs.rmSync(path.join(buildRoot, filePath), { recursive: true, force: true }));
+}
+
+function isSkippableAssetMetadataFile(filePath) {
+  const filename = path.basename(filePath);
+  const lower = filename.toLowerCase();
+
+  return (
+    filename === '.DS_Store' ||
+    filename.startsWith('._') ||
+    lower === 'thumbs.db' ||
+    lower === 'desktop.ini'
+  );
+}
+
+function bootLoaderStyle() {
+  return dedent`<style>
+  #_canopy > .canopy-boot-loading-graphic {
+    align-items: center;
+    animation: canopy-boot-loading-reveal 1ms linear 150ms forwards;
+    display: flex;
+    gap: 22px;
+    justify-content: center;
+    min-height: 180px;
+    opacity: 0;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot {
+    animation-duration: 3240ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    background: rgba(0, 0, 0, 0.34);
+    border-radius: 50%;
+    display: block;
+    filter: blur(1px);
+    height: 30px;
+    width: 30px;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(1) {
+    animation-name: canopy-boot-loading-dot-left;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(2) {
+    animation-name: canopy-boot-loading-dot-center;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(3) {
+    animation-name: canopy-boot-loading-dot-right;
+  }
+
+  @keyframes canopy-boot-loading-reveal {
+    to { opacity: 1; }
+  }
+
+  @keyframes canopy-boot-loading-dot-left {
+    0%, 100% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.52;
+      transform: scale(1.12);
+    }
+    12.5% { opacity: 0.58; transform: scale(1.36); }
+    37.5%, 50%, 62.5%, 75% { opacity: 0.38; transform: scale(0.92); }
+    87.5% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.38;
+      transform: scale(0.92);
+    }
+    25% { opacity: 0.52; transform: scale(1.12); }
+  }
+
+  @keyframes canopy-boot-loading-dot-center {
+    0%, 100% { opacity: 0.52; transform: scale(1.12); }
+    12.5%, 62.5% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.38;
+      transform: scale(0.92);
+    }
+    25%, 75% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.52;
+      transform: scale(1.12);
+    }
+    50% { opacity: 0.52; transform: scale(1.12); }
+    37.5%, 87.5% { opacity: 0.58; transform: scale(1.36); }
+    100% { opacity: 0.52; transform: scale(1.12); }
+  }
+
+  @keyframes canopy-boot-loading-dot-right {
+    0%, 25%, 87.5%, 100% { opacity: 0.38; transform: scale(0.92); }
+    37.5% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.38;
+      transform: scale(0.92);
+    }
+    50% {
+      animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+      opacity: 0.52;
+      transform: scale(1.12);
+    }
+    62.5% { opacity: 0.58; transform: scale(1.36); }
+    75% { opacity: 0.52; transform: scale(1.12); }
+  }
+  </style>
+  `;
+}
+
+function bootLoaderHtml() {
+  return dedent`<div class="canopy-loading-graphic canopy-boot-loading-graphic" aria-hidden="true">
+      <span class="canopy-loading-dot"></span>
+      <span class="canopy-loading-dot"></span>
+      <span class="canopy-loading-dot"></span>
+    </div>`;
+}
+
+function bootLoaderScript() {
+  return dedent`<script>
+  (() => {
+    const canopy = document.getElementById('_canopy');
+    const loader = canopy && canopy.querySelector(':scope > .canopy-boot-loading-graphic');
+    if (!canopy || !loader || !window.MutationObserver) return;
+
+    const removeLoader = () => {
+      if (!canopy.querySelector('section.canopy-section:not(.canopy-loading-section) > p.canopy-paragraph')) return;
+      loader.remove();
+      observer.disconnect();
+    };
+
+    const observer = new MutationObserver(removeLoader);
+    observer.observe(canopy, { attributes: true, childList: true, subtree: true });
+    removeLoader();
+  })();
+  </script>
+  `;
 }
 
 function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
@@ -99,14 +262,16 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
   const customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`);
   const customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`);
   const customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`);
-  const defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`);
+  const defaultTopicJson = fs.readFileSync(staticBuildPath('_data', `${defaultTopic.jsonFileName}.json`));
 
   const html = dedent`
     <!DOCTYPE html>
     <html>
     <head>
     <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>
-    <meta charset="utf-8">` +
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">` +
+    bootLoaderStyle() +
     dedent`${customCss ? `<style>\n${fs.readFileSync(`assets/custom.css`)}\n</style>` : ''}` +
     dedent`${customJs ? `<script>\n${fs.readFileSync(`assets/custom.js`)}\n</script>` : ''}` +
     dedent`<script src="${projectPathPrefix ? '/' + projectPathPrefix : ''}/_canopy.js" defer></script>\n` +
@@ -121,13 +286,15 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
       data-default-topic="${defaultTopic.name}"
       data-project-path-prefix="${projectPathPrefix||''}"
       data-hash-urls="${hashUrls || ''}">
+      ${bootLoaderHtml()}
     </div>\n` +
+    bootLoaderScript() +
     dedent`${customHtmlFooter ? customHtmlFooter : ''}` +
     dedent`</body>
     </html>\n`;
 
-  fs.writeFileSync('build/index.html', html);
-  console.log(chalk.yellow(`Wrote to index.html at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+  fs.writeFileSync(staticBuildPath('index.html'), html);
+  console.log(chalk.yellow(`Wrote to ${staticBuildPath('index.html')} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options }) {
@@ -138,8 +305,8 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   const customHtmlHead = fs.existsSync(`assets/head.html`) && fs.readFileSync(`assets/head.html`, 'utf8');
   const customHtmlNav = fs.existsSync(`assets/nav.html`) && fs.readFileSync(`assets/nav.html`, 'utf8');
   const customHtmlFooter = fs.existsSync(`assets/footer.html`) && fs.readFileSync(`assets/footer.html`, 'utf8');
-  const defaultTopicJson = fs.readFileSync(`build/_data/${defaultTopic.jsonFileName}.json`, 'utf8');
-  const canopyJs = fs.readFileSync('build/_canopy.js', 'utf8').replace(/<\/script/gi, '<\\/script');
+  const defaultTopicJson = fs.readFileSync(staticBuildPath('_data', `${defaultTopic.jsonFileName}.json`), 'utf8');
+  const canopyJs = fs.readFileSync(staticBuildPath('_canopy.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
 
   const assetMap = buildAssetDataUriMap();
   const remoteAssetCache = {};
@@ -154,7 +321,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging);
   };
 
-  const dataDir = 'build/_data';
+  const dataDir = staticBuildPath('_data');
   const jsonScripts = fs.readdirSync(dataDir)
     .filter(filePath => filePath.endsWith('.json'))
     .map(filePath => {
@@ -163,20 +330,22 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
       return `<script type="application/json" data-topic-json="${filePath}">\n${inlined}\n</script>`;
     }).join('\n');
 
-  const singleFileDir = path.join('build', '_file');
+  const singleFileDir = singleFileBuildDirectory;
   fs.ensureDirSync(singleFileDir);
 
   const outputPath = typeof options.file === 'string'
-    ? (path.isAbsolute(options.file) ? options.file : path.join('build', options.file))
-    : path.join(singleFileDir, `${defaultTopic.topicFileName}.html`);
+    ? (path.isAbsolute(options.file) ? options.file : singleFileBuildPath(options.file))
+    : singleFileBuildPath(`${defaultTopic.topicFileName}.html`);
 
   const html = dedent`
     <!DOCTYPE html>
     <html>
     <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${inlineAssetsInString(defaultTopicJson).replace(/<\/script/gi, '<\\/script')}\n</script>
     ${jsonScripts}
+    ${bootLoaderStyle()}
     ${customCss ? `<style>\n${inlineAssetsInString(customCss)}\n</style>` : ''}
     ${customJsEscaped ? `<script>\n${inlineAssetsInString(customJsEscaped)}\n</script>` : ''}
     ${favicon ? `<link rel="icon" type="image/x-icon" href="data:application/octet-stream;base64,${fs.readFileSync('assets/favicon.ico').toString('base64')}">\n` : ''}
@@ -190,7 +359,9 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
       data-default-topic="${defaultTopic.name}"
       data-project-path-prefix="${projectPathPrefix||''}"
       data-hash-urls="${hashUrls || ''}">
+      ${bootLoaderHtml()}
     </div>
+    ${bootLoaderScript()}
     ${customHtmlFooter ? inlineAssetsInString(customHtmlFooter) : ''}
     <script>
     ${canopyJs}
@@ -203,7 +374,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
 }
 
 function buildAssetDataUriMap() {
-  const assetsRoot = 'build/_assets';
+  const assetsRoot = staticBuildPath('_assets');
   if (!fs.existsSync(assetsRoot)) return {};
 
   const map = {};
@@ -322,42 +493,6 @@ function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
     return fs.statSync( path + '/' + file).isDirectory() && !file.startsWith('_');
   });
-}
-
-function acquireBuildLock() {
-  try {
-    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-    return true;
-  } catch (error) {
-    if (error.code !== 'EEXIST') throw error;
-  }
-
-  let existingPid = null;
-
-  try {
-    existingPid = Number(fs.readFileSync(BUILD_LOCK_PATH, 'utf8').trim());
-  } catch (_error) {
-    fs.rmSync(BUILD_LOCK_PATH, { force: true });
-    fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-    return true;
-  }
-
-  if (pidIsRunning(existingPid)) return false;
-
-  fs.rmSync(BUILD_LOCK_PATH, { force: true });
-  fs.writeFileSync(BUILD_LOCK_PATH, String(process.pid), { flag: 'wx' });
-  return true;
-}
-
-function pidIsRunning(pid) {
-  if (!Number.isInteger(pid) || pid <= 0) return false;
-
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return error.code === 'EPERM';
-  }
 }
 
 module.exports = build;

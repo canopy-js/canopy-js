@@ -70,11 +70,14 @@ function convertSpacesToHtml(str) { // eg [[ abc ]] -> [[&nbsp;abc&nbsp;]]
   return str.replace(/^ +| +$/g, match => '&nbsp;'.repeat(match.length));
 }
 
-function ExternalLinkToken(url, text, parserContext) {
+function ExternalLinkToken(url, text, parserContext, options = {}) {
   this.type = 'external';
   this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
-  this.text = text || url;
-  if (!text) {
+  this.text = options.iconOnly ? '' : (text || url);
+  if (options.iconOnly) this.iconOnly = true;
+  if (options.iconOnly) {
+    this.tokens = [];
+  } else if (!text) {
     this.tokens = [{ type: 'text', text: url }]; // to avoid infinite loop of URL recognition
   } else {
     this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ insideToken: true }) });
@@ -102,28 +105,46 @@ function FootnoteMarkerToken(superscript) {
   this.text = superscript;
 }
 
+function replaceHtmlInsertions(html, replaceInsertion) {
+  let result = '';
+  let cursor = 0;
+  let start = null;
+  let depth = 0;
+
+  for (const match of html.matchAll(/(^|[^\\])(\{\{|}})/g)) {
+    const delimiter = match[2];
+    const index = match.index + match[1].length;
+
+    if (delimiter === '{{') {
+      if (depth++ === 0) {
+        result += html.slice(cursor, index);
+        start = index;
+      }
+    } else if (depth && --depth === 0) {
+      result += replaceInsertion(html.slice(start + 2, index), start, start + 2);
+      cursor = index + 2;
+      start = null;
+    }
+  }
+
+  return result + html.slice(depth ? start : cursor);
+}
+
 function HtmlToken(html, parserContext) {
   this.type = 'html_element';
   this.tokenInsertions = [];
 
-  const regex = /(^|[^\\])(\{\{)([\s\S]*?[^\\])(}})/g;
+  this.html = replaceHtmlInsertions(html, (content, offset, contentOffset) => {
+    this.tokenInsertions.push(
+      parseText({
+        text: content,
+        parserContext: parserContext.clone({ insideToken: true })
+          .incrementLineAndResetCharacterNumber(html.slice(0, offset).match(/\n/g)?.length || 0)
+          .incrementCharacterNumber(html.slice(0, contentOffset).split('\n').slice(-1)[0].length)
+      })
+    );
 
-  this.html = html.replace(regex, (match, precedingChar, openingBraces, content, closingBraces, offset) => {
-    const isEscaped = precedingChar === '\\';
-    if (isEscaped || !openingBraces || !closingBraces) {
-      return match;
-    } else {
-      this.tokenInsertions.push(
-        parseText({
-          text: content,
-          parserContext: parserContext.clone({ insideToken: true })
-            .incrementLineAndResetCharacterNumber(html.slice(0, offset - precedingChar.length).match(/\n/g)?.length || 0)
-            .incrementCharacterNumber(html.slice(0, offset + precedingChar.length).split('\n').slice(-1)[0].length + openingBraces.length)
-        })
-      );
-
-      return `${precedingChar}<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
-    }
+    return `<div class="canopy-html-insertion" data-replacement-number="${this.tokenInsertions.length - 1}"></div>`;
   });
 }
 
@@ -220,6 +241,25 @@ function ListToken(text, parserContext) {
   }
 }
 
+function extractTableCellAttributes(cellString) {
+  let styles = [];
+  let classNames = [];
+  let text = cellString.replace(/(^|[^\\])\\style\s*=\s*"((?:\\.|[^"\\])*)"/g, (match, prefix, style) => {
+    styles.push(style.replace(/\\(["\\])/g, '$1'));
+    return prefix;
+  });
+  text = text.replace(/(^|[^\\])\\\.([A-Za-z0-9_-]+)/g, (match, prefix, className) => {
+    classNames.push(className);
+    return prefix;
+  });
+
+  return {
+    text,
+    style: styles.length ? styles.join('; ') : undefined,
+    classNames: classNames.length ? classNames : undefined
+  };
+}
+
 function TableToken(text, parserContext) {
   this.type = 'table';
   this.rows = [];
@@ -239,15 +279,17 @@ function TableToken(text, parserContext) {
 
           if (cellString.match(/^\s*\\x\s*$/)) return { tokens: [], hidden: true };
 
+          let { text: cellText, style, classNames } = extractTableCellAttributes(cellString);
+
           let earlierCharactersOnLine = ['|'] // first | on line
             .concat(
               cellsOfRow.slice(0, cellIndex).join('|'), // all the intermediary cell contents plus pipes
               cellIndex > 0 ? '|' : '' // the pipe before the current cell
             ).join('');
 
-          return {
+          let cellObject = {
             tokens: parseText({
-              text: cellString.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
+              text: cellText.trim(),  // we trim because the person might be using spaces to line up unevenly sized cells
               parserContext: parserContext.clone({
                 insideToken: true,
               })
@@ -255,6 +297,10 @@ function TableToken(text, parserContext) {
                 .incrementCharacterNumber(earlierCharactersOnLine.length + cellString.match(/^\s+/)?.[0].length) // count earlier chars and leading space
             })
           };
+
+          if (style) cellObject.style = style;
+          if (classNames) cellObject.classNames = classNames;
+          return cellObject;
         }
       );
       this.rows.push(cellObjects);

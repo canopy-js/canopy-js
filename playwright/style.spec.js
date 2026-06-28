@@ -343,13 +343,13 @@ test.describe('Inline entities', () => {
 
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a link");
 
-    const link = page.locator('.canopy-selected-section a');
+    const link = page.locator('.canopy-selected-section a').first();
     await expect(await link.evaluate(element => element.href)).toEqual('http://google.com/');
 
-    const iconContainer = page.locator('.canopy-selected-section a .canopy-link-container');
+    const iconContainer = link.locator('.canopy-link-container');
     await expect(iconContainer).toBeVisible();
 
-    const iconStyles = await page.locator('.canopy-selected-section a .canopy-link-container .canopy-external-link-icon').evaluate(element => {
+    const iconStyles = await link.locator('.canopy-link-container .canopy-external-link-icon').evaluate(element => {
       const computedStyles = window.getComputedStyle(element);
       return {
         backgroundImage: computedStyles.getPropertyValue('background-image'),
@@ -362,6 +362,22 @@ test.describe('Inline entities', () => {
 
     expect(iconStyles.backgroundImage).toContain(expectedBackgroundImage);
     expect(iconStyles.display).toEqual('inline-block'); // Ensure the icon span is rendered correctly
+  });
+
+  test('It creates icon-only external links from empty hyperlink markup', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
+
+    const link = page.locator('.canopy-selected-section a.canopy-external-icon-only-link');
+    await expect(link).toHaveAttribute('href', 'https://google.com');
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('aria-label', 'https://google.com');
+    await expect(link).toHaveText('');
+    await expect(link.locator('.canopy-external-link-icon')).toBeVisible();
+    await expect(link.locator('.canopy-link-icon-gap')).toHaveCount(0);
+
+    const box = await link.locator('.canopy-link-container').boundingBox();
+    expect(box.width).toBeGreaterThan(14);
+    expect(box.width).toBeLessThan(24);
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {
@@ -474,6 +490,25 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section table tr td').nth(11)).toHaveText('2');
   });
 
+  test('It applies table cell style directives', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_cell_styles');
+
+    const section = page.locator('.canopy-selected-section');
+    const cells = section.locator('table tr td');
+
+    await expect(section).not.toContainText('\\style=');
+    await expect(section).not.toContainText('\\.');
+    await expect(cells.nth(0)).toHaveText('Plain');
+    await expect(cells.nth(1)).toHaveText('Red');
+    await expect(cells.nth(1)).toHaveCSS('color', 'rgb(255, 0, 0)');
+    await expect(cells.nth(2)).toHaveText('Mid cell');
+    await expect(cells.nth(2)).toHaveClass(/highlighted-cell/);
+    await expect(cells.nth(2)).toHaveCSS('background-color', 'rgb(0, 255, 0)');
+    await expect(cells.nth(3)).toHaveText('End');
+    await expect(cells.nth(3)).toHaveClass(/emphasized-cell/);
+    await expect(cells.nth(3)).toHaveCSS('font-weight', '700');
+  });
+
   test('It accepts table merge syntax', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_merge_syntax');
     await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
@@ -549,7 +584,7 @@ test.describe('Block entities', () => {
 
   test('Snapping tables normalize widths and similar row heights', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Snapping_Tables');
-    await expect(page.locator('.canopy-selected-section table')).toHaveCount(3);
+    await expect(page.locator('.canopy-selected-section table')).toHaveCount(6);
 
     const sizeTolerance = 1;
     const minSignificantDifference = 10;
@@ -616,6 +651,50 @@ test.describe('Block entities', () => {
     //   expect(Math.abs(h2 - h3)).toBeLessThanOrEqual(sizeTolerance);
     //   expect(h3 - h1).toBeGreaterThan(minSignificantDifference);
     // }
+
+    // Table 4: all columns can wrap, so fitting distributes space by measured text demand.
+    {
+      const table = tables.filter({ hasText: 'Shevuos' }).first();
+      const firstRowCells = table.locator('tr').first().locator('td');
+      const widths = (await getBoxes(firstRowCells)).map(b => b.width);
+      const minWidth = Math.min(...widths);
+      const maxWidth = Math.max(...widths);
+      const shevuosLineCount = await table.locator('td', { hasText: 'Shevuos' }).locator('i').evaluate(element =>
+        element.getClientRects().length
+      );
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(widths[1]).toBeGreaterThan(widths[0]);
+      expect(widths[1]).toBeGreaterThan(widths[2]);
+      expect(maxWidth - minWidth).toBeGreaterThan(minSignificantDifference);
+      expect(minWidth).toBeGreaterThanOrEqual(100);
+      expect(shevuosLineCount).toEqual(1);
+      expect(flexAdjustedColumnCount).toEqual(5);
+    }
+
+    // Table 5: fixed-width columns keep their width; wrappable columns split the rest proportionally.
+    {
+      const table = tables.filter({ hasText: 'UnbreakableAnchorColumnThatShouldStayWide' }).first();
+      const cells = table.locator('td');
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(widths[1]).toBeGreaterThan(widths[2]);
+      expect(widths[1] - widths[2]).toBeGreaterThan(minSignificantDifference);
+      expect(flexAdjustedColumnCount).toEqual(2);
+    }
+
+    // Table 6: long translation-like text keeps a larger share even when the table fills the container.
+    {
+      const table = tables.filter({ hasText: 'After that his brother came out' }).first();
+      const cells = table.locator('tr').first().locator('td');
+      const widths = (await getBoxes(cells)).map(b => b.width);
+      const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
+
+      expect(widths[3]).toBeGreaterThan(widths[2]);
+      expect(widths[3] - widths[2]).toBeGreaterThan(minSignificantDifference);
+      expect(flexAdjustedColumnCount).toEqual(3);
+    }
   });
 
   test('It supports table links with icons', async ({ page }) => {
@@ -645,6 +724,15 @@ test.describe('Block entities', () => {
     expect(Number(await disabledLink.evaluate((el) => window.getComputedStyle(el).opacity))).toBeLessThan(1);
   });
 
+  test('It orients table cycle icons by visual cell position', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Table_cycle_icons_10');
+    await expect(page).toHaveURL('/United_States/New_York/Style_examples#Table_cycle_icons_10');
+
+    const summaryCycleLink = page.locator('.canopy-selected-section a[data-text="summary"]');
+    await expect(summaryCycleLink.locator('.canopy-forward-cycle-icon')).toHaveCount(1);
+    await expect(summaryCycleLink.locator('.canopy-back-cycle-icon')).toHaveCount(0);
+  });
+
   test('It centers big tables', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Big_Tables');
 
@@ -665,6 +753,22 @@ test.describe('Block entities', () => {
     const tolerance = 4;
 
     expect(Math.abs(tableCenter - viewportCenter)).toBeLessThanOrEqual(tolerance);
+  });
+
+  test('It fits tables with explicit line breaks to the content width', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Tables_with_break-fitting');
+
+    const table = page.locator('.canopy-selected-section table').first();
+    await expect(table).toBeVisible();
+
+    const { tableWidth, containerWidth, shrinkableColumnCount } = await table.evaluate(element => ({
+      tableWidth: Number(element.dataset.appliedTableWidth),
+      containerWidth: Number(element.dataset.containerWidth),
+      shrinkableColumnCount: element.querySelectorAll('col[data-column-shrinkable="true"]').length
+    }));
+
+    expect(shrinkableColumnCount).toBeGreaterThan(0);
+    expect(tableWidth).toBeLessThanOrEqual(containerWidth + 1);
   });
 
   test('It navigates table link grids with arrow keys', async ({ page }) => {
@@ -741,7 +845,7 @@ test.describe('Block entities', () => {
 
     const menu9 = menus.nth(9);
     await expect(menu9).toContainText('Thisisalongword????');
-    await expect(menu9).toHaveClass(/canopy-third-pill/); // Updated expected class.
+    await expect(menu9).toHaveClass(/canopy-third-pill/);
     await expect(menu9.locator('.canopy-menu-row').nth(0).locator('.canopy-menu-cell')).toHaveCount(3);
 
     const menu10 = menus.nth(10);
@@ -782,6 +886,20 @@ test.describe('Block entities', () => {
     await expect(externalLink).toHaveAttribute('target', '_blank');
     await expect(externalLink).toHaveText(/Hello/);
     await expect(externalLink.locator('.canopy-external-link-icon')).toBeVisible();
+  });
+
+  test('It only suppresses cycle icons for manual arrows and emoji', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons');
+    await expect(page.locator('section.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Manual Cycle Arrow Icons');
+
+    const manualArrowLink = page.locator('a[data-text="style examples ↺"]');
+    await expect(manualArrowLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
+
+    const digitLink = page.locator('a[data-text="style examples 2a"]');
+    await expect(digitLink.locator('.canopy-up-cycle-icon')).toHaveText('↩');
+
+    const emojiLink = page.locator('a[data-text="style examples 🔁"]');
+    await expect(emojiLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
   });
 
   test('It allows directional menus', async ({ page }) => {
@@ -846,12 +964,16 @@ test.describe('Block entities', () => {
 
     // Test for long blockquote where \n should get padding
     const longQuote = page.locator('.canopy-selected-section blockquote', { hasText: 'This is text that wraps.' });
-    await expect(longQuote.locator('span.canopy-text-span')).toHaveCount(7);
     const longQuotePaddingSpan = await longQuote.locator('.canopy-blockquote-padded-linebreak');
-    await expect(longQuotePaddingSpan).toHaveCount(6); // padded linebreaks for each blockquote line
+    await expect(longQuotePaddingSpan).toHaveCount(8); // padded linebreaks for each explicit blockquote line
 
     // Inline HTML should not create extra blank-line spacing; only the true blank line should be padded.
     await expect(longQuote.locator('.canopy-blank-linebreak')).toHaveCount(1);
+
+    const disabledLinkLinebreak = longQuote.locator('.canopy-linebreak-span').nth(7);
+    await expect(disabledLinkLinebreak).toHaveClass(/canopy-blockquote-padded-linebreak/);
+    const disabledLinkLinebreakMargin = await disabledLinkLinebreak.evaluate(el => getComputedStyle(el).marginBottom);
+    expect(disabledLinkLinebreakMargin).toBe('8px');
   });
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
@@ -859,6 +981,31 @@ test.describe('Block entities', () => {
     await expect(page.locator('.canopy-selected-section blockquote a')).toHaveCount(1);
     await page.locator('body').press('Enter');
     await expect(page.locator('text=Multi-line link paragraph text. >> visible=true')).toHaveCount(1);
+  });
+
+  test('It allows inline RTL block quote links after explicit link line breaks', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 700 });
+    await page.goto('/United_States/New_York/Style_examples#RTL_inline_block_quote_links');
+
+    const firstLink = page.locator('.canopy-selected-section blockquote a', { hasText: 'סוף' }).first();
+    const secondLink = page.locator('.canopy-selected-section blockquote a', { hasText: 'ליד' }).first();
+
+    await expect(firstLink).toHaveClass(/canopy-multiline-link/);
+    await expect(firstLink).not.toHaveClass(/canopy-full-line-link/);
+
+    const firstLinkContainerDisplay = await firstLink.locator('.canopy-link-container').evaluate(el => getComputedStyle(el).display);
+    expect(firstLinkContainerDisplay).toBe('inline');
+    const firstLinkAnchorLineHeight = await firstLink.evaluate(el => getComputedStyle(el).lineHeight);
+    expect(parseFloat(firstLinkAnchorLineHeight)).toBeGreaterThan(26);
+    const firstLinkLineHeight = await firstLink.locator('.canopy-link-container').evaluate(el => getComputedStyle(el).lineHeight);
+    expect(parseFloat(firstLinkLineHeight)).toBeGreaterThan(26);
+
+    const firstLinkLastLineBox = await firstLink.locator('.canopy-text-span', { hasText: 'סוף' }).boundingBox();
+    const secondLinkBox = await secondLink.locator('.canopy-text-span', { hasText: 'ליד' }).boundingBox();
+
+    expect(firstLinkLastLineBox).not.toBeNull();
+    expect(secondLinkBox).not.toBeNull();
+    expect(Math.abs(firstLinkLastLineBox.y - secondLinkBox.y)).toBeLessThan(3);
   });
 
   test('It creates RTL block quotes', async ({ page }) => {
@@ -1072,6 +1219,14 @@ test.describe('Block entities', () => {
     await page.goto('/United_States/New_York/Style_examples#Disabled_links');
     await expect(page.locator('a.canopy-disabled-link')).toHaveCount(2);
     await expect(page.locator('.canopy-menu-link-cell a.canopy-disabled-link')).toHaveCount(1);
+
+    // make sure disabled links have terminal link spacing which seems to affect interline gaps
+    const terminalGap = page.locator('a.canopy-disabled-link .canopy-link-terminal-gap').first();
+    const terminalGapContent = await terminalGap.evaluate(el => getComputedStyle(el, '::before').content);
+    const terminalGapFontSize = await terminalGap.evaluate(el => getComputedStyle(el).fontSize);
+    expect(terminalGapContent).not.toBe('none');
+    expect(terminalGapContent).not.toBe('""');
+    expect(terminalGapFontSize).toBe('5px');
   });
 
   test('It creates full-line links', async ({ page }, workerInfo) => {
@@ -1152,18 +1307,18 @@ test.describe('Block entities', () => {
     await expect(secondLink).toHaveClass(/canopy-open-link/);
     await expect(childParagraph).toBeVisible();
 
-    // Click first link again: parent section selected, child hidden
+    // Click first link again: selected link keeps its child target displayed
     await firstLink.click();
     await expect(
       page.locator(
         'section.canopy-section.canopy-selected-section > p.canopy-paragraph',
-        { hasText: 'These are two' }
+        { hasText: 'I am a doubly-referenced child paragraph.' }
       )
     ).toBeVisible();
-    await expect(firstLink).not.toHaveClass(/canopy-open-link/);
-    await expect(firstLink).not.toHaveClass(/canopy-selected-link/);
-    await expect(secondLink).not.toHaveClass(/canopy-open-link/);
-    await expect(childParagraph).toBeHidden();
+    await expect(firstLink).toHaveClass(/canopy-open-link/);
+    await expect(firstLink).toHaveClass(/canopy-selected-link/);
+    await expect(secondLink).toHaveClass(/canopy-open-link/);
+    await expect(childParagraph).toBeVisible();
 
     // Click second link: child section selected again
     await secondLink.click();

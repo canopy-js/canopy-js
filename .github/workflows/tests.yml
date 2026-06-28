@@ -11,19 +11,20 @@ jobs:
     name: Jest Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '20.x'
       - id: cache-key
         run: echo "key=playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ steps.cache-key.outputs.key }}
           restore-keys: |
             playwright-${{ runner.os }}-
       - run: npm ci
+      - run: npm run build-prod
       - run: npm install -g .
       - run: npx playwright install --with-deps
       - run: npm run jest
@@ -32,7 +33,7 @@ jobs:
     name: Playwright (${{ matrix.target.id }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         target:
           - id: nav
@@ -42,13 +43,13 @@ jobs:
           - id: rest
             cmd: npx playwright test $(find ./playwright -name '*.spec.js' ! -name 'navigation.spec.js' ! -name 'style.spec.js')
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '20.x'
       - id: cache-key
         run: echo "key=playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ steps.cache-key.outputs.key }}
@@ -63,24 +64,26 @@ jobs:
       - run: ${{ matrix.target.cmd }} --max-failures=1
       - name: Upload test-results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.target.id }}
           path: test-results/
+          if-no-files-found: ignore
 
       - name: Upload playwright-report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-${{ matrix.target.id }}
           path: playwright-report/
+          if-no-files-found: ignore
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '20.x'
       - run: npm ci

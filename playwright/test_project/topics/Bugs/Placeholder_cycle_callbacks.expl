@@ -1,0 +1,7 @@
+Placeholder cycle callbacks: This fixture catches a bug where rendering a placeholder root could make the root paragraph look rendered before sibling subtopics were registered. [[#Placeholder cycle introduction|GO]] [[Placeholder cycle introduction]] [[Placeholder cycle understanding]]
+
+Placeholder cycle introduction:
+Introduction.
+
+Placeholder cycle understanding:
+Understanding.

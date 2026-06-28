@@ -42,12 +42,15 @@ function renderBlockQuote(token, renderContext, renderTokenElements) {
     function segmentWraps(chars) {
       if (chars.length < 2) return false;
 
-      const nonLinkChars = chars.filter(char => !char.closest('a.canopy-selectable-link, a.canopy-disabled-link'));
-      const effectiveChars = nonLinkChars.length ? nonLinkChars : chars; // preserve behavior for link-only segments
-      if (effectiveChars.length < 2) return false;
+      const rects = chars.map(char => char.getBoundingClientRect());
+      const firstTop = rects[0].top;
+      const firstRowBottom = Math.max(
+        ...rects
+          .filter(rect => Math.abs(rect.top - firstTop) <= lineTolerance)
+          .map(rect => rect.bottom)
+      );
 
-      const firstTop = effectiveChars[0].getBoundingClientRect().top;
-      return effectiveChars.some(char => Math.abs(char.getBoundingClientRect().top - firstTop) > lineTolerance);
+      return rects.some(rect => rect.top > firstRowBottom + lineTolerance);
     }
 
     [...clone.querySelectorAll('span.canopy-blockquote-character,span.canopy-linebreak-span')].forEach((element) => {

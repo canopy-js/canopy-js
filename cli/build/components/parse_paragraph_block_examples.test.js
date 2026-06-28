@@ -17,6 +17,45 @@ test('it parses a text block', () => {
   ]);
 });
 
+test('it does not parse repeated asterisks as style delimiters', () => {
+  let text = 'This stays literal: **bold** and ***.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'This stays literal: **bold** and ***.',
+      type: 'text'
+    }
+  ]);
+});
+
+test('it does not parse repeated underscores as style delimiters', () => {
+  let text = 'This stays literal: __italics__ and ___.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'This stays literal: __italics__ and ___.',
+      type: 'text'
+    }
+  ]);
+});
+
+test('it does not parse style when the closing delimiter is part of a repeated run', () => {
+  let text = 'The first thing that might jump out at us is the pattern of the word: _ו__ין.';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens).toEqual([
+    {
+      text: 'The first thing that might jump out at us is the pattern of the word: _ו__ין.',
+      type: 'text'
+    }
+  ]);
+});
+
 test('it parses a fence-style code block', () => {
   let text = '```\n' +
     'if (x) {\n' +
@@ -191,6 +230,24 @@ test('it parses a table block', () => {
   expect(tokens[0].rows[0][0].tokens[0].text).toEqual('Header');
   expect(tokens[0].rows[0][1].tokens[0].text).toEqual('Second column');
   expect(tokens[0].rows[1][0].tokens[0].text).toEqual('data |');
+  expect(tokens[0].rows[1][1].tokens[0].text).toEqual('data2');
+});
+
+test('it parses table cell styles and classes and removes directives from cell text', () => {
+  let text = '| Header | Second column |\n' +
+    '|======|=============|\n' +
+    '| data \\style="color: red" \\.warning-cell | \\.highlight \\style="background-color: blue" data2 \\.wide-cell \\style="font-weight: bold" |';
+
+  let tokens = parseParagraph(text, new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' }));
+
+  expect(tokens[0].type).toEqual('table');
+
+  expect(tokens[0].rows[1][0].style).toEqual('color: red');
+  expect(tokens[0].rows[1][0].classNames).toEqual(['warning-cell']);
+  expect(tokens[0].rows[1][0].tokens[0].text).toEqual('data');
+
+  expect(tokens[0].rows[1][1].style).toEqual('background-color: blue; font-weight: bold');
+  expect(tokens[0].rows[1][1].classNames).toEqual(['highlight', 'wide-cell']);
   expect(tokens[0].rows[1][1].tokens[0].text).toEqual('data2');
 });
 
