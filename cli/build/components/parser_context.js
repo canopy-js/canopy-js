@@ -194,7 +194,9 @@ class ParserContext {
 
   getOriginalSubtopic(currentTopic, givenSubtopic) {
     if (!givenSubtopic) throw new Error('two arguments required');
-    return this.topics[currentTopic.caps]?.subtopics?.[givenSubtopic.caps];
+    const topicData = this.topics[currentTopic.caps];
+    return topicData?.subtopics?.[givenSubtopic.caps] ||
+      topicData?.fragmentReferenceSubtopics?.find(({ fragmentTargetSubtopic }) => fragmentTargetSubtopic.caps === givenSubtopic.caps)?.fragmentTargetSubtopic;
   }
 
   currentTopicHasSubtopic(targetSubtopic) {

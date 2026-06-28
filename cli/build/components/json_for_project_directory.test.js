@@ -2040,3 +2040,19 @@ test('it logs local orphan subtopics', () => {
   expect(messagePresent).toEqual(true);
   console.log = log;
 });
+
+test('it canonicalizes links to fragment-created subtopics', () => {
+  let explFileData = {
+    'topics/Idaho/Idaho.expl': dedent`Idaho: Idaho is a midwestern state.
+
+    Cafeteria: The cafeteria has a [#[Snack Bar]]
+
+    Parking lot: The parking lot is near the [[#snack bar|snack bar]].` + '\n',
+  };
+
+  let { filesToWrite } = jsonForProjectDirectory(asFileObjects(explFileData), 'Idaho');
+  let idahoJson = JSON.parse(filesToWrite[idahoJsonPath()]);
+  let snackBarLink = idahoJson.paragraphsBySubtopic['Parking lot'].find(token => token.text === 'snack bar');
+
+  expect(snackBarLink.pathString).toEqual('Idaho#Snack_Bar');
+});
