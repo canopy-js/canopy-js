@@ -170,29 +170,38 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-topic-name', 'New York');
   });
 
-  test('Direct deep path entry waits at initial safe section before final subtopic', async ({ page }) => {
+  test('Browser back after root refresh keeps a loading graphic while deep path loads', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Covers the Chrome browser-back flow this regression came from.');
+
+    let gateNewJerseyRequest = false;
     let releaseNewJerseyRequest;
     const newJerseyRequestGate = new Promise(resolve => {
       releaseNewJerseyRequest = resolve;
     });
 
     await page.route(/\/_data\/New_Jersey.*\.json$/i, async route => {
-      await newJerseyRequestGate;
+      if (gateNewJerseyRequest) await newJerseyRequestGate;
       await route.continue();
     });
 
-    await page.goto('/United_States/New_Jersey#Northern_border');
+    await page.goto('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Northern border');
 
-    await expect(page.locator('.canopy-selected-section')).toHaveCount(0);
-    await expect(page.locator('.canopy-boot-loading-graphic')).toBeVisible();
+    await page.goto('/United_States');
+    await page.reload();
+    await expect(page).toHaveURL('/United_States');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States');
+
+    gateNewJerseyRequest = true;
+    await page.goBack();
+
+    await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
+    await expect(page.locator('.canopy-boot-loading-graphic, .canopy-loading-section > .canopy-loading-graphic').first()).toBeVisible();
 
     releaseNewJerseyRequest();
 
     await expect(page.locator('.canopy-selected-section')).not.toHaveClass(/canopy-loading-section/);
-    await expect(page.locator('section[data-path-string="/United_States"]')).not.toHaveClass(/canopy-loading-section/);
-    await expect(page.locator('section[data-path-string="/United_States/New_Jersey"]')).not.toHaveClass(/canopy-loading-section/);
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Northern border');
-    await expect(page.locator('.canopy-selected-section')).toContainText('The northern border of New Jersey abuts');
   });
 
   test('Last link selections are preferred when going down', async ({ page }) => {

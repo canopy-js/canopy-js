@@ -68,6 +68,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       .then(() => header?.show())
       .then(() => {
         pathToDisplay.paragraph.addSelectionClass(); // last for feature specs
+        removeBootloaderGraphic();
         debugDisplayPath(requestId, 'complete', pathToDisplay, linkForDisplay, options);
       });
   }).finally(() => {
@@ -84,6 +85,10 @@ function removeLoadingClass(pathToDisplay) {
     paragraph.sectionElement.classList.remove('canopy-loading-section');
     paragraph = paragraph.parentParagraph;
   }
+}
+
+function removeBootloaderGraphic() {
+  document.querySelector('#_canopy > .canopy-boot-loading-graphic')?.remove();
 }
 
 const displayPathTo = (paragraph) => {

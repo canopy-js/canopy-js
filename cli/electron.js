@@ -61,12 +61,29 @@ function writePackageMetadata(defaultTopic) {
   const packageJsonPath = path.join(electronBuildDirectory, 'package.json');
   const packageJson = fs.readJsonSync(packageJsonPath);
   const productName = productNameFor(defaultTopic.name);
+  const packageName = packageNameFor(productName);
 
-  packageJson.name = packageNameFor(productName);
+  packageJson.name = packageName;
   packageJson.productName = productName;
   packageJson.executableName = productName;
 
   fs.writeJsonSync(packageJsonPath, packageJson, { spaces: 2 });
+  writePackageLockMetadata(packageName, packageJson.version);
+}
+
+function writePackageLockMetadata(packageName, version) {
+  const packageLockPath = path.join(electronBuildDirectory, 'package-lock.json');
+  if (!fs.existsSync(packageLockPath)) return;
+
+  const packageLock = fs.readJsonSync(packageLockPath);
+  packageLock.name = packageName;
+  packageLock.version = version;
+  if (packageLock.packages && packageLock.packages['']) {
+    packageLock.packages[''].name = packageName;
+    packageLock.packages[''].version = version;
+  }
+
+  fs.writeJsonSync(packageLockPath, packageLock, { spaces: 2 });
 }
 
 function productNameFor(name) {

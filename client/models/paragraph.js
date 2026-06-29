@@ -388,7 +388,12 @@ class Paragraph {
   }
 
   removeFromDom() {
-    this.sectionElement.parentNode.removeChild(this.sectionElement);
+    this.sectionElement.parentNode?.removeChild(this.sectionElement);
+  }
+
+  unregister() {
+    this.removeFromDom();
+    delete Paragraph.paragraphsByPath[this.path.string];
   }
 
   addToDom() {
@@ -450,10 +455,11 @@ class Paragraph {
     if (!Paragraph.contentLoaded) return Promise.resolve(); // pre-running callbacks is optimization except on initial load
 
     const sectionElements = [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')];
-    canopyContainer.appendChild(rootSectionElement);
+    const wasAlreadyConnected = rootSectionElement.isConnected;
+    if (!wasAlreadyConnected) canopyContainer.appendChild(rootSectionElement);
 
     if (options.eager) {
-      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements);
+      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, wasAlreadyConnected);
     }
 
     sectionElements.forEach(sectionElement => {
@@ -462,15 +468,15 @@ class Paragraph {
       sectionElement.style.removeProperty('display');
     });
 
-    if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+    if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
     return Promise.resolve();
   }
 
-  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements) {
+  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, wasAlreadyConnected) {
     const runSection = index => {
       const sectionElement = sectionElements[index];
       if (!sectionElement) {
-        if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+        if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
         return Promise.resolve();
       }
 
@@ -482,7 +488,7 @@ class Paragraph {
     };
 
     return runSection(0).catch(error => {
-      if (rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+      if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
       throw error;
     });
   }

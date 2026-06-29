@@ -81,12 +81,6 @@ function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
 
   if (!placeholderPath) return Promise.resolve();
 
-  let deferGraphicToBootLoader =
-    options.initialLoad &&
-    bootLoadingGraphicPresent() &&
-    placeholderPath.isPageRoot;
-  if (deferGraphicToBootLoader) return Promise.resolve();
-
   let placeholderParagraph = Paragraph.byPath(placeholderPath);
 
   if (!placeholderParagraph) {
@@ -116,10 +110,6 @@ function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
   return Promise.resolve();
 }
 
-function bootLoadingGraphicPresent() {
-  return !!document.querySelector('#_canopy > .canopy-boot-loading-graphic');
-}
-
 function ensureLoadingGraphic(sectionElement) {
   if (sectionElement.querySelector(':scope > .canopy-loading-graphic')) return;
 
@@ -132,9 +122,9 @@ function createLoadingGraphicElement() {
   loadingGraphicElement.classList.add('canopy-loading-graphic');
 
   for (let i = 0; i < 3; i++) {
-    let dotElement = document.createElement('span');
-    dotElement.classList.add('canopy-loading-dot');
-    loadingGraphicElement.appendChild(dotElement);
+    let lineElement = document.createElement('span');
+    lineElement.classList.add('canopy-loading-line');
+    loadingGraphicElement.appendChild(lineElement);
   }
 
   return loadingGraphicElement;

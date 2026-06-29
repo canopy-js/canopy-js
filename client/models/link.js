@@ -179,7 +179,9 @@ class Link {
   }
 
   get type() {
-    return this.element.dataset.type;
+    if (this.linkElement) return this.linkElement.dataset.type;
+    if (this.metadataObject?.type) return this.metadataObject.type;
+    return this.element?.dataset?.type;
   }
 
   get enclosingSectionElement() {
@@ -282,6 +284,7 @@ class Link {
     return {
       enclosingPathString: link.enclosingPath.string,
       text: linkElement.dataset.text,
+      type: linkElement.dataset.type,
       relativeLinkNumber: link.relativeLinkNumber,
       selectionPathString: link.selectionPath.string, // on initial page load we need the paragraph path to call updateView before we have a link to use
       targetUrl: linkElement.dataset.targetUrl,
@@ -625,7 +628,7 @@ class Link {
   }
 
   get selectionPath() {
-    if (this.metadataObject && !Paragraph.contentLoaded) { // for initial page load before links exist
+    if (this.metadataObject?.selectionPathString && !this.linkElement) { // for initial page load and popstate before links exist
       return new Path(this.metadataObject.selectionPathString);
     }
 

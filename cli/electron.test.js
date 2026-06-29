@@ -46,6 +46,10 @@ describe('electron scaffold', () => {
       expect(packageJson.name).toBe('my-app');
       expect(packageJson.productName).toBe('My App');
       expect(packageJson.devDependencies.electron).toBeDefined();
+
+      const packageLock = fs.readJsonSync(electronBuildPath('package-lock.json'));
+      expect(packageLock.name).toBe('my-app');
+      expect(packageLock.packages[''].name).toBe('my-app');
       expect(console.warn).toHaveBeenCalledWith('No Electron icon found at assets/electron-icon.png or assets/electron-icon.icns; generated app will use Electron defaults.');
     } finally {
       if (originalCanopyLocation === undefined) {
