@@ -724,7 +724,6 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
 
     await page.locator('body').press('ArrowRight');
-    await page.pause();
     await expect(page.locator('.canopy-selected-link')).toHaveText("parking lot");
     await expect(page.locator('text=There is a lot of parking >> visible=true')).toHaveCount(1);
 

@@ -116,6 +116,11 @@ section.canopy-section {
   width: 62%;
 }
 
+.canopy-loading-line:nth-child(4) {
+  animation-delay: 390ms;
+  width: 74%;
+}
+
 @keyframes canopy-loading-paragraph-breathe {
   0% {
     box-shadow: 0 0 0 rgba(0, 0, 0, 0);

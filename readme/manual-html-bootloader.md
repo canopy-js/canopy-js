@@ -5,9 +5,11 @@ When using `canopy build --manual-html`, you can include an initial bootloader a
 ```html
 <div id="_canopy" data-default-topic="Your Default Topic">
   <div class="canopy-loading-graphic canopy-boot-loading-graphic" aria-hidden="true">
-    <span class="canopy-loading-dot"></span>
-    <span class="canopy-loading-dot"></span>
-    <span class="canopy-loading-dot"></span>
+    <span class="canopy-loading-line canopy-loading-heading-line"></span>
+    <span class="canopy-loading-line"></span>
+    <span class="canopy-loading-line"></span>
+    <span class="canopy-loading-line"></span>
+    <span class="canopy-loading-line"></span>
   </div>
 </div>
 ```
@@ -34,104 +36,71 @@ The generated build removes the bootloader once the first real, non-loading Cano
 </script>
 ```
 
-Use CSS that visually matches Canopy's runtime loading dots. The exact generated bootloader CSS is:
+Use CSS that visually matches Canopy's runtime loading graphic. The exact generated bootloader CSS is:
 
 ```html
 <style>
 #_canopy > .canopy-boot-loading-graphic {
-  align-items: center;
+  align-items: stretch;
   animation: canopy-boot-loading-reveal 1ms linear 150ms forwards;
   display: flex;
-  gap: 22px;
+  flex-direction: column;
+  gap: 13px;
   justify-content: center;
+  margin: 10px auto 0;
+  max-width: 594px;
   min-height: 180px;
   opacity: 0;
+  padding: 22px 30px;
+  position: relative;
+  width: min(64.8vw, 594px);
 }
 
-#_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot {
-  animation-duration: 3240ms;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear;
-  background: rgba(0, 0, 0, 0.34);
-  border-radius: 50%;
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-line {
+  animation: canopy-boot-loading-line-shimmer 2400ms ease-in-out infinite alternate;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.03));
+  background-size: 320% 100%;
+  border-radius: 999px;
   display: block;
-  filter: blur(1px);
-  height: 30px;
-  width: 30px;
+  filter: blur(2.4px);
+  height: 18px;
+  opacity: 0.74;
 }
 
-#_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(1) {
-  animation-name: canopy-boot-loading-dot-left;
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-heading-line {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.035), rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.035));
+  filter: blur(3.8px);
+  height: 32px;
+  margin: 0 auto 8px;
+  width: 68%;
 }
 
-#_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(2) {
-  animation-name: canopy-boot-loading-dot-center;
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(2) {
+  width: 84%;
 }
 
-#_canopy > .canopy-boot-loading-graphic > .canopy-loading-dot:nth-child(3) {
-  animation-name: canopy-boot-loading-dot-right;
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(3) {
+  animation-delay: 130ms;
+  width: 96%;
+}
+
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(4) {
+  animation-delay: 260ms;
+  width: 62%;
+}
+
+#_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(5) {
+  animation-delay: 390ms;
+  width: 74%;
 }
 
 @keyframes canopy-boot-loading-reveal {
   to { opacity: 1; }
 }
 
-@keyframes canopy-boot-loading-dot-left {
-  0%, 100% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.52;
-    transform: scale(1.12);
-  }
-
-  12.5% { opacity: 0.58; transform: scale(1.36); }
-  37.5%, 50%, 62.5%, 75% { opacity: 0.38; transform: scale(0.92); }
-
-  87.5% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.38;
-    transform: scale(0.92);
-  }
-
-  25% { opacity: 0.52; transform: scale(1.12); }
-}
-
-@keyframes canopy-boot-loading-dot-center {
-  0%, 100% { opacity: 0.52; transform: scale(1.12); }
-
-  12.5%, 62.5% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.38;
-    transform: scale(0.92);
-  }
-
-  25%, 75% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.52;
-    transform: scale(1.12);
-  }
-
-  50% { opacity: 0.52; transform: scale(1.12); }
-  37.5%, 87.5% { opacity: 0.58; transform: scale(1.36); }
-  100% { opacity: 0.52; transform: scale(1.12); }
-}
-
-@keyframes canopy-boot-loading-dot-right {
-  0%, 25%, 87.5%, 100% { opacity: 0.38; transform: scale(0.92); }
-
-  37.5% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.38;
-    transform: scale(0.92);
-  }
-
-  50% {
-    animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
-    opacity: 0.52;
-    transform: scale(1.12);
-  }
-
-  62.5% { opacity: 0.58; transform: scale(1.36); }
-  75% { opacity: 0.52; transform: scale(1.12); }
+@keyframes canopy-boot-loading-line-shimmer {
+  from { background-position: 120% 0; opacity: 0.58; }
+  to { background-position: -20% 0; opacity: 0.72; }
 }
 </style>
 ```

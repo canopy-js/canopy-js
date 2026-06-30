@@ -43,7 +43,7 @@ function build(options = {}) {
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: First pass for new expl files:'));
     tryAndWriteHtmlError(() => buildProject(defaultTopic.name, options), options); // always build first, if cache, only edited expl files
-    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic });
+    writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic, logging: options.logging });
 
     if (options.cache && options.logging) console.log(chalk.magenta('Cache option enabled: Second pass for all expl files:'));
     if (options.cache && !options.deferFullBuild) {
@@ -150,17 +150,9 @@ function bootLoaderStyle() {
     width: min(64.8vw, 594px);
   }
 
-  #_canopy > .canopy-boot-loading-graphic::before {
-    animation: canopy-boot-loading-paragraph-breathe 1700ms ease-in-out infinite;
-    border-radius: 7px;
-    content: '';
-    inset: 0;
-    position: absolute;
-  }
-
   #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line {
-    animation: canopy-boot-loading-line-shimmer 1700ms ease-in-out infinite;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.035), rgba(0, 0, 0, 0.31), rgba(0, 0, 0, 0.035));
+    animation: canopy-boot-loading-line-shimmer 2400ms ease-in-out infinite alternate;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.03));
     background-size: 320% 100%;
     border-radius: 999px;
     display: block;
@@ -169,34 +161,40 @@ function bootLoaderStyle() {
     opacity: 0.74;
   }
 
-  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-child(1) {
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-heading-line {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.035), rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.035));
+    filter: blur(3.8px);
+    height: 32px;
+    margin: 0 auto 8px;
+    width: 68%;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(2) {
     width: 84%;
   }
 
-  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-child(2) {
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(3) {
     animation-delay: 130ms;
     width: 96%;
   }
 
-  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-child(3) {
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(4) {
     animation-delay: 260ms;
     width: 62%;
+  }
+
+  #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(5) {
+    animation-delay: 390ms;
+    width: 74%;
   }
 
   @keyframes canopy-boot-loading-reveal {
     to { opacity: 1; }
   }
 
-  @keyframes canopy-boot-loading-paragraph-breathe {
-    0% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); opacity: 0.28; transform: scale(0.96); }
-    50% { box-shadow: 0 16px 46px rgba(0, 0, 0, 0.14); opacity: 1; transform: scale(1.038); }
-    100% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); opacity: 0.28; transform: scale(0.96); }
-  }
-
   @keyframes canopy-boot-loading-line-shimmer {
-    0% { background-position: 205% 0; opacity: 0.3; transform: translateX(-18px) scaleX(0.92); }
-    48% { opacity: 1; transform: translateX(18px) scaleX(1.08); }
-    100% { background-position: -105% 0; opacity: 0.3; transform: translateX(-18px) scaleX(0.92); }
+    from { background-position: 120% 0; opacity: 0.58; }
+    to { background-position: -20% 0; opacity: 0.72; }
   }
   </style>
   `;
@@ -204,13 +202,15 @@ function bootLoaderStyle() {
 
 function bootLoaderHtml() {
   return dedent`<div class="canopy-loading-graphic canopy-boot-loading-graphic" aria-hidden="true">
+      <span class="canopy-loading-line canopy-loading-heading-line"></span>
+      <span class="canopy-loading-line"></span>
       <span class="canopy-loading-line"></span>
       <span class="canopy-loading-line"></span>
       <span class="canopy-loading-line"></span>
     </div>`;
 }
 
-function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic }) {
+function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic, logging }) {
   if (manualHtml) return;
 
   const favicon = fs.existsSync(`assets/favicon.ico`);
@@ -225,7 +225,6 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
     <!DOCTYPE html>
     <html>
     <head>
-    <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">` +
     bootLoaderStyle() +
@@ -245,12 +244,13 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic 
       data-hash-urls="${hashUrls || ''}">
       ${bootLoaderHtml()}
     </div>\n` +
+    dedent`<script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${defaultTopicJson}\n</script>\n` +
     dedent`${customHtmlFooter ? customHtmlFooter : ''}` +
     dedent`</body>
     </html>\n`;
 
   fs.writeFileSync(staticBuildPath('index.html'), html);
-  console.log(chalk.yellow(`Wrote to ${staticBuildPath('index.html')} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+  if (logging) console.log(chalk.yellow(`Wrote to ${staticBuildPath('index.html')} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options }) {
@@ -299,8 +299,6 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${inlineAssetsInString(defaultTopicJson).replace(/<\/script/gi, '<\\/script')}\n</script>
-    ${jsonScripts}
     ${bootLoaderStyle()}
     ${customCss ? `<style>\n${inlineAssetsInString(customCss)}\n</style>` : ''}
     ${customJsEscaped ? `<script>\n${inlineAssetsInString(customJsEscaped)}\n</script>` : ''}
@@ -317,6 +315,8 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
       data-hash-urls="${hashUrls || ''}">
       ${bootLoaderHtml()}
     </div>
+    <script type="application/json" id="canopy_default_topic_json" data-topic-json="${defaultTopic.jsonFileName}.json">\n${inlineAssetsInString(defaultTopicJson).replace(/<\/script/gi, '<\\/script')}\n</script>
+    ${jsonScripts}
     ${customHtmlFooter ? inlineAssetsInString(customHtmlFooter) : ''}
     <script>
     ${canopyJs}
@@ -325,7 +325,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     </html>\n`;
 
   fs.writeFileSync(outputPath, html);
-  console.log(chalk.hex('#FFA500')(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
+  if (options.logging) console.log(chalk.hex('#FFA500')(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
 function buildAssetDataUriMap() {

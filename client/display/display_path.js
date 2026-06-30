@@ -22,6 +22,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   debugDisplayPath(requestId, 'start', pathToDisplay, linkToSelect, options);
   if (!pathToDisplay.recapitalize.equals(pathToDisplay)) return displayPath(pathToDisplay.recapitalize, linkToSelect, options);
   if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
+  const displayingPlaceholder = pathToDisplay.paragraph.placeholder;
   let linkForDisplay = pathToDisplay.paragraph.placeholder ?
     (linkToSelect?.linkElement ? linkToSelect : null) :
     (linkToSelect?.element?.isConnected ? linkToSelect : null);
@@ -58,6 +59,7 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       executePreDisplayCallbacks();
     }
     Link.eagerLoadLinks(options);
+    if (!displayingPlaceholder || !pathToDisplay.isPageRoot) removeBootloaderGraphic();
 
     return afterChangeScroll(pathToDisplay, linkForDisplay, options)
       .then(() => {
@@ -68,7 +70,6 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       .then(() => header?.show())
       .then(() => {
         pathToDisplay.paragraph.addSelectionClass(); // last for feature specs
-        removeBootloaderGraphic();
         debugDisplayPath(requestId, 'complete', pathToDisplay, linkForDisplay, options);
       });
   }).finally(() => {

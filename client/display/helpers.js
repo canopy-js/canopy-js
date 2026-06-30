@@ -80,6 +80,10 @@ function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
   let placeholderPath = existingPlaceholder?.path || nextPlaceholderPath;
 
   if (!placeholderPath) return Promise.resolve();
+  if (
+    placeholderPath.isPageRoot &&
+    document.querySelector('#_canopy > .canopy-boot-loading-graphic')
+  ) return Promise.resolve();
 
   let placeholderParagraph = Paragraph.byPath(placeholderPath);
 
@@ -121,7 +125,7 @@ function createLoadingGraphicElement() {
   let loadingGraphicElement = document.createElement('div');
   loadingGraphicElement.classList.add('canopy-loading-graphic');
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     let lineElement = document.createElement('span');
     lineElement.classList.add('canopy-loading-line');
     loadingGraphicElement.appendChild(lineElement);

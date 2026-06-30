@@ -438,8 +438,9 @@ test.describe('Inline entities', () => {
 
   test('It creates inline HTML elements', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Inline_HTML');
-    await expect(await page.locator('.canopy-selected-section').evaluate(element => element.innerText.trim())).toEqual('Text. This is a test. Text.'); // no newlines between html element and following text
-    await expect(await page.locator('.canopy-selected-section b')).toHaveCount(1);
+    const section = page.locator('section.canopy-selected-section[data-subtopic-name="Inline HTML"]');
+    await expect(section).toHaveText('Text. This is a test. Text.'); // no newlines between html element and following text
+    await expect(section.locator('b')).toHaveCount(1);
   });
 
   test('It creates footnotes', async ({ page }) => {
