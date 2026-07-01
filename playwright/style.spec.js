@@ -653,7 +653,7 @@ test.describe('Block entities', () => {
     //   expect(h3 - h1).toBeGreaterThan(minSignificantDifference);
     // }
 
-    // Table 4: all columns can wrap, so fitting distributes space by measured text demand.
+    // Table 4: all columns can wrap, so fitting respects the prose minimum when the container is saturated.
     {
       const table = tables.filter({ hasText: 'Shevuos' }).first();
       const firstRowCells = table.locator('tr').first().locator('td');
@@ -665,10 +665,8 @@ test.describe('Block entities', () => {
       );
       const flexAdjustedColumnCount = await table.locator('col[data-column-width-flex-adjusted="true"]').count();
 
-      expect(widths[1]).toBeGreaterThan(widths[0]);
-      expect(widths[1]).toBeGreaterThan(widths[2]);
-      expect(maxWidth - minWidth).toBeGreaterThan(minSignificantDifference);
-      expect(minWidth).toBeGreaterThanOrEqual(100);
+      expect(maxWidth - minWidth).toBeLessThanOrEqual(sizeTolerance);
+      expect(minWidth).toBeGreaterThanOrEqual(150);
       expect(shevuosLineCount).toEqual(1);
       expect(flexAdjustedColumnCount).toEqual(5);
     }
