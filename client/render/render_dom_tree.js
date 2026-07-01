@@ -56,7 +56,7 @@ function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
     );
 
     claimedSubtopics[token.targetSubtopic] = true;
-    parentSectionElement.appendChild(childSectionElement);
+    Paragraph.registerChild(childSectionElement, parentSectionElement);
   }
 }
 

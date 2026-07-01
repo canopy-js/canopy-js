@@ -107,6 +107,7 @@ function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
     ensureLoadingGraphic(placeholderParagraph.sectionElement);
     return displayPath(placeholderPath, linkToSelect, {
       ...options,
+      provisionalForPath: pathToDisplay,
       urlPath: pathToDisplay
     }).catch(e => console.error(e));
   }

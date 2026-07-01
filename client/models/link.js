@@ -541,6 +541,10 @@ class Link {
     return this.childParagraph?.hasLinks;
   }
 
+  get opensPlaceholder() {
+    return !!(this.childParagraph?.placeholder || Path.placeholderOnPath(this.inlinePath));
+  }
+
   get firstChild() {
     return this.childParagraph?.links.filter(link => !link.element?.closest('.canopy-image-caption'))[0];
   }
@@ -765,6 +769,9 @@ class Link {
 
   static updateSelectionClass(linkToSelect) {
     Array.from(document.querySelectorAll('a.canopy-selected-link')).forEach(link => link.classList.remove('canopy-selected-link'));
+    Object.values(Paragraph.paragraphsByPath).forEach(paragraph => {
+      paragraph.linkElements.forEach(link => link.classList.remove('canopy-selected-link'));
+    });
     if (linkToSelect) linkToSelect.element?.classList.add('canopy-selected-link');
   }
 
@@ -880,9 +887,14 @@ class Link {
   }
 
   static eagerLoadLinks(options = {}) {
+    Link.initializeEagerLoadCancellation();
     Link.eagerLoadRequestId = (Link.eagerLoadRequestId || 0) + 1;
     const eagerLoadRequestId = Link.eagerLoadRequestId;
     const eagerLoadStillCurrent = () => eagerLoadRequestId === Link.eagerLoadRequestId;
+    const abortController = typeof AbortController === 'function' ? new AbortController() : null;
+    if (abortController) Link.eagerLoadAbortControllers.add(abortController);
+
+    const forgetAbortController = () => abortController && Link.eagerLoadAbortControllers.delete(abortController);
 
     const scheduleIdle = callback => new Promise((resolve, reject) => {
       const run = () => {
@@ -926,7 +938,7 @@ class Link {
     const eagerLoadLink = (link) => {
       const topics = uniqueTopicsForEagerLoad(link);
 
-      return Promise.all(topics.map(topic => requestJson(topic))).then(jsons => {
+      return Promise.all(topics.map(topic => requestJson(topic, { signal: abortController?.signal }))).then(jsons => {
         const jsonSizes = topics.map(topic => jsonSizeBytesForTopic(topic));
         const paragraphCounts = topics.map(topic => paragraphCountForTopic(topic));
         const domEagerLoadEligible = jsons.every(json => json) &&
@@ -952,15 +964,30 @@ class Link {
     };
 
     const eagerLoad = () => {
-      eagerLoadLinks(Link.visible)
+      return eagerLoadLinks(Link.visible)
         .then(() => eagerLoadParagraphChain(Path.current.paragraph));
     };
 
     if (options.initialLoad) {
-      requestAnimationFrame(() => requestAnimationFrame(eagerLoad));
+      requestAnimationFrame(() => requestAnimationFrame(() => eagerLoad()?.finally(forgetAbortController)));
     } else {
-      eagerLoad();
+      eagerLoad()?.finally(forgetAbortController);
     }
+  }
+
+  static initializeEagerLoadCancellation() {
+    if (Link.eagerLoadCancellationInitialized) return;
+    Link.eagerLoadCancellationInitialized = true;
+    Link.eagerLoadAbortControllers = new Set();
+
+    const abortEagerLoads = () => {
+      Link.eagerLoadAbortControllers.forEach(controller => controller.abort());
+      Link.eagerLoadAbortControllers.clear();
+      Link.eagerLoadRequestId = (Link.eagerLoadRequestId || 0) + 1;
+    };
+
+    window.addEventListener('beforeunload', abortEagerLoads);
+    window.addEventListener('pagehide', abortEagerLoads);
   }
 
   static get onPage() {

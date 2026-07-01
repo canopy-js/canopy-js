@@ -170,9 +170,7 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-topic-name', 'New York');
   });
 
-  test('Browser back after root refresh keeps a loading graphic while deep path loads', async ({ page, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Covers the Chrome browser-back flow this regression came from.');
-
+  test('Browser back after root refresh keeps a loading graphic while deep path loads', async ({ page }) => {
     let gateNewJerseyRequest = false;
     let releaseNewJerseyRequest;
     const newJerseyRequestGate = new Promise(resolve => {
@@ -194,6 +192,7 @@ test.describe('Link Selection', () => {
 
     gateNewJerseyRequest = true;
     await page.goBack();
+    if (page.url().endsWith('/United_States')) await page.goBack();
 
     await expect(page).toHaveURL('/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-boot-loading-graphic, .canopy-loading-section > .canopy-loading-graphic').first()).toBeVisible();

@@ -74,7 +74,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise, optio
       debugFetchAndRender(frameId, 'renderDomTree complete', {
         pathToParagraphTopic: pathToParagraphTopic.string,
         sectionPath: sectionElement?.dataset?.pathString,
-        decoratedPlaceholder: !!sectionElementToDecorate
+        decoratedPlaceholder: !!sectionElementToDecorate,
+        paragraphByPathToParagraph: !!Paragraph.byPath(pathToParagraph)
       });
       return sectionElement;
     }).catch(e => { console.error(e); return null; }); // 404
@@ -105,10 +106,8 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise, optio
     }
 
     Paragraph.registerChild(sectionElement, parentElement);
-    Paragraph.registerSubtopics(sectionElement); // only once we know the topic itself is connected, requires subtopics still be connected from render
     const preDisplayPromise = options.renderOnly ? Promise.resolve() : Paragraph.executePreDisplayCallbacksTree(sectionElement);
     return preDisplayPromise.then(() => {
-      Paragraph.detachSubtopics(sectionElement); // has to be done after registerSubtopics
       debugFetchAndRender(frameId, 'append complete', {
         pathToParagraph: pathToParagraph.string,
         pathToParagraphTopic: pathToParagraphTopic.string
@@ -135,7 +134,10 @@ const fetchAndRenderPath = (fullPath, remainingPath, parentElementPromise, optio
     debugFetchAndRender(frameId, 'subtopic resolved', {
       remainingPath: remainingPath.string,
       firstSubtopic: remainingPath.firstSubtopic.mixedCase,
-      subtopicPath: subtopicElement?.dataset?.pathString
+      pathToParagraph: pathToParagraph.string,
+      subtopicPath: subtopicElement?.dataset?.pathString,
+      subtopicConnected: !!subtopicElement?.isConnected,
+      paragraphByPathToParagraph: !!Paragraph.byPath(pathToParagraph)
     });
     return subtopicElement;
   });

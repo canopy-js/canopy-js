@@ -3,7 +3,7 @@ import REQUEST_CACHE from 'requests/request_cache';
 import { preloadImages } from 'requests/helpers';
 import Topic from '../../cli/shared/topic';
 
-const requestJson = (topic) => {
+const requestJson = (topic, options = {}) => {
   if (REQUEST_CACHE[topic.mixedCase]) return REQUEST_CACHE[topic.mixedCase].promise;
 
   const embeddedTopicScript = document.querySelector(`script[data-topic-json="${topic.jsonFileName}.json"]`);
@@ -19,7 +19,7 @@ const requestJson = (topic) => {
 
   const dataPromise = embeddedTopicScript ?
     Promise.resolve(parseJsonText(embeddedTopicScript.textContent, cacheEntry)) : // embedded topic JSON (default topic / single-file build)
-    Promise.resolve().then(() => fetch(dataPath)) // wrap to capture sync fetch failures in the promise chain
+    Promise.resolve().then(() => fetch(dataPath, { signal: options.signal })) // wrap to capture sync fetch failures in the promise chain
       .then(res => {
         if (!res.ok) throw new Error(`Missing topic JSON "${topic.jsonFileName}" (status ${res.status})`);
         return res.text();

@@ -443,54 +443,47 @@ class Paragraph {
     return paragraph;
   }
 
-  static registerSubtopics(topicSectionElement) {
-    Array.from(topicSectionElement.querySelectorAll('.canopy-section'))
-      .filter(sectionElement => sectionElement.closest('.canopy-topic-section') === topicSectionElement)
-      .forEach(sectionElement => {
-        Paragraph.registerChild(sectionElement, sectionElement.parentNode);
-      });
-  }
-
   static executePreDisplayCallbacksTree(rootSectionElement, options = {}) {
     if (!Paragraph.contentLoaded) return Promise.resolve(); // pre-running callbacks is optimization except on initial load
 
-    const sectionElements = [rootSectionElement, ...rootSectionElement.querySelectorAll('.canopy-section')];
-    const wasAlreadyConnected = rootSectionElement.isConnected;
-    if (!wasAlreadyConnected) canopyContainer.appendChild(rootSectionElement);
+    const sectionElements = Paragraph.sectionElementsUnder(rootSectionElement);
+    const initiallyConnected = new Map(sectionElements.map(sectionElement => [sectionElement, sectionElement.isConnected]));
 
     if (options.eager) {
-      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, wasAlreadyConnected);
+      return Paragraph.executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, initiallyConnected);
     }
 
-    sectionElements.forEach(sectionElement => {
-      sectionElement.style.display = 'block';
-      Paragraph.for(sectionElement).executePreDisplayCallbacks();
-      sectionElement.style.removeProperty('display');
-    });
-
-    if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+    sectionElements.forEach(sectionElement => Paragraph.executePreDisplayCallbacksForSection(sectionElement));
+    Paragraph.cleanupPreDisplayCallbacksTree(rootSectionElement, sectionElements, initiallyConnected);
     return Promise.resolve();
   }
 
-  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, wasAlreadyConnected) {
+  static executePreDisplayCallbacksTreeEager(rootSectionElement, sectionElements, initiallyConnected) {
     const runSection = index => {
       const sectionElement = sectionElements[index];
       if (!sectionElement) {
-        if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+        Paragraph.cleanupPreDisplayCallbacksTree(rootSectionElement, sectionElements, initiallyConnected);
         return Promise.resolve();
       }
 
       return Paragraph.scheduleEagerPreDisplayCallback(() => {
-        sectionElement.style.display = 'block';
-        Paragraph.for(sectionElement).executePreDisplayCallbacks();
-        sectionElement.style.removeProperty('display');
+        Paragraph.executePreDisplayCallbacksForSection(sectionElement);
       }).then(() => runSection(index + 1));
     };
 
     return runSection(0).catch(error => {
-      if (!wasAlreadyConnected && rootSectionElement.parentNode === canopyContainer) canopyContainer.removeChild(rootSectionElement);
+      Paragraph.cleanupPreDisplayCallbacksTree(rootSectionElement, sectionElements, initiallyConnected);
       throw error;
     });
+  }
+
+  static executePreDisplayCallbacksForSection(sectionElement) {
+    const paragraph = Paragraph.for(sectionElement);
+    if (!sectionElement.isConnected) paragraph.addToDom();
+
+    sectionElement.style.display = 'block';
+    paragraph.executePreDisplayCallbacks();
+    sectionElement.style.removeProperty('display');
   }
 
   static scheduleEagerPreDisplayCallback(callback) {
@@ -512,10 +505,36 @@ class Paragraph {
     });
   }
 
-  static detachSubtopics(topicSectionElement) { // separate the subtopics from parents until attached to DOM
-    Array.from(topicSectionElement.querySelectorAll('.canopy-section')).forEach(sectionElement => {
-      sectionElement.parentNode.removeChild(sectionElement);
-    });
+  static sectionElementsUnder(rootSectionElement) {
+    const sectionElements = [rootSectionElement];
+    const seenElements = new Set(sectionElements);
+
+    for (let index = 0; index < sectionElements.length; index++) {
+      const parentElement = sectionElements[index];
+
+      Object.values(Paragraph.paragraphsByPath).forEach(paragraph => {
+        const childElement = paragraph.sectionElement;
+        if (paragraph.parentNode !== parentElement) return;
+        if (seenElements.has(childElement)) return;
+
+        seenElements.add(childElement);
+        sectionElements.push(childElement);
+      });
+    }
+
+    return sectionElements;
+  }
+
+  static cleanupPreDisplayCallbacksTree(rootSectionElement, sectionElements, initiallyConnected) {
+    for (let index = sectionElements.length - 1; index > 0; index--) {
+      const sectionElement = sectionElements[index];
+      if (initiallyConnected.get(sectionElement)) continue;
+      sectionElement.parentNode?.removeChild(sectionElement);
+    }
+
+    if (!initiallyConnected.get(rootSectionElement)) {
+      rootSectionElement.parentNode?.removeChild(rootSectionElement);
+    }
   }
 
   static executePreDisplayCallbacks(sectionElement) {

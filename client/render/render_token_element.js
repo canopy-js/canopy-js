@@ -1,5 +1,4 @@
 import renderTextToken from './token_elements/render_text_token';
-import { enqueueJsonEagerLoad } from 'requests/eager_json';
 import {
   renderLocalLink,
   renderGlobalLink,
@@ -26,7 +25,6 @@ function renderTokenElements(token, renderContext) {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext, renderTokenElements);
   } else if (token.type === 'global') {
-    enqueueJsonEagerLoad(token.pathString);
     return renderGlobalLink(token, renderContext, renderTokenElements);
   } else if (token.type === 'disabled_reference') {
     return renderDisabledLink(token, renderContext, renderTokenElements);

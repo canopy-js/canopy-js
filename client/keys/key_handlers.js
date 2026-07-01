@@ -40,6 +40,8 @@ function moveToParent() {
 }
 
 function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
+  if (Link.selection.opensPlaceholder) return;
+
   let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
 
   if (firstChild && firstChild.isBelowViewport && firstChild.positionOnViewport > 0.8 && !Link.selection.isPathReference) {

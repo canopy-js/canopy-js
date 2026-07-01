@@ -34,10 +34,14 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
 
   return waitForDisplaysInProgress()
   .then(() => (Paragraph.enableDisplayInProgress()))
-  .then(() => debugDisplayPath(requestId, 'lock acquired', pathToDisplay, linkForDisplay, options))
-  .then(() => removeLoadingClass(pathToDisplay))
-  .then(() => beforeChangeScroll(pathToDisplay, linkForDisplay, options)) // eg long distance up or two-step path transition
   .then(() => {
+    debugDisplayPath(requestId, 'lock acquired', pathToDisplay, linkForDisplay, options);
+    if (options.provisionalForPath?.renderedParagraph) return;
+    removeLoadingClass(pathToDisplay);
+    return beforeChangeScroll(pathToDisplay, linkForDisplay, options); // eg long distance up or two-step path transition
+  })
+  .then(() => {
+    if (options.provisionalForPath?.renderedParagraph) return;
     debugDisplayPath(requestId, 'before resetDom', pathToDisplay, linkForDisplay, options);
     Paragraph.selection?.removeSelectionClass();
     Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
