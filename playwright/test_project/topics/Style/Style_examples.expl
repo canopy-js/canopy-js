@@ -2,7 +2,7 @@ Style examples: These are some style examples. There are [[inline text styles]],
 
 Multi-line tokens: There are [[tables]], [[tables with cell styles]], [[tables with merge syntax]], [[tables with omitted cells]], [[table links]], [[table link grid]], [[table cycle icons]], [[big tables]], [[snapping tables]], [[tables with break-fitting]], [[menus]], [[menu links]], [[menu link icons]], [[directional menus]], [[code blocks]], [[block quotes]], [[block quotes with multi-line links]], [[RTL inline block quote links]], [[RTL block quotes]], [[HTML blocks]], [[HTML blocks with insertions]], [[HTML entities]], [[run-on tag HTML blocks]], [[script tags]], [[lists]], [[multi-line text]], [[center blocks]].
 
-Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], and [[redundant parent links]].
+Inline text styles: There are [[style characters]], [[images]], [[local images]], [[linked images]], [[URLs]], [[hyperlinks]], [[hyperlink special cases]], [[link icon special cases]], [[down cycle references]], [[manual cycle arrow icons]], [[inline HTML]], [[footnotes]], [[tooltips]], [[special links]], and [[links in right-to-left text]], [[links in mixed direction text]], [[disabled links]], [[full-line links]], [[unicode normalized links]], [[solo hash links]], [[solo caret links]], [[solo period links]], [[redundant parent links]], and [[deep initial scroll parent]].
 
 Style characters: There is [[italic text]], [[bold text]], [[underlined text]], [[italicized bolded text]], [[style characters in mismatched order]], [[inline HTML elements]], [[escaped style characters]], [[code snippets]].
 
@@ -225,6 +225,15 @@ Menu cell 10:
 Menu cell 11:
 
 Menu cell 12:
+
+Deep initial scroll parent:
+===
+- This parent menu cell is intentionally long enough to create a larger paragraph above the target.
+- Another parent menu cell is intentionally long enough to create a larger paragraph above the target.
+- A third parent menu cell is intentionally long enough to create a larger paragraph above the target.
+- A fourth parent menu cell is intentionally long enough to create a larger paragraph above the target.
+===
+[[deep initial scroll target]]
 
 Menu link icons:
 ===

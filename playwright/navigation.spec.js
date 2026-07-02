@@ -179,6 +179,16 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
+  test('Initial page load with a deep URL scrolls to the selected paragraph', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Deep_initial_scroll_parent/Deep_initial_scroll_target');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Deep initial scroll target');
+
+    const selectedTop = await page.locator('.canopy-selected-section > p.canopy-paragraph').evaluate(element => element.getBoundingClientRect().top);
+    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    expect(selectedTop).toBeGreaterThan(viewportHeight * 0.05);
+    expect(selectedTop).toBeLessThan(viewportHeight * 0.3);
+  });
+
   test('It decodes encoded path pound symbols', async ({ page }) => { // Eg Gmail does this sometimes to links
     await page.goto('United_States/New_York#Southern_border/New_Jersey%23Northern_border'); // this is an unescaped encoded #
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
