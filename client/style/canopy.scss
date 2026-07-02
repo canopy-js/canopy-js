@@ -297,7 +297,9 @@ a.canopy-disabled-link {
   }
 
   .canopy-link-terminal-gap {
-    margin-inline-end: -12px;
+    margin-inline-end: -11px;
+    // Keep spacer metrics stable across link content and browser font fallback.
+    font-family: "Times New Roman", Times, serif;
     font-size: 5px;
     user-select: none;
     &::before {

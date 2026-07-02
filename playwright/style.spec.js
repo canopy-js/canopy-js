@@ -432,7 +432,7 @@ test.describe('Inline entities', () => {
     await page.goto(`United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons`);
     await expect(page).toHaveURL('United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons');
 
-    await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: '↺' })).toHaveCount(1);
+    await expect(page.locator('a[data-text="style examples ↺"] .canopy-link-content-container').filter({ hasText: '↺' })).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section .canopy-link-content-container').filter({ hasText: '↩' })).toHaveCount(0);
   });
 
@@ -899,6 +899,27 @@ test.describe('Block entities', () => {
 
     const emojiLink = page.locator('a[data-text="style examples 🔁"]');
     await expect(emojiLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
+  });
+
+  test('It keeps manual cycle icon punctuation outside the link edge', async ({ page }) => {
+    await page.goto('United_States/New_York/Style_examples#Manual_Cycle_Arrow_Icons');
+    await expect(page.locator('section.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Manual Cycle Arrow Icons');
+
+    const manualIcon = page.locator('#manual-cycle-icon-only');
+    const manualIconLink = page.locator('a.canopy-selectable-link', { has: manualIcon });
+
+    await expect(manualIconLink.locator('.canopy-up-cycle-icon')).toHaveCount(0);
+
+    const spacing = await manualIconLink.evaluate(link => {
+      const container = link.querySelector('.canopy-link-container');
+      const punctuationElement = document.querySelector('#manual-cycle-icon-only-punct');
+      if (!container || !punctuationElement) return null;
+
+      return punctuationElement.getBoundingClientRect().left - container.getBoundingClientRect().right;
+    });
+
+    expect(spacing).not.toBeNull();
+    expect(spacing).toBeGreaterThanOrEqual(0);
   });
 
   test('It allows directional menus', async ({ page }) => {
