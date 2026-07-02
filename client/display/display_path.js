@@ -57,10 +57,10 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
     Path.lastRenderedPath = pathToDisplay;
 
     displayPathTo(pathToDisplay.paragraph, options);
-    const executePreDisplayCallbacks = () => pathToDisplay.paragraphs.forEach(p => queueMicrotask(() => p.executePreDisplayCallbacks())); // for initial load when didn't run at render
+    const executePreDisplayCallbacks = () => pathToDisplay.paragraphs.forEach(p => p.executePreDisplayCallbacks()); // for initial load when didn't run at render
+    executePreDisplayCallbacks();
     if (options.scrollStyle !== 'instant') {
       pathToDisplay.paragraphs.forEach(p => p.display());
-      executePreDisplayCallbacks();
     }
     Link.eagerLoadLinks(options);
     if (!displayingPlaceholder || !pathToDisplay.isPageRoot) removeBootloaderGraphic();
@@ -69,7 +69,6 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       .then(() => {
         if (options.scrollStyle !== 'instant') return;
         pathToDisplay.paragraphs.forEach(p => p.display());
-        executePreDisplayCallbacks();
       })
       .then(() => header?.show())
       .then(() => {

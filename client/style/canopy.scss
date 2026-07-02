@@ -103,22 +103,26 @@ section.canopy-section {
 }
 
 .canopy-loading-line:nth-child(1) {
-  width: 84%;
+  margin-left: -9%;
+  width: 93%;
 }
 
 .canopy-loading-line:nth-child(2) {
   animation-delay: 130ms;
-  width: 96%;
+  margin-left: -9%;
+  width: 105%;
 }
 
 .canopy-loading-line:nth-child(3) {
   animation-delay: 260ms;
-  width: 62%;
+  margin-left: -9%;
+  width: 71%;
 }
 
 .canopy-loading-line:nth-child(4) {
   animation-delay: 390ms;
-  width: 74%;
+  margin-left: -9%;
+  width: 83%;
 }
 
 @keyframes canopy-loading-paragraph-breathe {
@@ -272,7 +276,9 @@ a.canopy-disabled-link {
   }
 
   .canopy-link-terminal-gap {
-    margin-inline-end: -12px;
+    margin-inline-end: -10px;
+    // Keep spacer metrics independent of symbol-font fallback in icon-only links.
+    font-family: "Taamey David CLM", "Times New Roman", Times, serif;
     font-size: 5px;
     user-select: none;
     &::before {

@@ -170,22 +170,26 @@ function bootLoaderStyle() {
   }
 
   #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(2) {
-    width: 84%;
+    margin-left: -9%;
+    width: 93%;
   }
 
   #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(3) {
     animation-delay: 130ms;
-    width: 96%;
+    margin-left: -9%;
+    width: 105%;
   }
 
   #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(4) {
     animation-delay: 260ms;
-    width: 62%;
+    margin-left: -9%;
+    width: 71%;
   }
 
   #_canopy > .canopy-boot-loading-graphic > .canopy-loading-line:nth-of-type(5) {
     animation-delay: 390ms;
-    width: 74%;
+    margin-left: -9%;
+    width: 83%;
   }
 
   @keyframes canopy-boot-loading-reveal {
