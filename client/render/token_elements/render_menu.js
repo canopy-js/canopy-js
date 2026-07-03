@@ -83,6 +83,9 @@ function renderMenu(token, renderContext, renderTokenElements) {
       menuElement.classList.add(sizeClass);
 
       let overflowFound = false;
+      // Scaled layouts can report recursive glyph/link bounds less than a pixel
+      // outside a visually fitting cell. Treat that as measurement noise so menu
+      // sizing does not skip the correct class.
       const overflowTolerance = 1;
       for (const { menuCellElement, contentContainer } of visibleCells) {
         const contentBoundingRect = getCombinedBoundingRect([contentContainer]);
