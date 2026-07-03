@@ -83,6 +83,7 @@ function renderMenu(token, renderContext, renderTokenElements) {
       menuElement.classList.add(sizeClass);
 
       let overflowFound = false;
+      const overflowTolerance = 1;
       for (const { menuCellElement, contentContainer } of visibleCells) {
         const contentBoundingRect = getCombinedBoundingRect([contentContainer]);
         const containerStyles = window.getComputedStyle(menuCellElement);
@@ -101,8 +102,8 @@ function renderMenu(token, renderContext, renderTokenElements) {
           right: containerRect.right - containerPaddingRight
         };
 
-        const isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
-        const isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
+        const isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left - overflowTolerance || contentBoundingRect.right > adjustedContainerRect.right + overflowTolerance;
+        const isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top - overflowTolerance || contentBoundingRect.bottom > adjustedContainerRect.bottom + overflowTolerance;
 
         if (!isOverflowingHorizontally && !isOverflowingVertically) continue;
 
