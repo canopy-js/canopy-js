@@ -179,6 +179,22 @@ test.describe('Navigation', () => {
     await expect(page.locator('text=The northern border of New Jersey abuts the southern border↩ of New York↩. >> visible=true')).toHaveCount(1);
   });
 
+  test('Eager loading follows links inside eagerly loaded paragraphs', async ({ page }) => {
+    const firstDegreeJson = page.waitForResponse(response =>
+      response.url().match(/\/_data\/Eager_Branch_One_[a-f0-9]+\.json$/) && response.status() === 200
+    );
+    const secondDegreeJson = page.waitForResponse(response =>
+      response.url().match(/\/_data\/Eager_Branch_Two_[a-f0-9]+\.json$/) && response.status() === 200
+    );
+
+    await page.goto('/Eager_loading');
+    await firstDegreeJson;
+    await secondDegreeJson;
+
+    await expect(page).toHaveURL('/Eager_loading');
+    await expect(page.locator('.canopy-selected-section')).toContainText('This topic links to Eager branch one.');
+  });
+
   test('Initial page load with a deep URL scrolls to the selected paragraph', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Deep_initial_scroll_parent/Deep_initial_scroll_target');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Deep initial scroll target');
