@@ -758,17 +758,34 @@ test.describe('Block entities', () => {
   test('It fits tables with explicit line breaks to the content width', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Tables_with_break-fitting');
 
-    const table = page.locator('.canopy-selected-section table').first();
-    await expect(table).toBeVisible();
+    const tables = page.locator('.canopy-selected-section table');
+    await expect(tables).toHaveCount(2);
 
-    const { tableWidth, containerWidth, shrinkableColumnCount } = await table.evaluate(element => ({
+    const table = tables.first();
+
+    const { tableWidth, containerWidth, shrinkableColumnCount, minShrinkableColumnWidth } = await table.evaluate(element => ({
       tableWidth: Number(element.dataset.appliedTableWidth),
       containerWidth: Number(element.dataset.containerWidth),
+      minShrinkableColumnWidth: Number(element.dataset.minShrinkableColumnWidth),
       shrinkableColumnCount: element.querySelectorAll('col[data-column-shrinkable="true"]').length
     }));
 
     expect(shrinkableColumnCount).toBeGreaterThan(0);
+    expect(minShrinkableColumnWidth).toEqual(150);
     expect(tableWidth).toBeLessThanOrEqual(containerWidth + 1);
+
+    const overflowTable = tables.nth(1);
+    const overflowLayout = await overflowTable.evaluate(element => ({
+      tableWidth: Number(element.dataset.appliedTableWidth),
+      containerWidth: Number(element.dataset.containerWidth),
+      minShrinkableColumnWidth: Number(element.dataset.minShrinkableColumnWidth),
+      cellWidths: [...element.querySelectorAll('td')]
+        .map(cell => cell.getBoundingClientRect().width)
+    }));
+
+    expect(overflowLayout.minShrinkableColumnWidth).toEqual(100);
+    expect(Math.min(...overflowLayout.cellWidths)).toBeGreaterThanOrEqual(100);
+    expect(overflowLayout.tableWidth).toBeLessThanOrEqual(overflowLayout.containerWidth + 1);
   });
 
   test('It navigates table link grids with arrow keys', async ({ page }) => {

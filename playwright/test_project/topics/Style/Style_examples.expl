@@ -93,6 +93,8 @@ Tables with break-fitting:
 | Hebrew | Simple | Intensive | Causative | Reflexive |
 |---|---|---|---|---|
 | Active | TransitiveAlpha<br>אבגדהוזחט | TransitiveBeta<br>אבגדהוזחט | TransitiveGamma<br>אבגדהוזחט | TransitiveDelta<br>אבגדהוזחט |
+<br>
+| First column<br>wrapping text | Second column<br>wrapping text | Third column<br>wrapping text | Fourth column<br>wrapping text | Fifth column<br>wrapping text | Sixth column<br>wrapping text | Seventh column<br>wrapping text |
 
 Menus:
 For small elements we use a width of 4:
