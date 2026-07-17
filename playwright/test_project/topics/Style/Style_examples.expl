@@ -178,6 +178,10 @@ Or half-pills for N < 3
 - Thisisalongword????????????
 - A
 ===
+A singleton menu is at least a quarter pill:
+===
+- Singleton
+===
 
 Table link grid:
 | [#[1]]  | [#[2]]  | [#[3]]  | [#[4]]  | [#[5]]  |

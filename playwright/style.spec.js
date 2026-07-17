@@ -855,6 +855,10 @@ test.describe('Block entities', () => {
     const menu11 = menus.nth(11);
     await expect(menu11).toContainText('Thisisalongword????????????');
     await expect(menu11).toHaveClass(/canopy-half-pill/);
+
+    const menu12 = menus.nth(12);
+    await expect(menu12).toContainText('Singleton');
+    await expect(menu12).toHaveClass(/canopy-quarter-pill/);
   });
 
   test('It creates menu link icons', async ({ page }) => {
@@ -1360,7 +1364,7 @@ test.describe('Block entities', () => {
 
     const rootBack = page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]');
     await expect(rootBack.locator('.canopy-up-cycle-icon')).toHaveCount(1);
-    await rootBack.click(); // [[#]] in a root topic paragraph is a self-reference which for topic is pop
+    await rootBack.click();
     await page.waitForURL('**/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
@@ -1372,13 +1376,20 @@ test.describe('Block entities', () => {
     await page.waitForURL('**/Solo_hash_links'); // Root topic reference in subtopic is regular cycle reduction ie pop
     await expect(page.locator('.canopy-selected-section .canopy-selectable-link[data-text="Top"]')).toHaveAttribute('href', '/Solo_hash_links');
     await expect(page.locator('.canopy-selected-link')).toHaveText('solo hash links');
+
+    await page.goto('Solo_hash_links');
+    const pageRootBack = page.locator('.canopy-selected-section .canopy-disabled-link[data-text="Top"]');
+    await expect(pageRootBack).toHaveAttribute('aria-disabled', 'true');
+    await expect(pageRootBack).not.toHaveAttribute('href');
+    await expect(pageRootBack.locator('.canopy-up-cycle-icon')).toHaveCount(0);
   });
 
   test('It allows solo caret links [[^]]', async ({ page }) => {
     await page.goto('United_States/New_York/Style_examples#Inline_text_styles/Solo_caret_links');
 
-    await expect(page.locator('.canopy-selectable-link:has-text("Back")')).toHaveAttribute('href', '/Solo_caret_links');
-    await page.click('text=Back'); // [[^]] in a root topic paragraph should render to [[#]] ie self-reference which in topic is pop
+    const rootBack = page.locator('.canopy-selected-section .canopy-selectable-link:has-text("Back")');
+    await expect(rootBack).toHaveAttribute('href', '/Solo_caret_links');
+    await rootBack.click();
     await page.waitForURL('**/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
 
@@ -1393,6 +1404,12 @@ test.describe('Block entities', () => {
     await page.click('.canopy-selected-section .canopy-selectable-link:has-text("Back")[data-enclosing-subtopic="Nested subtopic solo caret link"]'); // this proves [[^]] is going to ST parent not always root topic like [[#]] 
     await page.waitForURL('**/Solo_caret_links#Subtopic_solo_caret_link');
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo caret link');
+
+    await page.goto('Solo_caret_links');
+    const pageRootBack = page.locator('.canopy-selected-section .canopy-disabled-link:has-text("Back")');
+    await expect(pageRootBack).toHaveAttribute('aria-disabled', 'true');
+    await expect(pageRootBack).not.toHaveAttribute('href');
+    await expect(pageRootBack.locator('.canopy-up-cycle-icon')).toHaveCount(0);
   });
 
   test('It allows solo period links [[.]]', async ({ page }) => {
@@ -1425,5 +1442,12 @@ test.describe('Block entities', () => {
       document.querySelector('.canopy-selected-section')?.dataset.subtopicName === 'Subtopic solo period link'
     );
     await expect(page.locator('.canopy-selected-link')).toHaveText('Subtopic solo period link');
+
+    await page.goto('Solo_period_links');
+    const pageRootSection = getSelectedSection('Solo period links');
+    const pageRootBack = pageRootSection.locator('.canopy-disabled-link:has-text("Back")');
+    await expect(pageRootBack).toHaveAttribute('aria-disabled', 'true');
+    await expect(pageRootBack).not.toHaveAttribute('href');
+    await expect(pageRootBack.locator('.canopy-up-cycle-icon')).toHaveCount(0);
   });
 });

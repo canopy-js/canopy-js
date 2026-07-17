@@ -74,6 +74,10 @@ function renderMenu(token, renderContext, renderTokenElements) {
         contentContainer: menuCellElement.querySelector('.canopy-menu-content-container')
       }));
 
+    if (visibleCells.length === 1) {
+      tableListSizeIndex = Math.max(tableListSizeIndex, SizesByArea.indexOf('quarter-pill'));
+    }
+
     while (true) {
       if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) {
         tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves

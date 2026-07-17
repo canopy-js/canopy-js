@@ -280,15 +280,15 @@ If you want to create a path reference which references another subtopic in the 
 
 Conversely, if you would like to clarify that you mean a reference as a global reference even though it corresponds also to a subtopic of the current topic, you can use the omitted subtopic syntax: \[\[Topic#\]\].
 
-Lastly, a simple \[\[#]] or \[\[#|Back]] is similar to both previous examples, like the first in that the omitted topic implies the reference should point at the current topic, and like the second in that the omitted subtopic implies the reference should point to the topic's topic-subtopic ie the paragraph of the topic's root key. Such a link in effect is a natural back button because a link to the subtopic's topic becomes a cycle reference that when clicked, retraced and closes the subtopic chain until the topic root, and selects the topic's parent link, allowing the user to navigate to other links of the parent paragraph.
+Lastly, a simple \[\[#]] or \[\[#|Back]] is similar to both previous examples, like the first in that the omitted topic implies the reference should point at the current topic, and like the second in that the omitted subtopic implies the reference should point to the topic's topic-subtopic ie the paragraph of the topic's root key. Such a link is a natural back button: from a subtopic it retraces to the topic root, and from the root of a nested topic it returns to the preceding path segment. At the overall page root, where there is nowhere further back to go, the link is disabled.
 
 #### Relative Link Shorthands ####
 
 Two syntaxes exist to make it easier to make links based on where the reference exists in the given topic.
 
-Creating a link like \[\[^]] if done in a non-topic subtopic will create a link to the parent subtopic, which will generally produce a cycle-reducting redirect i.e. pop. If done in a topic, it will create a "self-reference" (see below), which in a topic paragraph pops the paragraph from the visible stack e.g. moving from A/B/C to A/B.
+Creating a link like \[\[^]] if done in a non-topic subtopic will create a link to the parent subtopic, which will generally produce a cycle-reducting redirect i.e. pop. If done in a topic's root paragraph, it will create a self-reference which pops a nested topic from the visible stack. At the overall page root, it renders as disabled.
 
-Creating a link like \[\[.]] produces a self-reference, e.g. in topic T a reference \[\[T]] and in subtopic T#ST a reference \[\[T#ST]]. In a subtopic paragraph this will shift to the parent link, and in a topic paragraph this will pop, e.g. moving from A/B/C to A/B.
+Creating a link like \[\[.]] produces a self-reference, e.g. in topic T a reference \[\[T]] and in subtopic T#ST a reference \[\[T#ST]]. In a subtopic paragraph this will shift to the parent link, and in a nested topic's root paragraph it will pop to the preceding path segment. At the overall page root, it renders as disabled.
 
 #### Advanced Link Syntax ####
 
