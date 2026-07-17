@@ -1020,7 +1020,10 @@ test.describe('Block entities', () => {
 
   test('It creates block quotes with multi-line links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Block_quotes_with_multi-line_links');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Block quotes with multi-line links');
     await expect(page.locator('.canopy-selected-section blockquote a')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-link')).toHaveText('block quotes with multi-line links');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('Enter');
     await expect(page.locator('text=Multi-line link paragraph text. >> visible=true')).toHaveCount(1);
   });

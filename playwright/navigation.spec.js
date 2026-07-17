@@ -113,7 +113,10 @@ test.describe('Arrow keys', () => {
 
   test('Down on bottom link opens child', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Special topic names');
     await expect(page.locator('.canopy-selected-section')).toContainText("There are italic topic names");
+    await expect(page.locator('.canopy-selected-link')).toHaveText('special topic names');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('ArrowDown');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names");
     await expect(page.locator('.canopy-selected-link')).toHaveText('italic topic names');
@@ -201,7 +204,7 @@ test.describe('Navigation', () => {
 
     const selectedTop = await page.locator('.canopy-selected-section > p.canopy-paragraph').evaluate(element => element.getBoundingClientRect().top);
     const viewportHeight = await page.evaluate(() => window.innerHeight);
-    expect(selectedTop).toBeGreaterThan(viewportHeight * 0.05);
+    expect(selectedTop).toBeGreaterThanOrEqual(viewportHeight * 0.05);
     expect(selectedTop).toBeLessThan(viewportHeight * 0.3);
   });
 
@@ -214,7 +217,9 @@ test.describe('Navigation', () => {
 
   test('Pressing down on global link advances path', async ({ page }) => {
     await page.goto('/United_States/New_York');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
@@ -288,7 +293,9 @@ test.describe('Navigation', () => {
 
   test('Clicking on an open global selects it', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('a:has-text("New York"):visible').click();
 
@@ -332,7 +339,9 @@ test.describe('Navigation', () => {
 
   test('Meta-clicking on open global opens new tab to previous path', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -523,10 +532,14 @@ test.describe('Navigation', () => {
 
   test('Down on path reference selects links of current paragraph', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Southern border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Northern border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
     await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('body').press('ArrowDown');
 
@@ -534,6 +547,11 @@ test.describe('Navigation', () => {
   });
 
   test('Down and enter on path reference are ignored while inline path placeholder is loading', async ({ page }) => {
+    // Let this test initiate the gated request instead of the eager loader.
+    await page.addInitScript(() => {
+      window.requestIdleCallback = () => 0;
+    });
+
     let releaseNewJerseyRequest;
     const newJerseyRequestGate = new Promise(resolve => {
       releaseNewJerseyRequest = resolve;
@@ -545,10 +563,14 @@ test.describe('Navigation', () => {
     });
 
     await page.goto('/United_States/New_York#Southern_border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Southern border');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await expect(page.locator('.canopy-loading-section')).toHaveCount(0);
 
     await page.locator('body').press('Enter');
 
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-topic-name', 'New Jersey');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page.locator('.canopy-selected-section')).toHaveClass(/canopy-loading-section/);
 

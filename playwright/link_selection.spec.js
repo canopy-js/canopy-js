@@ -211,22 +211,33 @@ test.describe('Link Selection', () => {
   test('Last link selections are preferred when going down', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples');
     await expect(page.locator('h1:visible')).toHaveText('United States');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
     await expect(page.locator('.canopy-selected-section > p')).toContainText('These are some style examples.'); // prevent advance before scroll
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#Inline_text_styles');
     await expect(page.locator('.canopy-selected-link')).toHaveText('inline text styles');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#Multi-line_tokens');
     await expect(page.locator('.canopy-selected-link')).toHaveText('multi-line tokens');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('body').press('ArrowUp');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.reload();
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples');
     await expect(page.locator('.canopy-selected-link')).toHaveText('style examples');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('ArrowDown');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#Multi-line_tokens');
     await expect(page.locator('.canopy-selected-link')).toHaveText('multi-line tokens');
   });
 });
