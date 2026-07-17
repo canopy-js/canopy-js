@@ -378,6 +378,7 @@ test.describe('Inline entities', () => {
     const box = await link.locator('.canopy-link-container').boundingBox();
     expect(box.width).toBeGreaterThan(14);
     expect(box.width).toBeLessThan(24);
+    await expect(link.locator('.canopy-link-container')).toHaveCSS('vertical-align', '-4px');
   });
 
   test('It handles hyperlink special cases', async ({ page }) => {
