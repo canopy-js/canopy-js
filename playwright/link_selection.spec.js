@@ -101,6 +101,9 @@ test.describe('Link Selection', () => {
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States');
     await page.locator('a:has-text("New Jersey"):visible').click();
 
+    await page.waitForFunction(() => document.querySelector('.canopy-selected-section')
+      ?.classList.contains('canopy-loading-minimum'));
+    const visibleAt = Number(await page.locator('.canopy-selected-section').getAttribute('data-canopy-placeholder-visible-at'));
     await expect(page.locator('.canopy-selected-link')).toHaveText('New Jersey');
     await expect(page.locator('.canopy-selected-section')).toHaveClass(/canopy-loading-section/);
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_Jersey');
@@ -108,6 +111,8 @@ test.describe('Link Selection', () => {
     releaseNewJerseyRequest();
 
     await expect(page.locator('.canopy-selected-section')).not.toHaveClass(/canopy-loading-section/);
+    await expect(page.locator('.canopy-selected-section')).not.toHaveClass(/canopy-loading-minimum/);
+    expect(await page.evaluate(() => Date.now()) - visibleAt).toBeGreaterThanOrEqual(190);
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_Jersey');
     await expect(page.locator('.canopy-selected-section')).toContainText('The state of New Jersey has');
   });

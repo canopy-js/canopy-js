@@ -49,13 +49,13 @@ section.canopy-section {
   unicode-bidi: unset;
 }
 
-.canopy-loading-section > .canopy-paragraph,
-.canopy-loading-section > .canopy-section,
-.canopy-loading-section > .canopy-hr {
+:is(.canopy-loading-section, .canopy-loading-minimum) > .canopy-paragraph,
+:is(.canopy-loading-section, .canopy-loading-minimum) > .canopy-section,
+:is(.canopy-loading-section, .canopy-loading-minimum) > .canopy-hr {
   display: none;
 }
 
-.canopy-loading-section {
+:is(.canopy-loading-section, .canopy-loading-minimum) {
   min-height: 180px;
 }
 
@@ -63,7 +63,7 @@ section.canopy-section {
   display: none;
 }
 
-.canopy-loading-section > .canopy-loading-graphic {
+:is(.canopy-loading-section, .canopy-loading-minimum) > .canopy-loading-graphic {
   align-items: stretch;
   animation: canopy-loading-graphic-reveal 1ms linear 150ms forwards;
   display: flex;
