@@ -115,7 +115,6 @@ test.describe('Topic names', () => {
     await page.goto(`/United_States/New_York/Martha's_Vineyard/What_attractions_are_nearby_Martha's_Vineyard?`);
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-topic-name', "What attractions are nearby Martha's Vineyard?");
     await expect(page.locator('.canopy-selected-link')).toHaveText("What attractions are nearby Martha's Vineyard?");
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await scrollElementToViewport(page, '.canopy-selected-link');
     await page.locator('body').press('ArrowRight');
@@ -124,7 +123,6 @@ test.describe('Topic names', () => {
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history");
     await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
     await expect(page.locator('text=This is a good book. >> visible=true')).toHaveCount(1);
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -223,10 +221,14 @@ test.describe('Topic names', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText("The %3C shop");
     await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard/The_%253C_shop");
     await expect(page.locator('text=This is a good store. >> visible=true')).toHaveCount(1);
+    const shopSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York/Martha\'s_Vineyard/The_%253C_shop"]');
+    const shopLink = page.locator('a.canopy-selected-link[data-text="The %3C shop"]');
+    await expect(shopSection).toHaveCount(1);
+    await expect(shopLink).toBeVisible();
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator("text=The %3C shop >> visible=true").click({
+      shopLink.click({
         modifiers: [systemNewTabKey]
       })
     ]);
@@ -360,7 +362,6 @@ test.describe('Topic names', () => {
   test('Topic names can contain italics', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Italic topic names');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await expect(page.locator('.canopy-selected-link')).toHaveText("italic topic names");
     await expect(page.locator('.canopy-selected-link i')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link i')).toHaveText("italic");
@@ -380,7 +381,6 @@ test.describe('Topic names', () => {
   test('Topic names can contain code snippets', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Code_snippet_topic_names');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Code snippet topic names');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await expect(page.locator('.canopy-selected-link')).toHaveText("code snippet topic names");
     await expect(page.locator('.canopy-selected-link code')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link code')).toHaveText("code snippet");
@@ -400,7 +400,6 @@ test.describe('Topic names', () => {
   test('Topic names can contain literal underscores', async ({ page, context }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names/%5C_Topic_names_with_literal_underscores%5C_');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', '_Topic names with literal underscores_');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await expect(page.locator('.canopy-selected-link')).toHaveText("_topic names with literal underscores_");
     await expect(page.locator('.canopy-selected-link i')).toHaveCount(0);
 

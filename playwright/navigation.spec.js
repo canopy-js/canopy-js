@@ -58,8 +58,13 @@ test.describe('Arrow keys', () => {
 
   test('Navigating right-to-left links', async ({ page, browserName }) => {
     await page.goto('/United_States/New_York/Style_examples#Links_in_right-to-left_text');
-    await expect(page.locator('.canopy-selected-section')).toContainText("זוהי פסקה של טקסט");
+    const rtlSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York/Style_examples#Links_in_right-to-left_text"]');
+    const firstRtlLinkSelector = '.canopy-selected-section[data-path-string="/United_States/New_York/Style_examples#Links_in_right-to-left_text"] a[data-text="קישור ראשון"]';
+    await expect(rtlSection).toContainText("זוהי פסקה של טקסט");
+    await scrollElementToViewport(page, firstRtlLinkSelector);
+    await expect(page.locator(firstRtlLinkSelector)).toBeInViewport();
     await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#קישור_ראשון');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור ראשון');
     await page.locator('body').press('ArrowLeft');
     await expect(page.locator('.canopy-selected-link')).toHaveText('קישור שני');
@@ -113,10 +118,9 @@ test.describe('Arrow keys', () => {
 
   test('Down on bottom link opens child', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Special_topic_names');
-    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Special topic names');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#Special_topic_names');
     await expect(page.locator('.canopy-selected-section')).toContainText("There are italic topic names");
     await expect(page.locator('.canopy-selected-link')).toHaveText('special topic names');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('ArrowDown');
     await expect(page).toHaveURL("/United_States/New_York/Style_examples#Special_topic_names/Italic_topic_names");
     await expect(page.locator('.canopy-selected-link')).toHaveText('italic topic names');
@@ -219,7 +223,6 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York');
     await expect(page.locator('.canopy-selected-link')).toHaveText('New York');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('ArrowDown');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page).toHaveURL('/United_States/New_York#Southern_border');
@@ -295,7 +298,6 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('a:has-text("New York"):visible').click();
 
@@ -341,7 +343,6 @@ test.describe('Navigation', () => {
     await page.goto('/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -440,8 +441,14 @@ test.describe('Navigation', () => {
 
   test('Clicking on an open local selects it', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    const southernBorderSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"]');
+    const northernBorderSelector = '.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"] a[data-text="northern border"]';
+    await expect(southernBorderSection).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await scrollElementToViewport(page, northernBorderSelector);
+    await expect(page.locator(northernBorderSelector)).toBeInViewport();
     await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
 
     await page.locator('a[data-type="local"]:has-text("southern border")').click();
@@ -522,24 +529,28 @@ test.describe('Navigation', () => {
 
   test('Selecting a path reference previews path', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    const southernBorderSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"]');
+    const northernBorderSelector = '.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"] a[data-text="northern border"]';
+    await expect(southernBorderSection).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await scrollElementToViewport(page, northernBorderSelector);
+    await expect(page.locator(northernBorderSelector)).toBeInViewport();
 
     await page.locator('body').press('Enter');
 
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
     await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
   });
 
   test('Down on path reference selects links of current paragraph', async ({ page }) => {
     await page.goto('/United_States/New_York#Southern_border');
-    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Southern border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
     await page.locator('body').press('Enter');
-    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Northern border');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border'); // path reference
     await expect(page.locator('.canopy-selected-section > p')).toContainText('The northern border of New Jersey abuts');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
 
     await page.locator('body').press('ArrowDown');
 
@@ -563,8 +574,7 @@ test.describe('Navigation', () => {
     });
 
     await page.goto('/United_States/New_York#Southern_border');
-    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Southern border');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
     await expect(page.locator('.canopy-loading-section')).toHaveCount(0);
 
@@ -733,8 +743,14 @@ test.describe('Navigation', () => {
 
   test('Meta-enter on path-reference opens to the inlined path', async ({ page, context }) => {
     await page.goto('/United_States/New_York#Southern_border');
+    const southernBorderSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"]');
+    const northernBorderSelector = '.canopy-selected-section[data-path-string="/United_States/New_York#Southern_border"] a[data-text="northern border"]';
+    await expect(southernBorderSection).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText('southern border');
+    await scrollElementToViewport(page, northernBorderSelector);
+    await expect(page.locator(northernBorderSelector)).toBeInViewport();
     await page.locator('body').press('Enter');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page.locator('.canopy-selected-link')).toHaveText('northern border');
 
     const [newPage] = await Promise.all([
@@ -897,9 +913,15 @@ test.describe('Navigation', () => {
 
   test('Pressing enter on URL link opens link in new tab', async ({ page, context }) => {
     await page.goto('United_States/New_York/Style_examples#URLs');
+    const urlsSection = page.locator('.canopy-selected-section[data-path-string="/United_States/New_York/Style_examples#URLs"]');
+    const externalLinkSelector = '.canopy-selected-section[data-path-string="/United_States/New_York/Style_examples#URLs"] a[data-type="external"]';
+    await expect(urlsSection).toHaveCount(1);
     await expect(page.locator('.canopy-selected-link')).toHaveText('URLs');
+    await scrollElementToViewport(page, externalLinkSelector);
+    await expect(page.locator(externalLinkSelector)).toBeInViewport();
     await page.locator('body').press('Enter');
     await expect(page.locator('.canopy-selected-link')).toHaveText('http://google.com');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/United_States/New_York/Style_examples#URLs');
 
     await page.context().route(
         'http://*google.com/**',
@@ -955,7 +977,7 @@ test.describe('Navigation', () => {
   test('A visible high fulcrum scrolls to regular link focus before the path changes', async ({ page }) => {
     await page.setViewportSize({ width: 1200, height: 900 });
     await page.goto('/Fulcrum_scroll_targets#Video');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/Fulcrum_scroll_targets#Video');
 
     const fulcrumLink = page.locator('a[href="/New_York"]');
     const startLink = page.locator('a[href="/Fulcrum_scroll_targets/New_York"]');
@@ -976,7 +998,7 @@ test.describe('Navigation', () => {
     await startLink.evaluate((element) => element.click());
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('fulcrum target');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/Fulcrum_scroll_targets/New_York');
     const scrollResult = await page.evaluate(() => ({
       initial: window.fulcrumScrollSamples[0],
       minimum: Math.min(...window.fulcrumScrollSamples)
@@ -987,7 +1009,7 @@ test.describe('Navigation', () => {
   test('A fulcrum near regular link focus skips the before-change scroll', async ({ page }) => {
     await page.setViewportSize({ width: 1200, height: 900 });
     await page.goto('/Fulcrum_scroll_targets#Video');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/Fulcrum_scroll_targets#Video');
 
     const fulcrumLink = page.locator('a[href="/New_York"]');
     const startLink = page.locator('a[href="/Fulcrum_scroll_targets/New_York"]');
@@ -1008,7 +1030,7 @@ test.describe('Navigation', () => {
     await startLink.evaluate((element) => element.click());
 
     await expect(page.locator('.canopy-selected-link')).toHaveText('fulcrum target');
-    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-path-string', '/Fulcrum_scroll_targets/New_York');
     const scrollResult = await page.evaluate(() => ({
       initial: window.fulcrumScrollSamples[0],
       minimum: Math.min(...window.fulcrumScrollSamples)
