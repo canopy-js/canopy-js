@@ -80,6 +80,26 @@ test.describe('Inline entities', () => {
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
   });
 
+  test('It reveals alt text when an image fails to load', async ({ page }) => {
+    await page.route('**/*Gullmarn*', route => route.abort());
+    await page.goto('/United_States/New_York/Style_examples#Images');
+
+    let image = page.locator('.canopy-selected-section img');
+    await expect(image).toHaveAttribute('alt', 'Alt text');
+    await expect.poll(() => image.evaluate(element => ({
+      height: element.style.height,
+      width: element.style.width,
+      opacity: element.style.opacity,
+      containerWidth: element.closest('.canopy-image').style.width
+    }))).toEqual({
+      height: '',
+      width: '',
+      opacity: '',
+      containerWidth: ''
+    });
+    await expect(image).toBeVisible();
+  });
+
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
     await expect(page.locator('.canopy-selected-section p span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
