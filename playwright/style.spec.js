@@ -414,6 +414,20 @@ test.describe('Inline entities', () => {
     await expect(link.locator('.canopy-link-container')).toHaveCSS('vertical-align', '-4px');
   });
 
+  test('It resolves relative hyperlinks from the project root', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Hyperlinks');
+
+    const rootRelativeLink = page.getByRole('link', { name: 'root-relative project link', exact: true });
+    const relativeLink = page.getByRole('link', { name: 'relative project link', exact: true });
+
+    await expect(rootRelativeLink).toHaveAttribute('href', '/outside.html');
+    await expect(relativeLink).toHaveAttribute('href', '/outside.html');
+    await expect(rootRelativeLink.locator('.canopy-external-link-icon')).toBeVisible();
+    await expect(relativeLink.locator('.canopy-external-link-icon')).toBeVisible();
+    await expect(rootRelativeLink).toHaveAttribute('target', '_blank');
+    await expect(relativeLink).toHaveAttribute('target', '_blank');
+  });
+
   test('It handles hyperlink special cases', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Hyperlink_special_cases');
     await expect(page.locator('.canopy-selected-section')).toContainText("These are hyperlink special cases:");

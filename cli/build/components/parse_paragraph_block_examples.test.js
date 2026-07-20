@@ -327,13 +327,41 @@ test('it parses a linked image before a Canopy reference', () => {
   expect(tokens.map(token => token.type)).toEqual(['external', 'text', 'local']);
   expect(tokens[0]).toMatchObject({
     type: 'external',
-    url: 'target.jpg',
+    url: '/target.jpg',
     tokens: [{
       type: 'image',
       resourceUrl: 'image.jpg',
       altText: 'Alt'
     }]
   });
+});
+
+test('it resolves relative hyperlinks from the project root', () => {
+  let parserContext = new ParserContext({
+    explFileObjectsByPath: {},
+    defaultTopicString: 'ABC',
+    options: { projectPathPrefix: 'project' }
+  });
+  let tokens = parseParagraph(
+    '[Absolute](https://example.com/page) [Root relative](/page) [Relative](page)',
+    parserContext
+  );
+
+  expect(tokens.filter(token => token.type === 'external').map(token => token.url)).toEqual([
+    'https://example.com/page',
+    '/project/page',
+    '/project/page'
+  ]);
+});
+
+test('it resolves relative hyperlinks from the domain root without a project path prefix', () => {
+  let parserContext = new ParserContext({ explFileObjectsByPath: {}, defaultTopicString: 'ABC' });
+  let tokens = parseParagraph('[Root relative](/page) [Relative](page)', parserContext);
+
+  expect(tokens.filter(token => token.type === 'external').map(token => token.url)).toEqual([
+    '/page',
+    '/page'
+  ]);
 });
 
 test('it parses a linked image with a title and caption before a menu', () => {

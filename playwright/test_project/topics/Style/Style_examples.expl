@@ -492,6 +492,8 @@ Dummy Next:
 Hyperlinks:
 This is a [link](http://google.com).
 This is an icon-only external link [](https://google.com).
+This is a [root-relative project link](/outside.html).
+This is a [relative project link](outside.html).
 
 Hyperlink special cases:
 These are hyperlink special cases:

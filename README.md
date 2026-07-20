@@ -452,10 +452,15 @@ Images are not linked by default. To make an image a link, use the linked-image 
 ```
 [Link text](https://example.com)
 
+[Project-root link](/page)
+
+[Project-root link](page)
+
 [](https://example.com)
 ```
 
 External links can be written with standard Markdown link syntax. Use empty link text to render an icon-only external link.
+Root-relative and bare link paths resolve from the Canopy project root and include the configured project path prefix.
 
 #### Linked Images ####
 
