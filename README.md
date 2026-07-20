@@ -445,7 +445,7 @@ Optional space after `!` is ignored.
 
 Any inline-token such as Canopy references can be used in the image caption.
 
-By default images link to their sources.
+Images are not linked by default. To make an image a link, use the linked-image syntax below.
 
 #### External Links ####
 

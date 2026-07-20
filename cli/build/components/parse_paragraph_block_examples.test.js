@@ -1,7 +1,24 @@
 let { TextToken } = require('./tokens');
 import parseParagraph from './parse_paragraph';
 let ParserContext = require('./parser_context')
+let Topic = require('../../shared/topic');
 let chalk = require('chalk');
+
+function parserContextWithReferences() {
+  let filePath = 'topics/ABC/ABC.expl';
+  let parserContext = new ParserContext({
+    explFileObjectsByPath: {
+      [filePath]: { contents: 'ABC: Root.\n\nNext: Next.' }
+    },
+    defaultTopicString: 'ABC'
+  });
+  let topic = new Topic('ABC');
+
+  parserContext.filePath = filePath;
+  parserContext.setTopicAndSubtopic(topic, topic);
+
+  return parserContext;
+}
 
 test('it parses a text block', () => {
   let text = 'This is a line.\n' +
@@ -300,4 +317,63 @@ test('it parses a footnote block', () => {
       ]
     }
   ]);
+});
+
+test('it parses a linked image before a Canopy reference', () => {
+  let text = '[![Alt](image.jpg)](target.jpg)\n[[Next]]';
+
+  let tokens = parseParagraph(text, parserContextWithReferences());
+
+  expect(tokens.map(token => token.type)).toEqual(['external', 'text', 'local']);
+  expect(tokens[0]).toMatchObject({
+    type: 'external',
+    url: 'target.jpg',
+    tokens: [{
+      type: 'image',
+      resourceUrl: 'image.jpg',
+      altText: 'Alt'
+    }]
+  });
+});
+
+test('it parses a linked image with a title and caption before a menu', () => {
+  let text = '[![Alt](image.jpg "Title" "Caption")](target.jpg)\n' +
+    '===\n' +
+    '> [[^|Back]]\n' +
+    '===';
+
+  let tokens = parseParagraph(text, parserContextWithReferences());
+
+  expect(tokens.map(token => token.type)).toEqual(['external', 'text', 'menu']);
+  expect(tokens[0].tokens[0]).toMatchObject({
+    type: 'image',
+    resourceUrl: 'image.jpg',
+    title: 'Title',
+    caption: 'Caption',
+    altText: 'Alt'
+  });
+});
+
+test('it still parses a disabled reference', () => {
+  let tokens = parseParagraph('[![New Jersey]]', parserContextWithReferences());
+
+  expect(tokens).toMatchObject([{
+    type: 'disabled_reference',
+    text: 'New Jersey'
+  }]);
+});
+
+test('it still parses an unlinked image', () => {
+  let tokens = parseParagraph(
+    '![Alt](image.jpg "Title" "Caption")',
+    parserContextWithReferences()
+  );
+
+  expect(tokens).toMatchObject([{
+    type: 'image',
+    resourceUrl: 'image.jpg',
+    title: 'Title',
+    caption: 'Caption',
+    altText: 'Alt'
+  }]);
 });
