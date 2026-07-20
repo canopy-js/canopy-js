@@ -51,7 +51,9 @@ function serve(options = {}) {
     clearInterval(healthChecker);
   });
 
-  return state.child;
+  return {
+    restartIfNotPresent: () => restartIfNotPresent(state, ensureServerState)
+  };
 }
 
 module.exports = serve;
@@ -82,6 +84,13 @@ function ensureRunning(state, port, options, hasValidBuild, ensureServerState) {
   startChild(state, port, options, hasValidBuild, ensureServerState);
   state.restarting = false;
   state.missingBuildWarned = false;
+}
+
+function restartIfNotPresent(state, ensureServerState) {
+  if (state.shuttingDown || state.child) return false;
+  state.fatalListenError = false;
+  ensureServerState();
+  return true;
 }
 
 function handleMissingBuild(state) {
@@ -235,3 +244,5 @@ function restartChild(state, options) {
     state.child = null;
   }
 }
+
+module.exports.restartIfNotPresent = restartIfNotPresent;
