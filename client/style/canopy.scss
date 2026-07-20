@@ -558,6 +558,31 @@ a.canopy-disabled-link {
 a.canopy-selectable-link.canopy-linked-image {
   text-decoration: none;
 
+  // Full-width link wrappers preserve centering for full-line images.
+  &.canopy-full-line-link {
+    display: block;
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+
+    .canopy-link-container,
+    .canopy-link-content-container {
+      display: block;
+      width: 100%;
+    }
+
+    .canopy-link-container {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .canopy-image-caption {
+      margin-left: 0;
+      margin-right: 0;
+      min-width: 100%;
+      width: 0;
+    }
+  }
+
   .canopy-link-container {
     border: none;
     background-color: inherit;

@@ -102,15 +102,28 @@ test.describe('Inline entities', () => {
 
   test('It creates linked images', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Linked_images');
-    await expect(page.locator('.canopy-selected-section p span:has-text("This picture of a frog is also a link.")')).toHaveCount(1);
+    await expect(page.locator('.canopy-selected-section p span:has-text("This small image is also a link.")')).toHaveCount(1);
     await expect(page.locator('.canopy-selected-section img')).toHaveCount(1);
-    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText("Frog \"link\" - Rushenb");
-    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.src))
-      .toEqual('https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg');
+    await expect(page.locator('.canopy-selected-section span.canopy-image-caption')).toHaveText('Caption');
+    await expect(await page.locator('.canopy-selected-section img').evaluate((element) => new URL(element.src).pathname))
+      .toEqual('/_assets/favicon.ico');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.title))
-      .toEqual('Frog \"title\"');
+      .toEqual('Linked image title');
     await expect(await page.locator('.canopy-selected-section img').evaluate((element) => element.alt)).toEqual('Alt text');
     await expect(await page.locator('.canopy-selected-section a:has(img)').evaluate((element) => element.href)).toEqual('http://google.com/');
+    let linkedImageLayout = await page.locator('.canopy-selected-section a:has(img)').evaluate((element) => {
+      let imageRect = element.querySelector('img').getBoundingClientRect();
+      let captionRect = element.querySelector('.canopy-image-caption').getBoundingClientRect();
+      let paragraphRect = element.closest('p').getBoundingClientRect();
+      return {
+        imageCenterDelta: Math.abs((imageRect.left + imageRect.right) - (paragraphRect.left + paragraphRect.right)),
+        captionLeftDelta: Math.abs(captionRect.left - imageRect.left),
+        captionRightDelta: Math.abs(captionRect.right - imageRect.right)
+      };
+    });
+    expect(linkedImageLayout.imageCenterDelta).toBeLessThan(1);
+    expect(linkedImageLayout.captionLeftDelta).toBeLessThan(1);
+    expect(linkedImageLayout.captionRightDelta).toBeLessThan(1);
   });
 
   test('It creates links from URLs', async ({ page }) => {
