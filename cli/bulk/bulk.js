@@ -258,7 +258,13 @@ const bulk = async function(selectedFileList, options = {}) {
     const topicsWatcher = chokidar.watch(['topics'], { persistent: true, ignoreInitial: true });
     cyclePreventer.watchingTopics();
 
-    let handler = debounce((e) => topicsChangeHandler(e));
+    let handler = debounce((e) => {
+      try {
+        topicsChangeHandler(e);
+      } catch (error) {
+        handleWatchError(error, options);
+      }
+    });
 
     topicsWatcher
       .on('add', handler)
