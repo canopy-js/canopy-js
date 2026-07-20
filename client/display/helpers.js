@@ -373,12 +373,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
   let targetLink = targetElement.tagName === 'A' && Link.for(targetElement);
   let targetRatio = targetLink ?
-    (fulcrumLink ? FULCRUM_LINK_TARGET_RATIO : (targetLink.isAboveViewport && targetLink.bottom > ScrollableContainer.top ? PARTIALLY_VISIBLE_LINK_TARGET_RATIO : (targetLink.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO))) :
+    (fulcrumLink ? (targetLink.isAboveViewport ? FULCRUM_LINK_TARGET_RATIO : LINK_TARGET_RATIO) : (targetLink.isAboveViewport && targetLink.bottom > ScrollableContainer.top ? PARTIALLY_VISIBLE_LINK_TARGET_RATIO : (targetLink.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO))) :
     (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
+
+  let direction;
+  if (fulcrumLink) direction = 'up';
 
   let preChangePause = () => new Promise(resolve => setTimeout(resolve, 120))
 
-  return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
+  return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top', direction })
     .then((scrolled) => scrolled && preChangePause())); // we only pause before change if there was a real scroll to the fulcrum link
 }
 

@@ -952,6 +952,70 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL('United_States');
   });
 
+  test('A visible high fulcrum scrolls to regular link focus before the path changes', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await page.goto('/Fulcrum_scroll_targets#Video');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+
+    const fulcrumLink = page.locator('a[href="/New_York"]');
+    const startLink = page.locator('a[href="/Fulcrum_scroll_targets/New_York"]');
+    await fulcrumLink.evaluate((element) => {
+      const targetTop = window.innerHeight * 0.15;
+      const scrollTop = window.scrollY + element.getBoundingClientRect().top - targetTop;
+      window.scrollTo({ top: scrollTop, behavior: 'instant' });
+    });
+    await expect.poll(() => fulcrumLink.evaluate((element) => (
+      element.getBoundingClientRect().top / window.innerHeight
+    ))).toBeCloseTo(0.15, 2);
+    await expect(startLink).toBeVisible();
+
+    await page.evaluate(() => {
+      window.fulcrumScrollSamples = [window.scrollY];
+      window.addEventListener('scroll', () => window.fulcrumScrollSamples.push(window.scrollY));
+    });
+    await startLink.evaluate((element) => element.click());
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText('fulcrum target');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    const scrollResult = await page.evaluate(() => ({
+      initial: window.fulcrumScrollSamples[0],
+      minimum: Math.min(...window.fulcrumScrollSamples)
+    }));
+    expect(scrollResult.minimum).toBeLessThan(scrollResult.initial - 75);
+  });
+
+  test('A fulcrum near regular link focus skips the before-change scroll', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await page.goto('/Fulcrum_scroll_targets#Video');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+
+    const fulcrumLink = page.locator('a[href="/New_York"]');
+    const startLink = page.locator('a[href="/Fulcrum_scroll_targets/New_York"]');
+    await fulcrumLink.evaluate((element) => {
+      const targetTop = window.innerHeight * 0.30;
+      const scrollTop = window.scrollY + element.getBoundingClientRect().top - targetTop;
+      window.scrollTo({ top: scrollTop, behavior: 'instant' });
+    });
+    await expect.poll(() => fulcrumLink.evaluate((element) => (
+      element.getBoundingClientRect().top / window.innerHeight
+    ))).toBeCloseTo(0.30, 2);
+    await expect(startLink).toBeVisible();
+
+    await page.evaluate(() => {
+      window.fulcrumScrollSamples = [window.scrollY];
+      window.addEventListener('scroll', () => window.fulcrumScrollSamples.push(window.scrollY));
+    });
+    await startLink.evaluate((element) => element.click());
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText('fulcrum target');
+    await expect(page.locator('#_canopy')).toHaveAttribute('data-display-in-progress', 'false');
+    const scrollResult = await page.evaluate(() => ({
+      initial: window.fulcrumScrollSamples[0],
+      minimum: Math.min(...window.fulcrumScrollSamples)
+    }));
+    expect(scrollResult.minimum).toBeGreaterThanOrEqual(scrollResult.initial - 5);
+  });
+
   test('It reduces paths', async ({ page, context }) => {
     await page.goto('United_States/New_York#Southern_border/New_Jersey#Northern_border');
     await expect(page).toHaveURL('United_States/New_York#Southern_border/New_Jersey#Northern_border');
