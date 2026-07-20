@@ -560,7 +560,40 @@ Run `canopy electron` to build the static site, write an Electron app scaffold t
 
 Project files placed in `electron-assets/` are copied recursively into `build/electron/app/_assets/`, preserving their relative paths. They are included only in Electron builds and are not copied into `build/static`. For example, `electron-assets/offline/Hisbonen-onboarding.mp4` becomes `build/electron/app/_assets/offline/Hisbonen-onboarding.mp4`. Electron assets are copied after the static build, so they can intentionally override files from `assets/` with the same relative path.
 
-Use `canopy electron --scaffold-only` to only write the scaffold, `canopy electron --package` to create a packaged app, or `canopy electron --make` to create distributable artifacts.
+Choose the Electron output that matches how you plan to distribute the app:
+
+```bash
+# Build the scaffold and start the app locally (the default behavior)
+canopy electron
+canopy electron --start
+
+# Only write the generated Electron project
+canopy electron --scaffold-only
+
+# Create an unpacked application directory
+canopy electron --package
+
+# Create an installer or normal platform distributable
+canopy electron --make
+
+# Create the current platform's portable application
+canopy electron --portable
+
+# Reuse dependencies already installed in build/electron
+canopy electron --portable --no-install
+```
+
+`--start`, `--package`, `--make`, and `--portable` are mutually exclusive. `--scaffold-only` cannot be combined with any of them. The `--no-install` modifier can be used with a command that runs the generated Electron project when its dependencies have already been installed.
+
+The portable command selects the native self-contained application for the current platform:
+
+- Windows creates `build/electron/out/portable/<Project Name>.exe`, a single Windows x64 executable that extracts its runtime to a temporary directory when launched.
+- Linux creates `build/electron/out/portable/<Project Name>.AppImage`, a single no-install application for the current architecture.
+- macOS creates the normal packaged `<Project Name>.app`. This is the same application bundle produced by `--package`, because a `.app` is already self-contained and directly runnable without installation.
+
+Every portable output contains Electron, the static Canopy build, `assets/`, and `electron-assets/`, allowing large offline media to load as normal files. Use an installer or standard distributable from `--make` instead when you want platform integration, uninstall registration, or managed updates. Any portable output can be placed in a ZIP separately when a single archive is preferable for transfer.
+
+For a custom Windows executable and taskbar icon, add `assets/electron-icon.ico`. If it is absent, the portable build uses `assets/electron-icon.png` when available, otherwise it clearly warns that the Electron default will be used. A Windows `.ico` should contain the standard 16, 24, 32, 48, 64, 128, and 256 pixel sizes.
 
 ### Keyboard shortcuts
 

@@ -89,10 +89,52 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  electron-portable:
+    name: Electron portable (${{ matrix.id }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: windows-x64
+            os: windows-latest
+            artifact: United States.exe
+          - id: linux-x64
+            os: ubuntu-latest
+            artifact: United States.AppImage
+          - id: macos
+            os: macos-latest
+            artifact: United States.app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20.x'
+      - run: npm ci
+      - run: npm run build-prod
+      - run: npm install -g .
+      - name: Build portable application
+        working-directory: playwright/test_project
+        run: canopy electron --portable
+      - name: Verify portable artifact
+        shell: pwsh
+        run: |
+          $artifact = Get-ChildItem 'playwright/test_project/build/electron/out' -Recurse |
+            Where-Object { $_.Name -eq '${{ matrix.artifact }}' } |
+            Select-Object -First 1
+          if (-not $artifact) {
+            throw "Expected portable artifact was not created: ${{ matrix.artifact }}"
+          }
+      - uses: actions/upload-artifact@v6
+        with:
+          name: canopy-electron-portable-${{ matrix.id }}
+          path: playwright/test_project/build/electron/out/**/${{ matrix.artifact }}
+          if-no-files-found: error
+
   all-tests:
     name: All Tests Complete
     runs-on: ubuntu-latest
-    needs: [jest, playwright-tests, lint]
+    needs: [jest, playwright-tests, lint, electron-portable]
     if: always()
     outputs:
       done: true

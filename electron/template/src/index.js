@@ -9,9 +9,11 @@ if (require('electron-squirrel-startup')) {
 const appRoot = path.resolve(__dirname, '..', 'app');
 
 function createWindow() {
-  const iconPath = path.join(appRoot, '_assets', 'electron-icon.png');
+  const iconPaths = ['electron-icon.ico', 'electron-icon.png']
+    .map(fileName => path.join(appRoot, '_assets', fileName));
+  const iconPath = iconPaths.find(candidate => fs.existsSync(candidate));
   const mainWindow = new BrowserWindow({
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    icon: iconPath,
     width: 900,
     height: 1000,
     show: false,
