@@ -4,6 +4,7 @@ const { spawnSync } = require('child_process');
 const build = require('./build');
 const { DefaultTopic } = require('./shared/fs-helpers');
 const {
+  electronAssetsDirectory,
   staticBuildDirectory,
   electronBuildDirectory,
   electronAppDirectory
@@ -46,6 +47,10 @@ function scaffoldElectronApp() {
   fs.copySync(templateDirectory, electronBuildDirectory, { overwrite: true });
   fs.removeSync(electronAppDirectory);
   fs.copySync(staticBuildDirectory, electronAppDirectory, { overwrite: true });
+
+  if (fs.existsSync(electronAssetsDirectory)) {
+    fs.copySync(electronAssetsDirectory, path.join(electronAppDirectory, '_assets'), { overwrite: true });
+  }
 }
 
 function warnIfMissingIcon() {

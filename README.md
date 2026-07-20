@@ -553,6 +553,8 @@ You can run a Node.js Express server for your project using `canopy serve` follo
 
 Run `canopy electron` to build the static site, write an Electron app scaffold to `build/electron`, install Electron dependencies if needed, and start the app locally. The generated app copies the static build into `build/electron/app`.
 
+Project files placed in `electron-assets/` are copied recursively into `build/electron/app/_assets/`, preserving their relative paths. They are included only in Electron builds and are not copied into `build/static`. For example, `electron-assets/offline/Hisbonen-onboarding.mp4` becomes `build/electron/app/_assets/offline/Hisbonen-onboarding.mp4`. Electron assets are copied after the static build, so they can intentionally override files from `assets/` with the same relative path.
+
 Use `canopy electron --scaffold-only` to only write the scaffold, `canopy electron --package` to create a packaged app, or `canopy electron --make` to create distributable artifacts.
 
 ### Keyboard shortcuts

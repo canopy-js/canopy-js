@@ -1,6 +1,7 @@
 const path = require('path');
 
 const buildRoot = 'build';
+const electronAssetsDirectory = 'electron-assets';
 const staticBuildDirectory = path.join(buildRoot, 'static');
 const singleFileBuildDirectory = path.join(buildRoot, 'file');
 const electronBuildDirectory = path.join(buildRoot, 'electron');
@@ -24,6 +25,7 @@ function electronAppPath(...segments) {
 
 module.exports = {
   buildRoot,
+  electronAssetsDirectory,
   staticBuildDirectory,
   singleFileBuildDirectory,
   electronBuildDirectory,
