@@ -347,3 +347,73 @@ test.describe('Arrow key link navigation', () => {
     await expect(page.locator('.canopy-selected-link')).toHaveText('menu links');
   });
 });
+
+test.describe('Modified downward navigation', () => {
+  for (const modifier of ['Shift', 'Alt']) {
+    test(`${modifier}+ArrowDown falls back to ordinary navigation for a non-cycle link`, async ({ page }) => {
+      const pageErrors = [];
+      page.on('pageerror', error => pageErrors.push(error.message));
+
+      await page.goto('/United_States/New_York/Style_examples#Special_topic_names');
+      await expect(page.locator('.canopy-selected-section')).toContainText('There are italic topic names');
+      await expect(page.locator('.canopy-selected-link')).toHaveText('special topic names');
+      await scrollElementToViewport(page, '.canopy-selected-section > p a.canopy-selectable-link:nth-of-type(1)');
+
+      await page.locator('body').press(`${modifier}+ArrowDown`);
+
+      expect(pageErrors).toEqual([]);
+      await expect(page.locator('.canopy-selected-section')).toHaveAttribute(
+        'data-path-string',
+        /^\/United_States\/New_York\/Style_examples#Special_topic_names\//
+      );
+      await expect(page.locator('.canopy-selected-link')).not.toHaveText('special topic names');
+      expect(pageErrors).toEqual([]);
+    });
+
+    test(`${modifier}+ArrowDown still inlines a cycle link`, async ({ page }) => {
+      await selectCycleReference(page);
+
+      await page.locator('body').press(`${modifier}+ArrowDown`);
+
+      await expect(page.locator('.canopy-selected-link')).toHaveText('cafeteria');
+      await expect(page.locator("text=Martha's Vineyard is a an Island in Massachusetts. >> visible=true")).toHaveCount(2);
+      await expect(page.locator('text=There is nice food. >> visible=true')).toHaveCount(1);
+      await expect(page).toHaveURL("United_States/New_York/Martha's_Vineyard#Parking_lot/Martha's_Vineyard#Cafeteria");
+    });
+  }
+
+  test('moveDownOrRedirect accepts an omitted options argument', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names');
+    await expect(page.locator('.canopy-selected-section')).toContainText('There are italic topic names');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('special topic names');
+    await scrollElementToViewport(page, '.canopy-selected-section > p a.canopy-selectable-link:nth-of-type(1)');
+
+    await page.locator('body').press('n');
+
+    expect(pageErrors).toEqual([]);
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute(
+      'data-path-string',
+      /^\/United_States\/New_York\/Style_examples#Special_topic_names\//
+    );
+    await expect(page.locator('.canopy-selected-link')).not.toHaveText('special topic names');
+    expect(pageErrors).toEqual([]);
+  });
+});
+
+async function selectCycleReference(page) {
+  await page.goto(`/United_States/New_York/Martha's_Vineyard/Martha's_Vineyard:_a_history`);
+  await expect(page.locator('.canopy-selected-link')).toHaveText("Martha's Vineyard: a history");
+
+  await scrollElementToViewport(page, '.canopy-selected-link');
+  await page.locator('body').press('ArrowRight');
+  await expect(page.locator('.canopy-selected-link')).toHaveText('cafeteria');
+
+  await page.locator('body').press('ArrowRight');
+  await expect(page.locator('.canopy-selected-link')).toHaveText('parking lot');
+
+  await page.locator('body').press('Enter');
+  await expect(page.locator('.canopy-selected-link')).toHaveText('cafeteria↩');
+}
