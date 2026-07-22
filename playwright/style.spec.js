@@ -127,6 +127,37 @@ test.describe('Inline entities', () => {
     expect(linkedImageLayout.captionRightDelta).toBeLessThan(1);
   });
 
+  test('Linked images are only clickable over the rendered figure', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Linked_images');
+
+    const linkedImage = page.locator('.canopy-selected-section a.canopy-linked-image');
+    await expect(linkedImage).toHaveCount(1);
+
+    for (const responsiveWidth of ['auto', '50%']) {
+      await linkedImage.locator('.canopy-image').evaluate((element, width) => {
+        element.style.width = width;
+      }, responsiveWidth);
+
+      const hitTargets = await linkedImage.evaluate((element) => {
+        const linkRect = element.getBoundingClientRect();
+        const figureRect = element.querySelector('.canopy-image').getBoundingClientRect();
+        const hitLinkAt = (x, y) => document.elementFromPoint(x, y)?.closest('a.canopy-linked-image') === element;
+
+        return {
+          figure: hitLinkAt(figureRect.left + figureRect.width / 2, figureRect.top + figureRect.height / 2),
+          leftGutter: hitLinkAt(linkRect.left + 1, figureRect.top + figureRect.height / 2),
+          rightGutter: hitLinkAt(linkRect.right - 1, figureRect.top + figureRect.height / 2),
+          belowFigure: hitLinkAt(linkRect.left + linkRect.width / 2, linkRect.bottom - 1)
+        };
+      });
+
+      expect(hitTargets.figure).toBe(true);
+      expect(hitTargets.leftGutter).toBe(false);
+      expect(hitTargets.rightGutter).toBe(false);
+      expect(hitTargets.belowFigure).toBe(false);
+    }
+  });
+
   test('It creates links from URLs', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#URLs');
     await expect(page.locator('.canopy-selected-section')).toContainText("This is a URL, http://google.com.");

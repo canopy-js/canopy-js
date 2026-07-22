@@ -558,6 +558,15 @@ a.canopy-disabled-link {
 a.canopy-selectable-link.canopy-linked-image {
   text-decoration: none;
 
+  // The anchor stays full-width so project styles can size and center the
+  // figure relative to the paragraph, but only the rendered figure should be
+  // clickable. Pointer events from the figure still bubble to the anchor.
+  pointer-events: none;
+
+  .canopy-image {
+    pointer-events: auto;
+  }
+
   // Full-width link wrappers preserve centering for full-line images.
   &.canopy-full-line-link {
     display: block;
