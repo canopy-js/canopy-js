@@ -5,6 +5,7 @@ import updateView from 'display/update_view';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { hashUrls } from 'helpers/getters';
 import { requestJson, jsonSizeBytesForTopic, paragraphCountForTopic } from 'requests/request_json';
+import { uniqueValidEagerLoadParagraphs } from 'models/eager_load';
 
 const EAGER_LOAD_DOM_MAX_TOPIC_JSON_BYTES = 100000;
 const EAGER_LOAD_DOM_MAX_TOPIC_PARAGRAPHS = 60;
@@ -977,12 +978,7 @@ class Link {
     };
 
     const eagerLoadParagraphs = (paragraphs, remainingDepth) => {
-      const paragraphsByPath = new Map();
-      paragraphs.filter(Boolean).forEach(paragraph => {
-        paragraphsByPath.set(paragraph.path.string, paragraph);
-      });
-
-      const uniqueParagraphs = Array.from(paragraphsByPath.values());
+      const uniqueParagraphs = uniqueValidEagerLoadParagraphs(paragraphs);
       const eagerLoadNextParagraph = index => {
         if (!eagerLoadStillCurrent()) return Promise.resolve();
 
