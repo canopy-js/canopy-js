@@ -103,6 +103,41 @@ test.describe('Arrow key presses', () => {
   });
 });
 
+test.describe('Arrow key scrolling', () => {
+  test('The last section can scroll its bottom to five percent of the viewport', async ({ page }) => {
+    const scrollErrors = [];
+    page.on('console', message => {
+      if (message.type() === 'error' && message.text().includes('Scrollable area not long enough')) {
+        scrollErrors.push(message.text());
+      }
+    });
+
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await page.goto('/United_States/New_York/Style_examples#Special_topic_names/Topic_with_no_child_links');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('topic with no child links');
+    const finalSection = page.locator('.canopy-selected-section');
+    const finalPath = '/United_States/New_York/Style_examples#Special_topic_names/Topic_with_no_child_links';
+    await expect(finalSection).toHaveAttribute('data-path-string', finalPath);
+    await expect(finalSection).toContainText('This paragraph has no child links');
+    const scrollPadding = await page.locator('#_canopy').evaluate(canopy => ({
+      actual: parseFloat(getComputedStyle(canopy).paddingBottom),
+      expected: window.innerHeight * 0.95
+    }));
+
+    expect(scrollPadding.actual).toBeCloseTo(scrollPadding.expected, 0);
+
+    await page.locator('body').press('ArrowDown');
+
+    await expect(finalSection).toHaveAttribute('data-path-string', finalPath);
+    await expect(page.locator('.canopy-selected-link')).toHaveText('topic with no child links');
+    await expect.poll(() => finalSection.evaluate(section => (
+      section.getBoundingClientRect().bottom / window.innerHeight
+    ))).toBeLessThanOrEqual(0.055);
+    expect(await finalSection.evaluate(section => section.getBoundingClientRect().bottom)).toBeGreaterThan(0);
+    expect(scrollErrors).toEqual([]);
+  });
+});
+
 test.describe('Arrow key link navigation', () => {
   test('Navigating left-to-right links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');

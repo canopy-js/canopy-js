@@ -7,7 +7,7 @@
   removal of elements from the bottom of the visible stack never brings the real bottom of the page into view, and so
   the scroll upwards can be animated using the window.scrollTo method. */
 
-  padding-bottom: calc(90vh);
+  padding-bottom: calc(95vh);
   min-height: calc(110vh); // to avoid scroll bar appearing when page length changes for small content that doesn't need scrolling
 
   min-width: 700px; // trying to prevent content squish when page goes narrow
