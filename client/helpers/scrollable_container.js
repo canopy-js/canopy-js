@@ -44,6 +44,11 @@ class ScrollableContainer {
     if (!this.windowMode) return this.element.scrollTo(options);
   }
 
+  static scrollBy(options) {
+    if (this.windowMode) return window.scrollBy(options);
+    if (!this.windowMode) return this.element.scrollBy(options);
+  }
+
   static setScrollTop(top) {
     if (this.windowMode) return window.scrollTo(0, top);
     if (!this.windowMode) this.element.scrollTop = top;

@@ -11,6 +11,89 @@ if (platform === 'darwin') {
 }
 
 test.describe('Arrow keys', () => {
+  test('A tap navigates once while a hold scrolls without navigating', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Style_characters');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+
+    await scrollElementToViewport(page, '.canopy-selected-link');
+    await page.locator('body').press('ArrowRight');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('images');
+    await page.waitForTimeout(500);
+
+    await page.evaluate(() => {
+      document.querySelector('#_canopy').style.minHeight = '3000px';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+
+    await page.keyboard.down('ArrowDown');
+    for (let repeat = 0; repeat < 5; repeat++) {
+      await page.keyboard.down('ArrowDown');
+    }
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(30);
+    await expect(page.locator('.canopy-selected-link')).toHaveText('images');
+
+    await page.keyboard.up('ArrowDown');
+    const scrollAtRelease = await page.evaluate(() => window.scrollY);
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollAtRelease);
+    await expect(page.locator('.canopy-selected-link')).toHaveText('images');
+
+    await page.keyboard.down('ArrowUp');
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(scrollAtRelease - 30);
+    await page.keyboard.up('ArrowUp');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('images');
+  });
+
+  test('Holding left and right scrolls horizontally without navigating', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Style_characters');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+    await page.evaluate(() => {
+      document.querySelector('#_canopy').style.width = '3000px';
+      window.scrollTo({ left: 500, behavior: 'instant' });
+    });
+    const initialScroll = await page.evaluate(() => window.scrollX);
+
+    await page.keyboard.down('ArrowRight');
+    await expect.poll(() => page.evaluate(() => window.scrollX)).toBeGreaterThan(initialScroll + 30);
+    await page.keyboard.up('ArrowRight');
+    const rightScroll = await page.evaluate(() => window.scrollX);
+
+    await page.keyboard.down('ArrowLeft');
+    await expect.poll(() => page.evaluate(() => window.scrollX)).toBeLessThan(rightScroll - 30);
+    await page.keyboard.up('ArrowLeft');
+
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+  });
+
+  test('Arrow keys retain their native behavior in editable elements', async ({ page }) => {
+    await page.goto('/United_States/New_York/Style_examples#Style_characters');
+    await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+    await page.evaluate(() => {
+      let input = document.createElement('input');
+      input.value = 'input';
+      input.id = 'arrow-input';
+      document.body.prepend(input);
+
+      let textarea = document.createElement('textarea');
+      textarea.value = 'textarea';
+      textarea.id = 'arrow-textarea';
+      document.body.prepend(textarea);
+
+      let editable = document.createElement('div');
+      editable.contentEditable = 'true';
+      editable.id = 'arrow-contenteditable';
+      editable.textContent = 'editable';
+      document.body.prepend(editable);
+    });
+
+    for (const selector of ['#arrow-input', '#arrow-textarea', '#arrow-contenteditable']) {
+      await page.locator(selector).focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(page.locator(selector)).toBeFocused();
+      await expect(page.locator('.canopy-selected-link')).toHaveText('style characters');
+    }
+  });
+
   test('Navigating left-to-right links', async ({ page }) => {
     await page.goto('/United_States/New_York/Style_examples#Style_characters');
     await expect(page.locator('.canopy-selected-section')).toContainText("There is italic text, bold text,");
