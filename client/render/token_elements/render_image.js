@@ -84,7 +84,7 @@ function handleDelayedImageLoad(imageElement, renderContext) {
       if (window.getComputedStyle(imageElement).display === 'absolute') return; // doesn't disrupt flow
 
       let { pathToParagraph } = renderContext;
-      if (Path.current.ancestorOf(pathToParagraph) || Path.current.equals(pathToParagraph)) { // if when the image loads, it is on the current page and might jump the viewport
+      if (pathToParagraph.ancestorOf(Path.current) || pathToParagraph.equals(Path.current)) { // if when the image loads, it is on the current page and might jump the viewport
         scrollToWithPromise({  // restore old position
           top: newScroll,
           behavior: 'instant'

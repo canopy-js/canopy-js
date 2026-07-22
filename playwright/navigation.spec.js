@@ -202,12 +202,30 @@ test.describe('Navigation', () => {
     await expect(page.locator('.canopy-selected-section')).toContainText('This topic links to Eager branch one.');
   });
 
-  test('Initial page load with a deep URL scrolls to the selected paragraph', async ({ page }) => {
-    await page.goto('United_States/New_York/Style_examples#Deep_initial_scroll_parent/Deep_initial_scroll_target');
+  test('Initial page load preserves the selected paragraph position after an ancestor image loads', async ({ page }) => {
+    let releaseImage;
+    const imageCanLoad = new Promise(resolve => { releaseImage = resolve; });
+    await page.route('**/_assets/USA.svg', async route => {
+      await imageCanLoad;
+      await route.continue();
+    });
+
+    await page.goto(
+      'United_States/New_York/Style_examples#Deep_initial_scroll_parent/Deep_initial_scroll_target',
+      { waitUntil: 'domcontentloaded' }
+    );
     await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Deep initial scroll target');
 
-    const selectedTop = await page.locator('.canopy-selected-section > p.canopy-paragraph').evaluate(element => element.getBoundingClientRect().top);
+    const image = page.locator('img[alt="Delayed ancestor image"]');
     const viewportHeight = await page.evaluate(() => window.innerHeight);
+    await expect(image).toHaveCSS('height', `${viewportHeight}px`);
+    const initialSelectedTop = await page.locator('.canopy-selected-section > p.canopy-paragraph').evaluate(element => element.getBoundingClientRect().top);
+
+    releaseImage();
+    await expect.poll(() => image.evaluate(element => element.complete && element.style.height === '')).toBe(true);
+
+    const selectedTop = await page.locator('.canopy-selected-section > p.canopy-paragraph').evaluate(element => element.getBoundingClientRect().top);
+    expect(Math.abs(selectedTop - initialSelectedTop)).toBeLessThan(2);
     expect(selectedTop).toBeGreaterThanOrEqual(viewportHeight * 0.05);
     expect(selectedTop).toBeLessThan(viewportHeight * 0.3);
   });
