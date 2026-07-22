@@ -87,7 +87,10 @@ function moveInDirection(direction) {
         && rect.element !== currentLinkElement);
 
     if (candidateRectContainers.length === 0) {
-      let sectionElement = Paragraph.current.sectionElement;
+      const currentParagraph = Paragraph.current;
+      if (!currentParagraph) return;
+
+      const sectionElement = currentParagraph.sectionElement;
       return scrollElementToPosition(sectionElement, {targetRatio: 0.05, maxScrollRatio: 0.5, minDiff: 40, direction: 'down', behavior: 'smooth', side: 'bottom'});
     }
 
