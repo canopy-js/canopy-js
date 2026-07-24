@@ -14,6 +14,69 @@ function writeCanopyAssetFixture(canopyLocation) {
 }
 
 describe('build assets', () => {
+  test('uses an explanatory offline placeholder when an asset is too large to base64 encode', () => {
+    const originalCwd = process.cwd();
+    const originalCanopyLocation = process.env.CANOPY_LOCATION;
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-build-oversized-asset-'));
+    const canopyLocation = path.join(tmpDir, 'canopy-fixture');
+    let statSyncSpy;
+
+    try {
+      writeCanopyAssetFixture(canopyLocation);
+      process.env.CANOPY_LOCATION = canopyLocation;
+      jest.resetModules();
+      const build = require('./build');
+      const buildFs = require('fs-extra');
+
+      process.chdir(tmpDir);
+
+      writeProjectFile(
+        'topics/Idaho/Idaho.expl',
+        'Idaho: ![A very large map](/_assets/large-map.png)\n'
+      );
+      fs.writeFileSync('canopy_default_topic', 'topics/Idaho/Idaho.expl');
+      writeProjectFile('assets/large-map.png', 'small test fixture');
+
+      const oversizedAssetPath = path.resolve(staticBuildPath('_assets', 'large-map.png'));
+      const originalStatSync = buildFs.statSync;
+      statSyncSpy = jest.spyOn(buildFs, 'statSync').mockImplementation(filePath => {
+        const stat = originalStatSync(filePath);
+        if (path.resolve(filePath) !== oversizedAssetPath) return stat;
+
+        return new Proxy(stat, {
+          get(target, property) {
+            if (property === 'size') return build._test.MAX_BASE64_ASSET_BYTES + 1;
+            const value = Reflect.get(target, property);
+            return typeof value === 'function' ? value.bind(target) : value;
+          }
+        });
+      });
+
+      build({ file: true, hashUrls: true, logging: false });
+      statSyncSpy.mockRestore();
+      statSyncSpy = null;
+
+      const html = fs.readFileSync(path.join('build', 'file', 'Idaho.html'), 'utf8');
+      const placeholder = build._test.offlineAssetPlaceholderDataUri('_assets/large-map.png');
+
+      expect(html).toContain(placeholder);
+      expect(Buffer.from(placeholder.split(',')[1], 'base64').toString('utf8')).toContain(
+        'Asset unavailable offline'
+      );
+      expect(html).not.toContain(Buffer.from('small test fixture').toString('base64'));
+    } finally {
+      statSyncSpy?.mockRestore();
+      if (originalCanopyLocation === undefined) {
+        delete process.env.CANOPY_LOCATION;
+      } else {
+        process.env.CANOPY_LOCATION = originalCanopyLocation;
+      }
+      jest.resetModules();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   test('positions the bootloader heading at the page heading offset', () => {
     const originalCwd = process.cwd();
     const originalCanopyLocation = process.env.CANOPY_LOCATION;

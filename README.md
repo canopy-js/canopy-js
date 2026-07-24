@@ -538,7 +538,7 @@ Build has a few options:
 
 - Subpath hosting: `canopy build --project-path-prefix subdirectory` (eg `example.com/subpath/Project`).
 - Hash URLs: `canopy build --hash-urls` (eg `example.com/#/Topic`) for static hosting.
-- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/file/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`.
+- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/file/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`. Assets that exceed the runtime's safe base64 string size are replaced with an explanatory offline placeholder instead of causing the build to fail.
 
 If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your static build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
 

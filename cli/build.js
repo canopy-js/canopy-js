@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const dedent = require('dedent-js');
 const buildProject = require('./build/build_project');
 const path = require('path');
+const { constants: bufferConstants } = require('buffer');
 const { spawnSync, execFileSync } = require('child_process');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
@@ -9,6 +10,11 @@ let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
 let { buildRoot, staticBuildDirectory, singleFileBuildDirectory, staticBuildPath, singleFileBuildPath } = require('./shared/build_paths');
 let Topic = require('./shared/topic');
 let os = require('os');
+
+const DATA_URI_SIZE_SAFETY_MARGIN = 1024;
+const MAX_BASE64_ASSET_BYTES = Math.floor(
+  (bufferConstants.MAX_STRING_LENGTH - DATA_URI_SIZE_SAFETY_MARGIN) / 4
+) * 3;
 
 function build(options = {}) {
   let { symlinks, projectPathPrefix, hashUrls, manualHtml, logging, replaceBuildDirectory } = options;
@@ -400,6 +406,7 @@ function writeIndexHtml({ projectPathPrefix, hashUrls, manualHtml, defaultTopic,
 }
 
 function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, options }) {
+  const maxBase64AssetBytes = options.maxBase64AssetBytes ?? MAX_BASE64_ASSET_BYTES;
   const favicon = fs.existsSync(`assets/favicon.ico`);
   const customCss = fs.existsSync(`assets/custom.css`) && fs.readFileSync(`assets/custom.css`, 'utf8');
   const customJs = fs.existsSync(`assets/custom.js`) && fs.readFileSync(`assets/custom.js`, 'utf8');
@@ -410,7 +417,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   const defaultTopicJson = fs.readFileSync(staticBuildPath('_data', `${defaultTopic.jsonFileName}.json`), 'utf8');
   const canopyJs = fs.readFileSync(staticBuildPath('_canopy.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
 
-  const assetMap = buildAssetDataUriMap();
+  const assetMap = buildAssetDataUriMap(options.logging, maxBase64AssetBytes);
   const remoteAssetCache = {};
   const inlineAssetsInString = (string) => {
     if (!string) return string;
@@ -420,7 +427,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
       return replacement.replace(/^\/(?=data:)/, ''); // strip leading slash if present on data URIs
     });
 
-    return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging);
+    return inlineRemoteAssetsInString(withLocalAssets, remoteAssetCache, options.logging, maxBase64AssetBytes);
   };
 
   const dataDir = staticBuildPath('_data');
@@ -448,7 +455,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
     ${bootLoaderStyle()}
     ${customCss ? `<style>\n${inlineAssetsInString(customCss)}\n</style>` : ''}
     ${customJsEscaped ? `<script>\n${inlineAssetsInString(customJsEscaped)}\n</script>` : ''}
-    ${favicon ? `<link rel="icon" type="image/x-icon" href="data:application/octet-stream;base64,${fs.readFileSync('assets/favicon.ico').toString('base64')}">\n` : ''}
+    ${favicon ? `<link rel="icon" type="image/x-icon" href="${toDataUri('assets/favicon.ico', { displayName: '_assets/favicon.ico', logging: options.logging, maxBase64AssetBytes })}">\n` : ''}
     ${customHtmlHead ? inlineAssetsInString(customHtmlHead) : ''}
     </head>
     <body>
@@ -475,7 +482,7 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
   if (options.logging) console.log(chalk.hex('#FFA500')(`Wrote single-file HTML to ${outputPath} at ${'' + (new Date()).toLocaleTimeString()} (pid ${process.pid})`));
 }
 
-function buildAssetDataUriMap() {
+function buildAssetDataUriMap(logging, maxBase64AssetBytes) {
   const assetsRoot = staticBuildPath('_assets');
   if (!fs.existsSync(assetsRoot)) return {};
 
@@ -490,7 +497,7 @@ function buildAssetDataUriMap() {
       } else {
         const rel = path.relative(assetsRoot, fullPath).split(path.sep).join('/');
         const key = `_assets/${rel}`;
-        const uri = toDataUri(fullPath);
+        const uri = toDataUri(fullPath, { displayName: key, size: stat.size, logging, maxBase64AssetBytes });
         map[key] = uri;
         map[`/${key}`] = uri;
         map[key.replace(/^_/, '')] = uri;
@@ -502,26 +509,88 @@ function buildAssetDataUriMap() {
   return map;
 }
 
-function toDataUri(filePath) {
-  const mime = mimeTypeForPath(filePath);
+function toDataUri(filePath, {
+  mime = mimeTypeForPath(filePath),
+  displayName = filePath,
+  size = fs.statSync(filePath).size,
+  logging = false,
+  maxBase64AssetBytes = MAX_BASE64_ASSET_BYTES
+} = {}) {
+  if (size > maxBase64AssetBytes) {
+    if (logging) {
+      console.warn(chalk.yellow(
+        `Could not inline asset for single-file build because it is too large (${formatFileSize(size)}): ${displayName}`
+      ));
+    }
+    return offlineAssetPlaceholderDataUri(displayName);
+  }
+
   const data = fs.readFileSync(filePath);
   return `data:${mime};base64,${data.toString('base64')}`;
 }
 
-function inlineRemoteAssetsInString(string, remoteAssetCache, logging) {
+function offlineAssetPlaceholderDataUri(displayName) {
+  const assetName = abbreviatedAssetName(displayName);
+  const escapedAssetName = escapeXml(assetName);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-labelledby="title description">
+  <title id="title">Asset unavailable offline</title>
+  <desc id="description">${escapedAssetName} is too large to include in single-file offline mode.</desc>
+  <rect width="800" height="450" fill="#f3f4f6"/>
+  <rect x="310" y="92" width="180" height="128" rx="8" fill="none" stroke="#9ca3af" stroke-width="8"/>
+  <path d="M326 202l48-48 35 35 24-24 41 41" fill="none" stroke="#9ca3af" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="455" cy="126" r="13" fill="#9ca3af"/>
+  <path d="M304 226L496 86" stroke="#6b7280" stroke-width="10" stroke-linecap="round"/>
+  <text x="400" y="282" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="#374151">Asset unavailable offline</text>
+  <text x="400" y="322" text-anchor="middle" font-family="system-ui, sans-serif" font-size="19" fill="#4b5563">${escapedAssetName}</text>
+  <text x="400" y="357" text-anchor="middle" font-family="system-ui, sans-serif" font-size="17" fill="#6b7280">Too large to include in this single-file build.</text>
+</svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
+function abbreviatedAssetName(displayName) {
+  const normalizedName = String(displayName).replace(/\\/g, '/');
+  if (normalizedName.length <= 72) return normalizedName;
+  return `…${normalizedName.slice(-71)}`;
+}
+
+function escapeXml(string) {
+  return string
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function formatFileSize(bytes) {
+  const units = ['bytes', 'KB', 'MB', 'GB'];
+  let value = bytes;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  const precision = unitIndex === 0 || value >= 10 ? 0 : 1;
+  return `${value.toFixed(precision)} ${units[unitIndex]}`;
+}
+
+function inlineRemoteAssetsInString(string, remoteAssetCache, logging, maxBase64AssetBytes) {
   return string
     .replace(/(<img\s[^>]*?src=\\?["'])(https?:\/\/[^"']+?)(\\?["'])/g, (match, prefix, url, suffix) => {
-      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging, maxBase64AssetBytes)}${suffix}`;
     })
     .replace(/("resourceUrl":\s*")((?:https?:\/\/)[^"]+?)(")/g, (match, prefix, url, suffix) => {
-      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging, maxBase64AssetBytes)}${suffix}`;
     })
     .replace(/(url\((?:\\?["'])?)(https?:\/\/[^)"']+?)((?:\\?["'])?\))/g, (match, prefix, url, suffix) => {
-      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging)}${suffix}`;
+      return `${prefix}${fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging, maxBase64AssetBytes)}${suffix}`;
     });
 }
 
-function fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging) {
+function fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging, maxBase64AssetBytes) {
   if (remoteAssetCache[url]) return remoteAssetCache[url];
 
   const candidateUrls = [url, originalWikimediaAssetUrl(url)].filter((candidate, index, array) =>
@@ -539,9 +608,9 @@ function fetchRemoteAssetAsDataUri(url, remoteAssetCache, logging) {
         { encoding: 'utf8' }
       ).trim();
 
-      const data = fs.readFileSync(tempFilePath);
+      const size = fs.statSync(tempFilePath).size;
       const mime = contentType || mimeTypeForPath(new URL(candidateUrl).pathname);
-      const dataUri = `data:${mime};base64,${data.toString('base64')}`;
+      const dataUri = toDataUri(tempFilePath, { mime, displayName: url, size, logging, maxBase64AssetBytes });
       remoteAssetCache[url] = dataUri;
       return dataUri;
     } catch (_error) {
@@ -598,3 +667,7 @@ function getDirectories(path) {
 }
 
 module.exports = build;
+module.exports._test = {
+  MAX_BASE64_ASSET_BYTES,
+  offlineAssetPlaceholderDataUri
+};
