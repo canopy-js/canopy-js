@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 
 const { staticBuildPath, electronBuildPath, electronAppPath } = require('./shared/build_paths');
+const appResourcePathForFileUrl = require('../electron/template/src/file_protocol_path');
 
 function writeProjectFile(filePath, contents) {
   fs.ensureDirSync(path.dirname(filePath));
@@ -54,6 +55,7 @@ describe('electron scaffold', () => {
       expect(fs.existsSync(electronBuildPath('package.json'))).toBe(true);
       expect(fs.existsSync(electronBuildPath('forge.config.js'))).toBe(true);
       expect(fs.existsSync(electronBuildPath('src', 'index.js'))).toBe(true);
+      expect(fs.existsSync(electronBuildPath('src', 'file_protocol_path.js'))).toBe(true);
       expect(fs.existsSync(electronAppPath('index.html'))).toBe(true);
       expect(fs.existsSync(electronAppPath('_canopy.js'))).toBe(true);
       expect(fs.existsSync(electronAppPath('_data'))).toBe(true);
@@ -133,6 +135,36 @@ describe('electron scaffold', () => {
       expect(fs.existsSync(electronAppPath('_assets', 'electron-icon.ico'))).toBe(true);
       expect(console.warn).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('electron file protocol paths', () => {
+  const appRoot = path.join('packaged', 'app');
+
+  test.each([
+    [
+      'Windows asset URL',
+      'file:///D:/_assets/offline/Hisbonen-onboarding.mp4',
+      ['_assets', 'offline', 'Hisbonen-onboarding.mp4']
+    ],
+    [
+      'Windows data URL',
+      'file:///D:/_data/Sefarim_a05ccf49.json',
+      ['_data', 'Sefarim_a05ccf49.json']
+    ],
+    [
+      'macOS asset URL',
+      'file:///Applications/Hisbonen.app/Contents/Resources/app/_assets/fonts/My%20Font.woff2',
+      ['_assets', 'fonts', 'My Font.woff2']
+    ]
+  ])('maps a %s beneath the packaged app directory', (_, requestUrl, resourceSegments) => {
+    expect(appResourcePathForFileUrl(requestUrl, appRoot))
+      .toBe(path.join(appRoot, ...resourceSegments));
+  });
+
+  test('ignores file URLs outside Canopy resource directories', () => {
+    expect(appResourcePathForFileUrl('file:///D:/other/file.txt', appRoot)).toBeUndefined();
+    expect(appResourcePathForFileUrl('https://example.com/_assets/file.txt', appRoot)).toBeUndefined();
   });
 });
 
