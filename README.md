@@ -280,15 +280,15 @@ If you want to create a path reference which references another subtopic in the 
 
 Conversely, if you would like to clarify that you mean a reference as a global reference even though it corresponds also to a subtopic of the current topic, you can use the omitted subtopic syntax: \[\[Topic#\]\].
 
-Lastly, a simple \[\[#]] or \[\[#|Back]] is similar to both previous examples, like the first in that the omitted topic implies the reference should point at the current topic, and like the second in that the omitted subtopic implies the reference should point to the topic's topic-subtopic ie the paragraph of the topic's root key. Such a link in effect is a natural back button because a link to the subtopic's topic becomes a cycle reference that when clicked, retraced and closes the subtopic chain until the topic root, and selects the topic's parent link, allowing the user to navigate to other links of the parent paragraph.
+Lastly, a simple \[\[#]] or \[\[#|Back]] is similar to both previous examples, like the first in that the omitted topic implies the reference should point at the current topic, and like the second in that the omitted subtopic implies the reference should point to the topic's topic-subtopic ie the paragraph of the topic's root key. Such a link is a natural back button: from a subtopic it retraces to the topic root, and from the root of a nested topic it returns to the preceding path segment. At the overall page root, where there is nowhere further back to go, the link is disabled.
 
 #### Relative Link Shorthands ####
 
 Two syntaxes exist to make it easier to make links based on where the reference exists in the given topic.
 
-Creating a link like \[\[^]] if done in a non-topic subtopic will create a link to the parent subtopic, which will generally produce a cycle-reducting redirect i.e. pop. If done in a topic, it will create a "self-reference" (see below), which in a topic paragraph pops the paragraph from the visible stack e.g. moving from A/B/C to A/B.
+Creating a link like \[\[^]] if done in a non-topic subtopic will create a link to the parent subtopic, which will generally produce a cycle-reducting redirect i.e. pop. If done in a topic's root paragraph, it will create a self-reference which pops a nested topic from the visible stack. At the overall page root, it renders as disabled.
 
-Creating a link like \[\[.]] produces a self-reference, e.g. in topic T a reference \[\[T]] and in subtopic T#ST a reference \[\[T#ST]]. In a subtopic paragraph this will shift to the parent link, and in a topic paragraph this will pop, e.g. moving from A/B/C to A/B.
+Creating a link like \[\[.]] produces a self-reference, e.g. in topic T a reference \[\[T]] and in subtopic T#ST a reference \[\[T#ST]]. In a subtopic paragraph this will shift to the parent link, and in a nested topic's root paragraph it will pop to the preceding path segment. At the overall page root, it renders as disabled.
 
 #### Advanced Link Syntax ####
 
@@ -445,17 +445,22 @@ Optional space after `!` is ignored.
 
 Any inline-token such as Canopy references can be used in the image caption.
 
-By default images link to their sources.
+Images are not linked by default. To make an image a link, use the linked-image syntax below.
 
 #### External Links ####
 
 ```
 [Link text](https://example.com)
 
+[Project-root link](/page)
+
+[Project-root link](page)
+
 [](https://example.com)
 ```
 
 External links can be written with standard Markdown link syntax. Use empty link text to render an icon-only external link.
+Root-relative and bare link paths resolve from the Canopy project root and include the configured project path prefix.
 
 #### Linked Images ####
 
@@ -533,9 +538,18 @@ Build has a few options:
 
 - Subpath hosting: `canopy build --project-path-prefix subdirectory` (eg `example.com/subpath/Project`).
 - Hash URLs: `canopy build --hash-urls` (eg `example.com/#/Topic`) for static hosting.
-- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/file/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`.
+- Single-file: `canopy build --file [output]` to also emit a standalone HTML (default `build/file/<DefaultTopic>.html`) with embedded JSON/JS for offline `file://...#/Topic` usage; implies `--hash-urls`. Assets that exceed the runtime's safe base64 string size are replaced with an explanatory offline placeholder instead of causing the build to fail.
 
 If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your static build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
+
+Use `offline-assets/` for files that should be bundled with Electron and single-file builds but not deployed with an ordinary static web build:
+
+| Source directory | Static web | Electron | Single-file |
+|---|---:|---:|---:|
+| `assets/` | Copy | Copy | Base64 encode |
+| `offline-assets/` | Exclude | Copy | Base64 encode |
+
+Both directories use the same public `/_assets/` paths. For example, `offline-assets/offline/onboarding.mp4` becomes `/_assets/offline/onboarding.mp4` in Electron, is replaced with an inline `data:video/mp4;base64,…` URI in single-file output, and is absent from static web output.
 
 If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
 
@@ -553,7 +567,42 @@ You can run a Node.js Express server for your project using `canopy serve` follo
 
 Run `canopy electron` to build the static site, write an Electron app scaffold to `build/electron`, install Electron dependencies if needed, and start the app locally. The generated app copies the static build into `build/electron/app`.
 
-Use `canopy electron --scaffold-only` to only write the scaffold, `canopy electron --package` to create a packaged app, or `canopy electron --make` to create distributable artifacts.
+Project files placed in `offline-assets/` are copied recursively into `build/electron/app/_assets/`, preserving their relative paths. They are not copied into `build/static`. Offline assets are copied after the static build, so they can intentionally override files from `assets/` with the same relative path.
+
+Choose the Electron output that matches how you plan to distribute the app:
+
+```bash
+# Build the scaffold and start the app locally (the default behavior)
+canopy electron
+canopy electron --start
+
+# Only write the generated Electron project
+canopy electron --scaffold-only
+
+# Create an unpacked application directory
+canopy electron --package
+
+# Create an installer or normal platform distributable
+canopy electron --make
+
+# Create the current platform's portable application
+canopy electron --portable
+
+# Reuse dependencies already installed in build/electron
+canopy electron --portable --no-install
+```
+
+`--start`, `--package`, `--make`, and `--portable` are mutually exclusive. `--scaffold-only` cannot be combined with any of them. The `--no-install` modifier can be used with a command that runs the generated Electron project when its dependencies have already been installed.
+
+The portable command selects the native self-contained application for the current platform:
+
+- Windows creates `build/electron/out/portable/<Project Name>.exe`, a single Windows x64 executable that extracts its runtime to a temporary directory when launched.
+- Linux creates `build/electron/out/portable/<Project Name>.AppImage`, a single no-install application for the current architecture.
+- macOS creates the normal packaged `<Project Name>.app`. This is the same application bundle produced by `--package`, because a `.app` is already self-contained and directly runnable without installation.
+
+Every portable output contains Electron, the static Canopy build, `assets/`, and `offline-assets/`, allowing large offline media to load as normal files. Use an installer or standard distributable from `--make` instead when you want platform integration, uninstall registration, or managed updates. Any portable output can be placed in a ZIP separately when a single archive is preferable for transfer.
+
+For a custom Windows executable and taskbar icon, add `assets/electron-icon.ico`. If it is absent, the portable build uses `assets/electron-icon.png` when available, otherwise it clearly warns that the Electron default will be used. A Windows `.ico` should contain the standard 16, 24, 32, 48, 64, 128, and 256 pixel sizes.
 
 ### Keyboard shortcuts
 

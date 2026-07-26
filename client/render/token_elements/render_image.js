@@ -59,6 +59,14 @@ function handleDelayedImageLoad(imageElement, renderContext) {
     if (!imageElement.complete) (imageElement.closest('.canopy-image')||imageElement).style.setProperty('background-color', '#f5f5f5');
   }, 200);
 
+  imageElement.addEventListener('error', () => {
+    imageElement.style.setProperty('height', originalHeight);
+    imageElement.style.setProperty('width', originalWidth);
+    imageElement.style.setProperty('opacity', originalOpacity);
+    if (imageElement.closest('.canopy-image')) imageElement.closest('.canopy-image').style.setProperty('width', originalContainerWidth);
+    imageElement.closest('.canopy-image')?.style.setProperty('background-color', 'transparent');
+  });
+
   imageElement.addEventListener('load', () => { // if images were unloaded, scroll was delayed and so we do it now to avoid viewport jump
     (getScrollInProgress() || Promise.resolve()).then(() => { // if there is a scroll in progress, wait for it to complete.
       let focusedElement = ScrollableContainer.focusedElement;
@@ -76,7 +84,7 @@ function handleDelayedImageLoad(imageElement, renderContext) {
       if (window.getComputedStyle(imageElement).display === 'absolute') return; // doesn't disrupt flow
 
       let { pathToParagraph } = renderContext;
-      if (Path.current.ancestorOf(pathToParagraph) || Path.current.equals(pathToParagraph)) { // if when the image loads, it is on the current page and might jump the viewport
+      if (pathToParagraph.ancestorOf(Path.current) || pathToParagraph.equals(Path.current)) { // if when the image loads, it is on the current page and might jump the viewport
         scrollToWithPromise({  // restore old position
           top: newScroll,
           behavior: 'instant'

@@ -205,7 +205,7 @@ const bulk = async function(selectedFileList, options = {}) {
     watch({...options, onBuildError: (e) => handleWatchError(e, options)});
 
     // Start server
-    serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
+    const serverSupervisor = serve( {...options, ...{ ignoreBuildErrors: true } }); // We want to start the server even if the build is bad, because the user can fix it
 
     function handleSigInt() {
       tryAndWriteHtmlError(() => handleFinish({ deleteBulkFile: true }), { ...options, suppressThrow: true });
@@ -225,6 +225,8 @@ const bulk = async function(selectedFileList, options = {}) {
         let selectedFileList = fileSystemManager.getOriginalSelectionFileList();
         cyclePreventer.ignoreNextBulkFileChange();
         setUpBulkFile({ storeOriginalSelection: true, selectedFileList });
+        // Control-R is the generic server restart command; a running server is left untouched.
+        serverSupervisor.restartIfNotPresent();
         log(chalk.magenta(`Canopy bulk sync: New bulk file from manual reload at ${(new Date()).toLocaleTimeString()} (pid ${process.pid})`));
       } else if (key.ctrl && (key.name === 'c' || key.name === 'd')) {
         handleSigInt();
@@ -258,7 +260,13 @@ const bulk = async function(selectedFileList, options = {}) {
     const topicsWatcher = chokidar.watch(['topics'], { persistent: true, ignoreInitial: true });
     cyclePreventer.watchingTopics();
 
-    let handler = debounce((e) => topicsChangeHandler(e));
+    let handler = debounce((e) => {
+      try {
+        topicsChangeHandler(e);
+      } catch (error) {
+        handleWatchError(error, options);
+      }
+    });
 
     topicsWatcher
       .on('add', handler)

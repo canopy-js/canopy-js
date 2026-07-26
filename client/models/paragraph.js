@@ -396,6 +396,13 @@ class Paragraph {
     delete Paragraph.paragraphsByPath[this.path.string];
   }
 
+  static unregisterTree(rootSectionElement) {
+    Paragraph.sectionElementsUnder(rootSectionElement).reverse().forEach(sectionElement => {
+      const paragraph = Paragraph.paragraphsByPath[sectionElement.dataset.pathString];
+      if (paragraph?.sectionElement === sectionElement) paragraph.unregister();
+    });
+  }
+
   addToDom() {
     if (!this.parentNode) {
       throw new Error('sectionElement missing parentNode');

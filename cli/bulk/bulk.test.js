@@ -9,6 +9,8 @@ let chalk = require('chalk');
 let fs = require('fs');
 let os = require('os');
 let path = require('path');
+let fsExtra = require('fs-extra');
+let { getRecursiveSubdirectoryFiles } = require('./helpers');
 const translateWatchErrorToBulk = require('./translate_watch_error_to_bulk');
 
 function writeFileSyncEnsuringDir(filePath, contents) {
@@ -1570,6 +1572,65 @@ describe('bulk', function() {
       expect(fs.existsSync('topics/A/Nested/Delete_nested.expl')).toBe(false);
       expect(fs.readFileSync('topics/B/Outside.expl', 'utf8')).toBe('Outside: Omitted unselected file.\n');
     } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('bulk filesystem races', function() {
+  test('recursive scans ignore a directory that vanishes after its parent is read', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-scan-'));
+    const realReaddirSync = fsExtra.readdirSync;
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/Keep.expl', 'Keep: Present.\n');
+      writeFileSyncEnsuringDir('topics/Vanishing/Gone.expl', 'Gone: Temporary.\n');
+
+      jest.spyOn(fsExtra, 'readdirSync').mockImplementation((directoryPath, options) => {
+        if (directoryPath === 'topics/Vanishing') {
+          fs.rmSync(directoryPath, { recursive: true, force: true });
+        }
+        return realReaddirSync(directoryPath, options);
+      });
+
+      expect(getRecursiveSubdirectoryFiles('topics')).toEqual(['topics/Keep.expl']);
+    } finally {
+      jest.restoreAllMocks();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  test('file sets ignore a file that vanishes before it can be read', () => {
+    const originalCwd = process.cwd();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-bulk-read-'));
+    const realReadFileSync = fsExtra.readFileSync;
+
+    try {
+      process.chdir(tmpDir);
+      writeFileSyncEnsuringDir('topics/Keep.expl', 'Keep: Present.\n');
+      writeFileSyncEnsuringDir('topics/Vanishing.expl', 'Vanishing: Temporary.\n');
+
+      jest.spyOn(fsExtra, 'readFileSync').mockImplementation((filePath, ...args) => {
+        if (filePath === 'topics/Vanishing.expl') {
+          fs.rmSync(filePath, { force: true });
+        }
+        return realReadFileSync(filePath, ...args);
+      });
+
+      const fileSet = new FileSystemManager().getFileSet([
+        'topics/Keep.expl',
+        'topics/Vanishing.expl'
+      ]);
+
+      expect(fileSet.fileContentsByPath).toEqual({
+        'topics/Keep.expl': 'Keep: Present.\n'
+      });
+    } finally {
+      jest.restoreAllMocks();
       process.chdir(originalCwd);
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }

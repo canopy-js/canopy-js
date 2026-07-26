@@ -93,6 +93,8 @@ Tables with break-fitting:
 | Hebrew | Simple | Intensive | Causative | Reflexive |
 |---|---|---|---|---|
 | Active | TransitiveAlpha<br>אבגדהוזחט | TransitiveBeta<br>אבגדהוזחט | TransitiveGamma<br>אבגדהוזחט | TransitiveDelta<br>אבגדהוזחט |
+<br>
+| First column<br>wrapping text | Second column<br>wrapping text | Third column<br>wrapping text | Fourth column<br>wrapping text | Fifth column<br>wrapping text | Sixth column<br>wrapping text | Seventh column<br>wrapping text |
 
 Menus:
 For small elements we use a width of 4:
@@ -178,6 +180,10 @@ Or half-pills for N < 3
 - Thisisalongword????????????
 - A
 ===
+A singleton menu is at least a quarter pill:
+===
+- Singleton
+===
 
 Table link grid:
 | [#[1]]  | [#[2]]  | [#[3]]  | [#[4]]  | [#[5]]  |
@@ -233,6 +239,7 @@ Deep initial scroll parent:
 - A third parent menu cell is intentionally long enough to create a larger paragraph above the target.
 - A fourth parent menu cell is intentionally long enough to create a larger paragraph above the target.
 ===
+![Delayed ancestor image](/_assets/USA.svg)
 [[deep initial scroll target]]
 
 Menu link icons:
@@ -411,7 +418,8 @@ This is a picture of jelly fish. ![Alt text](https://upload.wikimedia.org/wikipe
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Linked images:
-This picture of a frog is also a link. [![Alt text](https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Rhacophorus_nigropalmatus.jpg/2560px-Rhacophorus_nigropalmatus.jpg "Frog \"title\"" "Frog \"link\" - [Rushenb](https://en.wikipedia.org/wiki/Wallace%27s_flying_frog#/media/File:Rhacophorus_nigropalmatus.jpg)")](http://google.com)
+This small image is also a link.
+[![Alt text](/_assets/favicon.ico "Linked image title" "Caption")](http://google.com)
 Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world. Hello world.
 
 Local images:
@@ -485,6 +493,8 @@ Dummy Next:
 Hyperlinks:
 This is a [link](http://google.com).
 This is an icon-only external link [](https://google.com).
+This is a [root-relative project link](/outside.html).
+This is a [relative project link](outside.html).
 
 Hyperlink special cases:
 These are hyperlink special cases:

@@ -5,9 +5,11 @@ import updateView from 'display/update_view';
 import ScrollableContainer from 'helpers/scrollable_container';
 import { hashUrls } from 'helpers/getters';
 import { requestJson, jsonSizeBytesForTopic, paragraphCountForTopic } from 'requests/request_json';
+import { uniqueValidEagerLoadParagraphs } from 'models/eager_load';
 
 const EAGER_LOAD_DOM_MAX_TOPIC_JSON_BYTES = 100000;
 const EAGER_LOAD_DOM_MAX_TOPIC_PARAGRAPHS = 60;
+const EAGER_LOAD_LINK_DESCENDANT_DEPTH = 2;
 
 class Link {
   constructor(argument) {
@@ -915,19 +917,22 @@ class Link {
       setTimeout(run);
     });
 
+    const eagerLoadedLinkKeys = new Set();
+    const eagerLoadedParagraphDepths = new Map();
+
     const eagerLoadLinks = links => {
-      const globalLinks = links.filter(link => link.isGlobal);
+      const parentLinks = links.filter(link => link.isParent);
 
       const results = [];
       const eagerLoadNextLink = index => {
         if (!eagerLoadStillCurrent()) return Promise.resolve(results);
 
-        const link = globalLinks[index];
+        const link = parentLinks[index];
         if (!link) return Promise.resolve(results);
 
         return scheduleIdle(() => eagerLoadLink(link))
           .then(result => {
-            results.push(result);
+            if (result) results.push(result);
             return eagerLoadNextLink(index + 1);
           });
       };
@@ -936,6 +941,12 @@ class Link {
     };
 
     const eagerLoadLink = (link) => {
+      const linkKey = eagerLoadLinkKey(link);
+      if (eagerLoadedLinkKeys.has(linkKey)) return Promise.resolve(null);
+      eagerLoadedLinkKeys.add(linkKey);
+
+      if (link.isLocal) return Promise.resolve(eagerLoadTargetParagraph(link));
+
       const topics = uniqueTopicsForEagerLoad(link);
 
       return Promise.all(topics.map(topic => requestJson(topic, { signal: abortController?.signal }))).then(jsons => {
@@ -945,26 +956,66 @@ class Link {
           jsonSizes.every(size => size !== null && size !== undefined && size <= EAGER_LOAD_DOM_MAX_TOPIC_JSON_BYTES) &&
           paragraphCounts.every(count => count !== null && count !== undefined && count <= EAGER_LOAD_DOM_MAX_TOPIC_PARAGRAPHS);
 
-        if (!domEagerLoadEligible) return jsons;
-        if (!eagerLoadStillCurrent()) return jsons;
+        if (!domEagerLoadEligible) return eagerLoadTargetParagraph(link);
+        if (!eagerLoadStillCurrent()) return null;
 
         return scheduleIdle(() => {
           if (!eagerLoadStillCurrent()) return false;
           return link.execute({ renderOnly: true });
-        }).catch(() => {
+        }).then(() => eagerLoadTargetParagraph(link)).catch(() => {
           return null;
         });
       });
     };
 
-    const eagerLoadParagraphChain = paragraph => {
-      if (!paragraph) return;
+    const eagerLoadTargetParagraph = link => {
+      if (!eagerLoadStillCurrent()) return null;
+
+      return link.inlinePath?.renderedParagraph ||
+        link.selectionPath?.renderedParagraph ||
+        link.childParagraph ||
+        null;
+    };
+
+    const eagerLoadParagraphs = (paragraphs, remainingDepth) => {
+      const uniqueParagraphs = uniqueValidEagerLoadParagraphs(paragraphs);
+      const eagerLoadNextParagraph = index => {
+        if (!eagerLoadStillCurrent()) return Promise.resolve();
+
+        const paragraph = uniqueParagraphs[index];
+        if (!paragraph) return Promise.resolve();
+
+        return eagerLoadParagraphLinks(paragraph, remainingDepth)
+          .then(() => eagerLoadNextParagraph(index + 1));
+      };
+
+      return eagerLoadNextParagraph(0);
+    };
+
+    const eagerLoadParagraphLinks = (paragraph, remainingDepth) => {
+      if (!paragraph || remainingDepth <= 0) return Promise.resolve([]);
+
+      const paragraphPath = paragraph.path.string;
+      if ((eagerLoadedParagraphDepths.get(paragraphPath) || 0) >= remainingDepth) return Promise.resolve([]);
+      eagerLoadedParagraphDepths.set(paragraphPath, remainingDepth);
+
       return eagerLoadLinks(paragraph.links)
+        .then(childParagraphs => {
+          if (remainingDepth <= 1) return childParagraphs;
+          return eagerLoadParagraphs(childParagraphs, remainingDepth - 1)
+            .then(() => childParagraphs);
+        });
+    };
+
+    const eagerLoadParagraphChain = paragraph => {
+      if (!paragraph) return Promise.resolve();
+      return eagerLoadParagraphLinks(paragraph, EAGER_LOAD_LINK_DESCENDANT_DEPTH)
         .then(() => eagerLoadParagraphChain(paragraph.parentParagraph));
     };
 
     const eagerLoad = () => {
-      return eagerLoadLinks(Link.visible)
+      const visibleParagraphs = Link.visible.map(link => link.enclosingParagraph);
+      return eagerLoadParagraphs(visibleParagraphs, EAGER_LOAD_LINK_DESCENDANT_DEPTH)
         .then(() => eagerLoadParagraphChain(Path.current.paragraph));
     };
 
@@ -1011,6 +1062,14 @@ function uniqueTopicsForEagerLoad(link) {
     topicsByName[topic.mixedCase] = topic;
   });
   return Object.values(topicsByName);
+}
+
+function eagerLoadLinkKey(link) {
+  return [
+    link.enclosingPath?.string,
+    link.relativeLinkNumber,
+    link.literalPath?.string
+  ].join('|');
 }
 
 export default Link;

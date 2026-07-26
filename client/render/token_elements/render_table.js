@@ -13,7 +13,7 @@ const RELAXED_ABSOLUTE_COLUMN_WIDTH_CAP_PX = 450;
 const RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 200;
 const RELAXED_RELATIVE_COLUMN_WIDTH_CAP_DELTA_PX = 300;
 const SPARE_WIDTH_RELAXATION_SHARE = 0.5;
-const SHRINKABLE_COLUMN_MIN_WIDTH_PX = 100;
+const SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX = [150, 100];
 const ATOMIC_COLUMN_MIN_WIDTH_PX = 110;
 const FLEXIBLE_COLUMN_TEXT_WEIGHT_FACTOR = 0.65;
 
@@ -794,7 +794,23 @@ function applyReadableMinimumWidths(widths, atomicReadableColumns) {
   return { widths: resolvedWidths, minAmounts };
 }
 
-function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
+function selectShrinkableColumnMinWidth(widths, shrinkableColumns, containerWidth) {
+  const defaultMinWidth = SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX[0];
+  if (!isFinite(containerWidth) || containerWidth <= 0) {
+    return defaultMinWidth;
+  }
+
+  const fixedWidth = widths.reduce((sum, width, index) =>
+    sum + (shrinkableColumns[index] ? 0 : width), 0);
+  const shrinkableColumnCount = shrinkableColumns.filter(Boolean).length;
+  if (!shrinkableColumnCount) return defaultMinWidth;
+
+  return SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX.find(minWidth =>
+    fixedWidth + (minWidth * shrinkableColumnCount) <= containerWidth
+  ) || SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX[SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX.length - 1];
+}
+
+function fitWidthsToContainer(widths, shrinkableColumns, containerWidth, shrinkableColumnMinWidth) {
   if (!isFinite(containerWidth) || containerWidth <= 0) {
     return { widths, shrinkAmounts: new Array(widths.length).fill(0) };
   }
@@ -809,7 +825,7 @@ function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
       .filter(({ width, index }) =>
         shrinkableColumns[index] &&
         isFinite(width) &&
-        width > SHRINKABLE_COLUMN_MIN_WIDTH_PX
+        width > shrinkableColumnMinWidth
       );
 
     if (!candidates.length) break;
@@ -818,7 +834,7 @@ function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
     let appliedShrink = 0;
 
     candidates.forEach(({ width, index }) => {
-      const shrinkBy = Math.min(shrinkPerColumn, width - SHRINKABLE_COLUMN_MIN_WIDTH_PX);
+      const shrinkBy = Math.min(shrinkPerColumn, width - shrinkableColumnMinWidth);
       if (shrinkBy <= 0) return;
       fittedWidths[index] -= shrinkBy;
       shrinkAmounts[index] += shrinkBy;
@@ -832,7 +848,13 @@ function fitWidthsToContainer(widths, shrinkableColumns, containerWidth) {
   return { widths: fittedWidths, shrinkAmounts };
 }
 
-function getProportionalFlexibleColumnWidths(widths, shrinkableColumns, containerWidth, proportionalWidths = widths) {
+function getProportionalFlexibleColumnWidths(
+  widths,
+  shrinkableColumns,
+  containerWidth,
+  proportionalWidths = widths,
+  shrinkableColumnMinWidth = SHRINKABLE_COLUMN_MIN_WIDTH_OPTIONS_PX[0]
+) {
   if (!isFinite(containerWidth) || containerWidth <= 0) return null;
   if (!widths.length) return null;
   if (widths.some(width => !isFinite(width) || width <= 0)) return null;
@@ -846,7 +868,7 @@ function getProportionalFlexibleColumnWidths(widths, shrinkableColumns, containe
   const flexibleIndexes = shrinkableColumns
     .map((isShrinkable, index) => isShrinkable ? index : null)
     .filter(index => index != null);
-  const minFlexibleWidth = SHRINKABLE_COLUMN_MIN_WIDTH_PX * flexibleIndexes.length;
+  const minFlexibleWidth = shrinkableColumnMinWidth * flexibleIndexes.length;
   if (availableFlexibleWidth < minFlexibleWidth) return null;
 
   const proportionalWidthsByIndex = new Map(flexibleIndexes.map(index => {
@@ -880,10 +902,10 @@ function getProportionalFlexibleColumnWidths(widths, shrinkableColumns, containe
       const weight = proportionalWidthsByIndex.get(index);
       const nextWidth = remainingWidth * weight / remainingWeight;
 
-      if (nextWidth < SHRINKABLE_COLUMN_MIN_WIDTH_PX) {
-        adjustedWidths[index] = SHRINKABLE_COLUMN_MIN_WIDTH_PX;
+      if (nextWidth < shrinkableColumnMinWidth) {
+        adjustedWidths[index] = shrinkableColumnMinWidth;
         constrainedIndexes.add(index);
-        remainingWidth -= SHRINKABLE_COLUMN_MIN_WIDTH_PX;
+        remainingWidth -= shrinkableColumnMinWidth;
         remainingWeight -= weight;
         constrainedThisPass = true;
       }
@@ -1146,11 +1168,19 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { capCo
     column.readableMinAmount = minAmounts[column.index];
   });
 
+  const shrinkableColumnMinWidth = selectShrinkableColumnMinWidth(
+    readableWidths,
+    shrinkableColumns,
+    fitContainerWidth
+  );
+  tableElement.dataset.minShrinkableColumnWidth = String(shrinkableColumnMinWidth);
+
   const adjustedFlexibleWidths = getProportionalFlexibleColumnWidths(
     readableWidths,
     shrinkableColumns,
     fitContainerWidth,
-    naturalWidths
+    naturalWidths,
+    shrinkableColumnMinWidth
   );
   const fittingWidths = adjustedFlexibleWidths || readableWidths;
   columns.forEach(column => {
@@ -1161,7 +1191,8 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { capCo
   const { widths: shrunkWidths, shrinkAmounts } = fitWidthsToContainer(
     fittingWidths,
     shrinkableColumns,
-    fitContainerWidth
+    fitContainerWidth,
+    shrinkableColumnMinWidth
   );
   const { widths: finalWidths, unsnapAmounts } = undoOverflowSnapping(
     shrunkWidths,
@@ -1205,7 +1236,7 @@ function applyColumnGroupWidths(tableElement, { columnSizes }, snapPlan, { capCo
     setDatasetValues(colElement, {
       preShrinkColumnWidth: column.fittingWidth,
       columnShrinkAmount: column.shrinkAmount,
-      minShrinkableColumnWidth: SHRINKABLE_COLUMN_MIN_WIDTH_PX
+      minShrinkableColumnWidth: shrinkableColumnMinWidth
     }, wasShrunk);
 
     const wasUnsnapped = column.unsnapAmount > 0;

@@ -7,6 +7,9 @@ import Paragraph from 'models/paragraph';
 import updateView from 'display/update_view';
 import { createSectionElement } from 'render/render_dom_tree';
 
+const PLACEHOLDER_REVEAL_DELAY_MS = 150;
+const PLACEHOLDER_MIN_VISIBLE_MS = 200;
+
 function setHeader(topic, displayOptions) {
   let headerDomElement = document.querySelector(`h1[data-topic-name="${topic.cssMixedCase}"]`);
   if (!headerDomElement) return null;
@@ -80,11 +83,6 @@ function displayPlaceholderSection(pathToDisplay, linkToSelect, options) {
   let placeholderPath = existingPlaceholder?.path || nextPlaceholderPath;
 
   if (!placeholderPath) return Promise.resolve();
-  if (
-    placeholderPath.isPageRoot &&
-    document.querySelector('#_canopy > .canopy-boot-loading-graphic')
-  ) return Promise.resolve();
-
   let placeholderParagraph = Paragraph.byPath(placeholderPath);
 
   if (!placeholderParagraph) {
@@ -120,6 +118,16 @@ function ensureLoadingGraphic(sectionElement) {
 
   let loadingGraphicElement = createLoadingGraphicElement();
   sectionElement.prepend(loadingGraphicElement);
+  window.setTimeout(() => {
+    if (!sectionElement.classList.contains('canopy-loading-section')) return;
+
+    sectionElement.dataset.canopyPlaceholderVisibleAt = String(Date.now());
+    sectionElement.classList.add('canopy-loading-minimum');
+    window.setTimeout(() => {
+      sectionElement.classList.remove('canopy-loading-minimum');
+      delete sectionElement.dataset.canopyPlaceholderVisibleAt;
+    }, PLACEHOLDER_MIN_VISIBLE_MS);
+  }, PLACEHOLDER_REVEAL_DELAY_MS);
 }
 
 function createLoadingGraphicElement() {
@@ -365,12 +373,15 @@ function beforeChangeScroll(newPath, linkToSelect, options = {}) {
 
   let targetLink = targetElement.tagName === 'A' && Link.for(targetElement);
   let targetRatio = targetLink ?
-    (fulcrumLink ? FULCRUM_LINK_TARGET_RATIO : (targetLink.isAboveViewport && targetLink.bottom > ScrollableContainer.top ? PARTIALLY_VISIBLE_LINK_TARGET_RATIO : (targetLink.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO))) :
+    (fulcrumLink ? (targetLink.isAboveViewport ? FULCRUM_LINK_TARGET_RATIO : LINK_TARGET_RATIO) : (targetLink.isAboveViewport && targetLink.bottom > ScrollableContainer.top ? PARTIALLY_VISIBLE_LINK_TARGET_RATIO : (targetLink.isBig ? BIG_LINK_TARGET_RATIO : LINK_TARGET_RATIO))) :
     (Paragraph.for(targetElement.parentNode).isBig ? BIG_PARAGRAPH_TARGET_RATIO : PARAGRAPH_TARGET_RATIO);
+
+  let direction;
+  if (fulcrumLink) direction = 'up';
 
   let preChangePause = () => new Promise(resolve => setTimeout(resolve, 120))
 
-  return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top' })
+  return (scrollElementToPosition(targetElement, {targetRatio, maxScrollRatio: Infinity, minDiff, behavior: 'smooth', side: 'top', direction })
     .then((scrolled) => scrolled && preChangePause())); // we only pause before change if there was a real scroll to the fulcrum link
 }
 

@@ -59,7 +59,7 @@ function getExplFileObjects(topicsPath, options = {}) {
   return Object.fromEntries(
     explFilePaths.map(fullPath => {
       const filePath = path.relative('.', fullPath);
-      const contents = fs.readFileSync(fullPath, 'utf8');
+      const contents = fs.readFileSync(fullPath, 'utf8').replace(/\r\n?/g, '\n');
       const stats = fs.statSync(fullPath);
       const modTime = stats.mtime.getTime();
 

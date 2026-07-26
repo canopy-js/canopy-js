@@ -90,4 +90,13 @@ Six: Six.`;
 
     expect(overflowingCells).toEqual([]);
   });
+
+  test('Playground sizes default deep menus under scaled layout', async ({ page }) => {
+    await page.goto('http://localhost:3006/#/Playground#Part_10_Mergers/Noise_pollution_law#Noise_pollution_tree', { waitUntil: 'load' });
+    await expect(page.locator('.canopy-selected-section')).toHaveAttribute('data-subtopic-name', 'Noise pollution tree');
+
+    const menu = page.locator('.canopy-selected-section .canopy-menu');
+    await expect(menu).toHaveCount(1);
+    await expect(menu).toHaveClass(/canopy-third-pill/);
+  });
 });

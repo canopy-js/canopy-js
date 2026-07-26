@@ -11,22 +11,17 @@ import {
   waitForDisplaysInProgress
 } from 'display/helpers';
 
-let displayPathRequestId = 0;
-
-function debugDisplayPath(_requestId, _message, _pathToDisplay, _linkToSelect, _options = {}) {
-  return;
-}
+const BOOTLOADER_MIN_VISIBLE_MS = 200;
 
 function displayPath(pathToDisplay, linkToSelect, options = {}) {
-  const requestId = ++displayPathRequestId;
-  debugDisplayPath(requestId, 'start', pathToDisplay, linkToSelect, options);
   if (!pathToDisplay.recapitalize.equals(pathToDisplay)) return displayPath(pathToDisplay.recapitalize, linkToSelect, options);
-  if (!Paragraph.byPath(pathToDisplay)) return tryPathPrefix(pathToDisplay, options);
-  const displayingPlaceholder = pathToDisplay.paragraph.placeholder;
-  let linkForDisplay = pathToDisplay.paragraph.placeholder ?
+  const paragraphToDisplay = Paragraph.byPath(pathToDisplay);
+  if (!paragraphToDisplay) return tryPathPrefix(pathToDisplay, options);
+  const displayingPlaceholder = paragraphToDisplay.placeholder;
+  let linkForDisplay = paragraphToDisplay.placeholder ?
     (linkToSelect?.linkElement ? linkToSelect : null) :
     (linkToSelect?.element?.isConnected ? linkToSelect : null);
-  if (linkToSelect && !linkForDisplay && !pathToDisplay.paragraph.placeholder) {
+  if (linkToSelect && !linkForDisplay && !paragraphToDisplay.placeholder) {
     linkForDisplay = linkToSelect.currentDomLink;
   }
   const isTwoStepChange = Path.current.twoStepChange(pathToDisplay);
@@ -35,23 +30,20 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
   return waitForDisplaysInProgress()
   .then(() => (Paragraph.enableDisplayInProgress()))
   .then(() => {
-    debugDisplayPath(requestId, 'lock acquired', pathToDisplay, linkForDisplay, options);
     if (options.provisionalForPath?.renderedParagraph) return;
     removeLoadingClass(pathToDisplay);
     return beforeChangeScroll(pathToDisplay, linkForDisplay, options); // eg long distance up or two-step path transition
   })
   .then(() => {
     if (options.provisionalForPath?.renderedParagraph) return;
-    debugDisplayPath(requestId, 'before resetDom', pathToDisplay, linkForDisplay, options);
     Paragraph.selection?.removeSelectionClass();
-    Paragraph.byPath(pathToDisplay).addToDom(); // add before reset so classes on DOM elements are removed
+    paragraphToDisplay.addToDom(); // add before reset so classes on DOM elements are removed
     resetDom(pathToDisplay);
     if (linkToSelect && !linkForDisplay && !pathToDisplay.paragraph.placeholder) { linkToSelect?.eraseLinkData(); return queueMicrotask(() => updateView(pathToDisplay, null, options)); }
     let urlPath = options.urlPath || linkToSelect?.displayPath || pathToDisplay;
     Path.setPath(urlPath, linkForDisplay, options); // before link.select because selection cache by current URL
     if (!options.urlPath || options.urlPath.equals(pathToDisplay)) Link.persistLinkSelection(linkForDisplay); // if null, persists deselect or paragraph scroll
     Link.updateSelectionClass(linkForDisplay || pathToDisplay.parentLink); // if null, removes previous selection's class
-    debugDisplayPath(requestId, 'after selection update', pathToDisplay, linkForDisplay, options);
     let header = setHeader(pathToDisplay.firstTopicPath.firstTopic, options);
     document.title = pathToDisplay.pageTitle;
     Path.lastRenderedPath = pathToDisplay;
@@ -63,8 +55,6 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       pathToDisplay.paragraphs.forEach(p => p.display());
     }
     Link.eagerLoadLinks(options);
-    if (!displayingPlaceholder || !pathToDisplay.isPageRoot) removeBootloaderGraphic();
-
     return afterChangeScroll(pathToDisplay, linkForDisplay, options)
       .then(() => {
         if (options.scrollStyle !== 'instant') return;
@@ -73,10 +63,9 @@ function displayPath(pathToDisplay, linkToSelect, options = {}) {
       .then(() => header?.show())
       .then(() => {
         pathToDisplay.paragraph.addSelectionClass(); // last for feature specs
-        debugDisplayPath(requestId, 'complete', pathToDisplay, linkForDisplay, options);
+        if (!displayingPlaceholder || !pathToDisplay.isPageRoot) removeBootloaderGraphic();
       });
   }).finally(() => {
-    debugDisplayPath(requestId, 'lock released', pathToDisplay, linkForDisplay, options);
     Paragraph.disableDisplayInProgress();
   });
 }
@@ -92,7 +81,32 @@ function removeLoadingClass(pathToDisplay) {
 }
 
 function removeBootloaderGraphic() {
-  document.querySelector('#_canopy > .canopy-boot-loading-graphic')?.remove();
+  let bootloader = document.querySelector('#_canopy > .canopy-boot-loading-graphic');
+  if (
+    !bootloader ||
+    bootloader.classList.contains('canopy-boot-loading-graphic-fading-out') ||
+    bootloader.dataset.canopyBootloaderRemovalScheduled === 'true'
+  ) return;
+
+  if (!bootloader.classList.contains('canopy-boot-loading-graphic-visible')) {
+    bootloader.remove();
+    return;
+  }
+
+  const visibleAt = Number(bootloader.dataset.canopyBootloaderVisibleAt);
+  const visibleForMs = visibleAt ? Date.now() - visibleAt : BOOTLOADER_MIN_VISIBLE_MS;
+  const remainingVisibleMs = Math.max(0, BOOTLOADER_MIN_VISIBLE_MS - visibleForMs);
+  if (remainingVisibleMs > 0) {
+    bootloader.dataset.canopyBootloaderRemovalScheduled = 'true';
+    window.setTimeout(() => {
+      delete bootloader.dataset.canopyBootloaderRemovalScheduled;
+      removeBootloaderGraphic();
+    }, remainingVisibleMs);
+    return;
+  }
+
+  bootloader.classList.add('canopy-boot-loading-graphic-fading-out');
+  bootloader.addEventListener('animationend', () => bootloader.remove(), { once: true });
 }
 
 const displayPathTo = (paragraph) => {

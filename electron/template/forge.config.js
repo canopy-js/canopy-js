@@ -2,9 +2,10 @@ const fs = require('fs');
 
 const iconBase = 'app/_assets/electron-icon';
 const iconPng = `${iconBase}.png`;
+const iconIco = `${iconBase}.ico`;
 const packagerConfig = {};
 
-if (fs.existsSync(iconPng) || fs.existsSync(`${iconBase}.icns`)) {
+if (fs.existsSync(iconPng) || fs.existsSync(iconIco) || fs.existsSync(`${iconBase}.icns`)) {
   packagerConfig.icon = iconBase;
 }
 

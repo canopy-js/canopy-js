@@ -51,7 +51,9 @@ function serve(options = {}) {
     clearInterval(healthChecker);
   });
 
-  return state.child;
+  return {
+    restartIfNotPresent: () => restartIfNotPresent(state, ensureServerState)
+  };
 }
 
 module.exports = serve;
@@ -82,6 +84,13 @@ function ensureRunning(state, port, options, hasValidBuild, ensureServerState) {
   startChild(state, port, options, hasValidBuild, ensureServerState);
   state.restarting = false;
   state.missingBuildWarned = false;
+}
+
+function restartIfNotPresent(state, ensureServerState) {
+  if (state.shuttingDown || state.child) return false;
+  state.fatalListenError = false;
+  ensureServerState();
+  return true;
 }
 
 function handleMissingBuild(state) {
@@ -161,27 +170,28 @@ function watchBuildRoot(buildRoot, ensureServerState, state) {
   return watcher;
 }
 
-function registerShutdown(options, fn) {
-  process.once('exit', (code) => {
+function registerShutdown(options, fn, processObject = process) {
+  processObject.once('exit', (code) => {
     if (options?.logging) console.log(chalk.gray(`Server parent pid ${process.pid} exited with code ${code}`));
     fn();
   });
   ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => {
-    process.once(signal, () => {
+    processObject.once(signal, () => {
       if (options?.logging) console.log(chalk.gray(`Server parent pid ${process.pid} received ${signal}`));
       fn();
     });
   });
-  process.once('uncaughtException', (error) => {
+  processObject.once('uncaughtException', (error) => {
     console.error(chalk.red(`Server parent pid ${process.pid} uncaught exception: ${error.message}`));
     fn();
   });
-  process.once('unhandledRejection', (error) => {
+  processObject.once('unhandledRejection', (error) => {
     const message = error && error.stack ? error.stack : error;
-    console.error(chalk.red(`Server parent pid ${process.pid} unhandled rejection: ${message}`));
-    fn();
+    console.error(chalk.red(`Server parent pid ${process.pid} unhandled rejection (server continuing): ${message}`));
   });
 }
+
+module.exports.registerShutdown = registerShutdown;
 
 function healthCheck(state, port, options, hasValidBuild, ensureServerState) {
   if (state.shuttingDown || state.healthCheckInFlight) return;
@@ -234,3 +244,5 @@ function restartChild(state, options) {
     state.child = null;
   }
 }
+
+module.exports.restartIfNotPresent = restartIfNotPresent;

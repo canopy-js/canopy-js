@@ -72,7 +72,10 @@ function convertSpacesToHtml(str) { // eg [[ abc ]] -> [[&nbsp;abc&nbsp;]]
 
 function ExternalLinkToken(url, text, parserContext, options = {}) {
   this.type = 'external';
-  this.url = (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]);
+  this.url = projectPathUrl(
+    (url || text).replace(/\\\\|\\./g, match => match === '\\\\' ? '\\' : match[1]),
+    parserContext?.projectPathPrefix
+  );
   this.text = options.iconOnly ? '' : (text || url);
   if (options.iconOnly) this.iconOnly = true;
   if (options.iconOnly) {
@@ -82,6 +85,16 @@ function ExternalLinkToken(url, text, parserContext, options = {}) {
   } else {
     this.tokens = parseText({ text: text || url, parserContext: parserContext.clone({ insideToken: true }) });
   }
+}
+
+function projectPathUrl(url, projectPathPrefix) {
+  const hasScheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.test(url);
+  const isProtocolRelative = url.startsWith('//');
+  if (hasScheme || isProtocolRelative) return url;
+
+  const prefix = (projectPathPrefix || '').replace(/^\/+|\/+$/g, '');
+  const relativePath = url.replace(/^\/+/, '');
+  return `/${prefix ? `${prefix}/` : ''}${relativePath}`;
 }
 
 function ImageToken({ alt, resourceUrl, title, caption, anchorUrl, parserContext }) {

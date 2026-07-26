@@ -155,7 +155,7 @@ function renderGlobalLink(token, renderContext, renderTokenElements) {
   let link = new Link(linkElement);
   
   const preDisplayGlobalLinkCycleIcon = () => {
-    if (!link.element) return;
+    if (!link.element || link.type === 'disabled') return;
     if ((link.cycle || link.isSelfReference) && !link.isSelfTerminalReference) {
       const targetPath = link.inlinePath?.reduce();
       const fulcrumPath = targetPath ? link.enclosingPath.initialOverlap(targetPath) : null;

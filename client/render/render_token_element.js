@@ -17,6 +17,22 @@ import renderMenu from './token_elements/render_menu';
 import { renderBoldText, renderUnderlineText, renderItalicText } from './token_elements/render_text_styles';
 import renderToolTip from './token_elements/render_tooltip';
 import renderCenterBlock from './token_elements/render_center_block';
+import Path from 'models/path';
+import Topic from '../../cli/shared/topic';
+
+function isPageRootSelfReference(token, renderContext) {
+  if (!renderContext.pathToParagraph.isPageRoot) return false;
+  if (!token.pathString || !token.enclosingTopic || !token.enclosingSubtopic) return false;
+
+  const enclosingTopic = Topic.fromMixedCase(token.enclosingTopic);
+  const enclosingSubtopic = Topic.fromMixedCase(token.enclosingSubtopic);
+  const literalPath = Path.for(token.pathString);
+
+  return literalPath.length === 1 &&
+    enclosingTopic.matches(enclosingSubtopic) &&
+    literalPath.firstTopic.matches(enclosingTopic) &&
+    literalPath.firstSubtopic.matches(enclosingTopic);
+}
 
 function renderTokenElements(token, renderContext) {
   if (token.type === 'text') {
@@ -24,6 +40,8 @@ function renderTokenElements(token, renderContext) {
   } else if (token.type === 'local') {
     renderContext.localLinkSubtreeCallback(token);
     return renderLocalLink(token, renderContext, renderTokenElements);
+  } else if (token.type === 'global' && isPageRootSelfReference(token, renderContext)) {
+    return renderDisabledLink(token, renderContext, renderTokenElements);
   } else if (token.type === 'global') {
     return renderGlobalLink(token, renderContext, renderTokenElements);
   } else if (token.type === 'disabled_reference') {

@@ -34,6 +34,23 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Special paths', () => {
+  test('Relative hyperlinks account for project path prefixes and hash routing', async ({ page }) => {
+    const deployments = [
+      { url: 'http://localhost:3001/test/United_States/New_York/Style_examples#Hyperlinks', prefix: '/test' },
+      { url: 'http://localhost:3002/#/United_States/New_York/Style_examples#Hyperlinks', prefix: '' },
+      { url: 'http://localhost:3003/test/#/United_States/New_York/Style_examples#Hyperlinks', prefix: '/test' }
+    ];
+
+    for (const { url, prefix } of deployments) {
+      await page.goto(url);
+
+      await expect(page.getByRole('link', { name: 'root-relative project link', exact: true }))
+        .toHaveAttribute('href', `${prefix}/outside.html`);
+      await expect(page.getByRole('link', { name: 'relative project link', exact: true }))
+        .toHaveAttribute('href', `${prefix}/outside.html`);
+    }
+  });
+
   test('Project path prefix option creates path prefix', async ({ browser, page }) => {
     await page.goto('http://localhost:3001');
     await expect(page).toHaveURL('http://localhost:3001/test/United_States');

@@ -39,7 +39,7 @@ function moveToParent() {
   }
 }
 
-function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
+function moveDownOrRedirect({ newTab, altKey, shiftKey } = {}) {
   if (Link.selection.opensPlaceholder) return;
 
   let firstChild = !Link.selection.isClosedCycle && Link.selection.firstChild;
@@ -65,7 +65,7 @@ function moveDownOrRedirect({ newTab, altKey, shiftKey }) {
 }
 
 function inlineACycleLink() {
-  if (!Link.selection.isCycle) return moveDownOrRedirect();
+  if (!Link.selection.isCycle) return moveDownOrRedirect({});
   return Link.selection.execute({ inlineCycles: true });
 }
 

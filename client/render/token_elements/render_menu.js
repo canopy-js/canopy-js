@@ -74,6 +74,10 @@ function renderMenu(token, renderContext, renderTokenElements) {
         contentContainer: menuCellElement.querySelector('.canopy-menu-content-container')
       }));
 
+    if (visibleCells.length === 1) {
+      tableListSizeIndex = Math.max(tableListSizeIndex, SizesByArea.indexOf('quarter-pill'));
+    }
+
     while (true) {
       if (tableListSizeIndex === SizesByArea.indexOf('half-pill') && token.items.length > 2) {
         tableListSizeIndex = SizesByArea.indexOf('quarter-card'); // Quarters look better than halves
@@ -83,6 +87,10 @@ function renderMenu(token, renderContext, renderTokenElements) {
       menuElement.classList.add(sizeClass);
 
       let overflowFound = false;
+      // Scaled layouts can report recursive glyph/link bounds less than a pixel
+      // outside a visually fitting cell. Treat that as measurement noise so menu
+      // sizing does not skip the correct class.
+      const overflowTolerance = 1;
       for (const { menuCellElement, contentContainer } of visibleCells) {
         const contentBoundingRect = getCombinedBoundingRect([contentContainer]);
         const containerStyles = window.getComputedStyle(menuCellElement);
@@ -101,8 +109,8 @@ function renderMenu(token, renderContext, renderTokenElements) {
           right: containerRect.right - containerPaddingRight
         };
 
-        const isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left || contentBoundingRect.right > adjustedContainerRect.right;
-        const isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top || contentBoundingRect.bottom > adjustedContainerRect.bottom;
+        const isOverflowingHorizontally = contentBoundingRect.left < adjustedContainerRect.left - overflowTolerance || contentBoundingRect.right > adjustedContainerRect.right + overflowTolerance;
+        const isOverflowingVertically = contentBoundingRect.top < adjustedContainerRect.top - overflowTolerance || contentBoundingRect.bottom > adjustedContainerRect.bottom + overflowTolerance;
 
         if (!isOverflowingHorizontally && !isOverflowingVertically) continue;
 

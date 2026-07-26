@@ -10,12 +10,17 @@ import {
   goToDefaultTopic
 } from 'keys/key_handlers';
 import { moveInDirection } from 'keys/arrow_keys';
+import ScrollableContainer from 'helpers/scrollable_container';
 import Path from 'models/path';
 import Link from 'models/link';
 
+const ARROW_HOLD_DELAY_MS = 250;
+const ARROW_SCROLL_PIXELS_PER_SECOND = 600;
+const arrowKeyPresses = {};
+
 const registerKeyListeners = () => {
   window.addEventListener('keydown', function(e) {
-    if (isActiveElementTextInput()) return; // User is typing in text box
+    if (isActiveElementEditable()) return; // User is typing in an editable element
 
     let modifiers =
       (e.metaKey ? 'meta-' : '') +
@@ -25,23 +30,122 @@ const registerKeyListeners = () => {
 
     let keyName = keyNames[e.keyCode];
     let shortcutName = modifiers + keyName;
-    if (['tab', 'down', 'up', 'left', 'right'].includes(keyName)) {
-      if (!((e.metaKey || e.ctrlKey) && ['left', 'right'].includes(keyName))) { // unless browser back
-        e.preventDefault();
-      }
+    if (isArrowKey(keyName) && !isBrowserNavigationArrow(e, keyName)) {
+      e.preventDefault();
+      return trackArrowKeyDown(keyName, shortcutName, e.repeat);
     }
 
-    if (keyName === 'escape' && !Link.selection) {
-      return goToDefaultTopic();
+    if (keyName === 'tab') {
+      e.preventDefault();
     }
 
-    if (Link.selection || universalShortcutRelationships.includes(shortcutName)) {
-      (shortcutRelationships[shortcutName]||function(){})()
-    } else if (shortcutRelationships[shortcutName]) {
-      Path.rendered.selectALink();
-    }
+    handleShortcut(shortcutName, keyName);
   });
+
+  window.addEventListener('keyup', function(e) {
+    let keyName = keyNames[e.keyCode];
+    if (!isArrowKey(keyName)) return;
+
+    let press = stopArrowKeyPress(keyName);
+    if (!press || press.held || isActiveElementEditable()) return;
+
+    handleShortcut(press.shortcutName, keyName);
+  });
+
+  window.addEventListener('blur', stopAllArrowKeyPresses);
 }
+
+function handleShortcut(shortcutName, keyName) {
+  if (keyName === 'escape' && !Link.selection) {
+    return goToDefaultTopic();
+  }
+
+  if (Link.selection || universalShortcutRelationships.includes(shortcutName)) {
+    (shortcutRelationships[shortcutName]||function(){})()
+  } else if (shortcutRelationships[shortcutName]) {
+    Path.rendered.selectALink();
+  }
+}
+
+function isArrowKey(keyName) {
+  return ['down', 'up', 'left', 'right'].includes(keyName);
+}
+
+function isBrowserNavigationArrow(e, keyName) {
+  return (e.metaKey || e.ctrlKey) && ['left', 'right'].includes(keyName);
+}
+
+function trackArrowKeyDown(keyName, shortcutName, isRepeat) {
+  let existingPress = arrowKeyPresses[keyName];
+  if (existingPress) {
+    startArrowKeyScrolling(existingPress);
+    return;
+  }
+
+  let press = {
+    animationFrame: null,
+    held: false,
+    keyName,
+    shortcutName,
+    timer: null
+  };
+  arrowKeyPresses[keyName] = press;
+
+  if (isRepeat) {
+    startArrowKeyScrolling(press);
+  } else {
+    press.timer = window.setTimeout(() => startArrowKeyScrolling(press), ARROW_HOLD_DELAY_MS);
+  }
+}
+
+function startArrowKeyScrolling(press) {
+  if (press.held) return;
+
+  press.held = true;
+  window.clearTimeout(press.timer);
+
+  let lastFrameTime;
+  let scroll = currentTime => {
+    if (arrowKeyPresses[press.keyName] !== press) return;
+
+    if (lastFrameTime !== undefined) {
+      let elapsed = Math.min(currentTime - lastFrameTime, 50);
+      let distance = elapsed * ARROW_SCROLL_PIXELS_PER_SECOND / 1000;
+      let direction = arrowScrollDirections[press.keyName];
+      ScrollableContainer.scrollBy({
+        behavior: 'instant',
+        left: direction.left * distance,
+        top: direction.top * distance
+      });
+    }
+
+    lastFrameTime = currentTime;
+    press.animationFrame = window.requestAnimationFrame(scroll);
+  };
+
+  press.animationFrame = window.requestAnimationFrame(scroll);
+}
+
+function stopArrowKeyPress(keyName) {
+  let press = arrowKeyPresses[keyName];
+  if (!press) return null;
+
+  window.clearTimeout(press.timer);
+  window.cancelAnimationFrame(press.animationFrame);
+  delete arrowKeyPresses[keyName];
+  return press;
+}
+
+function stopAllArrowKeyPresses() {
+  Object.keys(arrowKeyPresses).forEach(stopArrowKeyPress);
+}
+
+const arrowScrollDirections = {
+  'left': { left: -1, top: 0 },
+  'up': { left: 0, top: -1 },
+  'down': { left: 0, top: 1 },
+  'right': { left: 1, top: 0 }
+};
 
 const shortcutRelationships = {
   'left': moveInDirection.bind(null, 'left'),
@@ -131,12 +235,14 @@ const keyNames = {
   53: '5',
 }
 
-function isActiveElementTextInput() {
-    let activeElement = document.activeElement;
-    if (activeElement && (activeElement.tagName === "TEXTAREA" || (activeElement.tagName === "INPUT" && ["text", "password", "email", "search", "number", "tel", "url"].includes(activeElement.type.toLowerCase())))) {
-        return true; // Active element is a text input or textarea
-    }
-    return false; // Active element is not a text input or textarea
+function isActiveElementEditable() {
+  let activeElement = document.activeElement;
+  if (!activeElement) return false;
+
+  if (activeElement.isContentEditable) return true;
+  if (activeElement.tagName === 'TEXTAREA') return true;
+  return activeElement.tagName === 'INPUT' &&
+    ['text', 'password', 'email', 'search', 'number', 'tel', 'url'].includes(activeElement.type.toLowerCase());
 }
 
 registerKeyListeners();

@@ -40,7 +40,7 @@ function populateSectionElement(sectionElement, topic, subtopic, renderContext) 
 
 function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
   return (token) => {
-    let { fullPath, remainingPath, claimedSubtopics } = renderContext;
+    let { fullPath, remainingPath, claimedSubtopics, childRegistrations } = renderContext;
     let newSubtopic = Topic.fromMixedCase(token.targetSubtopic);
     let pathToEnclosingTopic = fullPath.slice(0, fullPath.length - remainingPath.length);
     let pathToParagraph = pathToEnclosingTopic.addSegment(topic, newSubtopic);
@@ -56,7 +56,7 @@ function localLinkSubtreeCallback(topic, parentSectionElement, renderContext) {
     );
 
     claimedSubtopics[token.targetSubtopic] = true;
-    Paragraph.registerChild(childSectionElement, parentSectionElement);
+    childRegistrations.push([childSectionElement, parentSectionElement]);
   }
 }
 

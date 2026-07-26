@@ -1,5 +1,4 @@
 let fs = require('fs-extra');
-let recursiveReadSync = require('recursive-readdir-sync');
 
 function fileNameFor(string) {
   return string.replace(/ /g, '_').toLowerCase();
@@ -36,8 +35,19 @@ function deduplicate(pathList) {
   return uniquePaths;
 }
 
-function getRecursiveSubdirectoryFiles(path) {
-  return recursiveReadSync(path).flat();
+function getRecursiveSubdirectoryFiles(directoryPath) {
+  let entries;
+  try {
+    entries = fs.readdirSync(directoryPath, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+
+  return entries.flatMap(entry => {
+    let entryPath = `${directoryPath}/${entry.name}`;
+    return entry.isDirectory() ? getRecursiveSubdirectoryFiles(entryPath) : [entryPath];
+  });
 }
 
 function getDirectoryFiles(path) {

@@ -31,14 +31,7 @@ class DefaultTopic {
   }
 }
 
-let canopyBinPath;
-try {
-  canopyBinPath = execSync('which canopy').toString().trim();
-} catch {
-  console.error(chalk.red('Could not find "canopy" in PATH'));
-  process.exit(1);
-}
-let canopyLocation = process.env.CANOPY_LOCATION || path.dirname(path.dirname(fs.realpathSync(canopyBinPath)));
+const canopyLocation = process.env.CANOPY_LOCATION || path.resolve(__dirname, '..', '..');
 
 function tryDefaultTopic() {
   let defaultTopic = {};

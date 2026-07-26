@@ -34,6 +34,7 @@ const Matchers = [
   footnoteLinesMatcher,
   localReferenceMatcher,
   globalReferenceMatcher,
+  hyperlinkMatcher,
   disabledReferenceMatcher,
   fragmentReferenceMatcher,
   footnoteMarkerMatcher,
@@ -43,7 +44,6 @@ const Matchers = [
   codeSnippetMatcher,
   underlineMatcher,
   imageMatcher,
-  hyperlinkMatcher,
   urlMatcher,
   toolTipMatcher,
   centerBlockMatcher
