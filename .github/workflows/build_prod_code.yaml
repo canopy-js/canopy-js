@@ -33,6 +33,7 @@ jobs:
         npm run build-prod
 
         git add -A
+        git add -f dist
 
         git config --global user.email "canopyjs@gmail.com"
         git config --global user.name "Canopy JS"

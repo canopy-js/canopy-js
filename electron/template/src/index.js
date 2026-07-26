@@ -1,6 +1,7 @@
 const { app, BrowserWindow, protocol, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const appResourcePathForFileUrl = require('./file_protocol_path');
 
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -31,10 +32,8 @@ function createWindow() {
     if (url.includes('/_canopy.js.map')) return callback({ path: path.join(appRoot, '_canopy.js.map') });
     if (url.includes('/index.html')) return callback({ path: path.join(appRoot, 'index.html') });
 
-    if (url.includes('/_data') || url.includes('/_assets')) {
-      const segments = url.split('/').slice(3);
-      return callback({ path: path.join(appRoot, ...segments) });
-    }
+    const appResourcePath = appResourcePathForFileUrl(request.url, appRoot);
+    if (appResourcePath) return callback({ path: appResourcePath });
 
     return callback({ path: path.join(appRoot, 'index.html') });
   });

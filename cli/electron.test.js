@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 
 const { staticBuildPath, electronBuildPath, electronAppPath } = require('./shared/build_paths');
+const appResourcePathForFileUrl = require('../electron/template/src/file_protocol_path');
 
 function writeProjectFile(filePath, contents) {
   fs.ensureDirSync(path.dirname(filePath));
@@ -11,6 +12,19 @@ function writeProjectFile(filePath, contents) {
 
 function writeCanopyAssetFixture(canopyLocation) {
   writeProjectFile(path.join(canopyLocation, 'dist', '_canopy.js'), '// test Canopy.js asset\n');
+}
+
+function loadElectronForgeConfig() {
+  const originalCwd = process.cwd();
+  const buildDirectory = path.resolve(electronBuildPath());
+  const configPath = path.resolve(electronBuildPath('forge.config.js'));
+  try {
+    process.chdir(buildDirectory);
+    delete require.cache[require.resolve(configPath)];
+    return require(configPath);
+  } finally {
+    process.chdir(originalCwd);
+  }
 }
 
 function withElectronProject(runTest) {
@@ -54,6 +68,7 @@ describe('electron scaffold', () => {
       expect(fs.existsSync(electronBuildPath('package.json'))).toBe(true);
       expect(fs.existsSync(electronBuildPath('forge.config.js'))).toBe(true);
       expect(fs.existsSync(electronBuildPath('src', 'index.js'))).toBe(true);
+      expect(fs.existsSync(electronBuildPath('src', 'file_protocol_path.js'))).toBe(true);
       expect(fs.existsSync(electronAppPath('index.html'))).toBe(true);
       expect(fs.existsSync(electronAppPath('_canopy.js'))).toBe(true);
       expect(fs.existsSync(electronAppPath('_data'))).toBe(true);
@@ -75,27 +90,55 @@ describe('electron scaffold', () => {
         artifactName: 'My App.AppImage',
         target: ['AppImage']
       });
+
+      const forgeConfig = loadElectronForgeConfig();
+      expect(forgeConfig.packagerConfig.executableName).toBe('My App');
+      expect(forgeConfig.makers.find(maker => maker.name === '@electron-forge/maker-deb').config.options.bin)
+        .toBe('My App');
+      expect(forgeConfig.makers.find(maker => maker.name === '@electron-forge/maker-rpm').config.options.bin)
+        .toBe('My App');
       expect(console.warn).toHaveBeenCalledWith('No Electron icon found at assets/electron-icon.ico, assets/electron-icon.png, or assets/electron-icon.icns; generated app will use Electron defaults.');
     });
   });
 
-  test('copies nested Electron-only assets after static assets without adding them to the static build', () => {
+  test('copies offline assets after static assets without adding them to the static build', () => {
     withElectronProject(({ electron }) => {
       writeProjectFile('assets/offline/shared.txt', 'static asset\n');
-      writeProjectFile('electron-assets/offline/Hisbonen-onboarding.mp4', 'electron-only video\n');
-      writeProjectFile('electron-assets/offline/shared.txt', 'electron override\n');
+      writeProjectFile('offline-assets/offline/Hisbonen-onboarding.mp4', 'offline video\n');
+      writeProjectFile('offline-assets/offline/preferred.txt', 'preferred asset\n');
+      writeProjectFile('offline-assets/offline/shared.txt', 'offline override\n');
 
       electron({ logging: false, scaffoldOnly: true });
 
-      expect(fs.readFileSync(electronAppPath('_assets', 'offline', 'Hisbonen-onboarding.mp4'), 'utf8')).toBe('electron-only video\n');
+      expect(fs.readFileSync(electronAppPath('_assets', 'offline', 'Hisbonen-onboarding.mp4'), 'utf8')).toBe('offline video\n');
+      expect(fs.readFileSync(electronAppPath('_assets', 'offline', 'preferred.txt'), 'utf8')).toBe('preferred asset\n');
       expect(fs.existsSync(staticBuildPath('_assets', 'offline', 'Hisbonen-onboarding.mp4'))).toBe(false);
+      expect(fs.existsSync(staticBuildPath('_assets', 'offline', 'preferred.txt'))).toBe(false);
       expect(fs.readFileSync(staticBuildPath('_assets', 'offline', 'shared.txt'), 'utf8')).toBe('static asset\n');
-      expect(fs.readFileSync(electronAppPath('_assets', 'offline', 'shared.txt'), 'utf8')).toBe('electron override\n');
+      expect(fs.readFileSync(electronAppPath('_assets', 'offline', 'shared.txt'), 'utf8')).toBe('offline override\n');
     });
   });
 
-  test('allows projects without an electron-assets directory', () => {
+  test('allows projects without an offline-assets directory', () => {
     withElectronProject(({ electron }) => {
+      expect(() => electron({ logging: false, scaffoldOnly: true })).not.toThrow();
+      expect(fs.existsSync(electronAppPath('index.html'))).toBe(true);
+    });
+  });
+
+  test('builds projects checked out with Windows line endings', () => {
+    withElectronProject(({ electron }) => {
+      writeProjectFile(
+        'topics/My App/My App.expl',
+        [
+          'My App: Open [[List]].',
+          '',
+          'List:',
+          '1. [link](https://example.com)',
+          '2. second'
+        ].join('\r\n')
+      );
+
       expect(() => electron({ logging: false, scaffoldOnly: true })).not.toThrow();
       expect(fs.existsSync(electronAppPath('index.html'))).toBe(true);
     });
@@ -112,6 +155,36 @@ describe('electron scaffold', () => {
       expect(fs.existsSync(electronAppPath('_assets', 'electron-icon.ico'))).toBe(true);
       expect(console.warn).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('electron file protocol paths', () => {
+  const appRoot = path.join('packaged', 'app');
+
+  test.each([
+    [
+      'Windows asset URL',
+      'file:///D:/_assets/offline/Hisbonen-onboarding.mp4',
+      ['_assets', 'offline', 'Hisbonen-onboarding.mp4']
+    ],
+    [
+      'Windows data URL',
+      'file:///D:/_data/Sefarim_a05ccf49.json',
+      ['_data', 'Sefarim_a05ccf49.json']
+    ],
+    [
+      'macOS asset URL',
+      'file:///Applications/Hisbonen.app/Contents/Resources/app/_assets/fonts/My%20Font.woff2',
+      ['_assets', 'fonts', 'My Font.woff2']
+    ]
+  ])('maps a %s beneath the packaged app directory', (_, requestUrl, resourceSegments) => {
+    expect(appResourcePathForFileUrl(requestUrl, appRoot))
+      .toBe(path.join(appRoot, ...resourceSegments));
+  });
+
+  test('ignores file URLs outside Canopy resource directories', () => {
+    expect(appResourcePathForFileUrl('file:///D:/other/file.txt', appRoot)).toBeUndefined();
+    expect(appResourcePathForFileUrl('https://example.com/_assets/file.txt', appRoot)).toBeUndefined();
   });
 });
 

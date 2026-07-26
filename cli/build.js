@@ -7,7 +7,14 @@ const { spawnSync, execFileSync } = require('child_process');
 let chalk = require('chalk');
 let { DefaultTopic, canopyLocation, tryAndWriteHtmlError } = require('./shared/fs-helpers');
 let { killActiveFullBuildProcesses } = require('./shared/full_build_processes');
-let { buildRoot, staticBuildDirectory, singleFileBuildDirectory, staticBuildPath, singleFileBuildPath } = require('./shared/build_paths');
+let {
+  buildRoot,
+  offlineAssetsDirectory,
+  staticBuildDirectory,
+  singleFileBuildDirectory,
+  staticBuildPath,
+  singleFileBuildPath
+} = require('./shared/build_paths');
 let Topic = require('./shared/topic');
 let os = require('os');
 
@@ -483,17 +490,20 @@ function writeSingleFileHtml({ projectPathPrefix, hashUrls, defaultTopic, option
 }
 
 function buildAssetDataUriMap(logging, maxBase64AssetBytes) {
-  const assetsRoot = staticBuildPath('_assets');
-  if (!fs.existsSync(assetsRoot)) return {};
-
   const map = {};
 
-  function walk(dir) {
+  function addDirectory(assetsRoot) {
+    if (!fs.existsSync(assetsRoot)) return;
+
+    walk(assetsRoot, assetsRoot);
+  }
+
+  function walk(dir, assetsRoot) {
     fs.readdirSync(dir).forEach(name => {
       const fullPath = path.join(dir, name);
       const stat = fs.statSync(fullPath);
       if (stat.isDirectory()) {
-        walk(fullPath);
+        walk(fullPath, assetsRoot);
       } else {
         const rel = path.relative(assetsRoot, fullPath).split(path.sep).join('/');
         const key = `_assets/${rel}`;
@@ -505,7 +515,9 @@ function buildAssetDataUriMap(logging, maxBase64AssetBytes) {
     });
   }
 
-  walk(assetsRoot);
+  addDirectory(staticBuildPath('_assets'));
+  addDirectory(offlineAssetsDirectory);
+
   return map;
 }
 

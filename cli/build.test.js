@@ -14,6 +14,93 @@ function writeCanopyAssetFixture(canopyLocation) {
 }
 
 describe('build assets', () => {
+  test('keeps offline assets out of static output and inlines them in single-file output', () => {
+    const originalCwd = process.cwd();
+    const originalCanopyLocation = process.env.CANOPY_LOCATION;
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'canopy-build-offline-assets-'));
+    const canopyLocation = path.join(tmpDir, 'canopy-fixture');
+    let statSyncSpy;
+
+    try {
+      writeCanopyAssetFixture(canopyLocation);
+      process.env.CANOPY_LOCATION = canopyLocation;
+      jest.resetModules();
+      const build = require('./build');
+      const buildFs = require('fs-extra');
+
+      process.chdir(tmpDir);
+
+      writeProjectFile(
+        'topics/Idaho/Idaho.expl',
+        'Idaho: ![Onboarding video](/_assets/offline/onboarding.mp4)\n'
+      );
+      fs.writeFileSync('canopy_default_topic', 'topics/Idaho/Idaho.expl');
+      writeProjectFile(
+        'assets/head.html',
+        [
+          '<meta data-onboarding-video="/_assets/offline/onboarding.mp4">',
+          '<meta data-collision-video="/_assets/offline/collision.mp4">',
+          '<meta data-regular-asset="/_assets/regular.png">',
+          '<meta data-oversized-video="/_assets/offline/oversized.mp4">',
+          ''
+        ].join('\n')
+      );
+      writeProjectFile('assets/regular.png', 'regular asset');
+      writeProjectFile('assets/offline/collision.mp4', 'static collision');
+      writeProjectFile('offline-assets/offline/onboarding.mp4', 'preferred video');
+      writeProjectFile('offline-assets/offline/collision.mp4', 'preferred collision');
+      writeProjectFile('offline-assets/offline/oversized.mp4', 'oversized fixture');
+
+      const oversizedAssetPath = path.resolve('offline-assets', 'offline', 'oversized.mp4');
+      const originalStatSync = buildFs.statSync;
+      statSyncSpy = jest.spyOn(buildFs, 'statSync').mockImplementation(filePath => {
+        const stat = originalStatSync(filePath);
+        if (path.resolve(filePath) !== oversizedAssetPath) return stat;
+
+        return new Proxy(stat, {
+          get(target, property) {
+            if (property === 'size') return build._test.MAX_BASE64_ASSET_BYTES + 1;
+            const value = Reflect.get(target, property);
+            return typeof value === 'function' ? value.bind(target) : value;
+          }
+        });
+      });
+
+      build({ file: true, hashUrls: true, logging: false });
+      statSyncSpy.mockRestore();
+      statSyncSpy = null;
+
+      const html = fs.readFileSync(path.join('build', 'file', 'Idaho.html'), 'utf8');
+      const preferredVideoDataUri = `data:video/mp4;base64,${Buffer.from('preferred video').toString('base64')}`;
+      const preferredCollisionDataUri = `data:video/mp4;base64,${Buffer.from('preferred collision').toString('base64')}`;
+      const regularAssetDataUri = `data:image/png;base64,${Buffer.from('regular asset').toString('base64')}`;
+      const oversizedPlaceholder = build._test.offlineAssetPlaceholderDataUri('_assets/offline/oversized.mp4');
+
+      expect(fs.existsSync(staticBuildPath('_assets', 'offline', 'onboarding.mp4'))).toBe(false);
+      expect(fs.readFileSync(staticBuildPath('_assets', 'offline', 'collision.mp4'), 'utf8')).toBe('static collision');
+      expect(fs.readFileSync(staticBuildPath('_assets', 'regular.png'), 'utf8')).toBe('regular asset');
+      expect(html).toContain(`data-onboarding-video="${preferredVideoDataUri}"`);
+      expect(html).toContain(`"resourceUrl":"${preferredVideoDataUri}"`);
+      expect(html).toContain(preferredCollisionDataUri);
+      expect(html).not.toContain(`data:video/mp4;base64,${Buffer.from('static collision').toString('base64')}`);
+      expect(html).toContain(regularAssetDataUri);
+      expect(html).toContain(oversizedPlaceholder);
+      expect(html).not.toContain('/_assets/offline/onboarding.mp4');
+      expect(html).not.toContain('/_assets/offline/collision.mp4');
+      expect(html).not.toContain('/_assets/offline/oversized.mp4');
+    } finally {
+      statSyncSpy?.mockRestore();
+      if (originalCanopyLocation === undefined) {
+        delete process.env.CANOPY_LOCATION;
+      } else {
+        process.env.CANOPY_LOCATION = originalCanopyLocation;
+      }
+      jest.resetModules();
+      process.chdir(originalCwd);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   test('uses an explanatory offline placeholder when an asset is too large to base64 encode', () => {
     const originalCwd = process.cwd();
     const originalCanopyLocation = process.env.CANOPY_LOCATION;

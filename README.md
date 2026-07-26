@@ -542,6 +542,15 @@ Build has a few options:
 
 If you create an `assets` directory in your project folder, the build script will copy it to an `_assets` directory in your static build directory, allowing your `expl` files to make references to assets like `_assets/img.png`. A `favicon.ico` file in your `assets` directory will cause your project's automatically generated `index.html` file to include it. (The leading underscore is necessary to avoid collision with topics named `assets`.) If you create an `assets/custom.css` file it will get included in the index.html page. Create a `head.html` file for content you want loaded in the page's head, `assets/nav.html` for content that goes above the Canopy.js interface, and `assets/footer.html` for things to be put under the UI in the body.
 
+Use `offline-assets/` for files that should be bundled with Electron and single-file builds but not deployed with an ordinary static web build:
+
+| Source directory | Static web | Electron | Single-file |
+|---|---:|---:|---:|
+| `assets/` | Copy | Copy | Base64 encode |
+| `offline-assets/` | Exclude | Copy | Base64 encode |
+
+Both directories use the same public `/_assets/` paths. For example, `offline-assets/offline/onboarding.mp4` becomes `/_assets/offline/onboarding.mp4` in Electron, is replaced with an inline `data:video/mp4;base64,…` URI in single-file output, and is absent from static web output.
+
 If you want to make a custom page, you can use the `canopy build --manual-html` and `--keep-build-directory` options to write your own `index.html` and and incorporate Canopy into it. Canopy.js is expecting a DOM element with the id '\_canopy', and that element should have data attributes called `data-default-topic`, and optionally `data-project-path-prefix`, and `data-hash-urls` for the options described above. In addition, your `index.html` page should have a `script` tag that requires the `canopy.js` asset that you can find in the `dist` directory of the `npm` install, or on the `dist` directory of the `build` branch of this repository.
 
 If your manual `index.html` includes an initial loading indicator, Canopy treats a direct child of `#_canopy` with the class `canopy-boot-loading-graphic` as the bootloader. See the [manual HTML bootloader reference](readme/manual-html-bootloader.md) for the expected HTML, CSS, and removal lifecycle.
@@ -558,7 +567,7 @@ You can run a Node.js Express server for your project using `canopy serve` follo
 
 Run `canopy electron` to build the static site, write an Electron app scaffold to `build/electron`, install Electron dependencies if needed, and start the app locally. The generated app copies the static build into `build/electron/app`.
 
-Project files placed in `electron-assets/` are copied recursively into `build/electron/app/_assets/`, preserving their relative paths. They are included only in Electron builds and are not copied into `build/static`. For example, `electron-assets/offline/Hisbonen-onboarding.mp4` becomes `build/electron/app/_assets/offline/Hisbonen-onboarding.mp4`. Electron assets are copied after the static build, so they can intentionally override files from `assets/` with the same relative path.
+Project files placed in `offline-assets/` are copied recursively into `build/electron/app/_assets/`, preserving their relative paths. They are not copied into `build/static`. Offline assets are copied after the static build, so they can intentionally override files from `assets/` with the same relative path.
 
 Choose the Electron output that matches how you plan to distribute the app:
 
@@ -591,7 +600,7 @@ The portable command selects the native self-contained application for the curre
 - Linux creates `build/electron/out/portable/<Project Name>.AppImage`, a single no-install application for the current architecture.
 - macOS creates the normal packaged `<Project Name>.app`. This is the same application bundle produced by `--package`, because a `.app` is already self-contained and directly runnable without installation.
 
-Every portable output contains Electron, the static Canopy build, `assets/`, and `electron-assets/`, allowing large offline media to load as normal files. Use an installer or standard distributable from `--make` instead when you want platform integration, uninstall registration, or managed updates. Any portable output can be placed in a ZIP separately when a single archive is preferable for transfer.
+Every portable output contains Electron, the static Canopy build, `assets/`, and `offline-assets/`, allowing large offline media to load as normal files. Use an installer or standard distributable from `--make` instead when you want platform integration, uninstall registration, or managed updates. Any portable output can be placed in a ZIP separately when a single archive is preferable for transfer.
 
 For a custom Windows executable and taskbar icon, add `assets/electron-icon.ico`. If it is absent, the portable build uses `assets/electron-icon.png` when available, otherwise it clearly warns that the Electron default will be used. A Windows `.ico` should contain the standard 16, 24, 32, 48, 64, 128, and 256 pixel sizes.
 
