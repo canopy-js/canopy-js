@@ -14,6 +14,19 @@ function writeCanopyAssetFixture(canopyLocation) {
   writeProjectFile(path.join(canopyLocation, 'dist', '_canopy.js'), '// test Canopy.js asset\n');
 }
 
+function loadElectronForgeConfig() {
+  const originalCwd = process.cwd();
+  const buildDirectory = path.resolve(electronBuildPath());
+  const configPath = path.resolve(electronBuildPath('forge.config.js'));
+  try {
+    process.chdir(buildDirectory);
+    delete require.cache[require.resolve(configPath)];
+    return require(configPath);
+  } finally {
+    process.chdir(originalCwd);
+  }
+}
+
 function withElectronProject(runTest) {
   const originalCwd = process.cwd();
   const originalCanopyLocation = process.env.CANOPY_LOCATION;
@@ -77,6 +90,13 @@ describe('electron scaffold', () => {
         artifactName: 'My App.AppImage',
         target: ['AppImage']
       });
+
+      const forgeConfig = loadElectronForgeConfig();
+      expect(forgeConfig.packagerConfig.executableName).toBe('My App');
+      expect(forgeConfig.makers.find(maker => maker.name === '@electron-forge/maker-deb').config.options.bin)
+        .toBe('My App');
+      expect(forgeConfig.makers.find(maker => maker.name === '@electron-forge/maker-rpm').config.options.bin)
+        .toBe('My App');
       expect(console.warn).toHaveBeenCalledWith('No Electron icon found at assets/electron-icon.ico, assets/electron-icon.png, or assets/electron-icon.icns; generated app will use Electron defaults.');
     });
   });
